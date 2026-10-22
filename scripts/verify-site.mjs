@@ -102,6 +102,7 @@ for (const route of manifest) {
   assert(!routes.has(route.path), `Duplicate route: ${route.path}`);
   const html = await readFile(localFile(route.file), 'utf8');
   assert(html.includes(`<div id="root" data-route="${route.path}">`), `Missing hydration route: ${route.path}`);
+  assert(!/<!--\$(?:!|\?)-->/.test(html), `Unfinished server-rendered Suspense boundary: ${route.path}`);
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => decode(match[1]));
   assert.equal(ids.length, new Set(ids).size, `Duplicate HTML IDs: ${route.path}`);
   assert.equal((html.match(/<h1(?:\s|>)/g) ?? []).length, 1, `Expected one page heading: ${route.path}`);

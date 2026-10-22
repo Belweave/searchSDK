@@ -1,4 +1,4 @@
-import { lazy, Suspense, useId } from "react";
+import { lazy, Suspense, useEffect, useId, useState } from "react";
 import { DitherPattern } from "../lib/dither/pattern.js";
 
 const Shader = lazy(() => import("../lib/dither/shader.js").then(module => ({ default: module.DitherShader })));
@@ -100,7 +100,11 @@ function Still() {
 
 export interface AuroraSignalProps { animate?: boolean; intensity?: number; speed?: number; cell?: number }
 export function AuroraSignal({ animate = true, intensity = 1, speed = 1, cell = 2 }: AuroraSignalProps) {
+  // renderToString cannot complete a suspended lazy import. Hydrate the same
+  // finished SVG on both sides, then load the shader after the client mounts.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   return <div className="landing-signal" aria-hidden="true" style={{ opacity: Math.min(1, Math.max(0, intensity)) }}>
-    <Suspense fallback={<Still />}><Shader className="aurora-canvas" field={FIELD} colorField={COLOR} palette={PALETTE} matrix="bayer8" cell={cell} fps={30} animate={animate} speed={speed} stillTime={8} fallback={<Still />} /></Suspense>
+    {mounted ? <Suspense fallback={<Still />}><Shader className="aurora-canvas" field={FIELD} colorField={COLOR} palette={PALETTE} matrix="bayer8" cell={cell} fps={30} animate={animate} speed={speed} stillTime={8} fallback={<Still />} /></Suspense> : <Still />}
   </div>;
 }
