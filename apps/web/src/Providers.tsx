@@ -1,8 +1,9 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { DitherSurface, DitherEmpty, DitherNumber } from "./components/DitherKit";
 import { DitherPattern } from "./lib/dither/pattern";
 import { providerBrandAssets } from "./brand-assets";
 import { providers, alphaProviders, nativeProviders } from "./provider-catalog";
-import { WorkspaceDitherCatalog, WorkspaceDitherField, WorkspaceDitherSpectrum, workspaceDitherStyles } from "./components/WorkspaceDither";
+import { WorkspaceDitherCatalog, WorkspaceDitherSpectrum, workspaceDitherStyles } from "./components/WorkspaceDither";
 import "./provider-page.css";
 
 function ProviderLogo({ id, eager }: { id: string; eager?: boolean }) {
@@ -48,12 +49,12 @@ export function Providers() {
             <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4" /></svg>
           </span>
         </label>
-        <p className="provider-page-count" role="status">{visible.length} of {providers.length} providers</p>
+        <p className="provider-page-count" role="status"><DitherNumber value={visible.length} /> of {providers.length} providers</p>
       </div>
       <div className="provider-page-list">
         {visible.map((provider) => (
           <article className="provider-page-entry" key={provider.id} data-provider={provider.id} data-status={provider.status} data-priority={provider.priority || undefined}>
-            <WorkspaceDitherField className="provider-page-entry-dither" variant={provider.corpus ? "hatched" : "gradient"} />
+            <DitherSurface variant={provider.priority ? "glow" : "mesh"} />
             <div className="provider-page-entry-header">
               <span>{provider.corpus ? "Corpus retrieval" : "Web search"}</span>
               {provider.priority && <span className="provider-page-priority">Start here</span>}
@@ -65,7 +66,7 @@ export function Providers() {
           </article>
         ))}
       </div>
-      {visible.length === 0 && <div className="provider-page-empty"><WorkspaceDitherField className="provider-page-empty-dither" variant="dotted" /><h2>No matching providers.</h2><p>Try another name or capability, or return to the full catalog.</p><button type="button" onClick={() => { setQuery(""); setScope("all"); searchInput.current?.focus(); }}>Show all providers</button></div>}
+      {visible.length === 0 && <div className="provider-page-empty"><DitherEmpty /><h2>No matching providers.</h2><p>Try another name or capability, or return to the full catalog.</p><button type="button" onClick={() => { setQuery(""); setScope("all"); searchInput.current?.focus(); }}>Show all providers</button></div>}
       <p className="provider-page-note">Read each reference for access requirements and verification limits. <a href="/provider-catalog.md">Complete provider notes <span aria-hidden="true">↓</span></a></p>
     </section>
   );

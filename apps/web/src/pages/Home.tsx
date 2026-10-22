@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { createSearch, type SearchResponse } from "@belweave/search-sdk";
+import { createSearch, type SearchProvider, type SearchResponse } from "@belweave/search-sdk";
 import { createMockProvider } from "@belweave/search-sdk/testing";
+import { DitherAttemptBars, DitherButtonInk, DitherProgress, useSiteMotionPaused, setSiteMotionPaused } from "../components/DitherKit";
 import { AuroraSignal } from "../components/AuroraSignal.js";
 import { HomeDitherCorner, HomeDitherSeam, HomeDitherTrace, HomeDitherWaiting } from "../components/HomeDither.js";
 import { usePrefersReducedMotion } from "../lib/dither/motion.js";
@@ -28,6 +29,7 @@ function SearchExample() {
   const [interactive, setInteractive] = useState(false);
   const [response, setResponse] = useState<SearchResponse | null>(null);
   const [busy, setBusy] = useState(false);
+  const [stage, setStage] = useState("query");
   const [notice, setNotice] = useState("");
   const controller = useRef<AbortController | null>(null);
   useEffect(() => {
@@ -39,14 +41,17 @@ function SearchExample() {
     const abort = new AbortController();
     controller.current = abort;
     setBusy(true);
+    setResponse(null);
+    setStage("query");
     setNotice("");
     try {
+      const track = (provider: SearchProvider, part: string): SearchProvider => ({ ...provider, search: (request, options) => { if (!abort.signal.aborted) setStage(part); return provider.search(request, options); } });
       const client = createSearch({
-        provider: createMockProvider({ id: "demo-primary", outcomes: [{ type: "error", code: "rate_limit", status: 429, delayMs: 250 }] }),
-        fallback: [createMockProvider({ id: "demo-backup", outcomes: [{ type: "success", delayMs: 200, results: [{ title: "SQLite: Write-Ahead Logging", url: "https://www.sqlite.org/wal.html", snippet: "WAL allows readers and a writer to proceed concurrently." }] }] })],
+        provider: track(createMockProvider({ id: "demo-primary", outcomes: [{ type: "error", code: "rate_limit", status: 429, delayMs: 250 }] }), "primary"),
+        fallback: [track(createMockProvider({ id: "demo-backup", outcomes: [{ type: "success", delayMs: 200, results: [{ title: "SQLite: Write-Ahead Logging", url: "https://www.sqlite.org/wal.html", snippet: "WAL allows readers and a writer to proceed concurrently." }] }] }), "fallback")],
       });
       const result = await client.web.search({ query: "SQLite write concurrency", limit: 3 }, { signal: abort.signal });
-      if (!abort.signal.aborted) setResponse(result);
+      if (!abort.signal.aborted) { setResponse(result); setStage("source"); }
     } catch {
       if (!abort.signal.aborted) setNotice("The demo could not run. Please try again.");
     } finally {
@@ -59,17 +64,19 @@ function SearchExample() {
     catch { setNotice("Clipboard unavailable. Select the example code to copy it."); }
   }
   return <div className="landing-example">
-    <HomeDitherTrace busy={busy} complete={response !== null} />
+    <HomeDitherTrace busy={busy} complete={response !== null} stage={stage} />
     <div className="landing-code">
       <div className="landing-panel-bar"><span>search.ts <span className="landing-secondary">/ Example</span></span><button onClick={copy} disabled={!interactive}>Copy code</button></div>
       <pre tabIndex={0} aria-label="TypeScript search example"><code>{example.split("\n").map((line, i) => <span className={`landing-code-line${line.startsWith("import") ? " landing-code-import" : line.includes("query:") ? " landing-code-query" : ""}`} key={i}>{line || " "}</span>)}</code></pre>
     </div>
     <div className="landing-result">
       <div className="landing-panel-bar"><span>Demo data</span><button onClick={run} disabled={!interactive || busy}>{busy ? "Searching…" : response ? "Run again" : "Run demo"}<span aria-hidden="true"> ↗</span></button></div>
-      <div className="landing-result-body" aria-live="polite" aria-busy={busy}>
+      <div className={`landing-result-body${response ? " dither-completion" : ""}`} aria-live="polite" aria-busy={busy}>
+        {busy && <DitherProgress label="Running deterministic fallback demo" />}
         {response ? <>
           <p className="landing-result-heading">A source, with the full trail.</p>
           <ol className="landing-attempts" aria-label="Search attempts">{response.attempts.map(attempt => <li key={attempt.provider}><span>{attempt.provider}</span><span>{attempt.outcome === "success" ? "Success" : "Rate limited"}</span></li>)}</ol>
+          <DitherAttemptBars attempts={response.attempts} label="This fixture run · measured durations" />
           <a className="landing-source" href={response.results[0].url} target="_blank" rel="noreferrer"><span className="landing-source-domain">sqlite.org</span><strong>{response.results[0].title} <span aria-hidden="true">↗</span></strong></a>
           <p>{response.results[0].snippet}</p>
           <code className="landing-result-meta">provider: '{response.provider}'<br />warnings: {JSON.stringify(response.warnings.map(warning => warning.code))}</code>
@@ -87,7 +94,7 @@ function SearchExample() {
 }
 
 export function Home() {
-  const [still, setStill] = useState(false);
+  const still = useSiteMotionPaused();
   const [artMenu, setArtMenu] = useState<{ x: number; y: number } | null>(null);
   const art = useRef<HTMLDivElement>(null);
   const menu = useRef<HTMLDivElement>(null);
@@ -126,16 +133,17 @@ export function Home() {
       <div className="landing-intro">
         <h1 id="landing-title">Web search for<br />TypeScript apps.</h1>
         <p>Choose your sources. Set your fallback.<br className="landing-desktop-break" /> Get typed results and a record of every attempt.</p>
-        <div className="landing-actions"><a className="landing-primary" href="/docs">Read the docs <span aria-hidden="true">↗</span></a><a className="landing-secondary-action" href="/playground">Open playground <span aria-hidden="true">→</span></a></div>
+        <div className="landing-actions"><a className="landing-primary" href="/docs"><DitherButtonInk /><span>Read the docs</span><span aria-hidden="true">↗</span></a><a className="landing-secondary-action" href="/playground">Open playground <span aria-hidden="true">→</span></a></div>
       </div>
       <div ref={art} className="landing-art" tabIndex={0} role="group" aria-label="Search illustration" aria-haspopup="menu" aria-expanded={artMenu !== null} aria-controls={artMenu ? "landing-art-menu" : undefined}
+        onClick={event => { const rect = event.currentTarget.getBoundingClientRect(); openArtMenu(rect.left + rect.width / 2, rect.top + rect.height / 2); }}
         onContextMenu={event => { event.preventDefault(); const rect = event.currentTarget.getBoundingClientRect(); openArtMenu(event.clientX || rect.left + rect.width / 2, event.clientY || rect.top + rect.height / 2); }}
-        onKeyDown={event => { if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) { event.preventDefault(); const rect = event.currentTarget.getBoundingClientRect(); openArtMenu(rect.left + rect.width / 2, rect.top + rect.height / 2); } }}>
-        <AuroraSignal animate={!still} cell={2.5} />
+        onKeyDown={event => { if (event.key === "Enter" || event.key === " " || event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) { event.preventDefault(); const rect = event.currentTarget.getBoundingClientRect(); openArtMenu(rect.left + rect.width / 2, rect.top + rect.height / 2); } }}>
+        <AuroraSignal animate={!still} cell={2} /><span className="landing-art-hint">Click or press Enter for motion controls</span>
       </div>
       {artMenu && <div ref={menu} id="landing-art-menu" className="landing-art-menu" role="menu" aria-label="Illustration animation" style={{ left: artMenu.x, top: artMenu.y }}
         onKeyDown={event => { if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) { event.preventDefault(); menuItem.current?.focus(); } if (event.key === "Tab") { event.preventDefault(); dismissArtMenu(); } }}>
-        <button ref={menuItem} role="menuitem" aria-disabled={reducedMotion} onClick={() => { if (!reducedMotion) setStill(value => !value); dismissArtMenu(); }}>{reducedMotion ? "Reduced motion enabled" : still ? "Resume animation" : "Pause animation"}</button>
+        <button ref={menuItem} role="menuitem" aria-disabled={reducedMotion} onClick={() => { if (!reducedMotion) setSiteMotionPaused(!still); dismissArtMenu(); }}>{reducedMotion ? "Reduced motion enabled" : still ? "Resume animation" : "Pause animation"}</button>
       </div>}
     </section>
     <HomeDitherSeam />

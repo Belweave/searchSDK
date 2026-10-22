@@ -1,20 +1,18 @@
+import { DitherFade, DitherSurface } from "./DitherKit";
 import { useId } from "react";
-import { DitherPattern, ditherMaskStyle } from "../lib/dither/pattern.js";
+import { DitherPattern } from "../lib/dither/pattern.js";
 import { FillPattern } from "../lib/dither/fill.js";
 import { fillStyle } from "../lib/dither/style.js";
 
 /** Static engine fills: no canvas, worker, timer, or image request. */
 export function HomeDitherSeam({ reverse = false }: { reverse?: boolean }) {
   return <div className={`home-dither-seam${reverse ? " home-dither-seam-reverse" : ""}`} aria-hidden="true">
-    <span style={{ ...fillStyle("gradient", { color: "--landing-ink", cell: 2, matrix: "bayer8", edge: "top", length: 32, from: 0.75, to: 0 }), backgroundImage: "var(--dither-spectrum)" }} />
+    <DitherFade />
   </div>;
 }
 
 export function HomeDitherCorner() {
-  return <span className="home-dither-corner" aria-hidden="true">
-    <span style={ditherMaskStyle(0.125, { matrix: "bayer4", cell: 2 })} />
-    <span style={ditherMaskStyle(0.375, { matrix: "bayer4", cell: 2 })} />
-  </span>;
+  return <DitherSurface variant="glow" />;
 }
 
 type TracePart = "query" | "primary" | "fallback" | "source";
@@ -66,11 +64,11 @@ const trace = [
 ] as const;
 
 /** A schematic of the existing deterministic SDK demo, never live metrics. */
-export function HomeDitherTrace({ busy, complete }: { busy: boolean; complete: boolean }) {
+export function HomeDitherTrace({ busy, complete, stage }: { busy: boolean; complete: boolean; stage: string }) {
   return <div className="home-dither-trace" data-state={busy ? "running" : complete ? "complete" : "ready"}>
     <div className="home-dither-trace-caption"><span>The route in this demo</span><span>{busy ? "Running fixtures…" : complete ? "Fallback complete" : "Deterministic fixtures"}</span></div>
     <ol className="home-dither-trace-steps">
-      {trace.map(({ part, title, detail }) => <li key={part}>
+      {trace.map(({ part, title, detail }) => <li key={part} data-current={busy ? stage === part : !complete && part === "query"}>
         <HomeDitherGlyph part={part} />
         <span className="home-dither-trace-title">{title}</span>
         <span className="home-dither-trace-detail">{detail}</span>

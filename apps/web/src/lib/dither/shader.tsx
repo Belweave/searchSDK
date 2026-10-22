@@ -116,7 +116,7 @@ const uniformSpecs = (uniforms: DitherUniforms): UniformSpec[] =>
       return [{ name, size: uniformSize(value) }];
     });
 
-const fragmentShader = (field: string, specs: readonly UniformSpec[]) => `
+const fragmentShader = (field: string, specs: readonly UniformSpec[], colorField?: string) => `
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
 #else
@@ -134,6 +134,7 @@ uniform float u_paletteSize;
 ${specs.map(({ name, size }) => `uniform ${GLSL_TYPES[size]} ${name};`).join("\n")}
 ${GLSL_HELPERS}
 ${field}
+${colorField ?? ""}
 
 void main() {
   vec2 cell = floor(gl_FragCoord.xy);
@@ -148,11 +149,22 @@ void main() {
   float stored = floor(texture2D(u_thresholds, at).r * 255.0 + 0.5);
   float threshold = (stored + 0.5 * u_rankStep) / 256.0;
 
+  ${colorField ? `
+  // Site extension: spatial colour is independent of ordered coverage.
+  float scaled = clamp(colorPosition(uv, u_resolution, u_time), 0.0, 1.0) * (u_paletteSize - 1.0);
+  float index = floor(scaled);
+  vec4 lo = texture2D(u_palette, vec2((index + 0.5) / u_paletteSize, 0.5));
+  vec4 hi = texture2D(u_palette, vec2((min(index + 1.0, u_paletteSize - 1.0) + 0.5) / u_paletteSize, 0.5));
+  vec4 color = mix(lo, hi, fract(scaled));
+  color.a *= step(threshold, tone);
+  gl_FragColor = vec4(color.rgb * color.a, color.a);
+  ` : `
   float scaled = tone * (u_paletteSize - 1.0);
   float index = floor(scaled);
   index = min(index + step(threshold, scaled - index), u_paletteSize - 1.0);
   vec4 color = texture2D(u_palette, vec2((index + 0.5) / u_paletteSize, 0.5));
   gl_FragColor = vec4(color.rgb * color.a, color.a);
+  `}
 }
 `;
 
@@ -205,13 +217,14 @@ const createTexture = (gl: WebGLRenderingContext) => {
 const createRenderer = (
   gl: WebGLRenderingContext,
   field: string,
-  specs: readonly UniformSpec[]
+  specs: readonly UniformSpec[],
+  colorField?: string
 ): Renderer | null => {
   const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX_SHADER);
   const fragment = compile(
     gl,
     gl.FRAGMENT_SHADER,
-    fragmentShader(field, specs)
+    fragmentShader(field, specs, colorField)
   );
   const program = gl.createProgram();
   if (!vertex || !fragment || !program) {
@@ -466,6 +479,8 @@ export interface DitherShaderProps extends Omit<
    * the time in seconds (scaled by `speed`). May define helpers too.
    */
   field: string;
+  /** Site extension: optional GLSL colorPosition(uv, res, t) selects spatial palette colour independently of field coverage. */
+  colorField?: string;
   /**
    * Extra uniforms, declared for you by name: numbers become `float`,
    * tuples `vec2` to `vec4`. Names must not start with `u_`.
@@ -514,6 +529,7 @@ const CANVAS_CLASS =
  */
 export const DitherShader = ({
   field,
+  colorField,
   uniforms = NO_UNIFORMS,
   matrix = "bayer4",
   levels,
@@ -640,7 +656,7 @@ export const DitherShader = ({
 
     const build = () => {
       rendererRef.current?.dispose();
-      const renderer = createRenderer(gl, field, specs);
+      const renderer = createRenderer(gl, field, specs, colorField);
       rendererRef.current = renderer;
       renderer?.setMatrix(live.current.map);
       renderer?.setPalette(resolvePalette());
@@ -704,7 +720,7 @@ export const DitherShader = ({
     };
     // `specs` is described by `specKey`; a new `cell` re-measures.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [field, specKey, cell, hasContext]);
+  }, [field, colorField, specKey, cell, hasContext]);
 
   useEffect(() => {
     rendererRef.current?.setMatrix(map);

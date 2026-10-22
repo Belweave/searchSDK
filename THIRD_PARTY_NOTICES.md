@@ -19,6 +19,13 @@ from the [official registry](https://dithercn.dev/r/dither-core.json). The
 attributes it to [Leo](https://github.com/leoisadev1). The registry files were
 supplied without individual copyright headers. Local compatibility changes
 replace sorting of newly created arrays with ES2022-compatible equivalents.
+The site extends the shader with an optional spatial color field, keeping its
+original scalar palette path as the default. The search aurora adapts the
+[official Aurora field](https://dithercn.dev/r/aurora.json); the site components
+in `apps/web/src/components/DitherKit.tsx` adapt the ordered-fill techniques
+from the official DitherFade, Divider, Card, Empty, Loader, ProgressBar and
+Number examples. The search lens geometry, documentation diagrams, and
+request-duration compositions are original site work.
 Upstream ownership is retained; the project's copyright notice does not claim
 ownership of this component.
 

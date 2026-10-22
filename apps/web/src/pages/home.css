@@ -166,3 +166,8 @@
 }
 @media (prefers-reduced-motion: reduce) { .landing-page *, .landing-page *::before, .landing-page *::after { scroll-behavior: auto; transition: none; animation: none; } }
 @media (forced-colors: active) { .landing-art, .landing-art-menu { display: none; } .home-dither-seam, .home-dither-glyph, .home-dither-corner, .home-dither-waiting { display: none; } .home-dither-trace-steps li::after { color: CanvasText; } .landing-page .landing-primary { background: ButtonFace; color: ButtonText; border-color: ButtonText; } .landing-page .landing-primary * { color: inherit; } .landing-provider-priority { background: Canvas; } .landing-provider-logo { forced-color-adjust: none; } }
+
+/* The current occupies a real illustration field, with square device-aligned cells. */
+.landing-art { height: 420px; margin-top: 20px; }
+.aurora-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+@media (max-width: 720px) { .landing-art { height: 300px; margin-top: 14px; } }
