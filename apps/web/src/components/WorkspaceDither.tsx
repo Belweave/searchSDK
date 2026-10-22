@@ -1,3 +1,4 @@
+import { DitherEmpty } from "./DitherKit";
 import { useId } from "react";
 import type { CSSProperties } from "react";
 import { DitherPattern, ditherMask } from "../lib/dither/pattern";
@@ -37,7 +38,7 @@ export function WorkspaceDitherField({ className = "", variant = "gradient" }: {
 export function WorkspaceDitherCatalog() {
   const id = useId();
   return <figure className="workspace-dither-catalog">
-    <svg viewBox="0 0 720 112" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <svg viewBox="0 0 720 112" aria-hidden="true" focusable="false">
       <defs>
         <WorkspaceDitherSpectrum id={`${id}-rgb`} />
         <FillPattern id={`${id}-ramp`} fill="gradient" color="#fff" cell={2} level={0.8} floor={0.0625} ramp={{ edge: "left", at: 0, length: 720 }} />
@@ -58,7 +59,7 @@ export function WorkspaceDitherCatalog() {
 /** An explicit absence of measurements, with no chart-shaped invented data. */
 export function WorkspaceDitherUnrun() {
   return <div className="workspace-dither-unrun">
-    <WorkspaceDitherField variant="hatched" />
+    <DitherEmpty kind="unrun" />
     <strong>UNRUN</strong><span>Awaiting the first live run</span>
     <WorkspaceDitherField variant="dotted" />
   </div>;

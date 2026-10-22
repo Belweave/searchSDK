@@ -1,3 +1,4 @@
+import { DitherAttemptBars, DitherProgress } from "./components/DitherKit";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import {
   createSearch,
@@ -274,6 +275,8 @@ export function FixturePlayground() {
             </p>
           </div>
         )}
+        {busy && <DitherProgress label="Running deterministic fixtures" />}
+        {attempts.length > 0 && !busy && <DitherAttemptBars attempts={attempts} label="This fixture run · measured durations" />}
         {response && (
           <>
             <p className="search-demo-winner">

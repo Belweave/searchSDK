@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState, type ComponentType } from "react";
+import { DitherFooter, DitherEmpty, DitherSkeleton, DitherMotionController } from "../components/DitherKit";
 import { Playground } from "../Playground.js";
 import { Providers } from "../Providers.js";
 import { Home } from "./Home.js";
@@ -82,10 +83,10 @@ export function App({ path: suppliedPath, staticWorkspaces }: {
     const shortcut = (event: KeyboardEvent) => { if (!docsRoute && !event.altKey && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); window.location.assign("/docs?search="); } };
     window.addEventListener("keydown", shortcut); return () => window.removeEventListener("keydown", shortcut);
   }, [path, docsRoute]);
-  const content = <Suspense fallback={<section className="route-page" aria-live="polite">Loading workspace…</section>}>
-    {path === "/" ? <Home /> : docsRoute ? <Documentation path={path} /> : legalPages.some(page => page.path === path) ? <Legal path={path} /> : path === "/providers" ? <div className="providers-page"><Providers /></div> : path === "/playground" ? <PlaygroundPage /> : path === "/benchmarks" ? <BenchmarkPage /> : <section className="route-page pending-page"><p className="page-kicker">404</p><h1>Page not found.</h1><p>Find your next step in the docs or return home.</p><a className="text-link" href="/">Return to searchSDK</a></section>}
+  const content = <Suspense fallback={<section className="route-page" aria-live="polite"><DitherSkeleton /></section>}>
+    {path === "/" ? <Home /> : docsRoute ? <Documentation path={path} /> : legalPages.some(page => page.path === path) ? <Legal path={path} /> : path === "/providers" ? <div className="providers-page"><Providers /></div> : path === "/playground" ? <PlaygroundPage /> : path === "/benchmarks" ? <BenchmarkPage /> : <section className="route-page pending-page"><DitherEmpty kind="404" /><h1>Page not found.</h1><p>Find your next step in the docs or return home.</p><a className="text-link" href="/">Return to searchSDK</a></section>}
   </Suspense>;
-  return <><a className="skip-link" href="#main-content">Skip to content</a>
+  return <><DitherMotionController /><a className="skip-link" href="#main-content">Skip to content</a>
     <header className="site-header"><Brand /><nav aria-label="Main navigation">{routes.map(([route, label]) => <a key={route} href={route} aria-current={(route === "/docs" ? docsRoute : path === route) ? "page" : undefined}>{label}</a>)}</nav>
       <div className="header-tools"><a className="docs-search" href="/docs?search=" onClick={(event) => {
         // An interactive docs workspace acknowledges the request. Until it has
@@ -98,6 +99,6 @@ export function App({ path: suppliedPath, staticWorkspaces }: {
       // A supplied static docs route has a generated Markdown counterpart.
       // Unknown production URLs carry /404; development has no static exports.
       markdownHref={docsRoute && suppliedPath ? `${path}.md` : undefined}>{content}</WorkspaceBoundary> : content}</main>
-    <footer className="site-footer"><div className="footer-links"><span className="footer-credit">searchSDK by <a href="https://belweave.com" target="_blank" rel="noreferrer">Belweave ↗</a></span><a href="/docs">Documentation <span aria-hidden="true">↗</span></a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div><div className="footer-appearance"><ThemeControl /></div></footer>
+    <footer className="site-footer"><DitherFooter /><div className="footer-links"><span className="footer-credit">searchSDK by <a href="https://belweave.com" target="_blank" rel="noreferrer">Belweave ↗</a></span><a href="/docs">Documentation <span aria-hidden="true">↗</span></a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div><div className="footer-appearance"><ThemeControl /></div></footer>
   </>;
 }
