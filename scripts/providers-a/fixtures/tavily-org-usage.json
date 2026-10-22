@@ -1,0 +1,328 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Tavily Search and Extract API",
+    "description": "Our REST API provides seamless access to Tavily Search, a powerful search engine for LLM agents, and Tavily Extract, an advanced web scraping solution optimized for LLMs.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.tavily.com/"
+    }
+  ],
+  "security": [],
+  "tags": [
+    {
+      "name": "Search"
+    },
+    {
+      "name": "Extract"
+    },
+    {
+      "name": "Crawl"
+    },
+    {
+      "name": "Map"
+    },
+    {
+      "name": "Research"
+    },
+    {
+      "name": "Feedback"
+    },
+    {
+      "name": "Usage"
+    },
+    {
+      "name": "Logs"
+    }
+  ],
+  "paths": {
+    "/org-usage": {
+      "post": {
+        "summary": "Get organization usage across all API keys",
+        "description": "Retrieve usage (credits), pay-as-you-go USD cost, and request counts for **every API key under an organization you own**, mirroring the platform's Usage analytics page.\n\nIdentify the organization by **name** in the request body. Authenticate with the organization owner's **personal API key** — the key from the owner's own personal account, **not** an organization or enterprise API key. Supports date-range, project, and depth filtering.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "organization_name"
+                ],
+                "properties": {
+                  "organization_name": {
+                    "type": "string",
+                    "description": "Exact organization name (case-sensitive). You must be the owner of this organization."
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Inclusive start of the usage window (YYYY-MM-DD). Defaults to the start of the current billing cycle."
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Inclusive end of the usage window (YYYY-MM-DD). Defaults to today."
+                  },
+                  "project_id": {
+                    "type": "string",
+                    "description": "Scope usage to a single project."
+                  },
+                  "depth": {
+                    "type": "string",
+                    "enum": [
+                      "basic",
+                      "advanced",
+                      "fast",
+                      "pro",
+                      "mini",
+                      "auto",
+                      "ultra-fast"
+                    ],
+                    "description": "Scope usage to a single request depth."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Organization usage returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "organization": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "filters": {
+                          "type": "object",
+                          "description": "Echo of the filters applied to this response",
+                          "properties": {
+                            "start_date": {
+                              "type": "string"
+                            },
+                            "end_date": {
+                              "type": "string"
+                            },
+                            "project_id": {
+                              "type": "string"
+                            },
+                            "depth": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totals": {
+                      "type": "object",
+                      "description": "Aggregated usage across all keys in the organization for the selected window/filters",
+                      "properties": {
+                        "usage": {
+                          "type": "integer"
+                        },
+                        "paygo_cost_usd": {
+                          "type": "number"
+                        },
+                        "request_count": {
+                          "type": "integer"
+                        },
+                        "by_type": {
+                          "$ref": "#/components/schemas/UsageByType"
+                        }
+                      }
+                    },
+                    "keys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "description": "API key, masked to the last 5 characters"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Key name"
+                          },
+                          "usage": {
+                            "type": "integer"
+                          },
+                          "paygo_cost_usd": {
+                            "type": "number"
+                          },
+                          "request_count": {
+                            "type": "integer"
+                          },
+                          "by_type": {
+                            "$ref": "#/components/schemas/UsageByType"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid start_date; expected format YYYY-MM-DD.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Please authenticate with the organization owner's personal API key, not an organization API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Organization not found or access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "organization_name is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests - Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout - the usage lookup took too long",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ownerBearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UsageByType": {
+        "type": "object",
+        "description": "Breakdown per request type",
+        "properties": {
+          "search": {
+            "$ref": "#/components/schemas/UsageMetrics"
+          },
+          "crawl": {
+            "$ref": "#/components/schemas/UsageMetrics"
+          },
+          "extract": {
+            "$ref": "#/components/schemas/UsageMetrics"
+          },
+          "map": {
+            "$ref": "#/components/schemas/UsageMetrics"
+          },
+          "research": {
+            "$ref": "#/components/schemas/UsageMetrics"
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "UsageMetrics": {
+        "type": "object",
+        "properties": {
+          "usage": {
+            "type": "integer",
+            "description": "Credits consumed"
+          },
+          "paygo_cost_usd": {
+            "type": "number",
+            "description": "Pay-as-you-go cost in USD (overage credits billed at the account's per-credit rate)"
+          },
+          "request_count": {
+            "type": "integer",
+            "description": "Number of requests"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ownerBearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer authentication header in the form Bearer <token>. The token must be the **organization owner's personal API key** (from the owner's own personal account, not an organization key)."
+      }
+    }
+  }
+}

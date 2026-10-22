@@ -1,0 +1,22 @@
+{
+  "id": "public-web-v1",
+  "version": "1.0.0",
+  "track": "open-web-search",
+  "license": "CC0-1.0",
+  "provenance": "Original benchmark prompts authored for this repository and dedicated to the public domain under CC0-1.0. No user queries, account data, personal information, or copied document content.",
+  "purpose": "A small public-safe smoke dataset for protocol validation. Not representative enough to rank general search quality.",
+  "queries": [
+    { "id": "web-001", "category": "documentation", "query": "Node.js AbortSignal timeout official documentation" },
+    { "id": "web-002", "category": "documentation", "query": "HTTP Retry-After header specification" },
+    { "id": "web-003", "category": "documentation", "query": "W3C accessible table caption tutorial" },
+    { "id": "web-004", "category": "science", "query": "NASA explanation of lunar eclipses" },
+    { "id": "web-005", "category": "science", "query": "NOAA how ocean tides work" },
+    { "id": "web-006", "category": "reference", "query": "Unicode normalization forms specification" },
+    { "id": "web-007", "category": "reference", "query": "SI base units BIPM official reference" },
+    { "id": "web-008", "category": "navigation", "query": "MDN JavaScript Promise allSettled" },
+    { "id": "web-009", "category": "navigation", "query": "Internet Archive public domain book collections" },
+    { "id": "web-010", "category": "explanation", "query": "breadth first search algorithm explanation" },
+    { "id": "web-011", "category": "explanation", "query": "how lossless PNG compression works" },
+    { "id": "web-012", "category": "explanation", "query": "difference between solar day and sidereal day" }
+  ]
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "search",
+    "path": "/v1/search",
+    "method": "POST",
+    "response": "json",
+    "summary": "Returns a list of unified search results from web and news sources",
+    "source": "https://you.com/docs/openapi/web-search.json"
+  },
+  {
+    "name": "contents",
+    "path": "/v1/contents",
+    "method": "POST",
+    "response": "json",
+    "summary": "Returns the content of the web pages",
+    "source": "https://you.com/docs/openapi/contents.json"
+  },
+  {
+    "name": "answer",
+    "path": "/v1/answer",
+    "method": "POST",
+    "response": "json",
+    "summary": "Returns a synthesized answer with citations from web search results",
+    "source": "https://you.com/docs/openapi/answer.json"
+  },
+  {
+    "name": "research",
+    "path": "/v1/research",
+    "method": "POST",
+    "response": "json",
+    "summary": "Returns comprehensive research-grade answers with multi-step reasoning",
+    "source": "https://you.com/docs/openapi/research.json"
+  },
+  {
+    "name": "getResearchTask",
+    "path": "/v1/research/{task_id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get the status or result of a background research task",
+    "source": "https://you.com/docs/openapi/research.json"
+  },
+  {
+    "name": "streamResearchTask",
+    "path": "/v1/research/{task_id}/stream",
+    "method": "GET",
+    "response": "sse",
+    "summary": "Stream progress for a background research task",
+    "source": "https://you.com/docs/openapi/research.json"
+  },
+  {
+    "name": "financeResearch",
+    "path": "/v1/finance_research",
+    "method": "POST",
+    "response": "json",
+    "summary": "Returns comprehensive finance-grade research answers with multi-step reasoning",
+    "source": "https://you.com/docs/openapi/finance-research.json"
+  },
+  {
+    "name": "getAccountBalance",
+    "path": "/v1/billing/account_balance",
+    "method": "GET",
+    "response": "json",
+    "summary": "Returns the current credit balance for the billing entity",
+    "source": "https://you.com/docs/openapi/billing.json"
+  },
+  {
+    "name": "images",
+    "path": "/v1/images",
+    "method": "GET",
+    "response": "json",
+    "summary": "Returns a list of images hits for query",
+    "source": "https://you.com/docs/openapi/images.json"
+  }
+]

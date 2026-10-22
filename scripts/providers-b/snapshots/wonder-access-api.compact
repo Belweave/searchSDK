@@ -1,0 +1,484 @@
+
+h1 Organizations, workspaces, and access API
+
+h2 Session access and roles
+Action | Required role
+Create workspaces, rename an organization, manage billing | Organization owner or admin
+Promote/demote organization owners or admins | Organization owner; the last owner must remain
+Remove ordinary organization members | Organization owner or admin
+Invite an organization admin | Organization owner
+Invite an ordinary member | Organization owner or admin
+List or read invitations; revoke or resend a member invitation | Organization owner or admin
+Revoke or resend an admin invitation | Organization owner
+View organization usage | Organization owner or admin
+Rename a workspace, manage its members or API keys | Workspace admin, including inherited organization owner/admin access
+Leave an organization | The current member, unless they are its last owner
+
+h2 POST /v1/account/bootstrap
+Name | Location | Value | Required
+Idempotency-Key | header | string | Yes
+Field | Type | Present | Constraints
+provisioned | true | Yes | 
+organization_id | string or null | Yes | uuid
+workspace_id | string or null | Yes | uuid
+
+h2 GET /v1/me
+Field | Type | Present | Constraints
+user_id | string | Yes | uuid
+email | string | Yes | email
+status | active, disabled, unprovisioned | Yes | 
+provisioned | boolean | Yes | 
+compatibility | object | Yes | 
+compatibility.cli | object | Yes | Compatibility details for the WonderSearch CLI.
+compatibility.cli.api_major | integer | Yes | Major version of this API.
+compatibility.cli.minimum_cli_version | string | Yes | Oldest CLI version that works with this API.
+compatibility.cli.latest_stable_cli_version | string or null | Yes | Newest stable CLI release, or null when none is published.
+compatibility.cli.notices | array of object | Yes | Upgrade and deprecation notices; can be empty.
+compatibility.cli.notices[].id | string | Yes | 
+compatibility.cli.notices[].severity | upgrade, deprecation | Yes | 
+compatibility.cli.notices[].message | string | Yes | 
+compatibility.cli.notices[].effective_date | string | Optional | date-time
+compatibility.cli.notices[].documentation_url | string | Optional | uri
+
+h2 GET /v1/organizations
+Name | Location | Value | Required
+limit | query | integer | Optional
+cursor | query | string | Optional
+Field | Type | Present | Constraints
+data | array of object | Yes | 
+data[].id | string | Optional | uuid
+data[].version | string | Optional | 
+data[].created_at | string | Optional | date-time
+data[].updated_at | string | Optional | date-time
+data[].name | string | Optional | 
+data[].status | active | Optional | Suspended organizations are not returned.
+data[].tier | free, paid, credit_only | Optional | Organization billing type. Set by WonderSearch; it cannot be changed through the API.
+data[].search_limits | free, paid, unlimited | Optional | Organization search rate tier. Set by WonderSearch.
+data[].free_storage_policy_id | string | Optional | Identifier of the free storage allowance that applies to this organization. Set by WonderSearch.
+data[].created_by | string | Optional | uuid
+data[].bootstrap_user_id | string or null | Optional | uuid
+data[].role | owner, admin, member | Optional | 
+data[].etag | string | Optional | 
+next_cursor | string or null | Yes | 
+
+h2 GET /v1/organizations/{organization_id}
+Name | Location | Value | Required
+organization_id | path | string | Yes
+Field | Type | Present | Constraints
+id | string | Optional | uuid
+version | string | Optional | 
+created_at | string | Optional | date-time
+updated_at | string | Optional | date-time
+name | string | Optional | 
+status | active | Optional | Suspended organizations are not returned.
+tier | free, paid, credit_only | Optional | Organization billing type. Set by WonderSearch; it cannot be changed through the API.
+search_limits | free, paid, unlimited | Optional | Organization search rate tier. Set by WonderSearch.
+free_storage_policy_id | string | Optional | Identifier of the free storage allowance that applies to this organization. Set by WonderSearch.
+created_by | string | Optional | uuid
+bootstrap_user_id | string or null | Optional | uuid
+role | owner, admin, member | Optional | 
+
+h2 PATCH /v1/organizations/{organization_id}
+Name | Location | Value | Required
+organization_id | path | string | Yes
+If-Match | header | string | Yes
+Field | Type | Presence | Guidance
+name | string | Required | Maximum length: 120
+Field | Type | Present | Constraints
+id | string | Optional | uuid
+version | string | Optional | 
+created_at | string | Optional | date-time
+updated_at | string | Optional | date-time
+name | string | Optional | 
+status | active | Optional | Suspended organizations are not returned.
+tier | free, paid, credit_only | Optional | Organization billing type. Set by WonderSearch; it cannot be changed through the API.
+search_limits | free, paid, unlimited | Optional | Organization search rate tier. Set by WonderSearch.
+free_storage_policy_id | string | Optional | Identifier of the free storage allowance that applies to this organization. Set by WonderSearch.
+created_by | string | Optional | uuid
+bootstrap_user_id | string or null | Optional | uuid
+role | owner, admin, member | Optional | 
+
+h2 GET /v1/organizations/{organization_id}/members
+Name | Location | Value | Required
+organization_id | path | string | Yes
+limit | query | integer | Optional
+cursor | query | string | Optional
+Field | Type | Present | Constraints
+data | array of object | Yes | 
+data[].user_id | string | Optional | uuid
+data[].display_name | string or null | Optional | 
+data[].email | string or null | Optional | 
+data[].role | owner, admin, member | Optional | 
+data[].version | string | Optional | 
+data[].created_at | string | Optional | date-time
+data[].etag | string | Optional | 
+next_cursor | string or null | Yes | 
+
+h2 PATCH /v1/organizations/{organization_id}/members/{user_id}
+Name | Location | Value | Required
+organization_id | path | string | Yes
+user_id | path | string | Yes
+If-Match | header | string | Yes
+Field | Type | Presence | Guidance
+role | owner, admin, member | Required | Membership role to assign; see the role restrictions above.
+Field | Type | Present | Constraints
+user_id | string | Optional | uuid
+role | owner, admin, member | Optional | 
+version | string | Optional | 
+created_at | string | Optional | date-time
+
+h2 DELETE /v1/organizations/{organization_id}/members/{user_id}
+Name | Location | Value | Required
+organization_id | path | string | Yes
+user_id | path | string | Yes
+If-Match | header | string | Yes
+
+h2 GET /v1/organizations/{organization_id}/workspaces
+Name | Location | Value | Required
+organization_id | path | string | Yes
+limit | query | integer | Optional
+cursor | query | string | Optional
+Field | Type | Present | Constraints
+data | array of object | Yes | 
+data[].id | string | Optional | uuid
+data[].version | string | Optional | 
+data[].created_at | string | Optional | date-time
+data[].updated_at | string | Optional | date-time
+data[].organization_id | string | Optional | uuid
+data[].name | string | Optional | 
+data[].role | admin, editor, viewer | Optional | 
+data[].etag | string | Optional | 
+next_cursor | string or null | Yes | 
+
+h2 POST /v1/organizations/{organization_id}/workspaces
+Name | Location | Value | Required
+organization_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+name | string | Required | Maximum length: 120
+Field | Type | Present | Constraints
+id | string | Optional | uuid
+version | string | Optional | 
+created_at | string | Optional | date-time
+updated_at | string | Optional | date-time
+organization_id | string | Optional | uuid
+name | string | Optional | 
+role | admin, editor, viewer | Optional | 
+
+h2 GET /v1/workspaces/{workspace_id}
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+Field | Type | Present | Constraints
+id | string | Optional | uuid
+version | string | Optional | 
+created_at | string | Optional | date-time
+updated_at | string | Optional | date-time
+organization_id | string | Optional | uuid
+name | string | Optional | 
+role | admin, editor, viewer | Optional | 
+
+h2 PATCH /v1/workspaces/{workspace_id}
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+If-Match | header | string | Yes
+Field | Type | Presence | Guidance
+name | string | Required | Maximum length: 120
+Field | Type | Present | Constraints
+id | string | Optional | uuid
+version | string | Optional | 
+created_at | string | Optional | date-time
+updated_at | string | Optional | date-time
+organization_id | string | Optional | uuid
+name | string | Optional | 
+role | admin, editor, viewer | Optional | 
+
+h2 GET /v1/workspaces/{workspace_id}/inherited-members
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+limit | query | integer | Optional
+cursor | query | string | Optional
+Field | Type | Present | Constraints
+data | array of object | Yes | 
+data[].user_id | string | Optional | uuid
+data[].display_name | string or null | Optional | 
+data[].email | string or null | Optional | 
+data[].role | owner, admin | Optional | 
+data[].version | string | Optional | 
+data[].created_at | string | Optional | date-time
+data[].etag | string | Optional | 
+next_cursor | string or null | Yes | 
+
+h2 GET /v1/workspaces/{workspace_id}/members
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+limit | query | integer | Optional
+cursor | query | string | Optional
+Field | Type | Present | Constraints
+data | array of object | Yes | 
+data[].user_id | string | Optional | uuid
+data[].display_name | string or null | Optional | 
+data[].email | string or null | Optional | 
+data[].role | admin, editor, viewer | Optional | 
+data[].version | string | Optional | 
+data[].created_at | string | Optional | date-time
+data[].etag | string | Optional | 
+next_cursor | string or null | Yes | 
+inherited_access | string | Yes | Notes that organization owners and admins also have workspace admin access; see the inherited members list.
+
+h2 POST /v1/workspaces/{workspace_id}/members
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+user_id | string | Required | uuid
+role | admin, editor, viewer | Required | Membership role to assign; see the role restrictions above.
+Field | Type | Present | Constraints
+user_id | string | Optional | uuid
+role | admin, editor, viewer | Optional | 
+version | string | Optional | 
+created_at | string | Optional | date-time
+
+h2 PATCH /v1/workspaces/{workspace_id}/members/{user_id}
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+user_id | path | string | Yes
+If-Match | header | string | Yes
+Field | Type | Presence | Guidance
+role | admin, editor, viewer | Required | Membership role to assign; see the role restrictions above.
+Field | Type | Present | Constraints
+user_id | string | Optional | uuid
+role | admin, editor, viewer | Optional | 
+version | string | Optional | 
+created_at | string | Optional | date-time
+
+h2 DELETE /v1/workspaces/{workspace_id}/members/{user_id}
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+user_id | path | string | Yes
+If-Match | header | string | Yes
+
+h2 GET /v1/organizations/{organization_id}/invitations
+Name | Location | Value | Required
+organization_id | path | string | Yes
+limit | query | integer | Optional
+cursor | query | string | Optional
+Field | Type | Present | Constraints
+data | array of object | Yes | 
+data[].id | string | Optional | uuid
+data[].version | string | Optional | 
+data[].created_at | string | Optional | date-time
+data[].updated_at | string | Optional | date-time
+data[].organization_id | string | Optional | uuid
+data[].email | string | Optional | email
+data[].organization_role | admin, member | Optional | 
+data[].invited_by | string | Optional | uuid
+data[].status | pending, accepted, revoked, expired | Optional | 
+data[].expires_at | string | Optional | date-time
+data[].accepted_by | string or null | Optional | uuid
+data[].accepted_at | string or null | Optional | date-time
+data[].delivery_generation | integer | Optional | Minimum: 1
+data[].etag | string | Optional | 
+next_cursor | string or null | Yes | 
+
+h2 POST /v1/organizations/{organization_id}/invitations
+Name | Location | Value | Required
+organization_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+email | string | Required | Maximum length: 254. email
+organization_role | admin, member | Optional | Default: "member"
+workspaces | array of object | Optional | Workspace assignments applied when the invitation is accepted.
+Field | Type | Presence | Guidance
+workspace_id | string | Required | uuid
+role | admin, editor, viewer | Required | Membership role to assign; see the role restrictions above.
+Field | Type | Present | Constraints
+id | string | Optional | uuid
+version | string | Optional | 
+created_at | string | Optional | date-time
+updated_at | string | Optional | date-time
+organization_id | string | Optional | uuid
+email | string | Optional | email
+organization_role | admin, member | Optional | 
+invited_by | string | Optional | uuid
+status | pending, accepted, revoked, expired | Optional | 
+expires_at | string | Optional | date-time
+accepted_by | string or null | Optional | uuid
+accepted_at | string or null | Optional | date-time
+delivery_generation | integer | Optional | Minimum: 1
+delivery_status | queued | Optional | 
+
+h2 GET /v1/organizations/{organization_id}/invitations/{invitation_id}
+Name | Location | Value | Required
+organization_id | path | string | Yes
+invitation_id | path | string | Yes
+Field | Type | Present | Constraints
+id | string | Optional | uuid
+version | string | Optional | 
+created_at | string | Optional | date-time
+updated_at | string | Optional | date-time
+organization_id | string | Optional | uuid
+email | string | Optional | email
+organization_role | admin, member | Optional | 
+invited_by | string | Optional | uuid
+status | pending, accepted, revoked, expired | Optional | 
+expires_at | string | Optional | date-time
+accepted_by | string or null | Optional | uuid
+accepted_at | string or null | Optional | date-time
+delivery_generation | integer | Optional | Minimum: 1
+
+h2 DELETE /v1/organizations/{organization_id}/invitations/{invitation_id}
+Name | Location | Value | Required
+organization_id | path | string | Yes
+invitation_id | path | string | Yes
+If-Match | header | string | Yes
+
+h2 POST /v1/organizations/{organization_id}/invitations/{invitation_id}/resend
+Name | Location | Value | Required
+organization_id | path | string | Yes
+invitation_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Present | Constraints
+id | string | Optional | uuid
+version | string | Optional | 
+created_at | string | Optional | date-time
+updated_at | string | Optional | date-time
+organization_id | string | Optional | uuid
+email | string | Optional | email
+organization_role | admin, member | Optional | 
+invited_by | string | Optional | uuid
+status | pending, accepted, revoked, expired | Optional | 
+expires_at | string | Optional | date-time
+accepted_by | string or null | Optional | uuid
+accepted_at | string or null | Optional | date-time
+delivery_generation | integer | Optional | Minimum: 1
+delivery_status | queued | Optional | 
+
+h2 POST /v1/invitations/preview
+Field | Type | Presence | Guidance
+token | string | Required | Token from the recipient’s invitation link.
+Field | Type | Present | Constraints
+organization_id | string | Yes | uuid
+organization_name | string | Optional | Returned for a pending invitation.
+organization_role | admin, member | Optional | Returned for a pending invitation.
+workspaces | array of object | Optional | Workspace assignments applied on acceptance; can be empty.
+workspaces[].workspace_id | string | Yes | uuid
+workspaces[].role | admin, editor, viewer | Yes | 
+accepted | true | Optional | Returned instead of the preview fields when the signed-in user has already accepted this invitation.
+
+h2 POST /v1/invitations/accept
+Name | Location | Value | Required
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+token | string | Required | Token from the recipient’s invitation link.
+Field | Type | Present | Constraints
+organization_id | string | Yes | uuid
+accepted | true | Yes | 
+
+h2 GET /v1/workspaces/{workspace_id}/api-keys
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+limit | query | integer | Optional
+cursor | query | string | Optional
+Field | Type | Present | Constraints
+data | array of object | Yes | 
+data[].id | string | Optional | uuid
+data[].organization_id | string | Optional | uuid
+data[].workspace_id | string | Optional | uuid
+data[].name | string | Optional | 
+data[].display_prefix | string | Optional | 
+data[].permission | search, read_write | Optional | 
+data[].created_by | string | Optional | uuid
+data[].expires_at | string or null | Optional | date-time
+data[].revoked_at | string or null | Optional | date-time
+data[].created_at | string | Optional | date-time
+next_cursor | string or null | Yes | 
+
+h2 POST /v1/workspaces/{workspace_id}/api-keys
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+name | string | Required | Maximum length: 120
+permission | search, read_write | Required | search permits reads/search; read_write also permits content changes.
+expires_at | string | Optional | date-time in the future; otherwise 400 invalid_expiry. Omit for a key that does not expire.
+Field | Type | Present | Constraints
+id | string | Optional | uuid
+organization_id | string | Optional | uuid
+workspace_id | string | Optional | uuid
+name | string | Optional | 
+display_prefix | string | Optional | 
+permission | search, read_write | Optional | 
+created_by | string | Optional | uuid
+expires_at | string or null | Optional | date-time
+revoked_at | string or null | Optional | date-time
+created_at | string | Optional | date-time
+secret | string | Optional | Initial successful creation only; never returned in lists or replays.
+secret_available | boolean | Optional | 
+
+h2 DELETE /v1/workspaces/{workspace_id}/api-keys/{key_id}
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+key_id | path | string | Yes
+
+h2 GET /v1/workspaces/{workspace_id}/overview
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+Field | Type | Present | Constraints
+workspace_id | string | Yes | uuid
+drives_count | integer | Yes | Minimum: 0
+documents_count | integer | Yes | Minimum: 0
+source_bytes | string | Yes | 
+indexed_documents_count | integer | Yes | Minimum: 0
+pending_documents_count | integer | Yes | Minimum: 0
+failed_documents_count | integer | Yes | Minimum: 0
+last_searchable_at | string or null | Yes | date-time
+drives | array of object | Yes | 
+drives[].id | string | Yes | uuid
+drives[].name | string | Yes | 
+drives[].status | creating, ready, failed | Yes | 
+drives[].indexed_document_count | integer | Yes | Minimum: 0
+drives[].documents_count | integer | Yes | Minimum: 0
+drives[].last_searchable_at | string or null | Yes | date-time
+
+h2 GET /v1/organizations/{organization_id}/usage
+Name | Location | Value | Required
+organization_id | path | string | Yes
+from | query | UTC date, YYYY-MM-DD, inclusive | Optional
+to | query | UTC date, YYYY-MM-DD, exclusive; range 1–90 days | Optional
+workspace_id | query | string | Optional
+key_id | query | API key UUID, or session for session activity | Optional
+Field | Type | Present | Constraints
+period | object | Yes | 
+period.from | string | Yes | date
+period.to | string | Yes | date
+summary | object | Yes | 
+summary.searches | integer | Yes | Minimum: 0
+summary.completed | integer | Yes | Minimum: 0
+summary.failed | integer | Yes | Minimum: 0
+summary.pending | integer | Yes | Minimum: 0
+summary.free_searches | integer | Yes | Minimum: 0
+summary.cost_usd | string | Yes | 
+daily | array of object | Yes | 
+daily[].date | string | Yes | date
+daily[].searches | integer | Yes | Minimum: 0
+daily[].cost_usd | string | Yes | 
+workspaces | array of object | Yes | 
+workspaces[].workspace_id | string | Yes | uuid
+workspaces[].name | string | Yes | 
+workspaces[].searches | integer | Yes | Minimum: 0
+workspaces[].cost_usd | string | Yes | 
+api_keys | array of object | Yes | 
+api_keys[].key_id | string or null | Yes | uuid
+api_keys[].name | string or null | Yes | 
+api_keys[].workspace_id | string | Yes | uuid
+api_keys[].searches | integer | Yes | Minimum: 0
+api_keys[].cost_usd | string | Yes | 
+filter_options | object | Yes | 
+filter_options.workspaces | array of object | Yes | 
+filter_options.workspaces[].id | string | Yes | uuid
+filter_options.workspaces[].name | string | Yes | 
+filter_options.api_keys | array of object | Yes | 
+filter_options.api_keys[].id | string | Yes | uuid
+filter_options.api_keys[].name | string | Yes | 
+filter_options.api_keys[].workspace_id | string | Yes | uuid
+filter_options.api_keys[].revoked_at | string or null | Yes | date-time

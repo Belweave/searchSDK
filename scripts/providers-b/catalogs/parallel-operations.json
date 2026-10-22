@@ -1,0 +1,314 @@
+[
+  {
+    "name": "search",
+    "path": "/v1/search",
+    "method": "POST",
+    "response": "json",
+    "summary": "Search",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "imageSearch",
+    "path": "/v1/images/search",
+    "method": "POST",
+    "response": "json",
+    "summary": "Image search",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "extract",
+    "path": "/v1/extract",
+    "method": "POST",
+    "response": "json",
+    "summary": "Extract",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "createTaskGroup",
+    "path": "/v1/tasks/groups",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create Task Group",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "retrieveTaskGroup",
+    "path": "/v1/tasks/groups/{taskgroup_id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Retrieve Task Group",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "streamTaskGroupEvents",
+    "path": "/v1/tasks/groups/{taskgroup_id}/events",
+    "method": "GET",
+    "response": "sse",
+    "summary": "Stream Task Group Events",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "addRunsToTaskGroup",
+    "path": "/v1/tasks/groups/{taskgroup_id}/runs",
+    "method": "POST",
+    "response": "json",
+    "summary": "Add Runs to Task Group",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "fetchTaskGroupRuns",
+    "path": "/v1/tasks/groups/{taskgroup_id}/runs",
+    "method": "GET",
+    "response": "sse",
+    "summary": "Fetch Task Group Runs",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "retrieveTaskGroupRun",
+    "path": "/v1/tasks/groups/{taskgroup_id}/runs/{run_id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Retrieve Task Group Run",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "createTaskRun",
+    "path": "/v1/tasks/runs",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create Task Run",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "retrieveTaskRun",
+    "path": "/v1/tasks/runs/{run_id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Retrieve Task Run",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "streamTaskRunEvents",
+    "path": "/v1/tasks/runs/{run_id}/events",
+    "method": "GET",
+    "response": "sse",
+    "summary": "Stream Task Run Events",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "retrieveTaskRunInput",
+    "path": "/v1/tasks/runs/{run_id}/input",
+    "method": "GET",
+    "response": "json",
+    "summary": "Retrieve Task Run Input",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "retrieveTaskRunResult",
+    "path": "/v1/tasks/runs/{run_id}/result",
+    "method": "GET",
+    "response": "json",
+    "summary": "Retrieve Task Run Result",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "fastEntitySearch",
+    "path": "/v1beta/findall/entity-search",
+    "method": "POST",
+    "response": "json",
+    "summary": "Fast Entity Search",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "ingestFindAllRun",
+    "path": "/v1beta/findall/ingest",
+    "method": "POST",
+    "response": "json",
+    "summary": "Ingest FindAll Run",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "createFindAllRun",
+    "path": "/v1beta/findall/runs",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create FindAll Run",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "retrieveFindAllRunStatus",
+    "path": "/v1beta/findall/runs/{findall_id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Retrieve FindAll Run Status",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "cancelFindAllRun",
+    "path": "/v1beta/findall/runs/{findall_id}/cancel",
+    "method": "POST",
+    "response": "json",
+    "summary": "Cancel FindAll Run",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "addEnrichmentToFindAllRun",
+    "path": "/v1beta/findall/runs/{findall_id}/enrich",
+    "method": "POST",
+    "response": "json",
+    "summary": "Add Enrichment to FindAll Run",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "streamFindAllEvents",
+    "path": "/v1beta/findall/runs/{findall_id}/events",
+    "method": "GET",
+    "response": "sse",
+    "summary": "Stream FindAll Events",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "extendFindAllRun",
+    "path": "/v1beta/findall/runs/{findall_id}/extend",
+    "method": "POST",
+    "response": "json",
+    "summary": "Extend FindAll Run",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "findAllRunResult",
+    "path": "/v1beta/findall/runs/{findall_id}/result",
+    "method": "GET",
+    "response": "json",
+    "summary": "FindAll Run Result",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "getFindAllRunSchema",
+    "path": "/v1beta/findall/runs/{findall_id}/schema",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get FindAll Run Schema",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "createMonitor",
+    "path": "/v1/monitors",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create Monitor",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "listMonitors",
+    "path": "/v1/monitors",
+    "method": "GET",
+    "response": "json",
+    "summary": "List Monitors",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "monitorStats",
+    "path": "/v1/monitors/stats",
+    "method": "GET",
+    "response": "json",
+    "summary": "Monitor Stats",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "retrieveMonitor",
+    "path": "/v1/monitors/{monitor_id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Retrieve Monitor",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "cancelMonitor",
+    "path": "/v1/monitors/{monitor_id}/cancel",
+    "method": "POST",
+    "response": "json",
+    "summary": "Cancel Monitor",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "listMonitorEvents",
+    "path": "/v1/monitors/{monitor_id}/events",
+    "method": "GET",
+    "response": "json",
+    "summary": "List Monitor Events",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "triggerMonitorRun",
+    "path": "/v1/monitors/{monitor_id}/trigger",
+    "method": "POST",
+    "response": "json",
+    "summary": "Trigger Monitor Run",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "updateMonitor",
+    "path": "/v1/monitors/{monitor_id}/update",
+    "method": "POST",
+    "response": "json",
+    "summary": "Update Monitor",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "clearMemory",
+    "path": "/v1beta/memory/clear",
+    "method": "POST",
+    "response": "json",
+    "summary": "Clear Memory",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "evictFromMemory",
+    "path": "/v1beta/memory/evict",
+    "method": "POST",
+    "response": "json",
+    "summary": "Evict from Memory",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "retrieveMemory",
+    "path": "/v1beta/memory/retrieve",
+    "method": "POST",
+    "response": "json",
+    "summary": "Retrieve Memory",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "chatCompletions",
+    "path": "/v1beta/chat/completions",
+    "method": "POST",
+    "response": "json",
+    "summary": "Chat Completions",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "chatCompletionsStream",
+    "path": "/v1beta/chat/completions",
+    "method": "POST",
+    "response": "sse",
+    "summary": "Chat Completions",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "createResponse",
+    "path": "/v1/responses",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create Response",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  },
+  {
+    "name": "createResponseStream",
+    "path": "/v1/responses",
+    "method": "POST",
+    "response": "sse",
+    "summary": "Create Response",
+    "source": "https://docs.parallel.ai/public-openapi.json"
+  }
+]

@@ -1,0 +1,96 @@
+[
+  {
+    "name": "search",
+    "method": "GET",
+    "path": "/search.json",
+    "source": "https://serpapi.com/search-api",
+    "response": "json"
+  },
+  {
+    "name": "searchHtml",
+    "method": "GET",
+    "path": "/search.html",
+    "source": "https://serpapi.com/search-api",
+    "response": "text"
+  },
+  {
+    "name": "searchMarkdown",
+    "method": "GET",
+    "path": "/search.md",
+    "source": "https://serpapi.com/search-api",
+    "response": "text"
+  },
+  {
+    "name": "searchPixelPositions",
+    "method": "GET",
+    "path": "/search.json_with_pixel_position",
+    "source": "https://serpapi.com/search-api",
+    "response": "json"
+  },
+  {
+    "name": "getSearch",
+    "method": "GET",
+    "path": "/searches/{search_id}.json",
+    "source": "https://serpapi.com/search-api",
+    "response": "json"
+  },
+  {
+    "name": "getSearchHtml",
+    "method": "GET",
+    "path": "/searches/{search_id}.html",
+    "source": "https://serpapi.com/search-api",
+    "response": "text"
+  },
+  {
+    "name": "getSearchPixelPositions",
+    "method": "GET",
+    "path": "/searches/{search_id}.json_with_pixel_position",
+    "source": "https://serpapi.com/search-api",
+    "response": "json"
+  },
+  {
+    "name": "locations",
+    "method": "GET",
+    "path": "/locations.json",
+    "source": "https://serpapi.com/search-api",
+    "response": "json"
+  },
+  {
+    "name": "account",
+    "method": "GET",
+    "path": "/account.json",
+    "source": "https://serpapi.com/search-api",
+    "response": "json"
+  },
+  {
+    "name": "uploadImage",
+    "method": "POST",
+    "path": "/image",
+    "source": "https://serpapi.com/search-api",
+    "response": "json"
+  },
+  {
+    "name": "google",
+    "method": "GET",
+    "path": "/search.json",
+    "source": "https://serpapi.com/search-api",
+    "response": "json",
+    "aliasOf": "search"
+  },
+  {
+    "name": "extract",
+    "method": "GET",
+    "path": "/search.json",
+    "source": "https://serpapi.com/extract-api",
+    "response": "json",
+    "aliasOf": "search"
+  },
+  {
+    "name": "extractMarkdown",
+    "method": "GET",
+    "path": "/search.md",
+    "source": "https://serpapi.com/extract-api",
+    "response": "text",
+    "aliasOf": "searchMarkdown"
+  }
+]

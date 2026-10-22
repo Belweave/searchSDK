@@ -1,0 +1,47 @@
+{
+  "protocolVersion": "0.2.0-draft",
+  "dataset": "public-web-v1",
+  "seed": 1729,
+  "runtime": {
+    "environment": "local-fixture",
+    "region": "not-measured",
+    "machineClass": "not-recorded"
+  },
+  "execution": {
+    "resultDepth": 10,
+    "warmupsPerProvider": 1,
+    "runs": 3,
+    "concurrency": 1,
+    "timeoutMs": 15000,
+    "minIntervalMs": 1000,
+    "maxRequests": 600,
+    "maxDurationMs": 1800000,
+    "maxSpendUsd": 0,
+    "retry": "off",
+    "cache": "off",
+    "deduplicate": false,
+    "fallback": "off"
+  },
+  "providers": [
+    { "id": "context", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "tinyfish", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "exa", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "tavily", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "brave", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "perplexity", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "parallel", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "linkup", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "firecrawl", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "you", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "serper", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "serpapi", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "valyu", "plan": "unverified", "reservationUsdPerRequest": null },
+    { "id": "searxng", "plan": "unverified", "reservationUsdPerRequest": null, "instanceAlias": "not-configured", "engineManifestSha256": null },
+    { "id": "wondersearch", "plan": "unverified", "reservationUsdPerRequest": null }
+  ],
+  "disclosures": {
+    "funding": "not-declared",
+    "providerCredits": "not-declared",
+    "pricingVerifiedOn": null
+  }
+}

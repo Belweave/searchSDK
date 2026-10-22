@@ -1,0 +1,620 @@
+{
+  "tagName": "AI Search",
+  "tagDisplayName": "Answers",
+  "tagDescription": "<p>API for AI-generated answers backed by real-time web search and verifiable sources</p>",
+  "path": "/v1/chat/completions",
+  "method": "POST",
+  "operationId": "openai_chat_completion_v1_chat_completions_post",
+  "summary": " ",
+  "description": "",
+  "deprecated": false,
+  "serverUrl": "https://api.search.brave.com/res",
+  "authParams": [],
+  "headerParams": [],
+  "queryParams": [],
+  "pathParams": [],
+  "requestBody": {
+    "required": true,
+    "description": "",
+    "schema": {
+      "$ref": "#/components/schemas/OpenAIChatRequest"
+    }
+  },
+  "responses": [
+    {
+      "statusCode": "200",
+      "description": "Successful Response",
+      "schema": {
+        "$ref": "#/components/schemas/OpenAIChatResponse"
+      }
+    },
+    {
+      "statusCode": "400",
+      "description": "Bad Request",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    },
+    {
+      "statusCode": "402",
+      "description": "Payment Required",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    },
+    {
+      "statusCode": "403",
+      "description": "Forbidden",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    },
+    {
+      "statusCode": "404",
+      "description": "Not Found",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    },
+    {
+      "statusCode": "422",
+      "description": "Unprocessable Entity",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    },
+    {
+      "statusCode": "429",
+      "description": "Too Many Requests",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    }
+  ],
+  "schemas": {
+    "APIErrorCode": {
+      "type": "string",
+      "enum": [
+        "INTERNAL",
+        "QUOTA_LIMITED",
+        "RATE_LIMITED",
+        "SUBSCRIPTION_TOKEN_INVALID",
+        "SUBSCRIPTION_NOT_FOUND",
+        "RESOURCE_NOT_ALLOWED",
+        "OPTION_NOT_IN_PLAN",
+        "USAGE_LIMIT_EXCEEDED",
+        "INVALID_URL",
+        "CREDIT_EXHAUSTED"
+      ],
+      "title": "APIErrorCode"
+    },
+    "APIErrorModel": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Id",
+          "description": "A unique identifier for this particular occurrence of the problem."
+        },
+        "status": {
+          "type": "integer",
+          "title": "Status",
+          "description": "The HTTP status code applicable to this problem, expressed as a string value."
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Detail",
+          "description": "Explanation specific to this occurrence of the problem. Like title, this field’s value can be localized."
+        },
+        "meta": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Meta",
+          "description": "A meta object containing non-standard meta-information about the error."
+        },
+        "code": {
+          "$ref": "#/components/schemas/APIErrorCode",
+          "description": "An application-specific error code, expressed as a string value."
+        }
+      },
+      "type": "object",
+      "required": [
+        "id",
+        "status",
+        "code"
+      ],
+      "title": "APIErrorModel"
+    },
+    "APIErrorResponse": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Type",
+          "default": "ErrorResponse"
+        },
+        "error": {
+          "$ref": "#/components/schemas/APIErrorModel"
+        },
+        "time": {
+          "type": "integer",
+          "title": "Time",
+          "default": 0
+        }
+      },
+      "type": "object",
+      "required": [
+        "error"
+      ],
+      "title": "APIErrorResponse"
+    },
+    "ApproximateUserLocation": {
+      "properties": {
+        "city": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "City"
+        },
+        "country": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Country"
+        },
+        "region": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Region"
+        },
+        "timezone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Timezone"
+        }
+      },
+      "type": "object",
+      "title": "ApproximateUserLocation"
+    },
+    "ChoiceChunk": {
+      "properties": {
+        "delta": {
+          "$ref": "#/components/schemas/Delta"
+        },
+        "finish_reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "stop",
+                "length"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Finish Reason"
+        }
+      },
+      "type": "object",
+      "required": [
+        "delta"
+      ],
+      "title": "ChoiceChunk"
+    },
+    "Delta": {
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "assistant"
+          ],
+          "const": "assistant",
+          "title": "Role",
+          "default": "assistant"
+        },
+        "content": {
+          "type": "string",
+          "title": "Content"
+        }
+      },
+      "type": "object",
+      "required": [
+        "content"
+      ],
+      "title": "Delta"
+    },
+    "OpenAIChatRequest": {
+      "properties": {
+        "messages": {
+          "items": {
+            "$ref": "#/components/schemas/UserMessage"
+          },
+          "type": "array",
+          "maxItems": 1,
+          "minItems": 1,
+          "title": "Messages",
+          "description": "The conversation so far. Exactly one <code>user</code> message is supported, e.g. <code>[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Explain quantum computing&quot;}]</code>."
+        },
+        "model": {
+          "type": "string",
+          "enum": [
+            "brave-pro",
+            "brave"
+          ],
+          "title": "Model",
+          "description": "Model ID used to generate the response.",
+          "default": "brave-pro"
+        },
+        "max_completion_tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Max Completion Tokens"
+        },
+        "metadata": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Metadata",
+          "description": "Accepted for OpenAI SDK compatibility and currently ignored: the pairs are not stored or returned."
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Seed",
+          "description": "Accepted for OpenAI SDK compatibility and currently ignored: answers are not reproducible."
+        },
+        "stream": {
+          "type": "boolean",
+          "title": "Stream",
+          "default": true
+        },
+        "web_search_options": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/WebSearchOptions"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "country": {
+          "type": "string",
+          "title": "Country",
+          "default": "us"
+        },
+        "language": {
+          "type": "string",
+          "title": "Language",
+          "default": "en"
+        },
+        "safesearch": {
+          "type": "string",
+          "title": "Safesearch",
+          "default": "moderate"
+        },
+        "enable_entities": {
+          "type": "boolean",
+          "title": "Enable Entities",
+          "description": "Whether to include inline entity tags in the answer. Requires <code>stream=true</code> and is not supported in research mode.",
+          "default": false
+        },
+        "enable_citations": {
+          "type": "boolean",
+          "title": "Enable Citations",
+          "description": "Whether to include inline citation tags in the answer. Requires <code>stream=true</code> and is not supported in research mode.",
+          "default": false
+        },
+        "enable_research": {
+          "type": "boolean",
+          "title": "Enable Research",
+          "description": "Whether to answer with iterative deep research instead of a single search. Requires <code>stream=true</code>.",
+          "default": false
+        },
+        "research_allow_thinking": {
+          "type": "boolean",
+          "title": "Research Allow Thinking",
+          "description": "Accepted for compatibility. Ignored by the mixer engine behind this API, which always runs research with extended thinking off.",
+          "default": true
+        },
+        "research_maximum_number_of_tokens_per_query": {
+          "type": "integer",
+          "maximum": 16384,
+          "minimum": 1024,
+          "title": "Research Maximum Number Of Tokens Per Query",
+          "description": "Maximum number of tokens to gather per research query.",
+          "default": 8192
+        },
+        "research_maximum_number_of_queries": {
+          "type": "integer",
+          "maximum": 50,
+          "minimum": 1,
+          "title": "Research Maximum Number Of Queries",
+          "description": "Maximum number of search queries research mode may issue in total.",
+          "default": 20
+        },
+        "research_maximum_number_of_iterations": {
+          "type": "integer",
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Research Maximum Number Of Iterations",
+          "description": "Maximum number of research iterations.",
+          "default": 4
+        },
+        "research_maximum_number_of_seconds": {
+          "type": "integer",
+          "maximum": 300,
+          "minimum": 1,
+          "title": "Research Maximum Number Of Seconds",
+          "description": "Time budget for research, in seconds.",
+          "default": 180
+        },
+        "research_maximum_number_of_results_per_query": {
+          "type": "integer",
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Research Maximum Number Of Results Per Query",
+          "description": "Maximum number of search results to consider per research query.",
+          "default": 30
+        }
+      },
+      "type": "object",
+      "required": [
+        "messages"
+      ],
+      "title": "OpenAIChatRequest"
+    },
+    "OpenAIChatResponse": {
+      "properties": {
+        "model": {
+          "type": "string",
+          "enum": [
+            "brave-pro",
+            "brave"
+          ],
+          "title": "Model",
+          "default": "brave-pro"
+        },
+        "system_fingerprint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "System Fingerprint"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/components/schemas/ChoiceChunk"
+          },
+          "type": "array",
+          "title": "Choices"
+        },
+        "created": {
+          "type": "integer",
+          "title": "Created"
+        },
+        "id": {
+          "type": "string",
+          "title": "Id"
+        },
+        "object": {
+          "type": "string",
+          "enum": [
+            "chat.completion.chunk"
+          ],
+          "const": "chat.completion.chunk",
+          "title": "Object",
+          "default": "chat.completion.chunk"
+        },
+        "usage": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/OpenAIUsage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object",
+      "required": [
+        "choices",
+        "created",
+        "id"
+      ],
+      "title": "OpenAIChatResponse"
+    },
+    "OpenAICompletionTokensDetails": {
+      "properties": {
+        "reasoning_tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reasoning Tokens"
+        }
+      },
+      "type": "object",
+      "title": "OpenAICompletionTokensDetails"
+    },
+    "OpenAIUsage": {
+      "properties": {
+        "completion_tokens": {
+          "type": "integer",
+          "title": "Completion Tokens"
+        },
+        "prompt_tokens": {
+          "type": "integer",
+          "title": "Prompt Tokens"
+        },
+        "total_tokens": {
+          "type": "integer",
+          "title": "Total Tokens"
+        },
+        "completion_tokens_details": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/OpenAICompletionTokensDetails"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object",
+      "required": [
+        "completion_tokens",
+        "prompt_tokens",
+        "total_tokens"
+      ],
+      "title": "OpenAIUsage"
+    },
+    "UserLocation": {
+      "properties": {
+        "approximate": {
+          "$ref": "#/components/schemas/ApproximateUserLocation"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "approximate"
+          ],
+          "const": "approximate",
+          "title": "Type",
+          "default": "approximate"
+        }
+      },
+      "type": "object",
+      "required": [
+        "approximate"
+      ],
+      "title": "UserLocation"
+    },
+    "UserMessage": {
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "user"
+          ],
+          "const": "user",
+          "title": "Role",
+          "default": "user"
+        },
+        "content": {
+          "type": "string",
+          "title": "Content"
+        }
+      },
+      "type": "object",
+      "required": [
+        "content"
+      ],
+      "title": "UserMessage"
+    },
+    "WebSearchOptions": {
+      "properties": {
+        "search_context_size": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Search Context Size"
+        },
+        "user_location": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/UserLocation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object",
+      "title": "WebSearchOptions"
+    }
+  },
+  "methodVariants": [
+    {
+      "method": "post",
+      "href": "/api-reference/ai/answers",
+      "active": true
+    }
+  ]
+}

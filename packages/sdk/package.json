@@ -1,0 +1,164 @@
+{
+  "name": "@belweave/search-sdk",
+  "version": "0.1.0-alpha.0",
+  "private": true,
+  "type": "module",
+  "description": "Typed multi-provider search and provider-native API clients, with explicit reliability policies.",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=24"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./exa": {
+      "types": "./dist/exa.d.ts",
+      "import": "./dist/exa.js"
+    },
+    "./tavily": {
+      "types": "./dist/tavily.d.ts",
+      "import": "./dist/tavily.js"
+    },
+    "./brave": {
+      "types": "./dist/brave.d.ts",
+      "import": "./dist/brave.js"
+    },
+    "./context": {
+      "types": "./dist/context.d.ts",
+      "import": "./dist/context.js"
+    },
+    "./tinyfish": {
+      "types": "./dist/tinyfish.d.ts",
+      "import": "./dist/tinyfish.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "import": "./dist/testing.js"
+    },
+    "./perplexity": {
+      "types": "./dist/perplexity.d.ts",
+      "import": "./dist/perplexity.js"
+    },
+    "./parallel": {
+      "types": "./dist/parallel.d.ts",
+      "import": "./dist/parallel.js"
+    },
+    "./linkup": {
+      "types": "./dist/linkup.d.ts",
+      "import": "./dist/linkup.js"
+    },
+    "./firecrawl": {
+      "types": "./dist/firecrawl.d.ts",
+      "import": "./dist/firecrawl.js"
+    },
+    "./you": {
+      "types": "./dist/you.d.ts",
+      "import": "./dist/you.js"
+    },
+    "./serper": {
+      "types": "./dist/serper.d.ts",
+      "import": "./dist/serper.js"
+    },
+    "./serpapi": {
+      "types": "./dist/serpapi.d.ts",
+      "import": "./dist/serpapi.js"
+    },
+    "./wondersearch": {
+      "types": "./dist/wondersearch.d.ts",
+      "import": "./dist/wondersearch.js"
+    },
+    "./native-transport": {
+      "types": "./dist/native-transport.d.ts",
+      "import": "./dist/native-transport.js"
+    },
+    "./durable": {
+      "types": "./dist/durable.d.ts",
+      "import": "./dist/durable.js"
+    },
+    "./native-exa": {
+      "types": "./dist/native-exa.d.ts",
+      "import": "./dist/native-exa.js"
+    },
+    "./native-tavily": {
+      "types": "./dist/native-tavily.d.ts",
+      "import": "./dist/native-tavily.js"
+    },
+    "./native-brave": {
+      "types": "./dist/native-brave.d.ts",
+      "import": "./dist/native-brave.js"
+    },
+    "./native-context": {
+      "types": "./dist/native-context.d.ts",
+      "import": "./dist/native-context.js"
+    },
+    "./native-tinyfish": {
+      "types": "./dist/native-tinyfish.d.ts",
+      "import": "./dist/native-tinyfish.js"
+    },
+    "./native-perplexity": {
+      "types": "./dist/native-perplexity.d.ts",
+      "import": "./dist/native-perplexity.js"
+    },
+    "./native-parallel": {
+      "types": "./dist/native-parallel.d.ts",
+      "import": "./dist/native-parallel.js"
+    },
+    "./native-linkup": {
+      "types": "./dist/native-linkup.d.ts",
+      "import": "./dist/native-linkup.js"
+    },
+    "./native-firecrawl": {
+      "types": "./dist/native-firecrawl.d.ts",
+      "import": "./dist/native-firecrawl.js"
+    },
+    "./native-you": {
+      "types": "./dist/native-you.d.ts",
+      "import": "./dist/native-you.js"
+    },
+    "./native-serper": {
+      "types": "./dist/native-serper.d.ts",
+      "import": "./dist/native-serper.js"
+    },
+    "./native-serpapi": {
+      "types": "./dist/native-serpapi.d.ts",
+      "import": "./dist/native-serpapi.js"
+    },
+    "./native-wondersearch": {
+      "types": "./dist/native-wondersearch.d.ts",
+      "import": "./dist/native-wondersearch.js"
+    },
+    "./durable-node": {
+      "types": "./dist/durable-node.d.ts",
+      "import": "./dist/durable-node.js"
+    },
+    "./valyu": {
+      "types": "./dist/valyu.d.ts",
+      "import": "./dist/valyu.js"
+    },
+    "./searxng": {
+      "types": "./dist/searxng.d.ts",
+      "import": "./dist/searxng.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test --test-concurrency=1 test/*.test.mjs"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Belweave/searchSDK.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://searchsdk.dev",
+  "bugs": {
+    "url": "https://github.com/Belweave/searchSDK/issues"
+  }
+}

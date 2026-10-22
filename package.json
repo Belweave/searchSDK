@@ -1,0 +1,42 @@
+{
+  "name": "searchsdk-workspace",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": "^24.22.1 || ^26.12.1"
+  },
+  "scripts": {
+    "check:runtime": "node scripts/check-runtime.mjs",
+    "dev": "npm run dev -w @belweave/search-sdk-site",
+    "build:sdk": "npm run build -w @belweave/search-sdk",
+    "build": "npm run check:runtime && npm run build:sdk && npm run build -w @belweave/search-sdk-site",
+    "test": "npm run build:sdk && npm test -w @belweave/search-sdk",
+    "test:package": "node scripts/verify-package.mjs",
+    "test:docs": "node apps/web/src/docs/verify-docs.mjs",
+    "test:site": "node scripts/verify-site.mjs",
+    "typecheck": "npm run typecheck -w @belweave/search-sdk-site",
+    "check": "npm run check:public && npm run check:generators && npm run test && npm run typecheck && npm run build && npm run test:docs && npm run test:site && npm run test:package && npm run test:benchmarks",
+    "build:vercel": "npm run check && node scripts/vercel-output.mjs",
+    "benchmark:plan": "node benchmarks/run.mjs --mode plan",
+    "benchmark:fixture": "node benchmarks/run.mjs --mode fixture",
+    "test:benchmarks": "node --test --test-concurrency=1 benchmarks/test/*.test.mjs",
+    "check:public": "node scripts/verify-public-tree.mjs",
+    "check:generators": "python3 -B scripts/providers-a/generate.py --check && python3 -B scripts/providers-b/verify.py"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Belweave/searchSDK.git"
+  },
+  "homepage": "https://searchsdk.dev",
+  "bugs": {
+    "url": "https://github.com/Belweave/searchSDK/issues"
+  }
+}

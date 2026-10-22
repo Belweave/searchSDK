@@ -1,0 +1,193 @@
+[
+  {
+    "knowledgeGraph": {
+      "title": "string",
+      "type": "string",
+      "website": "string",
+      "imageUrl": "string",
+      "description": "string",
+      "descriptionSource": "string",
+      "descriptionLink": "string",
+      "attributes": {
+        "Written in": "string",
+        "Category": "string",
+        "Date launched": "string"
+      }
+    },
+    "organic": [
+      {
+        "title": "string",
+        "link": "string",
+        "snippet": "string",
+        "sitelinks": [
+          {
+            "title": "string",
+            "link": "string"
+          }
+        ],
+        "position": "number"
+      }
+    ],
+    "peopleAlsoAsk": [
+      {
+        "question": "string",
+        "snippet": "string",
+        "title": "string",
+        "link": "string"
+      }
+    ],
+    "relatedSearches": [
+      {
+        "query": "string"
+      }
+    ]
+  },
+  {
+    "images": [
+      {
+        "title": "string",
+        "imageUrl": "string",
+        "imageWidth": "number",
+        "imageHeight": "number",
+        "thumbnailUrl": "string",
+        "thumbnailWidth": "number",
+        "thumbnailHeight": "number",
+        "source": "string",
+        "domain": "string",
+        "link": "string",
+        "googleUrl": "string",
+        "position": "number"
+      }
+    ]
+  },
+  {
+    "news": [
+      {
+        "title": "string",
+        "link": "string",
+        "snippet": "string",
+        "date": "string",
+        "source": "string",
+        "imageUrl": "string",
+        "position": "number"
+      }
+    ]
+  },
+  {
+    "ll": "string",
+    "places": [
+      {
+        "position": "number",
+        "title": "string",
+        "address": "string",
+        "latitude": "number",
+        "longitude": "number",
+        "rating": "number",
+        "ratingCount": "number",
+        "type": "string",
+        "types": [
+          "string"
+        ],
+        "website": "string",
+        "phoneNumber": "string",
+        "description": "string",
+        "cid": "string",
+        "placeId": "string"
+      }
+    ]
+  },
+  {
+    "places": [
+      {
+        "position": "number",
+        "title": "string",
+        "address": "string",
+        "latitude": "number",
+        "longitude": "number",
+        "rating": "number",
+        "ratingCount": "number",
+        "category": "string",
+        "phoneNumber": "string",
+        "website": "string",
+        "cid": "string"
+      }
+    ]
+  },
+  {
+    "videos": [
+      {
+        "title": "string",
+        "link": "string",
+        "snippet": "string",
+        "imageUrl": "string",
+        "duration": "string",
+        "source": "string",
+        "channel": "string",
+        "date": "string",
+        "position": "number"
+      }
+    ]
+  },
+  {
+    "shopping": [
+      {
+        "title": "string",
+        "source": "string",
+        "link": "string",
+        "price": "string",
+        "delivery": "string",
+        "imageUrl": "string",
+        "rating": "number",
+        "ratingCount": "number",
+        "offers": "string",
+        "productId": "string",
+        "position": "number"
+      }
+    ]
+  },
+  {
+    "organic": [
+      {
+        "title": "string",
+        "link": "string",
+        "publicationInfo": "string",
+        "snippet": "string",
+        "year": "number",
+        "citedBy": "number"
+      }
+    ]
+  },
+  {
+    "organic": [
+      {
+        "title": "string",
+        "snippet": "string",
+        "link": "string",
+        "priorityDate": "string",
+        "filingDate": "string",
+        "grantDate": "string",
+        "publicationDate": "string",
+        "inventor": "string",
+        "assignee": "string",
+        "publicationNumber": "string",
+        "language": "string",
+        "thumbnailUrl": "string",
+        "pdfUrl": "string",
+        "figures": [
+          {
+            "imageUrl": "string",
+            "thumbnailUrl": "string"
+          }
+        ],
+        "position": "number"
+      }
+    ]
+  },
+  {
+    "suggestions": [
+      {
+        "value": "string"
+      }
+    ]
+  }
+]

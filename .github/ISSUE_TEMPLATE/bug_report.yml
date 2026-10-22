@@ -1,0 +1,37 @@
+name: Bug report
+description: Report a reproducible SDK or documentation problem.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For security issues, use the security reporting link instead.
+        Use synthetic data. Do not include API keys, private queries, raw account responses, or personal paths.
+  - type: input
+    id: version
+    attributes:
+      label: SDK version or commit
+      description: Include the commit for a source checkout or the version for a tarball.
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime and environment
+      description: Node version, operating system, and relevant provider or subpath.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Prefer a mock or injected transport that reproduces the issue without credentials.
+      render: typescript
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+      description: Include sanitized error codes and attempt outcomes when relevant.
+    validations:
+      required: true

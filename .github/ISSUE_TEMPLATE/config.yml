@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation and provider reference
+    url: https://searchsdk.dev/docs
+    about: Read the SDK contracts, examples, and provider limits.
+  - name: Report a security vulnerability
+    url: https://github.com/Belweave/searchSDK/security/policy
+    about: Follow the private reporting instructions; do not disclose vulnerabilities in public issues.

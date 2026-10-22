@@ -1,0 +1,458 @@
+[
+  {
+    "name": "createMonitor",
+    "path": "/monitor",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create a monitor",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "listMonitors",
+    "path": "/monitor",
+    "method": "GET",
+    "response": "json",
+    "summary": "List monitors",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getMonitor",
+    "path": "/monitor/{monitorId}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get a monitor",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "updateMonitor",
+    "path": "/monitor/{monitorId}",
+    "method": "PATCH",
+    "response": "json",
+    "summary": "Update a monitor",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "deleteMonitor",
+    "path": "/monitor/{monitorId}",
+    "method": "DELETE",
+    "response": "json",
+    "summary": "Delete a monitor",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "runMonitor",
+    "path": "/monitor/{monitorId}/run",
+    "method": "POST",
+    "response": "json",
+    "summary": "Run a monitor",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "listMonitorChecks",
+    "path": "/monitor/{monitorId}/checks",
+    "method": "GET",
+    "response": "json",
+    "summary": "List monitor checks",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getMonitorCheck",
+    "path": "/monitor/{monitorId}/checks/{checkId}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get a monitor check",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "scrape",
+    "path": "/scrape",
+    "method": "POST",
+    "response": "json",
+    "summary": "Scrape a single URL and optionally extract information using an LLM",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "interactWithScrapeBrowserSession",
+    "path": "/scrape/{jobId}/interact",
+    "method": "POST",
+    "response": "json",
+    "summary": "Interact with the browser session associated with a scrape job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "stopInteractiveScrapeBrowserSession",
+    "path": "/scrape/{jobId}/interact",
+    "method": "DELETE",
+    "response": "json",
+    "summary": "Stop the interactive browser session associated with a scrape job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "parseFile",
+    "path": "/parse",
+    "method": "POST",
+    "response": "json",
+    "summary": "Upload and parse a file",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getParseFormats",
+    "path": "/parse/formats",
+    "method": "GET",
+    "response": "json",
+    "summary": "List file formats supported by /parse",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "batchScrape",
+    "path": "/batch/scrape",
+    "method": "POST",
+    "response": "json",
+    "summary": "Scrape multiple URLs and optionally extract information using an LLM",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getBatchScrapeStatus",
+    "path": "/batch/scrape/{id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get the status of a batch scrape job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "cancelBatchScrape",
+    "path": "/batch/scrape/{id}",
+    "method": "DELETE",
+    "response": "json",
+    "summary": "Cancel a batch scrape job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getBatchScrapeErrors",
+    "path": "/batch/scrape/{id}/errors",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get the errors of a batch scrape job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getCrawlStatus",
+    "path": "/crawl/{id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get the status of a crawl job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "cancelCrawl",
+    "path": "/crawl/{id}",
+    "method": "DELETE",
+    "response": "json",
+    "summary": "Cancel a crawl job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getCrawlErrors",
+    "path": "/crawl/{id}/errors",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get the errors of a crawl job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "crawl",
+    "path": "/crawl",
+    "method": "POST",
+    "response": "json",
+    "summary": "Crawl multiple URLs based on options",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "crawlParamsPreview",
+    "path": "/crawl/params-preview",
+    "method": "POST",
+    "response": "json",
+    "summary": "Preview crawl parameters generated from natural language prompt",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "map",
+    "path": "/map",
+    "method": "POST",
+    "response": "json",
+    "summary": "Map multiple URLs based on options",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "extract",
+    "path": "/extract",
+    "method": "POST",
+    "response": "json",
+    "summary": "Extract structured data from pages using LLMs",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getExtractStatus",
+    "path": "/extract/{id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get the status of an extract job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "listAgents",
+    "path": "/agent",
+    "method": "GET",
+    "response": "json",
+    "summary": "List agent runs",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "startAgent",
+    "path": "/agent",
+    "method": "POST",
+    "response": "json",
+    "summary": "Start an agent task for agentic data extraction",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getAgentStatus",
+    "path": "/agent/{jobId}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get the status of an agent job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "cancelAgent",
+    "path": "/agent/{jobId}",
+    "method": "DELETE",
+    "response": "json",
+    "summary": "Cancel an agent job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getAgentTrace",
+    "path": "/agent/{jobId}/trace",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get the execution trace of an agent job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getAgentSnapshot",
+    "path": "/agent/{jobId}/snapshots/{snapshotId}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get an output snapshot of an agent job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getActiveCrawls",
+    "path": "/crawl/active",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get all active crawls for the authenticated team",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getCreditUsage",
+    "path": "/team/credit-usage",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get remaining credits for the authenticated team",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getHistoricalCreditUsage",
+    "path": "/team/credit-usage/historical",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get historical credit usage for the authenticated team",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getTokenUsage",
+    "path": "/team/token-usage",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get remaining tokens for the authenticated team (Extract only)",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getHistoricalTokenUsage",
+    "path": "/team/token-usage/historical",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get historical token usage for the authenticated team (Extract only)",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getQueueStatus",
+    "path": "/team/queue-status",
+    "method": "GET",
+    "response": "json",
+    "summary": "Metrics about your team's scrape queue",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getActivity",
+    "path": "/team/activity",
+    "method": "GET",
+    "response": "json",
+    "summary": "List recent API activity",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "search",
+    "path": "/search",
+    "method": "POST",
+    "response": "json",
+    "summary": "Search and optionally scrape search results",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "createBrowserSession",
+    "path": "/interact",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create an interact session",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "listBrowserSessions",
+    "path": "/interact",
+    "method": "GET",
+    "response": "json",
+    "summary": "List interact sessions",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "executeBrowserCode",
+    "path": "/interact/{sessionId}/execute",
+    "method": "POST",
+    "response": "json",
+    "summary": "Execute code in an interact session",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "deleteBrowserSession",
+    "path": "/interact/{sessionId}",
+    "method": "DELETE",
+    "response": "json",
+    "summary": "Delete an interact session",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getScrapeStatus",
+    "path": "/scrape/{jobId}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get the status of a scrape job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "submitSearchFeedback",
+    "path": "/search/{jobId}/feedback",
+    "method": "POST",
+    "response": "json",
+    "summary": "Submit feedback for a search job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "askSupportAgent",
+    "path": "/support/ask",
+    "method": "POST",
+    "response": "json",
+    "summary": "Ask the Firecrawl support agent",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "searchSupportDocs",
+    "path": "/support/docs-search",
+    "method": "POST",
+    "response": "json",
+    "summary": "Search Firecrawl docs with citations",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "researchSearchPapers",
+    "path": "/search/research/papers",
+    "method": "GET",
+    "response": "json",
+    "summary": "Search papers",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "researchGetPaper",
+    "path": "/search/research/papers/{id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Inspect or read a paper",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "researchRelatedPapers",
+    "path": "/search/research/papers/{id}/similar",
+    "method": "GET",
+    "response": "json",
+    "summary": "Find related papers",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "developerSearch",
+    "path": "/search/developer",
+    "method": "GET",
+    "response": "json",
+    "summary": "Search the developer index",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "developerSearchPost",
+    "path": "/search/developer",
+    "method": "POST",
+    "response": "json",
+    "summary": "Search the developer index",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "govSearch",
+    "path": "/search/gov",
+    "method": "GET",
+    "response": "json",
+    "summary": "Search the Government Index",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "govSearchPost",
+    "path": "/search/gov",
+    "method": "POST",
+    "response": "json",
+    "summary": "Search the Government Index",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "submitEndpointFeedback",
+    "path": "/feedback",
+    "method": "POST",
+    "response": "json",
+    "summary": "Submit feedback for a v2 job",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "getThreatProtection",
+    "path": "/team/threat-protection",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get the team's threat protection policy",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  },
+  {
+    "name": "updateThreatProtection",
+    "path": "/team/threat-protection",
+    "method": "PUT",
+    "response": "json",
+    "summary": "Update the team's threat protection policy",
+    "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json"
+  }
+]

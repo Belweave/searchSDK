@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:searchsdk:benchmark:results:1.0.0",
+  "title": "searchSDK benchmark results v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "mode", "evidence", "publicationReady", "startedAt", "finishedAt", "durationMs", "stopReason", "reservedUsd", "completedRequests", "unstartedRequests", "plan", "records", "summaries", "relevance", "costUsd", "limitations"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "mode": { "enum": ["fixture", "live"] },
+    "evidence": { "enum": ["synthetic-not-provider-performance", "unreviewed-live"] },
+    "publicationReady": { "const": false },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "finishedAt": { "type": "string", "format": "date-time" },
+    "durationMs": { "type": "number", "minimum": 0 },
+    "stopReason": { "enum": ["complete", "cancelled", "deadline", "request-budget", "spend-budget"] },
+    "reservedUsd": { "type": "number", "minimum": 0 },
+    "completedRequests": { "type": "integer", "minimum": 0 },
+    "unstartedRequests": { "type": "integer", "minimum": 0 },
+    "plan": {
+      "type": "object", "additionalProperties": false,
+      "required": ["protocolVersion", "dataset", "configSha256", "seed", "expectedRequests", "providers", "exclusions", "schedule"],
+      "properties": {
+        "protocolVersion": { "const": "0.2.0-draft" },
+        "dataset": {
+          "type": "object", "additionalProperties": false, "required": ["id", "version", "sha256"],
+          "properties": { "id": { "const": "public-web-v1" }, "version": { "const": "1.0.0" }, "sha256": { "$ref": "#/$defs/sha256" } }
+        },
+        "configSha256": { "$ref": "#/$defs/sha256" },
+        "seed": { "type": "integer", "minimum": 1, "maximum": 4294967295 },
+        "expectedRequests": { "type": "integer", "minimum": 0 },
+        "providers": { "type": "array", "items": { "$ref": "#/$defs/provider" }, "maxItems": 15 },
+        "exclusions": {
+          "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["provider", "reason"],
+            "properties": { "provider": { "const": "wondersearch" }, "reason": { "type": "string" } } }
+        },
+        "schedule": { "type": "array", "items": {
+          "type": "object", "additionalProperties": false, "required": ["provider", "queryId", "phase", "round"],
+          "properties": { "provider": { "$ref": "#/$defs/providerId" }, "queryId": { "type": "string", "pattern": "^web-[0-9]{3}$" }, "phase": { "enum": ["warmup", "measured"] }, "round": { "type": "integer", "minimum": 0 } }
+        } }
+      }
+    },
+    "records": { "type": "array", "items": { "$ref": "urn:searchsdk:benchmark:attempt:1.0.0" } },
+    "summaries": { "type": "array", "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["provider", "measuredAttempts", "schemaValid", "nonempty", "empty", "errors", "completionRate", "successfulResponseLatencyMs", "errorCodes"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "measuredAttempts": { "$ref": "#/$defs/count" }, "schemaValid": { "$ref": "#/$defs/count" },
+        "nonempty": { "$ref": "#/$defs/count" }, "empty": { "$ref": "#/$defs/count" }, "errors": { "$ref": "#/$defs/count" },
+        "completionRate": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "successfulResponseLatencyMs": {
+          "type": "object", "additionalProperties": false, "required": ["p50", "p95"],
+          "properties": { "p50": { "$ref": "#/$defs/nullableDuration" }, "p95": { "$ref": "#/$defs/nullableDuration" } }
+        },
+        "errorCodes": { "type": "object", "propertyNames": { "enum": ["invalid_request", "unsupported_option", "configuration", "auth", "rate_limit", "network", "unavailable", "attempt_timeout", "timeout", "aborted", "invalid_response", "provider_error"] }, "additionalProperties": { "$ref": "#/$defs/count" } }
+      }
+    } },
+    "relevance": { "type": "object", "additionalProperties": false, "required": ["score", "reason"], "properties": { "score": { "type": "null" }, "reason": { "type": "string" } } },
+    "costUsd": { "type": "object", "additionalProperties": false, "required": ["value", "reason"], "properties": { "value": { "type": "null" }, "reason": { "type": "string" } } },
+    "limitations": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "count": { "type": "integer", "minimum": 0 },
+    "nullableDuration": { "type": ["number", "null"], "minimum": 0 },
+    "providerId": { "enum": ["context", "tinyfish", "exa", "tavily", "brave", "perplexity", "parallel", "linkup", "firecrawl", "you", "serper", "serpapi", "valyu", "searxng"] },
+    "provider": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "apiVersion", "profile", "track", "comparable", "plan", "reservationUsdPerRequest"],
+      "properties": {
+        "id": { "enum": ["context", "tinyfish", "exa", "tavily", "brave", "perplexity", "parallel", "linkup", "firecrawl", "you", "serper", "serpapi", "valyu", "searxng", "wondersearch"] },
+        "name": { "type": "string" }, "apiVersion": { "type": "string" }, "profile": { "type": "string" },
+        "track": { "enum": ["open-web-search", "corpus-retrieval"] }, "comparable": { "type": "boolean" },
+        "plan": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$" },
+        "reservationUsdPerRequest": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+        "instanceAlias": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$" },
+        "engineManifestSha256": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/sha256" }] },
+        "exclusion": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:searchsdk:benchmark:attempt:1.0.0",
+  "title": "searchSDK benchmark attempt v1 (attempts.jsonl and results.json records)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "sequence", "mode", "track", "provider", "queryId", "phase", "round", "startedAt", "finishedAt", "durationMs", "outcome", "errorCode", "httpStatus", "resultCount", "warningCount", "usage"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "sequence": { "type": "integer", "minimum": 0 },
+    "mode": { "enum": ["fixture", "live"] },
+    "track": { "const": "open-web-search" },
+    "provider": { "enum": ["context", "tinyfish", "exa", "tavily", "brave", "perplexity", "parallel", "linkup", "firecrawl", "you", "serper", "serpapi", "valyu", "searxng"] },
+    "queryId": { "type": "string", "pattern": "^web-[0-9]{3}$" },
+    "phase": { "enum": ["warmup", "measured"] },
+    "round": { "type": "integer", "minimum": 0 },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "finishedAt": { "type": "string", "format": "date-time" },
+    "durationMs": { "type": "number", "minimum": 0 },
+    "outcome": { "enum": ["success", "empty", "error"] },
+    "errorCode": { "enum": [null, "invalid_request", "unsupported_option", "configuration", "auth", "rate_limit", "network", "unavailable", "attempt_timeout", "timeout", "aborted", "invalid_response", "provider_error"] },
+    "httpStatus": { "type": ["integer", "null"], "minimum": 100, "maximum": 599 },
+    "resultCount": { "type": "integer", "minimum": 0, "maximum": 20 },
+    "warningCount": { "type": "integer", "minimum": 0 },
+    "usage": { "oneOf": [{ "type": "null" }, { "type": "object", "additionalProperties": false, "required": ["unit", "value"], "properties": { "unit": { "enum": ["usd", "credits"] }, "value": { "type": "number", "minimum": 0 } } }] }
+  }
+}

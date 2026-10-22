@@ -1,0 +1,210 @@
+[
+  {
+    "name": "search",
+    "path": "/search",
+    "method": "POST",
+    "response": "json",
+    "summary": "search",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "searchGet",
+    "path": "/search",
+    "method": "GET",
+    "response": "json",
+    "summary": "search via GET",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "images",
+    "path": "/images",
+    "method": "POST",
+    "response": "json",
+    "summary": "images",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "imagesGet",
+    "path": "/images",
+    "method": "GET",
+    "response": "json",
+    "summary": "images via GET",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "videos",
+    "path": "/videos",
+    "method": "POST",
+    "response": "json",
+    "summary": "videos",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "videosGet",
+    "path": "/videos",
+    "method": "GET",
+    "response": "json",
+    "summary": "videos via GET",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "places",
+    "path": "/places",
+    "method": "POST",
+    "response": "json",
+    "summary": "places",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "placesGet",
+    "path": "/places",
+    "method": "GET",
+    "response": "json",
+    "summary": "places via GET",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "maps",
+    "path": "/maps",
+    "method": "POST",
+    "response": "json",
+    "summary": "maps",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "mapsGet",
+    "path": "/maps",
+    "method": "GET",
+    "response": "json",
+    "summary": "maps via GET",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "reviews",
+    "path": "/reviews",
+    "method": "POST",
+    "response": "json",
+    "summary": "reviews",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "reviewsGet",
+    "path": "/reviews",
+    "method": "GET",
+    "response": "json",
+    "summary": "reviews via GET",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "news",
+    "path": "/news",
+    "method": "POST",
+    "response": "json",
+    "summary": "news",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "newsGet",
+    "path": "/news",
+    "method": "GET",
+    "response": "json",
+    "summary": "news via GET",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "shopping",
+    "path": "/shopping",
+    "method": "POST",
+    "response": "json",
+    "summary": "shopping",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "shoppingGet",
+    "path": "/shopping",
+    "method": "GET",
+    "response": "json",
+    "summary": "shopping via GET",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "scholar",
+    "path": "/scholar",
+    "method": "POST",
+    "response": "json",
+    "summary": "scholar",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "scholarGet",
+    "path": "/scholar",
+    "method": "GET",
+    "response": "json",
+    "summary": "scholar via GET",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "patents",
+    "path": "/patents",
+    "method": "POST",
+    "response": "json",
+    "summary": "patents",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "patentsGet",
+    "path": "/patents",
+    "method": "GET",
+    "response": "json",
+    "summary": "patents via GET",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "autocomplete",
+    "path": "/autocomplete",
+    "method": "POST",
+    "response": "json",
+    "summary": "autocomplete",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "autocompleteGet",
+    "path": "/autocomplete",
+    "method": "GET",
+    "response": "json",
+    "summary": "autocomplete via GET",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "lens",
+    "path": "/lens",
+    "method": "POST",
+    "response": "json",
+    "summary": "lens",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "lensGet",
+    "path": "/lens",
+    "method": "GET",
+    "response": "json",
+    "summary": "lens via GET",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "scrape",
+    "path": "/",
+    "method": "POST",
+    "response": "json",
+    "summary": "Scrape a webpage",
+    "source": "https://serper.dev/playground"
+  },
+  {
+    "name": "scrapeGet",
+    "path": "/",
+    "method": "GET",
+    "response": "json",
+    "summary": "Scrape a webpage via GET",
+    "source": "https://serper.dev/playground"
+  }
+]

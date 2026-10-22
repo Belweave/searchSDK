@@ -1,0 +1,282 @@
+[
+  {
+    "name": "chatCompletions",
+    "path": "/v1/sonar",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create Chat Completion",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "chatCompletionsStream",
+    "path": "/v1/sonar",
+    "method": "POST",
+    "response": "sse",
+    "summary": "Create Chat Completion",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "search",
+    "path": "/search",
+    "method": "POST",
+    "response": "json",
+    "summary": "Search the Web",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "createEmbeddings",
+    "path": "/v1/embeddings",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create Embeddings",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "createContextualizedEmbeddings",
+    "path": "/v1/contextualizedembeddings",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create Contextualized Embeddings",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "getAsyncChatCompletion",
+    "path": "/v1/async/sonar/{api_request}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get Async Chat Completion",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "listAsyncChatCompletions",
+    "path": "/v1/async/sonar",
+    "method": "GET",
+    "response": "json",
+    "summary": "List Async Chat Completions",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "createAsyncChatCompletion",
+    "path": "/v1/async/sonar",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create Async Chat Completion",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "createAgent",
+    "path": "/v1/agent",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create Agent Response",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "createAgentStream",
+    "path": "/v1/agent",
+    "method": "POST",
+    "response": "sse",
+    "summary": "Create Agent Response",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "retrieveAgent",
+    "path": "/v1/agent/{id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Retrieve Agent Response",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "listAgentFiles",
+    "path": "/v1/agent/{id}/files",
+    "method": "GET",
+    "response": "json",
+    "summary": "List Agent Response Files",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "downloadAgentFile",
+    "path": "/v1/agent/{id}/files/{file_id}/content",
+    "method": "GET",
+    "response": "bytes",
+    "summary": "Download Agent Response File",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "cancelAgentResponse",
+    "path": "/v1/agent/{id}/cancel",
+    "method": "POST",
+    "response": "json",
+    "summary": "Cancel Agent Response",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "listModels",
+    "path": "/v1/models",
+    "method": "GET",
+    "response": "json",
+    "summary": "List Models",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "getComputerUsageAnalytics",
+    "path": "/v1/analytics/computer/usage",
+    "method": "GET",
+    "response": "json",
+    "summary": "Usage Analytics",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "getComputerUsageAnalyticsV2",
+    "path": "/v2/analytics/computer/usage",
+    "method": "GET",
+    "response": "json",
+    "summary": "Usage Analytics per Member",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "listSkills",
+    "path": "/v1/skills",
+    "method": "GET",
+    "response": "json",
+    "summary": "List skills",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "createSkill",
+    "path": "/v1/skills",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create a skill",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "getSkill",
+    "path": "/v1/skills/{skill_id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get a skill",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "updateSkill",
+    "path": "/v1/skills/{skill_id}",
+    "method": "PUT",
+    "response": "json",
+    "summary": "Add a skill revision",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "deleteSkill",
+    "path": "/v1/skills/{skill_id}",
+    "method": "DELETE",
+    "response": "json",
+    "summary": "Delete a skill",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "listSkillRevisions",
+    "path": "/v1/skills/{skill_id}/revisions",
+    "method": "GET",
+    "response": "json",
+    "summary": "List skill revisions",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "downloadSkill",
+    "path": "/v1/skills/{skill_id}/download",
+    "method": "GET",
+    "response": "json",
+    "summary": "Get a skill download URL",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "answerQuestions",
+    "path": "/v1/decisions",
+    "method": "POST",
+    "response": "json",
+    "summary": "Answer questions",
+    "source": "https://docs.perplexity.ai/openapi.json"
+  },
+  {
+    "name": "routerChatCompletions",
+    "path": "/router/v1/chat/completions",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create Chat Completion",
+    "source": "https://docs.perplexity.ai/api-reference/gateway-chat-completions-post.md"
+  },
+  {
+    "name": "routerChatCompletionsStream",
+    "path": "/router/v1/chat/completions",
+    "method": "POST",
+    "response": "sse",
+    "summary": "Create Chat Completion",
+    "source": "https://docs.perplexity.ai/api-reference/gateway-chat-completions-post.md"
+  },
+  {
+    "name": "routerResponses",
+    "path": "/router/v1/responses",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create Response",
+    "source": "https://docs.perplexity.ai/api-reference/gateway-responses-post.md"
+  },
+  {
+    "name": "routerResponsesStream",
+    "path": "/router/v1/responses",
+    "method": "POST",
+    "response": "sse",
+    "summary": "Create Response",
+    "source": "https://docs.perplexity.ai/api-reference/gateway-responses-post.md"
+  },
+  {
+    "name": "routerMessages",
+    "path": "/router/v1/messages",
+    "method": "POST",
+    "response": "json",
+    "summary": "Create Message",
+    "source": "https://docs.perplexity.ai/api-reference/gateway-messages-post.md"
+  },
+  {
+    "name": "routerMessagesStream",
+    "path": "/router/v1/messages",
+    "method": "POST",
+    "response": "sse",
+    "summary": "Create Message",
+    "source": "https://docs.perplexity.ai/api-reference/gateway-messages-post.md"
+  },
+  {
+    "name": "listRouterModels",
+    "path": "/router/v1/models",
+    "method": "GET",
+    "response": "json",
+    "summary": "List Models",
+    "source": "https://docs.perplexity.ai/api-reference/gateway-models-get.md"
+  },
+  {
+    "name": "getRouterModel",
+    "path": "/router/v1/models/{model}",
+    "method": "GET",
+    "response": "json",
+    "summary": "Retrieve Model",
+    "source": "https://docs.perplexity.ai/api-reference/gateway-model-get.md"
+  },
+  {
+    "name": "generateAuthToken",
+    "path": "/generate_auth_token",
+    "method": "POST",
+    "response": "json",
+    "summary": "Generate Auth Token",
+    "source": "https://docs.perplexity.ai/api-reference/generate-auth-token-post.md"
+  },
+  {
+    "name": "revokeAuthToken",
+    "path": "/revoke_auth_token",
+    "method": "POST",
+    "response": "text",
+    "summary": "Revoke Auth Token",
+    "source": "https://docs.perplexity.ai/api-reference/revoke-auth-token-post.md"
+  }
+]

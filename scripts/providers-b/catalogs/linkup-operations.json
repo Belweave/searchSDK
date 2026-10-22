@@ -1,0 +1,122 @@
+[
+  {
+    "name": "balance",
+    "path": "/v1/credits/balance",
+    "method": "GET",
+    "response": "json",
+    "summary": "/credits/balance",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "createExtract",
+    "path": "/v1/extract",
+    "method": "POST",
+    "response": "json",
+    "summary": "/extract",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "listExtract",
+    "path": "/v1/extract",
+    "method": "GET",
+    "response": "json",
+    "summary": "/extract",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "getExtract",
+    "path": "/v1/extract/{id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "/extract/:id",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "fetchPage",
+    "path": "/v1/fetch",
+    "method": "POST",
+    "response": "json",
+    "summary": "/fetch",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "search",
+    "path": "/v1/search",
+    "method": "POST",
+    "response": "json",
+    "summary": "/search",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "createTasks",
+    "path": "/v1/tasks",
+    "method": "POST",
+    "response": "json",
+    "summary": "/tasks",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "listTasks",
+    "path": "/v1/tasks",
+    "method": "GET",
+    "response": "json",
+    "summary": "/tasks",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "getTask",
+    "path": "/v1/tasks/{id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "/tasks/:id",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "responses",
+    "path": "/v1/responses",
+    "method": "POST",
+    "response": "json",
+    "summary": "/responses",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "createResearch",
+    "path": "/v1/research",
+    "method": "POST",
+    "response": "json",
+    "summary": "/research",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "listResearch",
+    "path": "/v1/research",
+    "method": "GET",
+    "response": "json",
+    "summary": "/research",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "getResearch",
+    "path": "/v1/research/{id}",
+    "method": "GET",
+    "response": "json",
+    "summary": "/research/:id",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "rewindSearch",
+    "path": "/v1/rewind/search",
+    "method": "POST",
+    "response": "json",
+    "summary": "/rewind/search",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  },
+  {
+    "name": "rewindFetch",
+    "path": "/v1/rewind/fetch",
+    "method": "POST",
+    "response": "json",
+    "summary": "/rewind/fetch",
+    "source": "https://api.linkup.so/v1/openapi.json"
+  }
+]

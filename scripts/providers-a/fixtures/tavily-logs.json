@@ -1,0 +1,251 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Tavily Search and Extract API",
+    "description": "Our REST API provides seamless access to Tavily Search, a powerful search engine for LLM agents, and Tavily Extract, an advanced web scraping solution optimized for LLMs.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.tavily.com/"
+    }
+  ],
+  "security": [],
+  "tags": [
+    {
+      "name": "Search"
+    },
+    {
+      "name": "Extract"
+    },
+    {
+      "name": "Crawl"
+    },
+    {
+      "name": "Map"
+    },
+    {
+      "name": "Research"
+    },
+    {
+      "name": "Feedback"
+    },
+    {
+      "name": "Usage"
+    },
+    {
+      "name": "Logs"
+    }
+  ],
+  "paths": {
+    "/logs": {
+      "post": {
+        "summary": "Get usage logs for your API keys",
+        "description": "Retrieve per-request usage logs for the API keys under your account or organization.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "limit": {
+                    "type": "integer",
+                    "default": 10,
+                    "minimum": 1,
+                    "maximum": 10000,
+                    "description": "Maximum number of logs to return, most recent first."
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Inclusive start of the log window (YYYY-MM-DD)."
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Inclusive end of the log window (YYYY-MM-DD)."
+                  },
+                  "endpoints": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "search",
+                        "extract",
+                        "map",
+                        "crawl",
+                        "research"
+                      ]
+                    },
+                    "description": "Only return logs for these endpoints. By default, logs for all endpoints are returned."
+                  },
+                  "project_id": {
+                    "type": "string",
+                    "description": "Only return logs for a single project."
+                  },
+                  "filter_by_api_key": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "When `true`, return only logs for the API key provided in the Authorization header. When `false` (default), logs for all API keys under your account or organization are returned."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usage logs returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "logs": {
+                      "type": "array",
+                      "description": "Matching log entries, most recent first. Log entries never include the input or output of the original request.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "timestamp": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the request was made"
+                          },
+                          "endpoint": {
+                            "type": "string",
+                            "enum": [
+                              "search",
+                              "extract",
+                              "map",
+                              "crawl",
+                              "research"
+                            ],
+                            "description": "Which Tavily API was called"
+                          },
+                          "depth": {
+                            "type": "string",
+                            "description": "The request depth (e.g. `basic`, `advanced`). For `research` requests, the model tier."
+                          },
+                          "response_time": {
+                            "type": "number",
+                            "description": "Server-side response time in seconds"
+                          },
+                          "credits": {
+                            "type": "number",
+                            "description": "API credits the request consumed"
+                          },
+                          "api_key": {
+                            "type": "string",
+                            "description": "The API key that made the request, masked to its last 4 characters"
+                          },
+                          "request_id": {
+                            "type": "string",
+                            "description": "Unique identifier of the original request"
+                          }
+                        }
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of log entries returned"
+                    },
+                    "response_time": {
+                      "type": "number",
+                      "description": "Response time of this logs request in seconds"
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "description": "Unique identifier of this logs request"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request — invalid endpoints value or date range.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Your API key is wrong or missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — usage logs are only available to paying customers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout — the logs query timed out.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer authentication header in the form Bearer <token>, where <token> is your Tavily API key (e.g., Bearer tvly-YOUR_API_KEY)."
+      }
+    }
+  }
+}
