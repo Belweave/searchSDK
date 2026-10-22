@@ -1,5 +1,6 @@
 import { loadSdk, guardedTransport } from './providers.mjs';
 import { limits, trustedOrigins, validOrigin, validateBody, createAbuseGuard, redactor, sanitizeResponse } from './security.mjs';
+import { withinHeaderLimits } from './request-headers.mjs';
 
 const messages = Object.freeze({ invalid_request: 'Invalid playground request.', forbidden: 'Request origin is not allowed.',
   method_not_allowed: 'Use POST for playground search.', payload_too_large: 'Request body is too large.',
@@ -96,7 +97,7 @@ export function createPlaygroundHandler({ development = false, environment = pro
       if (!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(req.headers['content-type'] ?? '') ||
           req.headers['content-encoding'] !== undefined && req.headers['content-encoding'] !== 'identity' ||
           req.headers.cookie || req.headers.authorization) throw new RequestError('invalid_request', 400);
-      if (req.rawHeaders.length > 100 || Buffer.byteLength(req.rawHeaders.join('')) > 8192) throw new RequestError('invalid_request', 400);
+      if (!withinHeaderLimits(req.rawHeaders)) throw new RequestError('invalid_request', 400);
       const length = req.headers['content-length'];
       if (length !== undefined && (!/^\d+$/.test(length) || Number(length) > limits.bodyBytes)) throw new RequestError('payload_too_large', 413);
       release = abuse.enter();

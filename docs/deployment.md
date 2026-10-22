@@ -129,6 +129,11 @@ allowlist; an operator can add exact HTTPS origins through `MCP_ALLOWED_ORIGINS`
 as a comma-separated value. This does not widen the accepted Host list. Invalid
 configuration grants no extra access. No credentials are allowed by CORS.
 
+Both functions allow a bounded proxy-inclusive header envelope: 32 KiB total,
+16 KiB per field, and 128 fields. This accommodates platform routing and tracing
+headers while preserving exact Host, Origin, media-type, and protocol checks.
+Forwarded headers do not gain authority over those checks.
+
 The build generates `/llms.txt`, `/llms-full.txt`, canonical Markdown pages,
 `/agent-index.json`, `/provider-capabilities.json`, `/mcp-public-data.json`,
 `/sitemap.xml`, and `/robots.txt` from current public source. The public integration

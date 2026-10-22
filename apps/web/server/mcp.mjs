@@ -1,10 +1,11 @@
 import { createHmac, randomBytes } from 'node:crypto';
 import { loadMcpCatalog, object, mcpTools, validToolArguments, callMcpTool } from './mcp-data.mjs';
+import { requestHeaderLimits, withinHeaderLimits } from './request-headers.mjs';
 
 // Sources: https://modelcontextprotocol.io/specification/2026-07-28/
 // Modern protocol only: no initialize handshake, sessions, GET stream, or DELETE.
 export const protocolVersion = '2026-07-28';
-export const mcpLimits = Object.freeze({ bodyBytes: 16384, responseBytes: 524288, headerBytes: 8192,
+export const mcpLimits = Object.freeze({ bodyBytes: 16384, responseBytes: 524288, headerBytes: requestHeaderLimits.totalBytes,
   bodyMs: 3000, totalMs: 5000, maximumActive: 12, maximumBuckets: 512,
   clientBurst: 30, clientPerMinute: 60, globalBurst: 120, globalPerMinute: 240 });
 const prefix = 'io.modelcontextprotocol/';
@@ -289,7 +290,7 @@ export function createMcpHandler({ development = false, environment = process.en
         throw new McpError(429, -31029, 'Per-instance request limit reached. Retry later.');
       }
       release = admission.release;
-      if (req.rawHeaders.length > 100 || Buffer.byteLength(req.rawHeaders.join('')) > mcpLimits.headerBytes) throw new McpError(431, -32600, 'Request headers are too large.');
+      if (!withinHeaderLimits(req.rawHeaders)) throw new McpError(431, -32600, 'Request headers are too large.');
       if (!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(req.headers['content-type'] ?? '') ||
           req.headers['content-encoding'] !== undefined && req.headers['content-encoding'] !== 'identity') throw new McpError(415, -32600, 'Use uncompressed UTF-8 application/json.');
       if (!acceptsBoth(req.headers.accept)) throw new McpError(406, -32600, 'Accept must include application/json and text/event-stream.');

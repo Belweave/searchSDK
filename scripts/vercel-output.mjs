@@ -37,7 +37,7 @@ await writeFile(new URL(".vc-config.json", functionDirectory), JSON.stringify({
 const mcpDirectory = new URL("functions/api/mcp.func/", output);
 await mkdir(new URL("apps/web/server/", mcpDirectory), { recursive: true });
 await mkdir(new URL("apps/web/public/", mcpDirectory), { recursive: true });
-for (const filename of ["mcp.mjs", "mcp-data.mjs"]) {
+for (const filename of ["mcp.mjs", "mcp-data.mjs", "request-headers.mjs"]) {
   await cp(new URL(`apps/web/server/${filename}`, root), new URL(`apps/web/server/${filename}`, mcpDirectory));
 }
 await cp(new URL("apps/web/dist/mcp-public-data.json", root), new URL("apps/web/public/mcp-public-data.json", mcpDirectory));

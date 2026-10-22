@@ -34,7 +34,8 @@ async function server(t, options = {}) {
   const calls = [];
   const upstream = options.upstream ?? (async (url, init) => { calls.push({ url, init }); return json(fixtures.exa); });
   const handler = options.handler ?? createPlaygroundHandler({ sdkDirectory, environment: {}, ...options, upstream });
-  const http = createServer((req, res) => void handler(req, res));
+  // Let oversized test envelopes reach our guard instead of Node's parser.
+  const http = createServer({ maxHeaderSize: 65536 }, (req, res) => void handler(req, res));
   await new Promise(resolve => http.listen(0, '127.0.0.1', resolve));
   t.after(() => { http.closeAllConnections(); return new Promise(resolve => http.close(resolve)); });
   function call(body = base, { method = 'POST', path = '/api/playground/search', headers = {}, raw } = {}) {
@@ -439,4 +440,18 @@ test('overlapping, contained, and identical credentials never expose a suffix', 
     assert.deepEqual(result.body.response.results[0].highlights, ['•••']);
     assert.equal(result.text.includes('tail-secret'), false);
   }
+});
+
+test('proxy header overhead permits valid search without relaxing authority or envelope bounds', async t => {
+  const { call, calls } = await server(t);
+  const proxy = Object.fromEntries(Array.from({ length: 60 }, (_, i) => [`x-proxy-fixture-${i}`, 'x'.repeat(160)]));
+  assert.equal((await call(base, { headers: proxy })).status, 200);
+  assert.equal(calls.length, 1);
+  assert.equal((await call(base, { headers: { ...proxy, origin: 'https://wrong.example', 'x-forwarded-host': 'searchsdk.dev' } })).status, 403);
+  const excessive = Object.fromEntries(Array.from({ length: 129 }, (_, i) => [`x-extra-${i}`, 'x']));
+  assert.equal((await call(base, { headers: excessive })).status, 400);
+  const aggregate = Object.fromEntries(Array.from({ length: 4 }, (_, i) => [`x-wide-${i}`, 'x'.repeat(8500)]));
+  assert.equal((await call(base, { headers: aggregate })).status, 400);
+  assert.equal((await call(base, { headers: { 'x-wide': 'x'.repeat(17000) } })).status, 400);
+  assert.equal(calls.length, 1, 'Invalid requests must not reach a provider');
 });

@@ -70,7 +70,8 @@ const meta = () => ({ 'io.modelcontextprotocol/protocolVersion': protocolVersion
 const message = (method = 'server/discover', params = {}, id = 1) => ({ jsonrpc: '2.0', id, method, params: { _meta: meta(), ...params } });
 async function server(t, options = {}) {
   const handler = options.handler ?? createMcpHandler({ environment: {}, catalog: createMcpCatalog(fixture()), ...options });
-  const http = createServer((req, res) => void handler(req, res));
+  // Let oversized test envelopes reach our guard instead of Node's parser.
+  const http = createServer({ maxHeaderSize: 65536 }, (req, res) => void handler(req, res));
   await new Promise(resolve => http.listen(0, '127.0.0.1', resolve));
   t.after(() => { http.closeAllConnections(); return new Promise(resolve => http.close(resolve)); });
   function call(body = message(), { method = 'POST', path = '/mcp', headers = {}, raw } = {}) {
@@ -168,7 +169,7 @@ test('single UTF-8 JSON messages, integer/string IDs, media negotiation, and not
   const big = await call(message(), { raw: 'x'.repeat(mcpLimits.bodyBytes + 1) }); assert.equal(big.status, 413);
   const chunkedBig = await call(message(), { raw: 'x'.repeat(mcpLimits.bodyBytes + 1), headers: { 'transfer-encoding': 'chunked' } }); assert.equal(chunkedBig.status, 413);
   const declaredBig = await call(message(), { headers: { 'content-length': String(mcpLimits.bodyBytes + 1) } }); assert.equal(declaredBig.status, 413);
-  assert.equal((await call(message(), { headers: { 'x-extra': 'x'.repeat(8500) } })).status, 431);
+  assert.equal((await call(message(), { headers: { 'x-extra': 'x'.repeat(17000) } })).status, 431);
 });
 
 test('exact host/origin policy permits key-free native clients and only configured browsers, never forwarded-host widening', async t => {
@@ -329,7 +330,7 @@ test('Vite routes both MCP paths and Vercel emits an independently runnable publ
   execFileSync(process.execPath, [join(temporary, 'scripts/vercel-output.mjs')], { stdio: 'pipe' });
   const mount = join(temporary, '.vercel/output/functions/api/mcp.func');
   const files = readdirSync(join(mount, 'apps/web/server'));
-  assert.deepEqual(files.sort(), ['mcp-data.mjs', 'mcp.mjs']);
+  assert.deepEqual(files.sort(), ['mcp-data.mjs', 'mcp.mjs', 'request-headers.mjs']);
   assert.equal(existsSync(join(mount, 'packages/sdk')), false); assert.equal(existsSync(join(mount, 'node_modules')), false);
   const config = JSON.parse(readFileSync(join(temporary, '.vercel/output/config.json')));
   const mcpRoute = config.routes.find(route => route.dest === '/api/mcp');
@@ -386,4 +387,17 @@ test('generated public artifact, when present, retains source skill bytes and ma
     } while (cursor !== undefined);
     assert.equal(count, kind === 'resources' ? data.docs.length + data.providers.length + data.examples.length + 1 : data[kind].length);
   }
+});
+
+test('proxy header overhead is accepted while count, individual and aggregate limits remain bounded', async t => {
+  const { call } = await server(t);
+  const proxy = Object.fromEntries(Array.from({ length: 60 }, (_, i) => [`x-proxy-fixture-${i}`, 'x'.repeat(160)]));
+  const good = await call(message(), { headers: proxy });
+  assert.equal(good.status, 200);
+  assert.equal((await call(message(), { headers: { ...proxy, host: 'wrong.example', 'x-forwarded-host': 'searchsdk.dev' } })).status, 403);
+  const excessive = Object.fromEntries(Array.from({ length: 129 }, (_, i) => [`x-extra-${i}`, 'x']));
+  assert.equal((await call(message(), { headers: excessive })).status, 431);
+  const aggregate = Object.fromEntries(Array.from({ length: 4 }, (_, i) => [`x-wide-${i}`, 'x'.repeat(8500)]));
+  assert.equal((await call(message(), { headers: aggregate })).status, 431);
+  assert.equal((await call(message(), { headers: { 'x-wide': 'x'.repeat(17000) } })).status, 431);
 });
