@@ -3,6 +3,8 @@ import { Playground } from "../Playground.js";
 import { Providers } from "../Providers.js";
 import { Home } from "./Home.js";
 import { WorkspaceBoundary } from "./WorkspaceBoundary.js";
+import { Legal } from "./Legal.js";
+import { legalPages } from "../legal-content.ts";
 
 type Theme = "light" | "dark" | "system";
 const routes = [["/docs", "Docs"], ["/providers", "Providers"], ["/playground", "Playground"], ["/benchmarks", "Benchmarks"]] as const;
@@ -27,15 +29,15 @@ function readTheme(): Theme {
   return "system";
 }
 function PendingPage({ title }: { title: string }) {
-  return <section className="route-page pending-page"><h1>{title}</h1><p>This workspace is in development.</p><a className="text-link" href="/">Return to searchSDK</a></section>;
+  return <section className="route-page pending-page"><h1>{title} could not load.</h1><p>Reload the page to try again.</p><a className="text-link" href="/docs">Open documentation</a></section>;
 }
 function PlaygroundPage() {
-  return <section className="route-page playground-page"><div className="page-heading"><h1>See every attempt.</h1><p>Try search, fallback, cancellation, and errors.</p></div><Playground /></section>;
+  return <section className="route-page playground-page"><div className="page-heading"><h1>Your query. Real results.</h1><p>Live server-side search. Your keys. Every attempt, explained.</p></div><Playground /></section>;
 }
 // Keep appearance updates outside App so a saved preference or live OS change
 // cannot rerender a still-dehydrated lazy workspace's Suspense boundary.
 function ThemeControl() {
-  // Match the static header on the first hydration render. theme-init.js owns
+  // Match the static footer on the first hydration render. theme-init.js owns
   // the document's first paint; do not overwrite its saved appearance below
   // until both the stored selection and current OS preference are available.
   const [theme, setTheme] = useState<Theme>("system");
@@ -72,7 +74,7 @@ export function App({ path: suppliedPath, staticWorkspaces }: {
   useEffect(() => {
     // DocsWorkspace owns article and documentation-not-found titles.
     if (!docsRoute) {
-      const label = routes.find(([route]) => route === path)?.[1];
+      const label = routes.find(([route]) => route === path)?.[1] ?? legalPages.find(page => page.path === path)?.title;
       document.title = path === "/" ? "searchSDK · Web search for TypeScript apps."
         : path === "/benchmarks" ? "Search provider benchmarks · searchSDK"
         : label ? `${label} · searchSDK` : "Page not found · searchSDK";
@@ -81,7 +83,7 @@ export function App({ path: suppliedPath, staticWorkspaces }: {
     window.addEventListener("keydown", shortcut); return () => window.removeEventListener("keydown", shortcut);
   }, [path, docsRoute]);
   const content = <Suspense fallback={<section className="route-page" aria-live="polite">Loading workspace…</section>}>
-    {path === "/" ? <Home /> : docsRoute ? <Documentation path={path} /> : path === "/providers" ? <div className="providers-page"><Providers /></div> : path === "/playground" ? <PlaygroundPage /> : path === "/benchmarks" ? <BenchmarkPage /> : <section className="route-page pending-page"><p className="page-kicker">404</p><h1>Page not found.</h1><p>Find your next step in the docs or return home.</p><a className="text-link" href="/">Return to searchSDK</a></section>}
+    {path === "/" ? <Home /> : docsRoute ? <Documentation path={path} /> : legalPages.some(page => page.path === path) ? <Legal path={path} /> : path === "/providers" ? <div className="providers-page"><Providers /></div> : path === "/playground" ? <PlaygroundPage /> : path === "/benchmarks" ? <BenchmarkPage /> : <section className="route-page pending-page"><p className="page-kicker">404</p><h1>Page not found.</h1><p>Find your next step in the docs or return home.</p><a className="text-link" href="/">Return to searchSDK</a></section>}
   </Suspense>;
   return <><a className="skip-link" href="#main-content">Skip to content</a>
     <header className="site-header"><Brand /><nav aria-label="Main navigation">{routes.map(([route, label]) => <a key={route} href={route} aria-current={(route === "/docs" ? docsRoute : path === route) ? "page" : undefined}>{label}</a>)}</nav>
@@ -90,13 +92,12 @@ export function App({ path: suppliedPath, staticWorkspaces }: {
         // hydrated, keep the native link so a search click is never dropped.
         if (docsRoute && !window.dispatchEvent(new CustomEvent("searchsdk:open-docs-search", { cancelable: true }))) event.preventDefault();
       }} aria-label="Search documentation" aria-keyshortcuts="Meta+K Control+K"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 4 4" /></svg><span>Search docs</span><kbd>⌘ K</kbd></a>
-        <ThemeControl />
       </div>
     </header>
     <main id="main-content" tabIndex={-1} className={docsRoute ? "main-docs" : undefined}>{docsRoute || path === "/benchmarks" ? <WorkspaceBoundary title={docsRoute ? "Documentation" : "Benchmarks"}
       // A supplied static docs route has a generated Markdown counterpart.
       // Unknown production URLs carry /404; development has no static exports.
       markdownHref={docsRoute && suppliedPath ? `${path}.md` : undefined}>{content}</WorkspaceBoundary> : content}</main>
-    <footer className="site-footer"><span className="footer-credit">searchSDK by <a href="https://belweave.com" target="_blank" rel="noreferrer">Belweave ↗</a></span><a href="/docs">Documentation <span aria-hidden="true">↗</span></a></footer>
+    <footer className="site-footer"><div className="footer-links"><span className="footer-credit">searchSDK by <a href="https://belweave.com" target="_blank" rel="noreferrer">Belweave ↗</a></span><a href="/docs">Documentation <span aria-hidden="true">↗</span></a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div><div className="footer-appearance"><ThemeControl /></div></footer>
   </>;
 }

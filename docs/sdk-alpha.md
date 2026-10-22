@@ -1,8 +1,54 @@
 # SDK integration guide
 
-The SDK provides fourteen normalized web-search adapters across fifteen providers, thirteen provider-native clients, opt-in reliability policies, durable checkpoints, and deterministic testing mocks. The package is not yet published to npm; build and install a local tarball using the [installation guide](https://searchsdk.dev/docs/installation).
+The SDK provides fourteen normalized web-search adapters across fifteen providers, thirteen provider-native clients, opt-in reliability policies, durable checkpoints, and deterministic testing mocks. Use the alpha channel for the prerelease and retain your package lockfile. Alpha APIs may change before a stable release.
 
-`@belweave/search-sdk` version `0.1.0-alpha.0` is ESM with declarations and zero runtime dependencies. Server adapters target Node 24+; browser demos use the mock. Keep real provider keys on a server. Do not place them in public environment variables or the static site bundle.
+`@belweave/search-sdk` version `0.1.0-alpha.0` is ESM with declarations and zero runtime dependencies. Use Node 24.22.1 or a newer patched Node 24 release; browser fixture demos use the mock. Keep real provider keys on a server. Do not place them in public environment variables or the static site bundle.
+
+## Install and run
+
+In your Node server application (run `npm init --yes` first for a new project):
+
+```sh
+npm install @belweave/search-sdk@alpha
+```
+
+Save this plain ESM example as `example.mjs` and run `node example.mjs`:
+
+```js
+import { createSearch } from '@belweave/search-sdk';
+import { createMockProvider } from '@belweave/search-sdk/testing';
+
+const client = createSearch({ provider: createMockProvider() });
+const response = await client.web.search({ query: 'SQLite write concurrency', limit: 3 });
+console.log(response.results, response.attempts);
+```
+
+The fixture makes no provider requests. For a live search, add `.env` to the
+server project's `.gitignore`, then set `CONTEXT_API_KEY=your-provider-key` in
+that local file. Save this as `search.mjs`:
+
+```js
+import { createSearch } from '@belweave/search-sdk';
+import { context } from '@belweave/search-sdk/context';
+
+const apiKey = process.env.CONTEXT_API_KEY;
+if (!apiKey) throw new Error('CONTEXT_API_KEY is required');
+const client = createSearch({ provider: context({ apiKey }), timeoutMs: 10_000 });
+const response = await client.web.search(
+  { query: 'SQLite write concurrency', limit: 5 },
+  { signal: AbortSignal.timeout(10_000) },
+);
+console.log(response.provider, response.results, response.attempts);
+```
+
+Run `node --env-file=.env search.mjs` locally. In production, inject the key
+through your host's server secret configuration and use `node search.mjs`.
+The SDK takes credentials explicitly; it does not load environment files.
+Live provider calls can incur charges. Use your application's authentication,
+query validation, and per-user quotas at its server request boundary.
+
+For TypeScript, the same examples can be saved as `.ts` and run on Node 24 in a
+`type: module` project. Contributors can [build a local tarball instead](https://searchsdk.dev/docs/installation#pack-locally).
 
 ## Exports
 

@@ -30,22 +30,23 @@ provider choice visible. Use normalized results for retrieval, provider-native
 clients for specialized operations, and deterministic mocks for local development.
 The SDK is ESM with TypeScript declarations and zero runtime dependencies.
 
-**Alpha. The package is not yet published to npm.** Install from a built checkout
-or the release tarball below. APIs may change before a stable release.
+**Alpha `0.1.0-alpha.0`.** APIs may change before a stable release. Use the
+`alpha` channel and commit your package lockfile to keep the resolved version.
+
+## Install
+
+Use Node 24.22.1 or a newer patched Node 24 release. In your server application:
+
+```sh
+npm install @belweave/search-sdk@alpha
+```
+
+For a new application, run `npm init --yes` first. No compiler or additional
+runtime dependency is needed for the `.mjs` examples below.
 
 ## Start without API keys
 
-Use the Node version in [.nvmrc](.nvmrc), then build the SDK from this repository:
-
-```sh
-git clone https://github.com/Belweave/searchSDK.git
-cd searchSDK
-nvm use
-npm ci
-npm run build:sdk
-```
-
-Create `example.mjs` at the repository root and run it with `node example.mjs`:
+Save this as `example.mjs`, then run `node example.mjs`:
 
 ```js
 import { createSearch } from '@belweave/search-sdk';
@@ -58,44 +59,47 @@ console.log(response.results);
 console.log(response.attempts);
 ```
 
-The mock returns local fixtures and makes no provider requests. To explore the
-docs and fixture playground locally, run `npm run dev` and open the URL Vite prints.
+The mock returns deterministic local fixtures and makes no provider requests.
+The [hosted playground](https://searchsdk.dev/playground) offers a separate
+**Demo · no key** mode and live server-side searches with your own provider key.
+The [Boat recipe](https://searchsdk.dev/docs/guides/boat) runs the same SDK in a
+sandbox you control.
 
-To use the SDK in another server application:
+## Search from your server
 
-```sh
-# In this repository, after building:
-npm pack -w @belweave/search-sdk
+Add `.env` to your server project's `.gitignore`. In that local file, set
+`CONTEXT_API_KEY=your-provider-key` using your own provider account. Save this
+example as `search.mjs`:
 
-# In your application, install the generated file:
-npm install /path/to/belweave-search-sdk-0.1.0-alpha.0.tgz
-```
-
-Download the [alpha tarball and SHA-256 checksum](https://github.com/Belweave/searchSDK/releases/tag/v0.1.0-alpha.0),
-then install it with `npm install ./belweave-search-sdk-0.1.0-alpha.0.tgz`.
-An npm registry installation will be documented after publication.
-
-## Choose your provider and fallback
-
-```ts
+```js
 import { createSearch } from '@belweave/search-sdk';
 import { context } from '@belweave/search-sdk/context';
-import { tinyfish } from '@belweave/search-sdk/tinyfish';
+
+const apiKey = process.env.CONTEXT_API_KEY;
+if (!apiKey) throw new Error('CONTEXT_API_KEY is required');
 
 const search = createSearch({
-  provider: context({ apiKey: process.env.CONTEXT_API_KEY! }),
-  fallback: [tinyfish({ apiKey: process.env.TINYFISH_API_KEY! })],
+  provider: context({ apiKey }),
   timeoutMs: 10_000,
-  attemptTimeoutMs: 4_000,
 });
-
-const response = await search.web.search({ query: 'SQLite write concurrency', limit: 5 });
+const response = await search.web.search(
+  { query: 'SQLite write concurrency', limit: 5 },
+  { signal: AbortSignal.timeout(10_000) },
+);
 console.log(response.provider, response.results, response.attempts);
 ```
 
-Run real adapters on your server. This example sends provider requests and may
-incur charges. Keep keys out of browser code, public environment variables, and
-committed files.
+Run `node --env-file=.env search.mjs` locally. In production, inject
+`CONTEXT_API_KEY` through your host's server secret configuration and run
+`node search.mjs`. Node or your host loads the environment; the SDK takes the key
+explicitly. Keep it out of browser code, public environment variables, and logs.
+A live request can incur provider charges.
+
+For explicit fallback, import `tinyfish` from `@belweave/search-sdk/tinyfish`,
+configure its server-side key, and add `fallback: [tinyfish({ apiKey: tinyfishKey })]`
+to `createSearch`. Set `attemptTimeoutMs: 4_000` with the ten-second total budget
+to reserve time for another provider. See the
+[fallback guide](https://searchsdk.dev/docs/reliability/fallback).
 
 ## Search a batch
 
@@ -161,8 +165,9 @@ operator-selected instance with JSON search enabled. Valyu and SearXNG currently
 provide normalized adapters only.
 
 Authenticated live-provider validation and comparative benchmarks are pending.
-The playground uses fixtures; it does not establish provider performance,
-availability, or account-gated behavior.
+The fixture demo does not establish provider performance, availability, or
+account-gated behavior. A live playground request verifies only that particular
+request, not a comparative benchmark.
 
 ## Find your next step
 
@@ -174,9 +179,28 @@ availability, or account-gated behavior.
 - [Security policy](SECURITY.md): private reporting and integration boundaries.
 
 The repository contains the SDK in `packages/sdk` and the static React/Vite docs
-and fixture playground in `apps/web`. Run `npm run check` for SDK tests, type
+and server-backed playground in `apps/web`. Run `npm run check` for SDK tests, type
 checks, static-site checks, and packed-consumer verification. The CI workflow runs
 these checks without provider credentials. It does not publish packages or deploy.
+
+## Optional: build from source
+
+For contributions or unreleased changes, use Node from [.nvmrc](.nvmrc):
+
+```sh
+git clone https://github.com/Belweave/searchSDK.git
+cd searchSDK
+nvm use
+npm ci
+npm run build:sdk
+npm pack -w @belweave/search-sdk
+```
+
+Install the generated tarball in your server application with
+`npm install /path/to/belweave-search-sdk-0.1.0-alpha.0.tgz`. Run `npm run dev`
+from the checkout to serve the site locally. See [Contributing](CONTRIBUTING.md)
+for checks; building, pushing, website deployment, and package publication are
+separate operations.
 
 ## License
 

@@ -1,14 +1,16 @@
 # Working on searchSDK
 
 searchSDK is a TypeScript search SDK and a statically rendered documentation
-site. Keep the SDK independent of the website and free of runtime dependencies.
+site with a bounded server-side playground endpoint and a public read-only
+documentation MCP endpoint. Keep the SDK independent of the website and free of runtime dependencies.
 
 ## Development
 
 - Use the Node version in `.nvmrc` and `npm ci`.
 - `npm run dev` serves the site on port 5173.
 - `npm run check` validates the SDK, website, documentation and packaged consumer.
-- `npm run build:vercel` produces the checked static deployment output.
+- `npm run build:vercel` produces the checked site and both server functions.
+- `npm run release:prepare` checks and packs the SDK locally; it does not publish.
 - Prefer bounded local builds. Coordinate shared output when working in parallel;
   use isolated output directories for independent tests.
 
@@ -19,12 +21,16 @@ site. Keep the SDK independent of the website and free of runtime dependencies.
 - Native clients are generated from retained source tables and public schemas in
   `scripts/providers-a` and `scripts/providers-b`. Preserve reproducibility and
   source attribution.
-- Keep credentials server-side. Demos and automated tests use deterministic
-  fixtures. Do not describe fixture coverage as live provider verification.
+- Keep provider calls server-side. The live playground accepts request-scoped
+  visitor keys; never persist or log them. The separate key-free demo and
+  automated tests use deterministic fixtures. Do not describe fixture coverage
+  as live provider verification.
 - Preserve cancellation, deadlines, response limits, provenance and explicit
   fallback. Do not promise exactly-once remote side effects.
 - Benchmarks require an explicit live opt-in. Tests and CI must never incur
   provider charges or create remote infrastructure.
+- The public MCP server serves generated documentation only. Keep keys, provider
+  execution, arbitrary URLs, and code execution outside that endpoint.
 
 ## Public repository hygiene
 

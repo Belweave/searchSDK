@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { verifyAgentData } from './verify-agent-data.mjs';
 
 // Validate the emitted site, not only the source content. This catches broken
 // exported links, partial SSR, CSP-incompatible output and missing local assets.
-const root = fileURLToPath(new URL('../apps/web/dist/', import.meta.url));
+const root = process.argv[2] ? resolve(process.argv[2]) : fileURLToPath(new URL('../apps/web/dist/', import.meta.url));
 const origin = 'https://searchsdk.dev';
 const socialImagePath = '/social/searchsdk-card-v2.jpg';
 const socialImage = origin + socialImagePath;
@@ -110,6 +111,11 @@ for (const route of manifest) {
     assert(src && src.startsWith('/') && new URL(decode(src), origin).origin === origin && !script[2].trim(), `Inline or remote script: ${route.path}`);
   }
   verifyMetadata(html, route);
+  if (!route.notFound) {
+    const markdownPath = route.path === '/' ? '/index.md' : route.path === '/docs' ? '/docs/index.md' : `${route.path}.md`;
+    assert(html.includes(`<link rel="alternate" type="text/markdown" href="${origin}${markdownPath}" />`), `Missing Markdown discovery: ${route.path}`);
+    assert(html.includes(`<link rel="describedby" href="${origin}/llms.txt" />`), `Missing llms.txt discovery: ${route.path}`);
+  }
   routes.set(route.path, { ...route, html, ids: new Set(ids) });
 }
 assert(routes.has('/') && routes.has('/docs') && routes.has('/benchmarks'), 'Missing main routes');
@@ -133,4 +139,7 @@ for (const [path, route] of routes) {
 for (const path of ['/.env.local', '/docs/vision-workshop.html', '/packages/sdk/src/index.ts']) {
   assert.equal(await stat(localFile(path)).catch(() => null), null, `Private artifact in static output: ${path}`);
 }
+const agent = await verifyAgentData(root);
+assert.equal(agent.pages, manifest.filter(route => !route.notFound).length, 'Agent index must cover all canonical routes');
+console.log(`Agent discovery passed: ${agent.articles} Markdown articles, ${agent.providers} providers, ${agent.examples} examples, exact skill manifest, ${agent.links} canonical links.`);
 console.log(`Static site passed: ${routes.size} complete documents with unique route-specific social metadata, 1200×630 JPEG card, ${checked} local links/assets, one heading per page, no inline scripts or private artifacts.`);

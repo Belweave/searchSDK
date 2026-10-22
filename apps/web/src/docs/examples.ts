@@ -1,13 +1,7 @@
 // Keep runnable snippets separate from prose so evolving alpha contracts can be reviewed in one place.
 export const examples = {
-  install: `# From the repository root:
-nvm use
-npm ci
-npm run build:sdk
-npm pack -w @belweave/search-sdk
-
-# In your server application (use the actual generated tarball):
-npm install /absolute/path/belweave-search-sdk-0.1.0-alpha.0.tgz`,
+  install: `# In your Node server application:
+npm install @belweave/search-sdk@alpha`,
   quickstart: `import { createSearch } from '@belweave/search-sdk';
 import { context } from '@belweave/search-sdk/context';
 

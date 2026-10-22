@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import { DitherPattern } from "./lib/dither/pattern";
 import { providers } from "./provider-catalog";
+import { WorkspaceDitherField, WorkspaceDitherSpectrum, WorkspaceDitherUnrun, workspaceDitherStyles } from "./components/WorkspaceDither";
 import "./benchmarks.css";
 
 const metrics = [
@@ -29,21 +30,22 @@ export function Benchmarks() {
     (scope === "all" || (scope === "corpus" ? provider.corpus : !provider.corpus)) && provider.name.toLowerCase().includes(query.trim().toLowerCase()),
   );
   return (
-    <div className="benchmarks-page">
+    <div className="benchmarks-page" style={workspaceDitherStyles}>
       <header className="benchmark-heading">
-        <p className="benchmark-status">Boat run planned · results not yet available</p>
         <h1>Provider benchmarks</h1>
+        <p className="benchmark-status">Boat run planned · results not yet available</p>
         <p>Relevance, latency, cost, and reliability need evidence. The protocol and portable harness are prepared for a future run on Boat. No live benchmark results have been collected or published.</p>
         <a href="#methodology" className="benchmark-method-link">Read the proposed methodology <span aria-hidden="true">↘</span></a>
+        <WorkspaceDitherUnrun />
       </header>
 
       <section className="benchmark-lab" aria-labelledby="benchmark-results-title">
         <div className="benchmark-lab-heading">
           <div><h2 id="benchmark-results-title">The protocol comes first.</h2><p>Fixture runs check the harness. They do not measure provider performance.</p></div>
-          <svg className="benchmark-mark" viewBox="0 0 96 80" fill="none" aria-hidden="true"><defs><DitherPattern id={pattern} level={0.375} cell={2} color="--code-accent" /></defs><path d="M4 4h36v32H4zm52 0h36v32H56zM4 44h36v32H4zm52 0h36v32H56z" fill={`url(#${pattern})`} /><path d="M13 13h18v14H13zm52 0h18v14H65zM13 53h18v14H13zm52 0h18v14H65z" fill="var(--background)" /></svg>
+          <svg className="benchmark-mark" viewBox="0 0 96 80" fill="none" aria-hidden="true"><defs><WorkspaceDitherSpectrum id={`${pattern}-rgb`} /><DitherPattern id={pattern} level={0.5} cell={2} color="#fff" /><mask id={`${pattern}-mask`}><path d="M4 4h36v32H4zm52 0h36v32H56zM4 44h36v32H4zm52 0h36v32H56z" fill={`url(#${pattern})`} /><path d="M13 13h18v14H13zm52 0h18v14H65zM13 53h18v14H13zm52 0h18v14H65z" fill="#000" /></mask></defs><rect width="96" height="80" fill={`url(#${pattern}-rgb)`} mask={`url(#${pattern}-mask)`} /></svg>
         </div>
         <div className="benchmark-metrics" role="group" aria-label="Metric to inspect">
-          {metrics.map((item) => <button key={item.id} type="button" disabled={!enhanced} aria-pressed={item.id === metricId} aria-controls="benchmark-metric-description" onClick={() => setMetricId(item.id)}>{item.name}<span>{item.label}</span></button>)}
+          {metrics.map((item) => <button key={item.id} type="button" disabled={!enhanced} aria-pressed={item.id === metricId} aria-controls="benchmark-metric-description" onClick={() => setMetricId(item.id)}><WorkspaceDitherField className="benchmark-metric-dither" variant={item.id === metricId ? "gradient" : "dotted"} />{item.name}<span>{item.label}</span></button>)}
         </div>
         <div className="benchmark-metric-detail" id="benchmark-metric-description" aria-live="polite"><p>{metric.detail}</p><span>{metric.unit}</span></div>
         <div className="benchmark-controls">
@@ -63,9 +65,10 @@ export function Benchmarks() {
           <div><dt>Live execution</dt><dd>Explicit opt-in required</dd></div>
         </dl>
         {visible.length === 0 ? (
-          <p className="benchmark-no-results" role="status">No providers match “{query}”.</p>
+          <div className="benchmark-no-results" role="status"><WorkspaceDitherField variant="dotted" /><p>No providers match “{query}”.</p></div>
         ) : <ul className="benchmark-provider-plan" aria-label="Planned provider coverage">
           {visible.map((provider) => <li key={provider.id}>
+            <WorkspaceDitherField className="benchmark-provider-dither" variant={provider.corpus ? "hatched" : "dotted"} />
             <a href={`/docs/providers/${provider.id}`}>{provider.name}<span aria-hidden="true">↗</span></a>
             <div><p className="benchmark-track-label">{provider.corpus ? "Separate corpus track" : "Planned web-search track"}</p>
               <p>{provider.corpus ? "Retrieves from a configured corpus. Requires its own frozen dataset and judgments; excluded from open-web comparisons."
@@ -77,10 +80,10 @@ export function Benchmarks() {
       </section>
 
       <section className="benchmark-methodology" id="methodology" aria-labelledby="methodology-title">
-        <div><p className="benchmark-protocol-label">Proposed protocol · v0.2</p><h2 id="methodology-title">The method ships<br />with the numbers.</h2><p>Results will be scoped to a task, a dataset, and a configuration. Each future run will record its runtime, region, budgets, timestamps, failures, and reproducibility hashes.</p><a href="/benchmark-methodology.json" download className="benchmark-method-link">Download the protocol draft <span aria-hidden="true">↓</span></a><p className="benchmark-venue">Planned execution venue: <a href="https://boat.dev">Boat</a>. <a href="https://docs.boat.dev/llms.txt">Official documentation</a>.</p></div>
-        <ol className="benchmark-principles">{principles.map(([title, description], index) => <li key={title}><span aria-hidden="true">0{index + 1}</span><div><h3>{title}</h3><p>{description}</p></div></li>)}</ol>
+        <div><h2 id="methodology-title">The method ships<br />with the numbers.</h2><p className="benchmark-protocol-label">Proposed protocol · v0.2</p><p>Results will be scoped to a task, a dataset, and a configuration. Each future run will record its runtime, region, budgets, timestamps, failures, and reproducibility hashes.</p><a href="/benchmark-methodology.json" download className="benchmark-method-link">Download the protocol draft <span aria-hidden="true">↓</span></a><p className="benchmark-venue">Planned execution venue: <a href="https://boat.dev">Boat</a>. <a href="https://docs.boat.dev/llms.txt">Official documentation</a>.</p></div>
+        <ol className="benchmark-principles">{principles.map(([title, description], index) => <li key={title}><span className="benchmark-principle-number" aria-hidden="true">0{index + 1}<WorkspaceDitherField variant="hatched" /></span><div><h3>{title}</h3><p>{description}</p></div></li>)}</ol>
       </section>
-      <aside className="benchmark-next"><div><h2>Find your provider’s API.</h2><p>Explore capabilities and integration details while the first benchmark run takes shape.</p></div><a href="/providers">Browse providers <span aria-hidden="true">→</span></a></aside>
+      <aside className="benchmark-next"><WorkspaceDitherField className="benchmark-next-dither" /><div><h2>Find your provider’s API.</h2><p>Explore capabilities and integration details while the first benchmark run takes shape.</p></div><a href="/providers">Browse providers <span aria-hidden="true">→</span></a></aside>
     </div>
   );
 }

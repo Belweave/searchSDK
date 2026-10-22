@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { WorkspaceDitherField, workspaceDitherStyles } from "../components/WorkspaceDither";
 import { DocsMotif } from "./DocsMotif.js";
 import { CodeBlock } from "./CodeBlock.js";
 import { docArticles, docGroups, findArticle, searchArticles } from "./content.js";
@@ -46,7 +47,7 @@ function DocTable({ block }: { block: Extract<DocBlock, { type: "table" }> }) {
 
 function Sidebar({ article, mobile = false }: { article?: DocArticle; mobile?: boolean }) {
   return <nav aria-label={mobile ? "Mobile documentation navigation" : "Documentation navigation"} className="dw-navigation">
-    {docGroups.map(group => <div className="dw-nav-group" key={group}><h2>{group}</h2><ul>{docArticles.filter(item => item.group === group).map(item => <li key={item.slug}><a href={docHref(item.slug)} aria-current={article?.slug === item.slug ? "page" : undefined}>{item.label ?? item.title}{item.slug === "providers/context" || item.slug === "providers/tinyfish" ? <span className="dw-nav-dot" aria-label="Priority provider" /> : null}</a></li>)}</ul></div>)}
+    {docGroups.map(group => <div className="dw-nav-group" key={group}><h2>{group}<WorkspaceDitherField className="dw-nav-dither" /></h2><ul>{docArticles.filter(item => item.group === group).map(item => <li key={item.slug}><a href={docHref(item.slug)} aria-current={article?.slug === item.slug ? "page" : undefined}>{item.label ?? item.title}{item.slug === "providers/context" || item.slug === "providers/tinyfish" ? <span className="dw-nav-dot" aria-label="Priority provider" /> : null}</a></li>)}</ul></div>)}
   </nav>;
 }
 
@@ -82,7 +83,7 @@ function SearchDialog({ open, close, initialQuery }: { open: boolean; close: () 
       }} /><button ref={closeButton} type="button" disabled={!ready} onClick={close} aria-label="Close documentation search">Esc</button></div>
       <div className="dw-search-count" role="status">{query.trim() ? `${results.length} matching ${results.length === 1 ? "article" : "articles"}` : "Start with a guide"}</div>
       <ul ref={resultRef} id="dw-search-results" className="dw-search-results" role="listbox" tabIndex={-1} aria-label="Documentation search results">{results.map((result, index) => <li key={result.article.slug} role="presentation"><a id={`dw-search-result-${index}`} role="option" tabIndex={-1} aria-selected={selected === index} href={result.href} onMouseDown={event => { if (event.button === 0) event.preventDefault(); setSelected(index); }} onMouseMove={() => setSelected(index)}><small>{result.article.group}{result.section ? ` / ${result.article.label ?? result.article.title}` : ""}</small><strong>{result.section?.title ?? result.article.label ?? result.article.title}<span aria-hidden="true">↗</span></strong><p>{result.excerpt}</p></a></li>)}</ul>
-      {results.length === 0 && <div className="dw-search-empty"><strong>No matching articles</strong><p>Try a provider name, “fallback”, “usage”, or “AbortSignal”.</p></div>}
+      {results.length === 0 && <div className="dw-search-empty"><WorkspaceDitherField variant="dotted" /><strong>No matching articles</strong><p>Try a provider name, “fallback”, “usage”, or “AbortSignal”.</p></div>}
       <div className="dw-search-help"><span><kbd>↑</kbd> <kbd>↓</kbd> navigate</span><span><kbd>↵</kbd> open</span><span><kbd>esc</kbd> close</span></div>
     </div>
   </dialog>;
@@ -133,14 +134,14 @@ export function DocsWorkspace({ path }: { path?: string }) {
     return () => observer.disconnect();
   }, [article]);
 
-  return <div className="dw-workspace">
+  return <div className="dw-workspace" style={workspaceDitherStyles}>
     <a className="dw-skip" href="#dw-article">Skip to article</a>
     <div className="dw-mobile-navigation"><details className="dw-mobile-nav"><summary>Browse documentation <span aria-hidden="true">＋</span></summary><Sidebar article={article} mobile /></details><button className="dw-mobile-search" type="button" disabled={!ready} aria-label="Search documentation" onClick={() => { setSearchQuery(""); setSearchOpen(true); }}><svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 4 4" /></svg></button></div>
     <div className="dw-layout"><aside className="dw-sidebar"><DocsMotif /><Sidebar article={article} /></aside>
       <article id="dw-article" className="dw-article" tabIndex={-1}>
-        {article ? <><nav className="dw-breadcrumbs" aria-label="Breadcrumb"><a href="/docs">Docs</a><span aria-hidden="true">/</span><span>{article.group}</span><a className="dw-markdown-link" href={`${docHref(article.slug)}.md`} aria-label="View this article as Markdown">Markdown <span aria-hidden="true">↗</span></a></nav><header className="dw-article-header"><h1>{article.title}</h1><p>{article.description}</p></header>
+        {article ? <><nav className="dw-breadcrumbs" aria-label="Breadcrumb"><a href="/docs">Docs</a><span aria-hidden="true">/</span><span>{article.group}</span><a className="dw-markdown-link" href={`${docHref(article.slug)}.md`} aria-label="View this article as Markdown">Markdown <span aria-hidden="true">↗</span></a></nav><header className="dw-article-header"><h1>{article.title}</h1><p>{article.description}</p><WorkspaceDitherField className="dw-header-dither" /></header>
           <details className="dw-mobile-toc"><summary>On this page</summary><nav aria-label="On this page (mobile)">{article.sections.map(section => <a href={`#${section.id}`} key={section.id}>{section.title}</a>)}</nav></details>
-          {article.sections.map(section => <section className="dw-section" id={section.id} key={section.id}><h2><a href={`#${section.id}`}>{section.title}<span aria-hidden="true">#</span></a></h2>{section.blocks.map((block, i) => <Block block={block} key={i} />)}</section>)}
+          {article.sections.map((section, sectionIndex) => <section className="dw-section" id={section.id} key={section.id}><div className="dw-chapter-dither" aria-hidden="true"><span>{String(sectionIndex + 1).padStart(2, "0")}</span><WorkspaceDitherField /></div><h2><a href={`#${section.id}`}>{section.title}<span aria-hidden="true">#</span></a></h2>{section.blocks.map((block, i) => <Block block={block} key={i} />)}</section>)}
           <footer className="dw-article-footer"><nav className="dw-pagination" aria-label="Previous and next articles">{previous ? <a href={docHref(previous.slug)}><small>← Previous</small><strong>{previous.label ?? previous.title}</strong></a> : <span />}{next && <a href={docHref(next.slug)}><small>Next →</small><strong>{next.label ?? next.title}</strong></a>}</nav></footer>
         </> : <><nav className="dw-breadcrumbs" aria-label="Breadcrumb"><a href="/docs">Docs</a><span aria-hidden="true">/</span><span>Not found</span></nav><header className="dw-article-header"><span className="dw-kicker">404 / DOCUMENTATION</span><h1>This page isn’t in the index.</h1><p>The article may have moved, or the address may be incomplete. Browse the navigation or search the documentation.</p></header><button className="dw-not-found-search" type="button" disabled={!ready} onClick={() => setSearchOpen(true)}>Search documentation <kbd>⌘ K</kbd></button><Block block={{ type: "links", items: [{ label: "Documentation introduction", href: "/docs" }, { label: "Quickstart", href: "/docs/quickstart" }, { label: "Provider reference", href: "/docs/providers" }] }} /></>}
       </article>

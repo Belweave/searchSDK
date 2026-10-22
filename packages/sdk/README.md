@@ -3,36 +3,26 @@
 TypeScript search and provider-native API clients by Belweave. Alpha
 `0.1.0-alpha.0`, ESM, TypeScript declarations, zero runtime dependencies.
 Use the patched Node version pinned in the repository's `.nvmrc` for development.
-The package is not yet published to npm; APIs may change before a stable release.
+Alpha APIs may change before a stable release; retain the resolved version in your package lockfile.
 
 [Documentation](https://searchsdk.dev/docs) · [Provider reference](https://searchsdk.dev/docs/providers) · [Playground](https://searchsdk.dev/playground)
 
-## Install from source or a tarball
+## Install
 
-Build and pack from a checkout, using Node from `.nvmrc`:
-
-```sh
-git clone https://github.com/Belweave/searchSDK.git
-cd searchSDK
-nvm use
-npm ci
-npm run build:sdk
-npm pack -w @belweave/search-sdk
-```
-
-In your server application, install the generated tarball:
+Use Node 24.22.1 or a newer patched Node 24 release. In your server application:
 
 ```sh
-npm install /path/to/belweave-search-sdk-0.1.0-alpha.0.tgz
+npm install @belweave/search-sdk@alpha
 ```
 
-The [alpha release](https://github.com/Belweave/searchSDK/releases/tag/v0.1.0-alpha.0)
-provides the tarball and its SHA-256 checksum. Install the downloaded file in the
-same way. An npm registry install command will follow package publication.
+For a new project, run `npm init --yes` first. The `.mjs` examples run directly
+with Node; TypeScript declarations are included for typed applications.
 
 ## Try it without credentials
 
-```ts
+Save as `example.mjs` and run `node example.mjs`:
+
+```js
 import { createSearch } from '@belweave/search-sdk';
 import { createMockProvider } from '@belweave/search-sdk/testing';
 
@@ -46,21 +36,36 @@ following real-provider examples belong on a server and may incur charges.
 
 ## Search with Context, fall back to TinyFish
 
-```ts
+Add `.env` to your server project's `.gitignore`. In the local file, set
+`CONTEXT_API_KEY` and `TINYFISH_API_KEY` to your provider keys. Save this as
+`search.mjs`:
+
+```js
 import { createSearch } from '@belweave/search-sdk';
 import { context } from '@belweave/search-sdk/context';
 import { tinyfish } from '@belweave/search-sdk/tinyfish';
 
+const contextKey = process.env.CONTEXT_API_KEY;
+const tinyfishKey = process.env.TINYFISH_API_KEY;
+if (!contextKey || !tinyfishKey) throw new Error('Both provider keys are required');
+
 const { web } = createSearch({
-  provider: context({ apiKey: process.env.CONTEXT_API_KEY! }),
-  fallback: [tinyfish({ apiKey: process.env.TINYFISH_API_KEY! })],
+  provider: context({ apiKey: contextKey }),
+  fallback: [tinyfish({ apiKey: tinyfishKey })],
   timeoutMs: 10_000,
   attemptTimeoutMs: 4_000,
 });
-
-const response = await web.search({ query: 'SQLite write concurrency', limit: 5 });
+const response = await web.search(
+  { query: 'SQLite write concurrency', limit: 5 },
+  { signal: AbortSignal.timeout(10_000) },
+);
 console.log(response.results, response.attempts);
 ```
+
+Run `node --env-file=.env search.mjs` locally. In production, inject the keys
+through your host's server secret configuration and run `node search.mjs`.
+Node or the host loads the environment; the SDK does not load `.env` files.
+Provider calls, retries, and fallback can incur charges.
 
 Keys stay on your server. Normalized adapters are available at `/context`,
 `/tinyfish`, `/exa`, `/tavily`, `/brave`, `/perplexity`, `/parallel`, `/linkup`,
@@ -222,6 +227,24 @@ From a checkout: `npm ci`, then `npm run check`. Tests use compiled SDK output
 with mocked providers and injected transports. Fixtures, declaration checks, and
 official endpoint inventories validate SDK contracts; authenticated live-provider
 verification and comparative benchmarks are still pending.
+
+## Optional: build from source
+
+Use a checkout to test unreleased changes or contribute:
+
+```sh
+git clone https://github.com/Belweave/searchSDK.git
+cd searchSDK
+nvm use
+npm ci
+npm run build:sdk
+npm pack -w @belweave/search-sdk
+```
+
+In your server application, install the actual generated file with
+`npm install /path/to/belweave-search-sdk-0.1.0-alpha.0.tgz`.
+The checkout's `.nvmrc` selects the development runtime. These commands do not
+publish the package.
 
 ## License and security
 

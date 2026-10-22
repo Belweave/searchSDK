@@ -1,7 +1,11 @@
 {
   "name": "@belweave/search-sdk",
   "version": "0.1.0-alpha.0",
-  "private": true,
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha",
+    "registry": "https://registry.npmjs.org/"
+  },
   "type": "module",
   "description": "Typed multi-provider search and provider-native API clients, with explicit reliability policies.",
   "sideEffects": false,

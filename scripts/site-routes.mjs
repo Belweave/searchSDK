@@ -1,13 +1,16 @@
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { resolve } from "node:path";
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { createServer } from "vite";
+import { pageMarkdownPath, siteRoutes, siteOrigin } from "./site-agent-data.mjs";
 
 const root = new URL("../", import.meta.url);
 const web = new URL("apps/web/", root);
-const dist = new URL("dist/", web);
-const origin = "https://searchsdk.dev";
+const outputFlag = process.argv.indexOf('--out-dir');
+const dist = outputFlag < 0 ? new URL("dist/", web) : pathToFileURL(resolve(process.argv[outputFlag + 1]) + '/');
+const origin = siteOrigin;
 const socialImage = `${origin}/social/searchsdk-card-v2.jpg`;
 const socialImageAlt = "searchSDK centered among its 15 provider logos on a dithered background.";
 const escape = (text) => String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -35,6 +38,10 @@ function metadata(route) {
     `<title>${escape(route.title)}</title>`,
     meta("name", "description", route.description),
     `<link rel="canonical" href="${origin}${escape(route.path)}" />`,
+    ...(!route.notFound ? [
+      `<link rel="alternate" type="text/markdown" href="${origin}${escape(pageMarkdownPath(route.path))}" />`,
+      `<link rel="describedby" href="${origin}/llms.txt" />`,
+    ] : []),
     ...Object.entries({
       "og:type": "website",
       "og:site_name": "searchSDK",
@@ -60,22 +67,6 @@ function metadata(route) {
   ].join("\n");
 }
 
-function markdown(article) {
-  const tableCell = (value) => value.replace(/\|/g, "\\|").replace(/\n/g, "<br>");
-  const block = (item) => {
-    switch (item.type) {
-      case "paragraph": return item.text;
-      case "code": return `\`\`\`${item.language}\n${item.code}\n\`\`\``;
-      case "list": return item.items.map((text, index) => `${item.ordered ? `${index + 1}.` : "-"} ${text}`).join("\n");
-      case "callout": return `> **${item.title}**\n> ${item.text.replace(/\n/g, "\n> ")}`;
-      case "links": return item.items.map((link) => `- [${link.label}](${link.href.startsWith("/") ? origin + link.href : link.href})${link.description ? ` — ${link.description}` : ""}`).join("\n");
-      case "table": return [item.columns, item.columns.map(() => "---"), ...item.rows].map((row) => `| ${row.map(tableCell).join(" | ")} |`).join("\n");
-      default: throw new Error(`Unknown documentation block: ${item.type}`);
-    }
-  };
-  return `# ${article.title}\n\n${article.description}\n\nSource: ${origin}/docs${article.slug ? `/${article.slug}` : ""}\n\n${article.sections.map((section) => `## ${section.title}\n\n${section.blocks.map(block).join("\n\n")}`).join("\n\n")}\n`;
-}
-
 try {
   const { docArticles } = await server.ssrLoadModule("/src/docs/content.ts");
   const { App } = await server.ssrLoadModule("/src/pages/App.tsx");
@@ -83,14 +74,7 @@ try {
   const { DocsWorkspace } = await server.ssrLoadModule("/src/docs/DocsWorkspace.tsx");
   const { Benchmarks } = await server.ssrLoadModule("/src/Benchmarks.tsx");
   const staticWorkspaces = { docs: DocsWorkspace, benchmarks: Benchmarks };
-  const routes = [
-    { path: "/", title: "searchSDK · Web search for TypeScript apps.", description: "Choose your sources. Set your fallback. Get typed web-search results and a record of every attempt, with 15 provider integrations." },
-    { path: "/providers", title: "Providers · searchSDK", description: "Compare 15 provider integrations, explore their search and native API capabilities, and find the TypeScript reference for each." },
-    { path: "/playground", title: "Playground · searchSDK", description: "Try search, fallback, cancellation, and errors in an interactive SDK demo. Inspect the result and every provider attempt." },
-    { path: "/benchmarks", title: "Search provider benchmarks · searchSDK", description: "In development: reproducible comparisons of search relevance, latency, cost, and reliability. No benchmark scores published yet." },
-    ...docArticles.map((article) => ({ path: article.slug ? `/docs/${article.slug}` : "/docs", title: `${article.label ?? article.title} · searchSDK Docs`, description: article.description, article })),
-    { path: "/404", title: "Page not found · searchSDK", description: "Find your next step in the searchSDK documentation.", notFound: true },
-  ];
+  const routes = siteRoutes(docArticles);
   const paths = new Set();
   for (const route of routes) {
     if (paths.has(route.path) || !/^\/(?:[a-z0-9-]+(?:\/[a-z0-9-]+)*)?$/.test(route.path)) throw new Error(`Invalid or duplicate route: ${route.path}`);
@@ -104,16 +88,9 @@ try {
     await mkdir(new URL("./", target), { recursive: true });
     await writeFile(target, html);
     route.file = file;
-    if (route.article) await writeFile(new URL(`${route.path.slice(1)}.md`, dist), markdown(route.article));
   }
-  const publicRoutes = routes.filter((route) => !route.notFound);
-  const urlSet = publicRoutes.map((route) => `  <url><loc>${origin}${escape(route.path)}</loc></url>`).join("\n");
-  await writeFile(new URL("sitemap.xml", dist), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlSet}\n</urlset>\n`);
-  await writeFile(new URL("robots.txt", dist), `User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n`);
-  await writeFile(new URL("llms.txt", dist), `# searchSDK\n\n> Alpha TypeScript search SDK by Belweave. Provider contracts are documentation- and fixture-verified; no live-provider or benchmark claims.\n\n## Documentation\n\n${docArticles.map((article) => `- [${article.label ?? article.title}](${origin}/docs${article.slug ? `/${article.slug}` : ""}.md): ${article.description}`).join("\n")}\n\n## Resources\n\n- [Complete documentation](${origin}/llms-full.txt)\n- [Provider catalog](${origin}/providers)\n- [Benchmark protocol draft](${origin}/benchmark-methodology.json)\n`);
-  await writeFile(new URL("llms-full.txt", dist), docArticles.map(markdown).join("\n---\n\n"));
   await writeFile(new URL("route-manifest.json", dist), JSON.stringify(routes.map(({ path, file, title, description, notFound }) => ({ path, file, title, description, ...(notFound ? { notFound } : {}) })), null, 2) + "\n");
-  console.log(`Prerendered ${routes.length} routes; exported ${docArticles.length} Markdown articles, sitemap, and LLM reference.`);
+  console.log(`Prerendered ${routes.length} routes; agent artifacts generated by site-docs.mjs and copied by Vite.`);
 } finally {
   await server.close();
 }

@@ -19,13 +19,15 @@
     "test:docs": "node apps/web/src/docs/verify-docs.mjs",
     "test:site": "node scripts/verify-site.mjs",
     "typecheck": "npm run typecheck -w @belweave/search-sdk-site",
-    "check": "npm run check:public && npm run check:generators && npm run test && npm run typecheck && npm run build && npm run test:docs && npm run test:site && npm run test:package && npm run test:benchmarks",
+    "check": "npm run check:public && npm run check:generators && npm run test && npm run typecheck && npm run build && npm run test:server && npm run test:docs && npm run test:site && npm run test:package && npm run test:benchmarks",
     "build:vercel": "npm run check && node scripts/vercel-output.mjs",
+    "release:prepare": "npm run check && node scripts/prepare-release.mjs",
     "benchmark:plan": "node benchmarks/run.mjs --mode plan",
     "benchmark:fixture": "node benchmarks/run.mjs --mode fixture",
     "test:benchmarks": "node --test --test-concurrency=1 benchmarks/test/*.test.mjs",
     "check:public": "node scripts/verify-public-tree.mjs",
-    "check:generators": "python3 -B scripts/providers-a/generate.py --check && python3 -B scripts/providers-b/verify.py"
+    "check:generators": "python3 -B scripts/providers-a/generate.py --check && python3 -B scripts/providers-b/verify.py",
+    "test:server": "node --test --test-concurrency=1 apps/web/server/test/*.test.mjs"
   },
   "devDependencies": {
     "typescript": "7.0.2"

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 
 const repository = fileURLToPath(new URL('../../../../', import.meta.url));
-const server = await createServer({ configFile: resolve(repository, 'apps/web/vite.config.ts'), server: { middlewareMode: true }, appType: 'custom' });
+const server = await createServer({ configFile: resolve(repository, 'apps/web/vite.config.ts'), server: { middlewareMode: true, watch: null, hmr: false }, appType: 'custom' });
 let directory;
 try {
   const { docArticles, findArticle, searchArticles } = await server.ssrLoadModule(resolve(repository, 'apps/web/src/docs/content.ts'));

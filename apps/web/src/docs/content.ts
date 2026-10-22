@@ -1,12 +1,14 @@
 import { coreArticles } from "./articles.js";
 import { providerArticles } from "./provider-articles.js";
 import { nativeArticles } from "./native-articles.js";
+import { boatArticles } from "./boat-articles.js";
+import { agentArticles } from "./agent-articles.js";
 import type { DocArticle, DocBlock, DocGroup, DocSection } from "./model.js";
 import { docHref } from "./model.js";
 
 // Public build-time metadata/content entrypoint. Pure data: no DOM, fetch, or SDK execution.
 export const docGroups: readonly DocGroup[] = ["Get started", "Guides", "API reference", "Providers", "Reliability"];
-export const docArticles: readonly DocArticle[] = docGroups.flatMap(group => [...coreArticles, ...nativeArticles, ...providerArticles].filter(article => article.group === group));
+export const docArticles: readonly DocArticle[] = docGroups.flatMap(group => [...coreArticles, ...boatArticles, ...agentArticles, ...nativeArticles, ...providerArticles].filter(article => article.group === group));
 
 export function findArticle(path: string): DocArticle | undefined {
   const pathname = path.split(/[?#]/, 1)[0].replace(/\/+$/, "") || "/";
