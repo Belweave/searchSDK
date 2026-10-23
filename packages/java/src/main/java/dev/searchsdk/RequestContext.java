@@ -34,6 +34,10 @@ public final class RequestContext implements AutoCloseable {
         return d.toNanos();
     }
     private void stop(SearchException.Code code) { synchronized(this) { if(stopped!=null) return; stopped=code; } token.cancel(); }
+    SearchException transportTimeout() {
+        stop(timeoutCode);
+        return new SearchException(stopped);
+    }
     public CancellationToken cancellation() { return token; }
     public int maxResponseBytes() { return maximum; }
     public Duration remaining() { check(); return Duration.ofNanos(Math.max(1,deadline-System.nanoTime())); }

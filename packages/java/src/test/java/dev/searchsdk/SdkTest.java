@@ -33,6 +33,7 @@ public final class SdkTest {
         test("native independent wire fixtures and supplemental bindings",SdkTest::nativeWire);
         test("complete generated operation dispatch and mode coverage",SdkTest::nativeCatalog);
         test("incremental SSE decoding, backpressure, cancellation and limits",SdkTest::sse);
+        test("JDK deadline error classification before context timer",SdkTest::transportTimeout);
         test("JDK HttpClient loopback integration",SdkTest::loopback);
         System.out.println("PASS: "+groups+" groups, "+assertions+" assertions; synthetic/injected/loopback only");
     }
@@ -517,6 +518,25 @@ public final class SdkTest {
         closedPublisher.close();
         NativeEventStream eof=new NativeEventStream(streamResponse("data: no-dispatch".getBytes(StandardCharsets.UTF_8),1,new AtomicBoolean()).body(),RequestContext.create(Duration.ofSeconds(1),1000,null),() -> {});
         equal(await(collect(eof)).size(),0,"EOF does not dispatch an unterminated SSE event");
+    }
+    static void transportTimeout() throws Exception {
+        for(SearchException.Code code:List.of(TIMEOUT,ATTEMPT_TIMEOUT)) {
+            try(RequestContext context=new RequestContext(Duration.ofSeconds(30),1000,null,code)) {
+                Throwable wrapped=new CompletionException(new java.net.http.HttpTimeoutException(KEY));
+                error(() -> { throw JdkTransport.failure(wrapped,context); },code);
+                error(context::check,code);
+                check(context.cancellation().isCancelled(),"JDK timeout cancels pending context work");
+            }
+        }
+        CancellationToken cancelled=new CancellationToken();cancelled.cancel();
+        try(RequestContext context=RequestContext.create(Duration.ofSeconds(30),1000,cancelled)) {
+            error(() -> { throw JdkTransport.failure(new java.net.http.HttpTimeoutException(KEY),context); },ABORTED);
+        }
+        try(RequestContext context=RequestContext.create(Duration.ofSeconds(30),1000,null)) {
+            error(() -> { throw JdkTransport.failure(new java.io.IOException(KEY),context); },NETWORK);
+            context.check();
+            check(!context.cancellation().isCancelled(),"network errors do not expire the context");
+        }
     }
     static void loopback() throws Exception {
         Object gateway=fixture("search-success.json");AtomicInteger redirected=new AtomicInteger(),requests=new AtomicInteger();

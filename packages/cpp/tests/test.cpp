@@ -60,7 +60,8 @@ Json form(std::string_view encoded) {
     while (!encoded.empty()) {
         const auto end=encoded.find('&'); auto part=encoded.substr(0,end); const auto equals=part.find('=');
         fields.emplace_back(decode_uri(part.substr(0,equals)),Json::string(equals==std::string_view::npos?"":decode_uri(part.substr(equals+1))));
-        if (end==std::string_view::npos) break; encoded.remove_prefix(end+1);
+        if (end==std::string_view::npos) break;
+        encoded.remove_prefix(end+1);
     }
     return Json::object(fields);
 }
@@ -277,7 +278,8 @@ void all_named_operations() {
             if (op->response_mode=="json") w.write("{}");
             else if (op->response_mode=="sse") w.write("event: result\nid: 1\nretry: 50\ndata: {\"ok\":true}\n\n");
             else if (op->response_mode=="bytes" || op->response_mode=="raw") w.write(std::string_view("a\0b",3));
-            else w.write("native fixture");stage="transport complete";
+            else w.write("native fixture");
+            stage="transport complete";
         }));
         try {
             auto input=native_input(*op);stage="input built";

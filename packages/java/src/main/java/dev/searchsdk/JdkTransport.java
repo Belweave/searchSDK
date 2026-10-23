@@ -25,6 +25,15 @@ public final class JdkTransport implements Transport {
         .connectTimeout(Duration.ofSeconds(10)).version(HttpClient.Version.HTTP_2).build();
     private static final JdkTransport SHARED=new JdkTransport();
     public static JdkTransport shared() { return SHARED; }
+    static SearchException failure(Throwable error,RequestContext context) {
+        // The JDK deadline can win before our scheduled timer observes the same deadline.
+        Set<Throwable> seen=Collections.newSetFromMap(new IdentityHashMap<>());
+        for(Throwable cause=error; cause!=null && seen.size()<32 && seen.add(cause); cause=cause.getCause()) {
+            if(cause instanceof SearchException sanitized) return sanitized;
+            if(cause instanceof HttpTimeoutException) return context.transportTimeout();
+        }
+        return SearchException.sanitize(error);
+    }
     @Override public CompletionStage<Response> send(Request request, RequestContext context) {
         return context.race(() -> {
             HttpRequest.Builder b=HttpRequest.newBuilder(request.uri()).timeout(context.remaining());
@@ -37,11 +46,11 @@ public final class JdkTransport implements Transport {
                 boolean reject=!encoding.equalsIgnoreCase("identity");
                 long length=info.headers().firstValueAsLong("content-length").orElse(-1);
                 SearchException ceilingFailure=info.statusCode()<200 || info.statusCode()>=300 ? HttpSupport.error(new Transport.Response(info.statusCode(),info.headers().map(),new byte[0])) : Values.invalid();
-                return new LimitedSubscriber(context.maxResponseBytes(),context.cancellation(),reject || length>context.maxResponseBytes(),ceilingFailure);
+                return new LimitedSubscriber(context,reject || length>context.maxResponseBytes(),ceilingFailure);
             });
             CompletableFuture<Response> result=new CompletableFuture<>();
             sent.whenComplete((v,e) -> {
-                if(e!=null) result.completeExceptionally(SearchException.sanitize(e));
+                if(e!=null) result.completeExceptionally(failure(e,context));
                 else result.complete(new Response(v.statusCode(),v.headers().map(),v.body()));
             });
             result.whenComplete((v,e) -> { if(!sent.isDone()) sent.cancel(true); });
@@ -56,7 +65,7 @@ public final class JdkTransport implements Transport {
             CompletableFuture<HttpResponse<Flow.Publisher<List<ByteBuffer>>>> sent=client.sendAsync(b.build(),HttpResponse.BodyHandlers.ofPublisher());
             CompletableFuture<StreamResponse> result=new CompletableFuture<>();
             sent.whenComplete((v,e) -> {
-                if(e!=null) result.completeExceptionally(SearchException.sanitize(e));
+                if(e!=null) result.completeExceptionally(failure(e,context));
                 else {
                     StreamResponse response=new StreamResponse(v.statusCode(),v.headers().map(),v.body());
                     if(!result.complete(response)) NativeEventStream.discard(response.body());
@@ -69,11 +78,12 @@ public final class JdkTransport implements Transport {
         final CompletableFuture<byte[]> body=new CompletableFuture<>();
         final ByteArrayOutputStream bytes=new ByteArrayOutputStream();
         final int maximum; final boolean reject; final SearchException ceilingFailure;
+        final RequestContext context;
         final CancellationToken.Registration registration;
         Flow.Subscription subscription;
-        LimitedSubscriber(int maximum,CancellationToken token,boolean reject,SearchException ceilingFailure) {
-            this.maximum=maximum; this.reject=reject; this.ceilingFailure=ceilingFailure;
-            registration=token.onCancel(() -> fail(new SearchException(SearchException.Code.ABORTED)));
+        LimitedSubscriber(RequestContext context,boolean reject,SearchException ceilingFailure) {
+            this.context=context; this.maximum=context.maxResponseBytes(); this.reject=reject; this.ceilingFailure=ceilingFailure;
+            registration=context.cancellation().onCancel(() -> fail(new SearchException(SearchException.Code.ABORTED)));
             body.whenComplete((v,e) -> registration.close());
         }
         @Override public CompletionStage<byte[]> getBody() { return body; }
@@ -89,7 +99,7 @@ public final class JdkTransport implements Transport {
             }
             subscription.request(1);
         }
-        @Override public void onError(Throwable t) { fail(SearchException.sanitize(t)); }
+        @Override public void onError(Throwable t) { fail(failure(t,context)); }
         @Override public synchronized void onComplete() { body.complete(bytes.toByteArray()); }
         synchronized void fail(SearchException e) { body.completeExceptionally(e); if(subscription!=null) subscription.cancel(); }
     }
