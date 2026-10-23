@@ -1,6 +1,7 @@
 // searchSDK alpha recipe. Run on a server or in your own Boat sandbox.
 // Setup and lifecycle: https://searchsdk.dev/docs/guides/boat
-// Install in your sandbox application: npm install @belweave/search-sdk@alpha
+// Build the TypeScript tarball from source, then install it in your sandbox.
+// Instructions: https://searchsdk.dev/docs/guides/boat
 // Commit the package lockfile to retain the resolved prerelease version.
 // Default: deterministic fixtures, no provider requests.
 // --live: one Context.dev search; requires your own CONTEXT_API_KEY.

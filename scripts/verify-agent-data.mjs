@@ -13,6 +13,17 @@ export async function verifyAgentData(directory) {
   const index = JSON.parse(await text('/agent-index.json'));
   const capabilities = JSON.parse(await text('/provider-capabilities.json'));
   assert.equal(data.schemaVersion, 1);
+  const sdkCatalog = JSON.parse(await text('/sdk-catalog.json'));
+  assert.equal(index.sdkCatalogUrl, `${origin}/sdk-catalog.json`);
+  assert.equal(sdkCatalog.availability, 'source-alpha');
+  assert.equal(sdkCatalog.sdks.length, 12);
+  assert.equal(new Set(sdkCatalog.sdks.map(sdk => sdk.id)).size, 12);
+  assert.equal(sdkCatalog.sdks.filter(sdk => sdk.target === 'server').length, 8);
+  assert.equal(sdkCatalog.sdks.filter(sdk => sdk.target === 'app').length, 4);
+  for (const sdk of sdkCatalog.sdks) {
+    assert(data.docs.some(doc => doc.url === sdk.url), `Missing SDK documentation: ${sdk.id}`);
+    assert(sdk.runtime && sdk.packageName && sdk.version && sdk.limits.length, `Incomplete SDK catalog entry: ${sdk.id}`);
+  }
   assert.deepEqual(capabilities.providers, data.providers, 'Provider capability export diverges from MCP data');
   assert.deepEqual(index.articles, data.docs.map(({ text, ...doc }) => doc), 'Article index diverges from MCP data');
   assert.equal(index.mcp.url, `${origin}/mcp`);

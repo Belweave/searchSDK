@@ -1,13 +1,13 @@
 <p align="center">
   <a href="https://searchsdk.dev">
-    <img src="apps/web/public/social/searchsdk-card-v2.jpg" alt="searchSDK — web search for TypeScript apps" width="960" />
+    <img src="apps/web/public/social/searchsdk-card-v3.jpg" alt="searchSDK — Search anywhere. In your language." width="960" />
   </a>
 </p>
 
 <h1 align="center">searchSDK</h1>
 
 <p align="center">
-  Typed search across providers. Explicit fallback. Sources you can trace.<br />
+  Search anywhere. In your language.<br />
   Built by <a href="https://belweave.com">Belweave</a>.
 </p>
 
@@ -21,28 +21,61 @@
 <p align="center">
   <a href="https://searchsdk.dev/docs">Documentation</a> ·
   <a href="https://searchsdk.dev/playground">Try the playground</a> ·
-  <a href="packages/sdk/README.md">SDK reference</a> ·
+  <a href="https://searchsdk.dev/docs/sdks">Choose your SDK</a> ·
   <a href="CONTRIBUTING.md">Contribute</a>
 </p>
 
-searchSDK gives server-side TypeScript apps one web-search contract while keeping
-provider choice visible. Use normalized results for retrieval, provider-native
-clients for specialized operations, and deterministic mocks for local development.
-The SDK is ESM with TypeScript declarations and zero runtime dependencies.
+searchSDK brings search to your server and your app, with explicit provider
+choice, traceable sources, and bounded requests. Choose from twelve language
+and platform SDKs. Server SDKs call providers directly; app SDKs call your own
+authenticated HTTPS gateway so provider keys stay on the server.
 
-**Alpha `0.1.0-alpha.0`.** APIs may change before a stable release. Use the
-`alpha` channel and commit your package lockfile to keep the resolved version.
+**Source alpha.** APIs may change. These packages are available from this
+repository and locally built artifacts; registry publication is not claimed.
+Record the source revision alongside your application's dependency lock.
 
-## Install
+## Choose your SDK
 
-Use Node 24.22.1 or a newer patched Node 24 release. In your server application:
+| Language or platform | Runs in | Install, examples, and limits |
+| --- | --- | --- |
+| TypeScript / JavaScript | Node server | [Guide](https://searchsdk.dev/docs/sdks/typescript) · [Source](packages/sdk) |
+| Python | Server | [Guide](https://searchsdk.dev/docs/sdks/python) · [Source](packages/python) |
+| Go | Server | [Guide](https://searchsdk.dev/docs/sdks/go) · [Source](packages/go) |
+| Java | JVM server | [Guide](https://searchsdk.dev/docs/sdks/java) · [Source](packages/java) |
+| Rust | Server | [Guide](https://searchsdk.dev/docs/sdks/rust) · [Source](packages/rust) |
+| C# / .NET | Server | [Guide](https://searchsdk.dev/docs/sdks/dotnet) · [Source](packages/dotnet) |
+| C | POSIX server | [Guide](https://searchsdk.dev/docs/sdks/c) · [Source](packages/c) |
+| C++ | POSIX server | [Guide](https://searchsdk.dev/docs/sdks/cpp) · [Source](packages/cpp) |
+| Swift | Apple apps, through your gateway | [Guide](https://searchsdk.dev/docs/sdks/swift) · [Source](packages/swift) |
+| Kotlin / Android | Android apps, through your gateway | [Guide](https://searchsdk.dev/docs/sdks/android) · [Source](packages/android) |
+| React Native | iOS and Android, through your gateway | [Guide](https://searchsdk.dev/docs/sdks/react-native) · [Source](packages/react-native) |
+| Expo | Development builds, through your gateway | [Guide](https://searchsdk.dev/docs/sdks/expo) · [Source](packages/expo) |
+
+The server SDKs cover fourteen normalized search adapters and 493 retained native
+bindings across thirteen providers. Runtime support, policy APIs, and native
+response handling differ: read your language guide before integrating. Mobile
+SDKs expose normalized search through the [application gateway](https://searchsdk.dev/docs/guides/application-gateway),
+not direct provider credentials. Expo requires a native development build.
+
+## Try TypeScript locally
+
+Use Node from [.nvmrc](.nvmrc). Build a package from this checkout:
 
 ```sh
-npm install @belweave/search-sdk@alpha
+git clone https://github.com/Belweave/searchSDK.git
+cd searchSDK
+git rev-parse HEAD
+nvm use
+npm ci
+npm run build:sdk
+npm pack -w @belweave/search-sdk
 ```
 
-For a new application, run `npm init --yes` first. No compiler or additional
-runtime dependency is needed for the `.mjs` examples below.
+In your server application, install the generated tarball with
+`npm install /absolute/path/searchSDK/belweave-search-sdk-0.1.0-alpha.0.tgz`.
+This SDK is ESM with TypeScript declarations and zero runtime dependencies.
+The following examples use its JavaScript API; each language guide has its own
+installation and first-search example.
 
 ## Start without API keys
 
@@ -120,7 +153,7 @@ results. Worker concurrency is bounded; a shared deadline or `signal` also stops
 queued items. Each dispatched search retains the client's provider and policies.
 See the [batch search guide](docs/batch-search.md) for cancellation and outcome handling.
 
-## What you control
+## TypeScript policies
 
 - **Provider choice.** Fallback is explicit. Authentication failures, invalid
   responses, and empty results do not silently route to another provider.
@@ -178,12 +211,13 @@ request, not a comparative benchmark.
 - [Contributing](CONTRIBUTING.md): local checks and reproducible provider changes.
 - [Security policy](SECURITY.md): private reporting and integration boundaries.
 
-The repository contains the SDK in `packages/sdk` and the static React/Vite docs
-and server-backed playground in `apps/web`. Run `npm run check` for SDK tests, type
+The repository contains language SDKs in `packages/`, shared contract fixtures
+in `sdk-contract/`, and the static React/Vite docs and server-backed playground
+in `apps/web`. Run `npm run check` for SDK tests, type
 checks, static-site checks, and packed-consumer verification. The CI workflow runs
 these checks without provider credentials. It does not publish packages or deploy.
 
-## Optional: build from source
+## Develop the workspace
 
 For contributions or unreleased changes, use Node from [.nvmrc](.nvmrc):
 

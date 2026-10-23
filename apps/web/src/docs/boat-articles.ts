@@ -12,7 +12,7 @@ export const boatArticles: readonly DocArticle[] = [
     sections: [
       s("before-you-start", "Before you start",
         p("Boat provides Ubuntu sandboxes with SSH and Node. This guide runs searchSDK inside a sandbox you create and control. The downloadable runner uses deterministic fixtures by default. It does not create or manage a sandbox."),
-        list("You need your own Boat account and an installed, signed-in Boat CLI. Follow Boat's official quickstart, review its installer before executing it, and check its current billing terms before creating a sandbox.", "Install `@belweave/search-sdk@alpha` in the sandbox application. Alpha APIs may change; retain package-lock.json to reproduce the resolved version.", "Use Node `24.22.1` or a newer patched Node 24 release. The fixture needs no search-provider key. Optional live search needs your own Context.dev key and can incur provider charges."),
+        list("You need your own Boat account and an installed, signed-in Boat CLI. Follow Boat's official quickstart, review its installer before executing it, and check its current billing terms before creating a sandbox.", "Build the TypeScript SDK from a reviewed source checkout and install its local tarball in the sandbox application. Public npm availability is not assumed.", "Use Node `24.22.1` or a newer patched Node 24 release. The fixture needs no search-provider key. Optional live search needs your own Context.dev key and can incur provider charges."),
         callout("Verification boundary", "The SDK contract and fixture runner are checked locally. A live Boat session and live provider search have not been verified. This is a setup recipe, not a benchmark or a partnership claim."),
         links({ label: "Boat quickstart", href: "https://docs.boat.dev/quickstart" }, { label: "Boat pricing", href: "https://docs.boat.dev/pricing" }, { label: "Optional source build", href: "/docs/installation#pack-locally" }, { label: "Download search.mjs", href: "/recipes/boat/search.mjs", description: "Save the file in your sandbox application and inspect it before running. Fixture mode is the default." })),
       s("open-a-sandbox", "1. Open your sandbox",
@@ -31,11 +31,18 @@ npm --version`, "bash"),
         p("Use Node `24.22.1` or a newer patched Node 24 release before continuing. If you already use nvm, run `nvm install 24.22.1` and `nvm use 24.22.1`. Otherwise, follow Node's official installation instructions for your sandbox architecture."),
         links({ label: "Official Node downloads", href: "https://nodejs.org/en/download" })),
       s("build-the-alpha", "3. Install searchSDK",
-        p("Create a server application inside the sandbox and install the alpha channel. The package is ESM with declarations and zero runtime dependencies. Keep the generated lockfile if you retain the project."),
-        code("Inside the sandbox · Bash", `mkdir searchsdk-boat
+        p("Build the TypeScript SDK from a reviewed checkout, then install its generated artifact in a separate server application. Keep the source revision and application lockfile. This does not require a published npm release."),
+        code("Inside the sandbox · Bash", `git clone https://github.com/Belweave/searchSDK.git
+cd searchSDK
+git rev-parse HEAD
+npm ci
+npm run build:sdk
+npm pack -w @belweave/search-sdk
+cd ..
+mkdir searchsdk-boat
 cd searchsdk-boat
 npm init --yes
-npm install @belweave/search-sdk@alpha`, "bash"),
+npm install ../searchSDK/belweave-search-sdk-0.1.0-alpha.0.tgz`, "bash"),
         links({ label: "Installation and optional source build", href: "/docs/installation" })),
       s("run-the-fixture", "4. Inspect and run the recipe",
         p("In `searchsdk-boat`, download the plain ESM file from this documentation site, inspect it, then execute it. It requires no extra runtime dependencies beyond the SDK package. You can also save the linked file locally and copy it with Boat's documented `boat scp` command."),

@@ -1,15 +1,18 @@
 # SDK integration guide
 
-The SDK provides fourteen normalized web-search adapters across fifteen providers, thirteen provider-native clients, opt-in reliability policies, durable checkpoints, and deterministic testing mocks. Use the alpha channel for the prerelease and retain your package lockfile. Alpha APIs may change before a stable release.
+The SDK provides fourteen normalized web-search adapters across fifteen providers, thirteen provider-native clients, opt-in reliability policies, durable checkpoints, and deterministic testing mocks. Build the source alpha and retain the source revision and package lockfile. Alpha APIs may change before a stable release.
 
 `@belweave/search-sdk` version `0.1.0-alpha.0` is ESM with declarations and zero runtime dependencies. Use Node 24.22.1 or a newer patched Node 24 release; browser fixture demos use the mock. Keep real provider keys on a server. Do not place them in public environment variables or the static site bundle.
 
+This document describes the TypeScript reference implementation. For all twelve
+language/platform SDKs and source builds, see the [SDK chooser](https://searchsdk.dev/docs/sdks).
+
 ## Install and run
 
-In your Node server application (run `npm init --yes` first for a new project):
+First build the artifact following [TypeScript installation](https://searchsdk.dev/docs/sdks/typescript). In your Node server application (run `npm init --yes` first for a new project):
 
 ```sh
-npm install @belweave/search-sdk@alpha
+npm install /absolute/path/searchSDK/belweave-search-sdk-0.1.0-alpha.0.tgz
 ```
 
 Save this plain ESM example as `example.mjs` and run `node example.mjs`:

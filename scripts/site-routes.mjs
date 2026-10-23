@@ -11,7 +11,7 @@ const web = new URL("apps/web/", root);
 const outputFlag = process.argv.indexOf('--out-dir');
 const dist = outputFlag < 0 ? new URL("dist/", web) : pathToFileURL(resolve(process.argv[outputFlag + 1]) + '/');
 const origin = siteOrigin;
-const socialImage = `${origin}/social/searchsdk-card-v2.jpg`;
+const socialImage = `${origin}/social/searchsdk-card-v3.jpg`;
 const socialImageAlt = "searchSDK centered among its 15 provider logos on a dithered background.";
 const escape = (text) => String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const template = await readFile(new URL("index.html", dist), "utf8");

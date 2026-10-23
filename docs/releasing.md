@@ -1,9 +1,14 @@
-# Publishing the SDK
+# Publishing SDK packages
 
-The SDK is `@belweave/search-sdk`. The workspace root and website remain private.
-The initial prerelease is `0.1.0-alpha.0`, published publicly under the `alpha`
-dist-tag. Users install it with `npm install @belweave/search-sdk@alpha`.
-Preparing a release does not publish it or deploy the website.
+The packages are source alphas; registry publication is not claimed. Each
+[package README](../packages/README.md) records its identity, version, build and
+consumer checks. Preparing an artifact does not publish it or deploy the website.
+The workspace root and website remain private npm packages.
+
+The procedure below prepares the TypeScript package `@belweave/search-sdk`,
+currently `0.1.0-alpha.0`. A future publication uses the `alpha` dist-tag only
+after registry availability and permissions have been checked. Other SDKs need
+a deliberate release in their own ecosystem; the npm command does not publish them.
 
 ## Update npm and sign in
 
