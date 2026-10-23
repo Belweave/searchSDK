@@ -33,14 +33,26 @@ def main():
     adb = sdk / "platform-tools/adb"
     scratch = Path(".local")
     scratch.mkdir(exist_ok=True)
+    # avdmanager and emulator versions can choose different default config roots.
+    # Give both the same absolute paths without changing the runner's HOME.
+    android_user = (scratch / "android-user").resolve()
+    avd_home = android_user / "avd"
+    avd_home.mkdir(parents=True, exist_ok=True)
+    os.environ.update(ANDROID_USER_HOME=str(android_user),
+                      ANDROID_EMULATOR_HOME=str(android_user), ANDROID_AVD_HOME=str(avd_home))
     log = scratch / "android-emulator.log"
     process = None
     try:
         # Detect missing host libraries before spawning a background process.
         subprocess.run([str(emulator), "-version"], check=True, timeout=30)
         subprocess.run(["avdmanager", "create", "avd", "--force", "--name", "searchsdk-ci",
+                        "--path", str(avd_home / "searchsdk-ci.avd"),
                         "--package", "system-images;android-36;google_apis;x86_64"],
                        input="no\n", text=True, check=True, timeout=30)
+        listed = subprocess.run([str(emulator), "-list-avds"], capture_output=True,
+                                text=True, check=True, timeout=15)
+        if "searchsdk-ci" not in listed.stdout.splitlines():
+            raise RuntimeError(f"AVD registration missing from {avd_home}: {listed.stdout} {listed.stderr}")
         subprocess.run([str(adb), "start-server"], check=True, timeout=15)
         with log.open("w") as output:
             process = subprocess.Popen(
