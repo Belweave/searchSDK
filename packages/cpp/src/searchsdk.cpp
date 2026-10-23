@@ -84,7 +84,8 @@ std::optional<Json> Json::find(std::string_view name) const {
     require(kind()==Kind::object);
     const auto key=cstring(name);
     const auto* child=ssk_json_get(value_,key.c_str());
-    if (!child) return {}; return Json(owner_,child);
+    if (!child) return {};
+    return Json(owner_,child);
 }
 Json Json::at(std::string_view key) const { auto child=find(key); require(child.has_value()); return *child; }
 std::string Json::key(std::size_t index) const {
@@ -384,7 +385,9 @@ std::optional<std::string> NativeResponse::header(std::string_view name) const {
 }
 std::vector<std::uint8_t> NativeResponse::bytes() const {
     require(value_!=nullptr,Code::configuration); std::size_t size=0; const auto* data=ssk_response_data(value_.get(),&size);
-    if (!size) return {}; require(data!=nullptr); return {data,data+size};
+    if (!size) return {};
+    require(data!=nullptr);
+    return {data,data+size};
 }
 std::string NativeResponse::text() const { auto data=bytes(); if (data.empty()) return {}; return {reinterpret_cast<const char*>(data.data()),data.size()}; }
 std::optional<Json> NativeResponse::json() const {
