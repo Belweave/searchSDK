@@ -8,7 +8,7 @@ import { verifyAgentData } from './verify-agent-data.mjs';
 // exported links, partial SSR, CSP-incompatible output and missing local assets.
 const root = process.argv[2] ? resolve(process.argv[2]) : fileURLToPath(new URL('../apps/web/dist/', import.meta.url));
 const origin = 'https://searchsdk.dev';
-const socialImagePath = '/social/searchsdk-card-v2.jpg';
+const socialImagePath = '/social/searchsdk-card-v3.jpg';
 const socialImage = origin + socialImagePath;
 const socialImageAlt = 'searchSDK centered among its 15 provider logos on a dithered background.';
 const manifest = JSON.parse(await readFile(resolve(root, 'route-manifest.json'), 'utf8'));

@@ -38,3 +38,7 @@ __pycache__/
 *.pyc
 .build/
 .swiftpm/
+
+# Generated website catalogs and local design evidence
+apps/web/public/sdk-catalog.json
+.impeccable/

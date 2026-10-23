@@ -1,7 +1,8 @@
+export type CodeLanguage = "typescript" | "javascript" | "bash" | "json" | "python" | "swift" | "kotlin" | "java" | "go" | "rust" | "c" | "cpp" | "csharp" | "toml" | "xml" | "cmake";
 export type DocBlock =
   | { type: "paragraph"; text: string }
   | { type: "list"; items: readonly string[]; ordered?: boolean }
-  | { type: "code"; code: string; language: "typescript" | "bash" | "json"; title: string }
+  | { type: "code"; code: string; language: CodeLanguage; title: string }
   | { type: "callout"; title: string; text: string; tone?: "note" | "caution" }
   | { type: "table"; columns: readonly string[]; rows: readonly (readonly string[])[] }
   | { type: "links"; items: readonly { label: string; href: string; description?: string }[] };
@@ -11,7 +12,7 @@ export interface DocSection {
   title: string;
   blocks: readonly DocBlock[];
 }
-export type DocGroup = "Get started" | "Guides" | "API reference" | "Providers" | "Reliability";
+export type DocGroup = "Get started" | "SDKs" | "Guides" | "API reference" | "Providers" | "Reliability";
 export interface DocArticle {
   slug: string;
   title: string;
@@ -23,7 +24,7 @@ export interface DocArticle {
 }
 export const paragraph = (text: string): DocBlock => ({ type: "paragraph", text });
 export const list = (...items: string[]): DocBlock => ({ type: "list", items });
-export const code = (title: string, source: string, language: "typescript" | "bash" | "json" = "typescript"): DocBlock => ({ type: "code", title, code: source, language });
+export const code = (title: string, source: string, language: CodeLanguage = "typescript"): DocBlock => ({ type: "code", title, code: source, language });
 export const callout = (title: string, text: string, tone: "note" | "caution" = "note"): DocBlock => ({ type: "callout", title, text, tone });
 export const table = (columns: readonly string[], rows: readonly (readonly string[])[]): DocBlock => ({ type: "table", columns, rows });
 export const links = (...items: { label: string; href: string; description?: string }[]): DocBlock => ({ type: "links", items });

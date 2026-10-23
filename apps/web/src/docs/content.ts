@@ -3,12 +3,22 @@ import { providerArticles } from "./provider-articles.js";
 import { nativeArticles } from "./native-articles.js";
 import { boatArticles } from "./boat-articles.js";
 import { agentArticles } from "./agent-articles.js";
+import { sdkArticles } from "./sdk-articles.js";
 import type { DocArticle, DocBlock, DocGroup, DocSection } from "./model.js";
-import { docHref } from "./model.js";
+import { docHref, callout } from "./model.js";
+
+// The original API and policy articles document the TypeScript implementation.
+// Keep that scope in both the rendered page and generated Markdown/MCP records.
+function scopeTypeScript(article: DocArticle): DocArticle {
+  if (["", "concepts", "providers", "reliability/verification", "sdks/typescript"].includes(article.slug)) return article;
+  return { ...article, sections: article.sections.map((section, index) => index ? section : {
+    ...section, blocks: [callout("TypeScript reference", "The API names, code and policy behavior in this article describe the TypeScript SDK. See [your language guide](/docs/sdks) for its supported surface and limits."), ...section.blocks],
+  }) };
+}
 
 // Public build-time metadata/content entrypoint. Pure data: no DOM, fetch, or SDK execution.
-export const docGroups: readonly DocGroup[] = ["Get started", "Guides", "API reference", "Providers", "Reliability"];
-export const docArticles: readonly DocArticle[] = docGroups.flatMap(group => [...coreArticles, ...boatArticles, ...agentArticles, ...nativeArticles, ...providerArticles].filter(article => article.group === group));
+export const docGroups: readonly DocGroup[] = ["Get started", "SDKs", "Guides", "API reference", "Providers", "Reliability"];
+export const docArticles: readonly DocArticle[] = docGroups.flatMap(group => [...coreArticles.map(scopeTypeScript), ...sdkArticles, ...boatArticles.map(scopeTypeScript), ...agentArticles, ...nativeArticles.map(scopeTypeScript), ...providerArticles.map(scopeTypeScript)].filter(article => article.group === group));
 
 export function findArticle(path: string): DocArticle | undefined {
   const pathname = path.split(/[?#]/, 1)[0].replace(/\/+$/, "") || "/";
@@ -31,7 +41,7 @@ const searchIndex: readonly SearchRecord[] = docArticles.map(article => ({ artic
 export interface DocSearchResult { article: DocArticle; section?: DocSection; href: string; excerpt: string }
 export function searchArticles(query: string): DocSearchResult[] {
   const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  if (!terms.length) return ["quickstart", "providers", "api/search", "api/native-transport", "reliability/fallback", "guides/testing"].flatMap(slug => { const article = docArticles.find(item => item.slug === slug); return article ? [{ article, href: docHref(article.slug), excerpt: article.description }] : []; });
+  if (!terms.length) return ["sdks", "guides/application-gateway", "quickstart", "providers", "reliability/fallback", "guides/testing"].flatMap(slug => { const article = docArticles.find(item => item.slug === slug); return article ? [{ article, href: docHref(article.slug), excerpt: article.description }] : []; });
   return searchIndex.flatMap(record => {
     if (!terms.every(term => `${record.title} ${record.text} ${record.sections.map(section => section.text).join(" ")}`.includes(term))) return [];
     const matching = record.sections.map(value => ({ ...value, score: terms.reduce((score, term) => score + (value.text.includes(term) ? 1 : 0) + (value.section.title.toLowerCase().includes(term) ? 4 : 0), 0) })).sort((a, b) => b.score - a.score)[0];

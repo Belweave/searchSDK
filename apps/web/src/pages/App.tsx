@@ -8,7 +8,7 @@ import { Legal } from "./Legal.js";
 import { legalPages } from "../legal-content.ts";
 
 type Theme = "light" | "dark" | "system";
-const routes = [["/docs", "Docs"], ["/providers", "Providers"], ["/playground", "Playground"], ["/benchmarks", "Benchmarks"]] as const;
+const routes = [["/docs/sdks", "SDKs"], ["/docs", "Docs"], ["/providers", "Providers"], ["/playground", "Playground"], ["/benchmarks", "Benchmarks"]] as const;
 // Independent workspaces can join the shared checkout without breaking its dev server.
 const workspaces = import.meta.glob<Record<string, ComponentType<{ path?: string }>>>(["../docs/DocsWorkspace.tsx", "../Benchmarks.tsx"]);
 function workspace(path: string, name: string, title: string) {
@@ -76,7 +76,7 @@ export function App({ path: suppliedPath, staticWorkspaces }: {
     // DocsWorkspace owns article and documentation-not-found titles.
     if (!docsRoute) {
       const label = routes.find(([route]) => route === path)?.[1] ?? legalPages.find(page => page.path === path)?.title;
-      document.title = path === "/" ? "searchSDK · Web search for TypeScript apps."
+      document.title = path === "/" ? "searchSDK · Search anywhere. In your language."
         : path === "/benchmarks" ? "Search provider benchmarks · searchSDK"
         : label ? `${label} · searchSDK` : "Page not found · searchSDK";
     }
@@ -87,7 +87,7 @@ export function App({ path: suppliedPath, staticWorkspaces }: {
     {path === "/" ? <Home /> : docsRoute ? <Documentation path={path} /> : legalPages.some(page => page.path === path) ? <Legal path={path} /> : path === "/providers" ? <div className="providers-page"><Providers /></div> : path === "/playground" ? <PlaygroundPage /> : path === "/benchmarks" ? <BenchmarkPage /> : <section className="route-page pending-page"><DitherEmpty kind="404" /><h1>Page not found.</h1><p>Find your next step in the docs or return home.</p><a className="text-link" href="/">Return to searchSDK</a></section>}
   </Suspense>;
   return <><DitherMotionController /><a className="skip-link" href="#main-content">Skip to content</a>
-    <header className="site-header"><Brand /><nav aria-label="Main navigation">{routes.map(([route, label]) => <a key={route} href={route} aria-current={(route === "/docs" ? docsRoute : path === route) ? "page" : undefined}>{label}</a>)}</nav>
+    <header className="site-header"><Brand /><nav aria-label="Main navigation">{routes.map(([route, label]) => <a key={route} href={route} aria-current={(route === "/docs/sdks" ? path.startsWith("/docs/sdks") : route === "/docs" ? docsRoute && !path.startsWith("/docs/sdks") : path === route) ? "page" : undefined}>{label}</a>)}</nav>
       <div className="header-tools"><a className="docs-search" href="/docs?search=" onClick={(event) => {
         // An interactive docs workspace acknowledges the request. Until it has
         // hydrated, keep the native link so a search click is never dropped.

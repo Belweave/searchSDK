@@ -1,20 +1,31 @@
 # Working on searchSDK
 
-searchSDK is a TypeScript search SDK and a statically rendered documentation
-site with a bounded server-side playground endpoint and a public read-only
-documentation MCP endpoint. Keep the SDK independent of the website and free of runtime dependencies.
+searchSDK is a family of server and application search SDKs with a statically
+rendered documentation site, a bounded server-side playground endpoint, and a
+public read-only documentation MCP endpoint. Keep SDKs independent of the website.
+The TypeScript SDK must remain free of runtime dependencies; other packages must
+document their runtime and transport dependencies.
 
 ## Development
 
 - Use the Node version in `.nvmrc` and `npm ci`.
 - `npm run dev` serves the site on port 5173.
-- `npm run check` validates the SDK, website, documentation and packaged consumer.
+- `npm run check` validates TypeScript/mobile JavaScript, the website, docs and npm consumers.
+- Follow each `packages/*/README.md` for its native builds and consumer checks.
+  `.github/workflows/sdk-variants.yml` defines the separate language/platform matrix.
 - `npm run build:vercel` produces the checked site and both server functions.
 - `npm run release:prepare` checks and packs the SDK locally; it does not publish.
 - Prefer bounded local builds. Coordinate shared output when working in parallel;
   use isolated output directories for independent tests.
 
 ## Product contracts
+
+- Server SDKs call providers directly. App SDKs call an application-owned,
+  authenticated HTTPS gateway; never ship provider credentials to an app.
+- Publish explicit per-language capabilities, runtime limits and source-alpha
+  installation instructions. A local package identity does not prove registry availability.
+- Regenerate `sdk-contract/` through `scripts/generate-sdk-contract.mjs`; preserve
+  shared fixtures without implying identical policy APIs in every language.
 
 - Keep provider capabilities explicit. Normalized search adapters and native
   endpoint clients are different surfaces; document the supported subset.

@@ -1,6 +1,6 @@
 // Local content/SSR/consumer verification. Uses existing dependencies; never calls providers.
 import { createServer } from 'vite';
-import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, writeFile, rm, readFile, access } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
@@ -38,6 +38,19 @@ try {
   if (findArticle('/docs/quickstart/?search=test')?.slug !== 'quickstart') errors.push('Trailing slash/query route resolution');
   if (searchArticles('TinyFish')[0]?.article.slug !== 'providers/tinyfish') errors.push('TinyFish search ranking');
   for (const term of ['maxRetries', 'Idempotency-Key', 'AbortSignal', 'cache', 'compareAndSet', 'attachDurableRemoteId']) if (!searchArticles(term).length) errors.push(`Missing real search results: ${term}`);
+  const { sdks, sdkHref } = await server.ssrLoadModule(resolve(repository, 'apps/web/src/sdk-catalog.ts'));
+  if (sdks.length !== 12 || new Set(sdks.map(sdk => sdk.id)).size !== 12) errors.push('Expected twelve unique SDKs');
+  if (sdks.filter(sdk => sdk.target === 'server').length !== 8 || sdks.filter(sdk => sdk.target === 'app').length !== 4) errors.push('SDK execution boundary counts');
+  for (const sdk of sdks) {
+    if (!routes.has(sdkHref(sdk.id))) errors.push(`Missing SDK article: ${sdk.id}`);
+    if (!searchArticles(sdk.packageName).some(result => result.article.slug === `sdks/${sdk.id}`)) errors.push(`Package search missing language guide: ${sdk.packageName}`);
+    await access(resolve(repository, `packages/${sdk.directory}/README.md`));
+    if (!sdk.example || !sdk.install || !sdk.verify || !sdk.limits.length) errors.push(`Incomplete SDK integration: ${sdk.id}`);
+    if (['sdk', 'react-native', 'expo'].includes(sdk.directory)) {
+      const metadata = JSON.parse(await readFile(resolve(repository, `packages/${sdk.directory}/package.json`), 'utf8'));
+      if (metadata.name !== sdk.packageName || metadata.version !== sdk.version) errors.push(`Package identity drift: ${sdk.id}`);
+    }
+  }
   if (errors.length) throw new Error(errors.join('\n'));
 
   directory = await mkdtemp(resolve(repository, 'apps/web/src/docs/.consumer-check-'));
@@ -56,7 +69,7 @@ try {
     strict: true, exactOptionalPropertyTypes: true, noUncheckedIndexedAccess: true,
     skipLibCheck: true, noEmit: true, module: 'NodeNext', moduleResolution: 'NodeNext',
     target: 'ES2022', jsx: 'react-jsx', lib: ['ES2022', 'DOM', 'DOM.Iterable'],
-    paths: { '@belweave/search-sdk': [resolve(repository, 'packages/sdk/src/index.ts')], '@belweave/search-sdk/*': [resolve(repository, 'packages/sdk/src/*.ts')] },
+    paths: { '@belweave/search-sdk-react-native': [resolve(repository, 'packages/react-native/src/index.ts')], '@belweave/search-sdk-expo': [resolve(repository, 'packages/expo/dist/index.d.ts')], '@belweave/search-sdk': [resolve(repository, 'packages/sdk/src/index.ts')], '@belweave/search-sdk/*': [resolve(repository, 'packages/sdk/src/*.ts')] },
   }, files: [shim, ...files] }, null, 2));
   try {
     execFileSync(process.execPath, [resolve(repository, 'node_modules/typescript/bin/tsc'), '-p', resolve(directory, 'tsconfig.json')], { encoding: 'utf8' });

@@ -14,13 +14,16 @@ npm ci
 npm run build:sdk
 ```
 
-`packages/sdk` contains the ESM SDK and Node tests. `apps/web` contains the static
-docs and fixture playground. `npm run dev` starts the site; use the URL printed by
+`packages/sdk` contains the TypeScript ESM SDK and Node tests. The other
+`packages/*` directories contain the eleven additional language/platform SDKs;
+start with [the package index](packages/README.md) and each package README.
+`sdk-contract` holds shared generated contracts and synthetic fixtures.
+`apps/web` contains the static docs and server-backed playground. `npm run dev` starts the site; use the URL printed by
 Vite. Provider credentials are unnecessary for the standard development flow.
 
 ## Check your change
 
-For SDK work, rebuild before running tests, since tests import compiled output:
+For TypeScript SDK work, rebuild before running tests, since tests import compiled output:
 
 ```sh
 npm run build:sdk
@@ -40,11 +43,16 @@ Before submitting a pull request, run:
 npm run check
 ```
 
-This checks SDK tests, TypeScript, the static site, docs, and the packed package
+This checks TypeScript and mobile JavaScript tests, the static site, docs, and npm packages
 in an isolated consumer. Run the commands sequentially to keep builds bounded.
 Use `npm run build:vercel` only when you need checked static deployment output;
 it includes the checks above. None of these commands requires provider keys or
 runs a comparative provider benchmark.
+
+For other languages, run the package README’s bounded local build, tests, and
+packaged-consumer checks. The separate `sdk-variants.yml` workflow covers the
+language and platform matrix. Passing `npm run check` alone does not establish
+Swift, Android, Python, JVM, Rust, Go, .NET, C or C++ validation.
 
 ## Change provider contracts carefully
 
@@ -55,6 +63,9 @@ runs a comparative provider benchmark.
 - Add focused tests with injected transports and synthetic fixtures. Cover
   relevant error, cancellation, deadline, filter, and malformed-response behavior.
   Never commit real account responses, credentials, or private queries.
+- Regenerate shared contracts with `node scripts/generate-sdk-contract.mjs` and
+  verify with `npm run check:contracts`. Keep per-language mappings and fixtures
+  aligned; document implementation differences rather than asserting parity.
 - Preserve generator reproducibility. Native clients and their retained sources
   live in `scripts/providers-a` and `scripts/providers-b`; follow the applicable
   directory's instructions rather than editing generated output alone.

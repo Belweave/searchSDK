@@ -7,6 +7,7 @@ import { HomeDitherCorner, HomeDitherSeam, HomeDitherTrace, HomeDitherWaiting } 
 import { usePrefersReducedMotion } from "../lib/dither/motion.js";
 import { providers, alphaProviders } from "../provider-catalog.js";
 import { providerBrandAssets } from "../brand-assets.js";
+import { sdks, sdkHref } from "../sdk-catalog.js";
 import "./home.css";
 
 const example = `import { createSearch } from '@belweave/search-sdk';
@@ -26,6 +27,9 @@ const response = await web.search({
 });`;
 
 function SearchExample() {
+  const [sdkId, setSdkId] = useState("typescript");
+  const sdk = sdks.find(item => item.id === sdkId)!;
+  const snippet = sdkId === "typescript" ? example : sdk.example;
   const [interactive, setInteractive] = useState(false);
   const [response, setResponse] = useState<SearchResponse | null>(null);
   const [busy, setBusy] = useState(false);
@@ -60,17 +64,18 @@ function SearchExample() {
     }
   }
   async function copy() {
-    try { await navigator.clipboard.writeText(example); setNotice("Example copied."); }
+    try { await navigator.clipboard.writeText(snippet); setNotice("Example copied."); }
     catch { setNotice("Clipboard unavailable. Select the example code to copy it."); }
   }
   return <div className="landing-example">
     <HomeDitherTrace busy={busy} complete={response !== null} stage={stage} />
     <div className="landing-code">
-      <div className="landing-panel-bar"><span>search.ts <span className="landing-secondary">/ Example</span></span><button onClick={copy} disabled={!interactive}>Copy code</button></div>
-      <pre tabIndex={0} aria-label="TypeScript search example"><code>{example.split("\n").map((line, i) => <span className={`landing-code-line${line.startsWith("import") ? " landing-code-import" : line.includes("query:") ? " landing-code-query" : ""}`} key={i}>{line || " "}</span>)}</code></pre>
+      <div className="landing-panel-bar"><label className="landing-sdk-select">SDK<select aria-label="Example SDK" value={sdkId} disabled={!interactive} onChange={event => { setSdkId(event.target.value); setNotice(""); }}>{sdks.map(item => <option key={item.id} value={item.id}>{item.id === "typescript" ? "TypeScript / JS" : item.name}</option>)}</select></label><button onClick={copy} disabled={!interactive}>Copy code</button></div>
+      <pre tabIndex={0} aria-label={`${sdk.name} search example`}><code>{snippet.split("\n").map((line, i) => <span className={`landing-code-line${line.startsWith("import") ? " landing-code-import" : line.includes("query:") ? " landing-code-query" : ""}`} key={i}>{line || " "}</span>)}</code></pre>
+      <p className="landing-code-note">{sdk.target === "app" ? "Calls your application gateway. Provider keys stay on your server." : "Server-side example. Supply your own provider credentials."} <a href={sdkHref(sdkId)}>Install {sdk.name}</a></p>
     </div>
     <div className="landing-result">
-      <div className="landing-panel-bar"><span>Demo data</span><button onClick={run} disabled={!interactive || busy}>{busy ? "Searching…" : response ? "Run again" : "Run demo"}<span aria-hidden="true"> ↗</span></button></div>
+      <div className="landing-panel-bar"><span>TypeScript fixture · no key</span><button onClick={run} disabled={!interactive || busy}>{busy ? "Searching…" : response ? "Run again" : "Run demo"}<span aria-hidden="true"> ↗</span></button></div>
       <div className={`landing-result-body${response ? " dither-completion" : ""}`} aria-live="polite" aria-busy={busy}>
         {busy && <DitherProgress label="Running deterministic fallback demo" />}
         {response ? <>
@@ -131,9 +136,9 @@ export function Home() {
   return <div className="landing-page">
     <section className="landing-hero" aria-labelledby="landing-title">
       <div className="landing-intro">
-        <h1 id="landing-title">Web search for<br />TypeScript apps.</h1>
-        <p>Choose your sources. Set your fallback.<br className="landing-desktop-break" /> Get typed results and a record of every attempt.</p>
-        <div className="landing-actions"><a className="landing-primary" href="/docs"><DitherButtonInk /><span>Read the docs</span><span aria-hidden="true">↗</span></a><a className="landing-secondary-action" href="/playground">Open playground <span aria-hidden="true">→</span></a></div>
+        <h1 id="landing-title">Search anywhere.<br />In your language.</h1>
+        <p>Pick your SDK. Choose your provider.<br className="landing-desktop-break" /> Keep the sources and every attempt.</p>
+        <div className="landing-actions"><a className="landing-primary" href="/docs/sdks"><DitherButtonInk /><span>Choose your SDK</span><span aria-hidden="true">↗</span></a><a className="landing-secondary-action" href="/playground">Open playground <span aria-hidden="true">→</span></a></div>
       </div>
       <div ref={art} className="landing-art" tabIndex={0} role="group" aria-label="Search illustration" aria-haspopup="menu" aria-expanded={artMenu !== null} aria-controls={artMenu ? "landing-art-menu" : undefined}
         onClick={event => { const rect = event.currentTarget.getBoundingClientRect(); openArtMenu(rect.left + rect.width / 2, rect.top + rect.height / 2); }}
@@ -147,8 +152,17 @@ export function Home() {
       </div>}
     </section>
     <HomeDitherSeam />
+    <section className="landing-sdks" aria-labelledby="landing-sdks-title">
+      <div className="landing-section-heading"><div><h2 id="landing-sdks-title">From your server<br />to their screen.</h2><p>Twelve SDKs. One shared search contract.<br className="landing-desktop-break" /> Alpha packages, available from source.</p></div><a href="/docs/sdks">Compare support</a></div>
+      <div className="landing-sdk-groups">{(["server", "app"] as const).map(target => <div className={`landing-sdk-group landing-sdk-group-${target}`} key={target}>
+        <h3>{target === "server" ? "On your server" : "In your app"}</h3>
+        <p>{target === "server" ? "Normalized search and provider-native APIs." : "Your HTTPS gateway. Your provider keys stay server-side."}</p>
+        <ul>{sdks.filter(sdk => sdk.target === target).map(sdk => <li key={sdk.id}><a href={sdkHref(sdk.id)}>{sdk.name}<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M3 8h9M8 3l5 5-5 5" /></svg></a></li>)}</ul>
+      </div>)}</div>
+    </section>
+    <HomeDitherSeam reverse />
     <section className="landing-build" aria-labelledby="landing-example-title">
-      <div className="landing-section-heading"><div><h2 id="landing-example-title">One query.<br />Every attempt accounted for.</h2><p>Start with Context.dev. Fall back to TinyFish.<br className="landing-desktop-break" /> Keep the source and the path it took to reach you.</p></div><a href="/docs/reliability/fallback">How fallback works <span aria-hidden="true">↗</span></a></div>
+      <div className="landing-section-heading"><div><h2 id="landing-example-title">Your language.<br />The same source trail.</h2><p>Choose a starter for your SDK.<br className="landing-desktop-break" /> Run the TypeScript fixture to see explicit fallback.</p></div><a href="/docs/reliability/fallback">How fallback works <span aria-hidden="true">↗</span></a></div>
       <SearchExample />
     </section>
     <HomeDitherSeam reverse />
