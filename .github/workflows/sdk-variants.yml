@@ -258,19 +258,16 @@ jobs:
         working-directory: packages/android
         run: ./gradlew -p consumer testReleaseUnitTest assembleRelease --no-daemon --max-workers=2
       - name: Install the Android emulator image
-        run: sdkmanager 'emulator' 'system-images;android-36;google_apis;x86_64'
-      - name: Boot the isolated CI emulator
         run: |
+          sudo apt-get update
+          sudo apt-get install -y libpulse0 libnss3 libasound2t64 libx11-6 libxcb1 libxkbcommon0 libxcomposite1 libxcursor1 libxi6 libxtst6 libxrandr2 libglu1-mesa
+          sdkmanager 'emulator' 'system-images;android-36;google_apis;x86_64'
+      - name: Boot the isolated CI emulator
+        timeout-minutes: 7
+        run: |
+          python3 -B scripts/test-boot-android-ci.py
           sudo chmod a+rw /dev/kvm
-          printf 'no\n' | avdmanager create avd --name searchsdk-ci --package 'system-images;android-36;google_apis;x86_64'
-          mkdir -p .local
-          "$ANDROID_HOME/emulator/emulator" -avd searchsdk-ci -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -memory 2048 -cores 2 > .local/android-emulator.log 2>&1 &
-          adb -s emulator-5554 wait-for-device
-          for attempt in $(seq 1 90); do
-            if [ "$(adb -s emulator-5554 shell getprop sys.boot_completed | tr -d '\r')" = '1' ]; then exit 0; fi
-            sleep 2
-          done
-          exit 1
+          python3 -B scripts/boot-android-ci.py
       - name: Verify installed AAR on Android over local HTTPS
         run: python3 -B packages/android/scripts/verify-device.py --serial emulator-5554
 
