@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPOutputStream;
 import okhttp3.Call;
@@ -26,6 +27,7 @@ import org.junit.Test;
 public class GatewayTransportTest {
   private MockWebServer server;
   private GatewayTransport transport;
+  private final CountDownLatch connectionReleased = new CountDownLatch(1);
   private final Map<String, String> headers = new HashMap<>();
   @Before public void setup() throws Exception {
     HeldCertificate cert = new HeldCertificate.Builder().addSubjectAlternativeName("localhost").build();
@@ -37,7 +39,13 @@ public class GatewayTransportTest {
     server.setProtocols(java.util.Collections.singletonList(okhttp3.Protocol.HTTP_1_1));
     server.useHttps(serverTLS.sslSocketFactory(), false);
     server.start();
-    transport = new GatewayTransport(new OkHttpClient.Builder().sslSocketFactory(clientTLS.sslSocketFactory(), clientTLS.trustManager()));
+    transport = new GatewayTransport(new OkHttpClient.Builder()
+        .sslSocketFactory(clientTLS.sslSocketFactory(), clientTLS.trustManager())
+        .eventListener(new okhttp3.EventListener() {
+          @Override public void connectionReleased(Call call, okhttp3.Connection connection) {
+            connectionReleased.countDown();
+          }
+        }));
     headers.put("Content-Type", "application/json"); headers.put("Accept", "application/json"); headers.put("Authorization", "Bearer synthetic-app-token");
   }
   @After public void teardown() throws Exception { transport.close(); server.shutdown(); }
@@ -89,9 +97,37 @@ public class GatewayTransportTest {
     assertNotNull(server.takeRequest(1, TimeUnit.SECONDS)); call.cancel();
     assertTrue(failed.await(1, TimeUnit.SECONDS));
   }
-  @Test public void deadlineStopsHangingSocket() throws Exception {
+  @Test public void wholeCallDeadlineIncludesConnectionSetup() throws Exception {
     server.enqueue(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE));
-    try { call(50).execute(); fail(); } catch (java.io.InterruptedIOException expected) { /* sanitized by RN bridge */ }
+    Call call = call(50);
+    long started = System.nanoTime();
+    try (Response unexpected = call.execute()) { fail("Expected whole-call timeout"); }
+    catch (java.io.InterruptedIOException expected) { /* May expire before TLS or dispatch. */ }
+    assertTrue("Whole-call deadline must settle promptly", System.nanoTime() - started < TimeUnit.SECONDS.toNanos(3));
+    assertTrue("Deadline cancels the underlying call", call.isCanceled());
+  }
+  @Test public void deadlineStopsConfirmedHangingResponse() throws Exception {
+    server.enqueue(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE));
+    Call call = call(10_000);
+    CompletableFuture<IOException> failed = new CompletableFuture<>();
+    call.enqueue(new Callback() {
+      @Override public void onFailure(Call call, IOException error) { failed.complete(error); }
+      @Override public void onResponse(Call call, Response response) {
+        response.close();
+        failed.completeExceptionally(new AssertionError("Hanging fixture unexpectedly responded"));
+      }
+    });
+    try {
+      RecordedRequest request = server.takeRequest(7, TimeUnit.SECONDS);
+      assertNotNull("Fixture must receive the HTTPS request before the deadline", request);
+      assertEquals("/exact/path", request.getPath());
+      assertTrue("Confirmed response must remain pending", !failed.isDone());
+      assertTrue("Hanging response ends with timeout", failed.get(12, TimeUnit.SECONDS) instanceof java.io.InterruptedIOException);
+      assertTrue("Deadline cancels the underlying call", call.isCanceled());
+      assertTrue("Timed-out connection is released", connectionReleased.await(3, TimeUnit.SECONDS));
+    } finally {
+      call.cancel();
+    }
     assertEquals(1, server.getRequestCount());
   }
   @Test public void noAutomaticPostRetryOrAuthenticationRetry() throws Exception {

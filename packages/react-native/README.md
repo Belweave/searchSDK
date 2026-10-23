@@ -190,7 +190,7 @@ native entry point through both the export map and `react-native` package field.
 | --- | --- | --- |
 | JavaScript core | ES2022, structural AbortSignal, strict UTF-8 | Shared conformance fixtures; deterministic injected transports |
 | iOS | iOS 15.1+, URLSession, CocoaPods autolinking | Nine Foundation tests, actual CocoaPods release app build, nine native runtime cases on a dedicated iOS 27.0 simulator |
-| Android | API 24+, Java 11, OkHttp, Gradle autolinking | Eight HTTPS MockWebServer tests, actual release APK build, nine native runtime cases on Android 16 |
+| Android | API 24+, Java 11, OkHttp, Gradle autolinking | Nine HTTPS MockWebServer tests, actual release APK build, nine native runtime cases on Android 16 |
 | React Native | Legacy NativeModules with architecture interop | Packed SDK in Expo 57.0.31 / RN 0.86.3 / Hermes release apps, new architecture, actual native network requests on iOS and Android |
 | Expo Go | Custom native modules unavailable | Unsupported; use a native development build instead |
 | Provider-native calls | None | Deliberately outside this package |
