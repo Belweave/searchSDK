@@ -1,0 +1,145 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Perplexity Orchestrator API (OpenAI-compatible)",
+    "description": "OpenAI Chat Completions-compatible access to models across providers, plus the model catalog. Schema structure follows the OpenAI Chat Completions wire format (derived from the MIT-licensed OpenAI OpenAPI specification); all documentation text is Perplexity's own.",
+    "version": "2.3.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.perplexity.ai"
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/router/v1/models": {
+      "get": {
+        "summary": "List Models",
+        "description": "List the models available through the Orchestrator API, sorted by id. Each model includes its base token prices in `pricing` (USD per 1M tokens).",
+        "operationId": "gateway_list_models",
+        "responses": {
+          "200": {
+            "description": "The list of available models with base token prices.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelList"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ModelList": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "description": "Always `list`.",
+            "x-order": 1
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Model"
+            },
+            "x-order": 2
+          }
+        },
+        "required": [
+          "object",
+          "data"
+        ]
+      },
+      "Model": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Public model slug, e.g. `perplexity/kimi-k3`.",
+            "x-order": 1
+          },
+          "object": {
+            "type": "string",
+            "description": "Always `model`.",
+            "x-order": 2
+          },
+          "created": {
+            "type": "integer",
+            "format": "int64",
+            "x-order": 3
+          },
+          "owned_by": {
+            "type": "string",
+            "description": "Provider prefix of the slug, e.g. `perplexity`.",
+            "x-order": 4
+          },
+          "pricing": {
+            "$ref": "#/components/schemas/ModelPricing"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "created",
+          "owned_by",
+          "pricing"
+        ]
+      },
+      "ModelPricing": {
+        "type": "object",
+        "description": "Base token prices in USD per 1M tokens. Every field is a price; cache_read is the effective cached-input price.",
+        "properties": {
+          "input": {
+            "type": "number",
+            "format": "double",
+            "x-order": 1
+          },
+          "output": {
+            "type": "number",
+            "format": "double",
+            "x-order": 2
+          },
+          "cache_write": {
+            "type": "number",
+            "format": "double",
+            "x-order": 3
+          },
+          "cache_read": {
+            "type": "number",
+            "format": "double",
+            "x-order": 4
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "usd_per_1m_tokens"
+            ],
+            "x-order": 5
+          }
+        },
+        "required": [
+          "input",
+          "output",
+          "unit"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Your Perplexity API key."
+      }
+    }
+  }
+}

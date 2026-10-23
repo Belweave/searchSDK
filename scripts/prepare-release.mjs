@@ -23,7 +23,7 @@ const packOutput = JSON.parse(execFileSync('npm', ['pack', '--json', '--ignore-s
 }));
 const packed = Array.isArray(packOutput) ? packOutput[0] : packOutput[pkg.name];
 assert(packed?.files?.length, 'npm pack did not return a package manifest');
-assert(packed.files.every(file => /^(?:dist\/|README\.md$|LICENSE$|package\.json$)/.test(file.path)), 'Unexpected release file');
+assert(packed.files.every(file => /^(?:dist\/|README\.md$|GATEWAY\.md$|LICENSE$|package\.json$)/.test(file.path)), 'Unexpected release file');
 const tarball = join(destination, packed.filename);
 const sha256 = createHash('sha256').update(await readFile(tarball)).digest('hex');
 await writeFile(join(destination, 'SHA256SUMS'), `${sha256}  ${packed.filename}\n`);

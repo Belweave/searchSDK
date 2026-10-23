@@ -1,0 +1,217 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Tavily Search and Extract API",
+    "description": "Our REST API provides seamless access to Tavily Search, a powerful search engine for LLM agents, and Tavily Extract, an advanced web scraping solution optimized for LLMs.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.tavily.com/"
+    }
+  ],
+  "security": [],
+  "tags": [
+    {
+      "name": "Search"
+    },
+    {
+      "name": "Extract"
+    },
+    {
+      "name": "Crawl"
+    },
+    {
+      "name": "Map"
+    },
+    {
+      "name": "Research"
+    },
+    {
+      "name": "Feedback"
+    },
+    {
+      "name": "Usage"
+    },
+    {
+      "name": "Logs"
+    }
+  ],
+  "paths": {
+    "/usage": {
+      "get": {
+        "summary": "Get API key and account usage details",
+        "description": "Get API key and account usage details",
+        "operationId": "getUsage",
+        "parameters": [
+          {
+            "name": "X-Project-ID",
+            "in": "header",
+            "required": false,
+            "description": "Optional project ID to scope the usage query to a specific project",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage details returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "object",
+                      "properties": {
+                        "usage": {
+                          "type": "integer",
+                          "description": "Total credits used for this API key during the current billing cycle"
+                        },
+                        "limit": {
+                          "type": "integer",
+                          "description": "Usage limit for the API key. Returns null if unlimited"
+                        },
+                        "search_usage": {
+                          "type": "integer",
+                          "description": "Search endpoint credits used for this API key during the current billing cycle"
+                        },
+                        "extract_usage": {
+                          "type": "integer",
+                          "description": "Extract endpoint credits used for this API key during the current billing cycle"
+                        },
+                        "crawl_usage": {
+                          "type": "integer",
+                          "description": "Crawl endpoint credits used for this API key during the current billing cycle"
+                        },
+                        "map_usage": {
+                          "type": "integer",
+                          "description": "Map endpoint credits used for this API key during the current billing cycle"
+                        },
+                        "research_usage": {
+                          "type": "integer",
+                          "description": "Research endpoint credits used for this API key during the current billing cycle"
+                        }
+                      }
+                    },
+                    "account": {
+                      "type": "object",
+                      "description": "Account plan and usage information",
+                      "properties": {
+                        "current_plan": {
+                          "type": "string",
+                          "description": "The current subscription plan name"
+                        },
+                        "plan_usage": {
+                          "type": "integer",
+                          "description": "Total credits used for this plan during the current billing cycle"
+                        },
+                        "plan_limit": {
+                          "type": "integer",
+                          "description": "Usage limit for the current plan"
+                        },
+                        "paygo_usage": {
+                          "type": "integer",
+                          "description": "Current pay-as-you-go usage count"
+                        },
+                        "paygo_limit": {
+                          "type": "integer",
+                          "description": "Pay-as-you-go usage limit"
+                        },
+                        "search_usage": {
+                          "type": "integer",
+                          "description": "Search endpoint credits used for this plan during the current billing cycle"
+                        },
+                        "extract_usage": {
+                          "type": "integer",
+                          "description": "Extract endpoint credits used for this plan during the current billing cycle"
+                        },
+                        "crawl_usage": {
+                          "type": "integer",
+                          "description": "Crawl endpoint credits used for this plan during the current billing cycle"
+                        },
+                        "map_usage": {
+                          "type": "integer",
+                          "description": "Map endpoint credits used for this plan during the current billing cycle"
+                        },
+                        "research_usage": {
+                          "type": "integer",
+                          "description": "Research endpoint credits used for this plan during the current billing cycle"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Your API key is wrong or missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. Error messages and retry delays can vary by rate-limit rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "headers": {
+      "RetryAfter": {
+        "description": "When present, the number of seconds to wait before retrying. Read the returned value; the delay can vary.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer authentication header in the form Bearer <token>, where <token> is your Tavily API key (e.g., Bearer tvly-YOUR_API_KEY)."
+      }
+    }
+  }
+}

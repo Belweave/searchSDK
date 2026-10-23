@@ -1,0 +1,20 @@
+{
+  "provider": "fixture",
+  "results": [{
+    "url": "https://example.com/document",
+    "title": "Synthetic document",
+    "snippet": "Deterministic fixture, no provider call.",
+    "highlights": ["Synthetic"],
+    "score": 0.75,
+    "provenance": {
+      "provider": "fixture",
+      "sourceUrl": "https://example.com/document",
+      "retrievedAt": "2026-10-22T00:00:00.000Z",
+      "requestId": "synthetic-1"
+    }
+  }],
+  "usage": null,
+  "warnings": [{"code": "provider_warning", "provider": "fixture"}],
+  "attempts": [{"provider": "fixture", "startedAt": "2026-10-22T00:00:00Z", "durationMs": 2.5, "outcome": "success", "status": 200}],
+  "reuse": "cache"
+}

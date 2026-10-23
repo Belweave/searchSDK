@@ -1,0 +1,248 @@
+
+h1 Usage and billing API
+
+h2 Use Billing in the Console
+
+h2 Monthly auto-topup
+Route | Body | Result
+GET /v1/organizations/{organization_id}/billing/auto-topup | None | Amount, status, payment link, and period dates.
+POST /v1/organizations/{organization_id}/billing/auto-topup/checkout | Optional amount_usd; default 10. Optional workspace_id and selected_gb preserve a storage selection. | checkout_url and status.
+POST /v1/organizations/{organization_id}/billing/auto-topup/amount | Required amount_usd. | Updated summary; amount applies to the next refill.
+POST /v1/organizations/{organization_id}/billing/auto-topup/cancel | Empty object. | Summary with cancellation scheduled.
+POST /v1/organizations/{organization_id}/billing/auto-topup/resume | Empty object. | Summary with the scheduled cancellation reversed.
+
+h2 Storage changes
+
+h2 GET /v1/organizations/{organization_id}/billing
+Name | Location | Value | Required
+organization_id | path | string | Yes
+Field | Type | Present | Constraints
+organization_id | string | Yes | uuid
+status | string | Yes | 
+selected_gb | integer | Yes | 
+pending_gb | integer or null | Yes | 
+period_start | string | Yes | date-time
+period_end | string | Yes | date-time
+search_limit_usd | string | Yes | Organization search spending cap. 9223372036854.775807 means no cap is set.
+allowance_usd | string | Yes | 
+storage_allowance | object | Yes | Storage capacity and usage.
+storage_allowance.effective_storage_bytes | string | Yes | Decimal byte count.
+storage_allowance.used_storage_bytes | string | Yes | Decimal byte count.
+storage_allowance.reserved_storage_bytes | string | Yes | Decimal byte count.
+
+h2 Search spending caps
+
+h2 POST /v1/organizations/{organization_id}/billing/limits
+Name | Location | Value | Required
+organization_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+maximum_usd | string | Required | Search spending cap in USD for the selected organization, workspace, or key scope. Use 1 to 12 digits, a period, and exactly six decimal places, such as "25.000000". Values such as "25" or "25.00" return 400 invalid_billing_amount.
+workspace_id | string | Optional | uuid
+key_id | string | Optional | uuid
+Field | Type | Present | Constraints
+maximum_usd | string | Yes | 
+workspace_id | string or null | Yes | 
+key_id | string or null | Yes | 
+
+h2 GET /v1/organizations/{organization_id}/billing/limits
+Name | Location | Value | Required
+organization_id | path | string | Yes
+
+h2 GET /v1/organizations/{organization_id}/billing/usage
+Name | Location | Value | Required
+organization_id | path | string | Yes
+Field | Type | Present | Constraints
+storage | object or null | Yes | 
+storage_allowance | object | Yes | Storage capacity and usage.
+storage_allowance.effective_storage_bytes | string | Yes | Decimal byte count.
+storage_allowance.used_storage_bytes | string | Yes | Decimal byte count.
+storage_allowance.reserved_storage_bytes | string | Yes | Decimal byte count.
+search | object | Yes | 
+search.settled_usd | string | Yes | Charges settled during this period.
+search.reserved_usd | string | Yes | Holds for in-progress requests started in this period.
+search.period_start | string | Yes | Inclusive UTC date-time.
+search.period_end | string | Yes | Exclusive UTC date-time.
+search.period_source | subscription, calendar_month | Yes | Auto-topup billing period, or UTC calendar month.
+search.period_current | boolean | Yes | Whether the period contains the current time.
+
+h2 POST /v1/organizations/{organization_id}/billing/portal
+Name | Location | Value | Required
+organization_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Present | Constraints
+portal_url | string | Yes | uri
+
+h2 GET /v1/organizations/{organization_id}/billing/wallet
+Name | Location | Value | Required
+organization_id | path | string | Yes
+Field | Type | Present | Constraints
+currency | "usd" | Yes | 
+balance_usd | string | Yes | 
+reserved_usd | string | Yes | 
+available_usd | string | Yes | 
+purchased_credits_usd | string | Yes | 
+subscription_credits_usd | string | Yes | Total subscription-sourced credits.
+auto_topup_credits_usd | string | Yes | Auto-topup credits available until used.
+expiring_subscription_credits_usd | string | Yes | Remaining credits from earlier expiring plans.
+promotional_credits_usd | string | Yes | Available promotional credits.
+promotional_grants | array of object | Yes | Original grant amounts, descriptions, creation dates, and expiry dates.
+storage_allowance | object | Yes | Storage capacity and usage.
+storage_allowance.effective_storage_bytes | string | Yes | Decimal byte count.
+storage_allowance.used_storage_bytes | string | Yes | Decimal byte count.
+storage_allowance.reserved_storage_bytes | string | Yes | Decimal byte count.
+subscription_credits_expire_at | string or null | Yes | date-time
+status | string | Yes | 
+
+h2 GET /v1/organizations/{organization_id}/billing/activity
+Query parameter | Meaning
+limit | Number of entries, 1–100; default 50.
+cursor | Use the previous response’s next_cursor unchanged.
+activity_type | Optional: promotional, purchase, subscription, storage, search, refund, dispute, or expiration.
+Field | Meaning
+id | Activity identifier.
+type | Activity type; subscription includes monthly credit refills.
+description | Human-readable description.
+amount_usd | Signed six-place USD decimal string. Positive amounts add credit; negative amounts reduce it.
+occurred_at | Transaction time, or UTC day start for consolidated search entries.
+search_count | Search count as a string, or null for other entries.
+ongoing | Whether the daily search entry is still accumulating activity.
+
+h2 POST /v1/organizations/{organization_id}/billing/purchases
+Name | Location | Value | Required
+organization_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+amount_usd | integer | Required | Minimum: 5. Maximum: 500. Multiples of 5
+Field | Type | Present | Constraints
+id | string | Yes | 
+state | string | Yes | 
+checkout_url | string | Yes | uri
+
+h2 GET /v1/organizations/{organization_id}/billing/purchases/{purchase_id}
+Name | Location | Value | Required
+organization_id | path | string | Yes
+purchase_id | path | string | Yes
+Field | Type | Present | Constraints
+id | string | Yes | 
+state | pending, paid, expired, failed | Yes | 
+amount_usd | integer | Yes | 
+
+h2 GET /v1/organizations/{organization_id}/billing/invoices
+Name | Location | Value | Required
+organization_id | path | string | Yes
+limit | query | integer, 1–100; default 50 | Optional
+cursor | query | The previous response’s next_cursor, unchanged | Optional
+Field | Type | Present | Constraints
+data | array of object | Yes | 
+data[].id | string | Yes | Invoice identifier.
+data[].number | string or null | Yes | Invoice number.
+data[].issued_at | string or null | Yes | date-time
+data[].description | string or null | Yes | 
+data[].currency | string | Yes | Lowercase currency code, such as usd.
+data[].total_cents | string | Yes | Invoice total in cents, as a decimal string.
+data[].status | string | Yes | Invoice status, such as paid or open.
+data[].hosted_url | string or null | Yes | uri. Page for viewing or paying the invoice.
+data[].pdf_url | string or null | Yes | uri. PDF download link.
+next_cursor | string or null | Yes | 
+
+h2 GET /v1/workspaces/{workspace_id}/storage
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+Field | Type | Present | Constraints
+workspace_id | string | Yes | uuid
+organization_id | string | Yes | uuid
+version | string | Yes | 
+state | free, active, grace, restricted, legacy | Yes | 
+selected_gb | integer | Yes | Minimum: 0
+pending_gb | integer or null | Yes | Minimum: 0
+downgrade_blocked | boolean | Yes | 
+used_bytes | string | Yes | 
+reserved_bytes | string | Yes | 
+capacity_bytes | string | Yes | 
+period_start | string or null | Yes | date-time
+period_end | string or null | Yes | date-time
+grace_ends_at | string or null | Yes | date-time
+policy | object | Yes | 
+policy.minimum_gb | integer | Yes | 
+policy.maximum_gb | integer | Yes | 
+policy.workspace_limit | integer | Yes | 
+policy.free_storage_bytes | string | Yes | 
+policy.price_per_gb_usd | string | Yes | 
+can_manage | boolean | Yes | 
+billing_model | "credits" | Yes | 
+subscription_eligible | boolean | Yes | 
+credit_only | boolean | Yes | Currently always true: storage is paid from available credits.
+subscription_status | string | Yes | 
+subscription_cancel_at_period_end | boolean | Yes | 
+subscription_period_end | string or null | Yes | date-time
+payment_pending | boolean | Yes | 
+payment_status | string or null | Yes | Payment state.
+payment_recovery_status | string or null | Yes | review, pending, retrying, action_required, paused, exhausted, paid, or void.
+next_payment_attempt | string or null | Yes | UTC date-time of a scheduled retry.
+payment_id | string or null | Yes | 
+invoice_url | string or null | Yes | uri
+carried_usd | string | Yes | 
+available_credits_usd | string or null | Yes | 
+legacy_paid_until | string or null | Yes | date-time
+
+h2 POST /v1/workspaces/{workspace_id}/storage
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+quote_id | string | Required | uuid
+Field | Type | Present | Constraints
+workspace_id | string | Yes | uuid
+organization_id | string | Yes | uuid
+version | string | Yes | 
+state | free, active, grace, restricted, legacy | Yes | 
+selected_gb | integer | Yes | Minimum: 0
+pending_gb | integer or null | Yes | Minimum: 0
+downgrade_blocked | boolean | Yes | 
+used_bytes | string | Yes | 
+reserved_bytes | string | Yes | 
+capacity_bytes | string | Yes | 
+period_start | string or null | Yes | date-time
+period_end | string or null | Yes | date-time
+grace_ends_at | string or null | Yes | date-time
+policy | object | Yes | 
+policy.minimum_gb | integer | Yes | 
+policy.maximum_gb | integer | Yes | 
+policy.workspace_limit | integer | Yes | 
+policy.free_storage_bytes | string | Yes | 
+policy.price_per_gb_usd | string | Yes | 
+can_manage | boolean | Yes | 
+billing_model | "credits" | Yes | 
+subscription_eligible | boolean | Yes | 
+credit_only | boolean | Yes | Currently always true: storage is paid from available credits.
+subscription_status | string | Yes | 
+subscription_cancel_at_period_end | boolean | Yes | 
+subscription_period_end | string or null | Yes | date-time
+payment_pending | boolean | Yes | 
+payment_status | string or null | Yes | Payment state.
+payment_recovery_status | string or null | Yes | review, pending, retrying, action_required, paused, exhausted, paid, or void.
+next_payment_attempt | string or null | Yes | UTC date-time of a scheduled retry.
+payment_id | string or null | Yes | 
+invoice_url | string or null | Yes | uri
+carried_usd | string | Yes | 
+available_credits_usd | string or null | Yes | 
+legacy_paid_until | string or null | Yes | date-time
+
+h2 POST /v1/workspaces/{workspace_id}/storage/quote
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+Field | Type | Presence | Guidance
+selected_gb | integer | Required | 0 for free storage, or a whole GB within the returned policy bounds (currently 5–100).
+Field | Type | Present | Constraints
+id | string | Yes | uuid
+selected_gb | integer | Yes | 
+action | start, upgrade, schedule, keep, restore, free | Yes | 
+charge_usd | string | Yes | 
+monthly_usd | string | Yes | 
+credits_applied_usd | string | Yes | 
+card_charge_usd | string | Yes | Zero for changes fully funded by credits.
+rounding_adjustment_usd | string | Yes | 
+renewal_at | string or null | Yes | date-time
+effective_at | string | Yes | date-time
+expires_at | string | Yes | date-time

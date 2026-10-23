@@ -1,0 +1,949 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Team Management API",
+    "description": "API for managing API keys within teams. Provides CRUD operations for creating, listing, updating, and deleting API keys with team-based access controls. The API is enabled per team. Contact support@exa.ai to request access."
+  },
+  "servers": [
+    {
+      "url": "https://admin-api.exa.ai/team-management"
+    }
+  ],
+  "security": [
+    {
+      "apikey": []
+    }
+  ],
+  "paths": {
+    "/api-keys": {
+      "post": {
+        "operationId": "create-api-key",
+        "summary": "Create API key",
+        "description": "Creates a new API key for the authenticated team. Optionally specify a name, rate limit, and budget for the API key.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Optional name for the API key"
+                  },
+                  "rateLimit": {
+                    "type": "integer",
+                    "description": "Optional rate limit for the API key (requests per second)"
+                  },
+                  "budgetCents": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "description": "Optional spending budget for the API key in the team's current billing period, in cents. It resets when the next billing period starts. Set to null to remove the budget."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "API key created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "apiKey": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Unique identifier for the API key"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Name of the API key"
+                        },
+                        "rateLimit": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "description": "Rate limit in requests per second"
+                        },
+                        "budgetCents": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "description": "Spending budget for the API key in the team's current billing period, in cents"
+                        },
+                        "isOverBudget": {
+                          "type": "boolean",
+                          "description": "Whether the API key is currently over its budget"
+                        },
+                        "teamId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Team ID this key belongs to"
+                        },
+                        "userId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "User ID who created this key"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the key was created"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing service key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Team Management"
+        ],
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "list-api-keys",
+        "summary": "List API keys",
+        "description": "Returns the authenticated team's API keys. Pass `api_key_id` to return a single key.",
+        "parameters": [
+          {
+            "name": "api_key_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional API key ID to retrieve a specific key."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of API keys retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "apiKeys": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "rateLimit": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ],
+                                "description": "Rate limit in requests per second"
+                              },
+                              "budgetCents": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ],
+                                "description": "Spending budget for the API key in the team's current billing period, in cents"
+                              },
+                              "isOverBudget": {
+                                "type": "boolean",
+                                "description": "Whether the API key is currently over its budget"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "apiKey": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "rateLimit": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ],
+                              "description": "Rate limit in requests per second"
+                            },
+                            "budgetCents": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ],
+                              "description": "Spending budget for the API key in the team's current billing period, in cents"
+                            },
+                            "isOverBudget": {
+                              "type": "boolean",
+                              "description": "Whether the API key is currently over its budget"
+                            },
+                            "teamId": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid API key ID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing service key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions to access this API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found - API key or team not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Team Management"
+        ],
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
+      }
+    },
+    "/api-keys/{id}": {
+      "get": {
+        "operationId": "get-api-key",
+        "summary": "Get API key",
+        "description": "Retrieves details of a specific API key by its ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique identifier of the API key."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API key retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "apiKey": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "rateLimit": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "description": "Rate limit in requests per second"
+                        },
+                        "budgetCents": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "description": "Spending budget for the API key in the team's current billing period, in cents"
+                        },
+                        "isOverBudget": {
+                          "type": "boolean",
+                          "description": "Whether the API key is currently over its budget"
+                        },
+                        "teamId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid API key ID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing service key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found - API key does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Team Management"
+        ],
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "update-api-key",
+        "summary": "Update API key",
+        "description": "Updates an existing API key's name and/or rate limit. Only API keys belonging to the authenticated team can be updated.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique identifier of the API key to update."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Optional new name for the API key"
+                  },
+                  "rateLimit": {
+                    "type": "integer",
+                    "description": "Optional new rate limit for the API key (requests per second)"
+                  },
+                  "budgetCents": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "description": "Optional new spending budget for the API key in the team's current billing period, in cents. It resets when the next billing period starts. Set to null to remove the budget."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "API key updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "apiKey": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "rateLimit": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "description": "Rate limit in requests per second"
+                        },
+                        "budgetCents": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "description": "Spending budget for the API key in the team's current billing period, in cents"
+                        },
+                        "isOverBudget": {
+                          "type": "boolean",
+                          "description": "Whether the API key is currently over its budget"
+                        },
+                        "teamId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "userId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing service key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - API key belongs to a different team",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - API key does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Team Management"
+        ],
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "delete-api-key",
+        "summary": "Delete API key",
+        "description": "Deletes an API key. Only API keys belonging to the authenticated team can be deleted.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique identifier of the API key to delete."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API key deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing service key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - API key belongs to a different team",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - API key does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Team Management"
+        ],
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
+      }
+    },
+    "/api-keys/{id}/usage": {
+      "get": {
+        "operationId": "get-api-key-usage",
+        "summary": "Get API key usage",
+        "description": "Returns an API key's cost over a time period, in total and by price.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique identifier of the API key."
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Start date for the usage period (ISO 8601 format). Defaults to 30 days ago. Must be within the last 6 months (180 days)."
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "End date for the usage period (ISO 8601 format). Defaults to current time."
+          },
+          {
+            "name": "group_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "hour",
+                "day",
+                "month"
+              ]
+            },
+            "description": "Has no effect on the response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The unique identifier of the API key."
+                    },
+                    "api_key_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "The API key ID."
+                    },
+                    "api_key_name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The name of the API key"
+                    },
+                    "team_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "The team ID this key belongs to"
+                    },
+                    "period": {
+                      "type": "object",
+                      "properties": {
+                        "start": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "Start of the usage period"
+                        },
+                        "end": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "End of the usage period"
+                        }
+                      }
+                    },
+                    "total_cost_usd": {
+                      "type": "number",
+                      "description": "Total cost in USD for the period"
+                    },
+                    "cost_breakdown": {
+                      "type": "array",
+                      "description": "Breakdown of costs by price type",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "price_id": {
+                            "type": "string",
+                            "description": "Unique identifier for the price"
+                          },
+                          "price_name": {
+                            "type": "string",
+                            "description": "Name of the price (e.g., \"Neural Search\", \"Content Retrieval\")"
+                          },
+                          "quantity": {
+                            "type": "number",
+                            "description": "Total quantity consumed"
+                          },
+                          "amount_usd": {
+                            "type": "number",
+                            "description": "Cost in USD for this price type"
+                          }
+                        }
+                      }
+                    },
+                    "metadata": {
+                      "type": "object",
+                      "properties": {
+                        "generated_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When this report was generated"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing service key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - API key does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to fetch usage data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Team Management"
+        ],
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apikey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Service API key for team authentication"
+      }
+    }
+  }
+}

@@ -1,0 +1,1485 @@
+Usage and billing API | WonderSearch Docs
+Skip to Content
+WonderSearch 
+Docs
+Website
+ Open Console
+Getting Started
+What is WonderSearch?
+Quickstart
+Key concepts
+WonderSearch 1.1
+Common use cases
+Platform Guide
+Organizations and workspaces
+Members, invitations, and roles
+API keys and permissions
+Drives and the default drive
+Folders and document management
+Upload files and follow indexing
+Search Playground
+Usage and activity
+Billing and credits
+Workspace storage and upgrades
+Account settings and security
+Search Guide
+Search effort and result limits
+Searching within drives and folders
+Understanding results and citations
+Document updates and search freshness
+SDK Guide
+Python installation and configuration
+Upload your first files
+Import a large collection
+Search and retrieve passages
+Manage drives and defaults
+Replace documents and attach metadata
+Upload recovery and partial failures
+Async workflows
+Errors, timeouts, and retries
+Versions and compatibility
+CLI Guide
+Get Started
+Profiles and Access
+Uploads and Recovery
+Search and Results
+Command Reference
+MCP
+Connect an AI client
+Choose an assistant’s permissions
+Search and retrieve sources
+Upload and manage content
+Tool reference
+Troubleshooting and revoking access
+Reference
+Authentication and API conventions
+Organizations, workspaces, and access API
+Drives, folders, and documents API
+Uploads and ingestion operations API
+Search and passage API
+Usage and billing API
+Errors and recovery
+Limits and supported files
+Troubleshooting
+Changelog
+Getting Started
+What is WonderSearch?
+Quickstart
+Key concepts
+WonderSearch 1.1
+Common use cases
+Platform Guide
+Organizations and workspaces
+Members, invitations, and roles
+API keys and permissions
+Drives and the default drive
+Folders and document management
+Upload files and follow indexing
+Search Playground
+Usage and activity
+Billing and credits
+Workspace storage and upgrades
+Account settings and security
+Search Guide
+Search effort and result limits
+Searching within drives and folders
+Understanding results and citations
+Document updates and search freshness
+SDK Guide
+Python installation and configuration
+Upload your first files
+Import a large collection
+Search and retrieve passages
+Manage drives and defaults
+Replace documents and attach metadata
+Upload recovery and partial failures
+Async workflows
+Errors, timeouts, and retries
+Versions and compatibility
+CLI Guide
+Get Started
+Profiles and Access
+Uploads and Recovery
+Search and Results
+Command Reference
+MCP
+Connect an AI client
+Choose an assistant’s permissions
+Search and retrieve sources
+Upload and manage content
+Tool reference
+Troubleshooting and revoking access
+Reference
+Authentication and API conventions
+Organizations, workspaces, and access API
+Drives, folders, and documents API
+Uploads and ingestion operations API
+Search and passage API
+Usage and billing API
+Errors and recovery
+Limits and supported files
+Troubleshooting
+Changelog
+On This Page
+Use Billing in the Console
+Monthly auto-topup
+Storage changes
+GET 
+/v1/organizations/{organization_id}/billing
+Search spending caps
+POST 
+/v1/organizations/{organization_id}/billing/limits
+GET 
+/v1/organizations/{organization_id}/billing/limits
+GET 
+/v1/organizations/{organization_id}/billing/usage
+POST 
+/v1/organizations/{organization_id}/billing/portal
+GET 
+/v1/organizations/{organization_id}/billing/wallet
+GET 
+/v1/organizations/{organization_id}/billing/activity
+POST 
+/v1/organizations/{organization_id}/billing/purchases
+GET 
+/v1/organizations/{organization_id}/billing/purchases/{purchase_id}
+GET 
+/v1/organizations/{organization_id}/billing/invoices
+GET 
+/v1/workspaces/{workspace_id}/storage
+POST 
+/v1/workspaces/{workspace_id}/storage
+POST 
+/v1/workspaces/{workspace_id}/storage/quote
+Scroll to top
+Reference
+Usage and billing API
+Usage and billing API
+
+
+These endpoints require a signed-in user’s access token. Organization owners and admins can manage billing and paid storage. Other workspace members with read access can view the storage plan and allowance. Payment links and available credit balances are visible only to billing administrators.
+
+
+See 
+authentication
+ for request headers and response formats, and 
+error recovery
+ for help with failed requests.
+
+
+Use Billing in the Console
+
+
+Open 
+Billing
+ in the 
+Console
+ 
+ to review credits, set up auto-topup, buy credits, and manage invoices. To perform these actions through the API, authenticate with the user’s access token as described in 
+authentication
+.
+
+
+The wallet response shows your total balance, credits reserved for work in progress, available credits, and storage allowance. Follow the returned hosted checkout URL to confirm a purchase, then check status afterward. A browser redirect alone is not confirmation of payment.
+
+
+Monthly auto-topup
+
+
+Auto-topup adds a chosen amount of credits each month. Organization owners and admins can manage it through the following endpoints. Every POST requires an 
+Idempotency-Key
+. USD amounts in responses are strings with six decimal places.
+
+
+Route
+Body
+Result
+GET 
+/v1/organizations/{organization_id}/billing/auto-topup
+None
+Amount, status, payment link, and period dates.
+POST 
+/v1/organizations/{organization_id}/billing/auto-topup/checkout
+Optional 
+amount_usd
+; default 10. Optional 
+workspace_id
+ and 
+selected_gb
+ preserve a storage selection.
+checkout_url
+ and status.
+POST 
+/v1/organizations/{organization_id}/billing/auto-topup/amount
+Required 
+amount_usd
+.
+Updated summary; amount applies to the next refill.
+POST 
+/v1/organizations/{organization_id}/billing/auto-topup/cancel
+Empty object.
+Summary with cancellation scheduled.
+POST 
+/v1/organizations/{organization_id}/billing/auto-topup/resume
+Empty object.
+Summary with the scheduled cancellation reversed.
+
+
+amount_usd
+ is an integer from 10 to 100,000, in multiples of 5. Checkout also accepts a storage selection of 5–100 GB when 
+workspace_id
+ is supplied. The 
+/billing/subscription
+ routes remain aliases for the same actions.
+
+
+The summary includes 
+organization_id
+, 
+name
+, 
+monthly_usd
+, 
+monthly_credits_usd
+, 
+credits_expire
+, 
+next_charge_at
+, 
+status
+, 
+eligible
+, 
+cancel_at_period_end
+, 
+period_start
+, 
+period_end
+, 
+paid_until
+, and 
+checkout_url
+. Dates and the checkout URL may be null. 
+credits_expire
+ is false for auto-topup credits. 
+eligible
+ describes the auto-topup subscription’s payment eligibility, rather than a requirement for paid storage.
+
+
+Follow 
+checkout_url
+, complete payment, and read the status again. A pending checkout can be replaced with a different amount using a new idempotency key. For a retry of the same action, keep the original key and body. Auto-topup credits remain available after cancellation; workspace storage renewals continue independently.
+
+
+Storage changes
+
+
+Read workspace storage, request a quote for the desired capacity, and confirm the quote while it is current. The quote shows the charge, credits applied, and renewal date. Available credits must cover the full charge. Paid capacity costs $0.33 per selected decimal GB per month, with a separate renewal period for each workspace.
+
+
+Use 
+selected_gb: 0
+ for the free allowance, or a whole number within the returned policy bounds for paid capacity, currently 5–100 GB. Used plus reserved bytes must fit the selection.
+
+
+
+
+GET 
+/v1/workspaces/{workspace_id}/storage
+ and check 
+can_manage
+, used/reserved bytes, and policy bounds.
+
+
+POST 
+/v1/workspaces/{workspace_id}/storage/quote
+ with 
+{"selected_gb":10}
+.
+
+
+Present the charge, credits applied, effective date, and expiry for review.
+
+
+POST 
+/v1/workspaces/{workspace_id}/storage
+ with 
+{"quote_id":"RETURNED_QUOTE_UUID"}
+ and a new idempotency key. Use the same signed-in account that requested the quote.
+
+
+Read storage status again and confirm the capacity is active.
+
+
+
+
+Quotes last up to five minutes and may expire sooner at the billing boundary. If the available balance is insufficient, add credits and request a fresh quote. For an outstanding invoice from an earlier billing arrangement, read 
+payment_recovery_status
+ for the next step and 
+next_payment_attempt
+ for a scheduled retry. These fields can be null when no recovery state or retry time is available. Payment methods can be managed through the payment portal.
+
+
+GET 
+/v1/organizations/{organization_id}/billing
+
+
+Read organization billing state
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+organization_id
+path
+string
+Yes
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+organization_id
+string
+Yes
+uuid
+status
+string
+Yes
+selected_gb
+integer
+Yes
+pending_gb
+integer or null
+Yes
+period_start
+string
+Yes
+date-time
+period_end
+string
+Yes
+date-time
+search_limit_usd
+string
+Yes
+Organization search spending cap. 
+9223372036854.775807
+ means no cap is set.
+allowance_usd
+string
+Yes
+storage_allowance
+object
+Yes
+Storage capacity and usage.
+storage_allowance.effective_storage_bytes
+string
+Yes
+Decimal byte count.
+storage_allowance.used_storage_bytes
+string
+Yes
+Decimal byte count.
+storage_allowance.reserved_storage_bytes
+string
+Yes
+Decimal byte count.
+
+
+Search spending caps
+
+
+For prepaid-credit accounts, caps apply to reserved plus settled search spending in the current UTC calendar month. Organization, workspace, and key caps can each block a request with 
+search_budget_exceeded
+. A larger credit balance does not raise these caps.
+
+
+An organization has no cap until you set one, and its cap reads as 
+9223372036854.775807
+. Workspace and key caps exist only after you set them. There is no request to remove a cap. To lift one, set it to the largest accepted value, 
+999999999999.999999
+. A cap of 
+0.000000
+ blocks every charged search in that scope.
+
+
+POST 
+/v1/organizations/{organization_id}/billing/limits
+
+
+Set an organization, workspace or key search cap. Omit both scope IDs for an organization cap. Supply workspace_id for a workspace cap; a key cap requires both workspace_id and key_id from that workspace.
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+organization_id
+path
+string
+Yes
+Idempotency-Key
+header
+string
+Yes
+
+
+JSON body
+
+
+Field
+Type
+Presence
+Guidance
+maximum_usd
+string
+Required
+Search spending cap in USD for the selected organization, workspace, or key scope. Use 1 to 12 digits, a period, and exactly six decimal places, such as 
+"25.000000"
+. Values such as 
+"25"
+ or 
+"25.00"
+ return 
+400 invalid_billing_amount
+.
+workspace_id
+string
+Optional
+uuid
+key_id
+string
+Optional
+uuid
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+maximum_usd
+string
+Yes
+workspace_id
+string or null
+Yes
+key_id
+string or null
+Yes
+
+
+GET 
+/v1/organizations/{organization_id}/billing/limits
+
+
+Read search spending caps
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+organization_id
+path
+string
+Yes
+
+
+Response
+
+
+200
+: 
+organization_limit_usd
+ is a USD decimal string; 
+9223372036854.775807
+ means no organization cap is set. 
+data
+ is an array of 
+{workspace_id, key_id, maximum}
+ for each workspace or key cap you have set. 
+key_id
+ is null for a workspace cap, and 
+maximum
+ is a USD decimal string.
+
+
+GET 
+/v1/organizations/{organization_id}/billing/usage
+
+
+Read storage capacity and search charges. An applicable auto-topup billing period determines the dates; otherwise the report uses the UTC calendar month. Settled charges are counted when charged; reserved amounts cover in-progress requests started in that period. This differs from activity reports grouped by search start time.
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+organization_id
+path
+string
+Yes
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+storage
+object or null
+Yes
+storage_allowance
+object
+Yes
+Storage capacity and usage.
+storage_allowance.effective_storage_bytes
+string
+Yes
+Decimal byte count.
+storage_allowance.used_storage_bytes
+string
+Yes
+Decimal byte count.
+storage_allowance.reserved_storage_bytes
+string
+Yes
+Decimal byte count.
+search
+object
+Yes
+search.settled_usd
+string
+Yes
+Charges settled during this period.
+search.reserved_usd
+string
+Yes
+Holds for in-progress requests started in this period.
+search.period_start
+string
+Yes
+Inclusive UTC date-time.
+search.period_end
+string
+Yes
+Exclusive UTC date-time.
+search.period_source
+subscription
+, 
+calendar_month
+Yes
+Auto-topup billing period, or UTC calendar month.
+search.period_current
+boolean
+Yes
+Whether the period contains the current time.
+
+
+POST 
+/v1/organizations/{organization_id}/billing/portal
+
+
+Create a payment-management portal session
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+organization_id
+path
+string
+Yes
+Idempotency-Key
+header
+string
+Yes
+
+
+JSON body
+
+
+Send an empty JSON object: 
+{}
+.
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+portal_url
+string
+Yes
+uri
+
+
+GET 
+/v1/organizations/{organization_id}/billing/wallet
+
+
+Read available prepaid USD credits
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+organization_id
+path
+string
+Yes
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+currency
+"usd"
+Yes
+balance_usd
+string
+Yes
+reserved_usd
+string
+Yes
+available_usd
+string
+Yes
+purchased_credits_usd
+string
+Yes
+subscription_credits_usd
+string
+Yes
+Total subscription-sourced credits.
+auto_topup_credits_usd
+string
+Yes
+Auto-topup credits available until used.
+expiring_subscription_credits_usd
+string
+Yes
+Remaining credits from earlier expiring plans.
+promotional_credits_usd
+string
+Yes
+Available promotional credits.
+promotional_grants
+array of object
+Yes
+Original grant amounts, descriptions, creation dates, and expiry dates.
+storage_allowance
+object
+Yes
+Storage capacity and usage.
+storage_allowance.effective_storage_bytes
+string
+Yes
+Decimal byte count.
+storage_allowance.used_storage_bytes
+string
+Yes
+Decimal byte count.
+storage_allowance.reserved_storage_bytes
+string
+Yes
+Decimal byte count.
+subscription_credits_expire_at
+string or null
+Yes
+date-time
+status
+string
+Yes
+
+
+GET 
+/v1/organizations/{organization_id}/billing/activity
+
+
+Organization owners and admins can list credit activity, newest first. Search charges are grouped by UTC day. Other entries show the time of the transaction.
+
+
+Query parameter
+Meaning
+limit
+Number of entries, 1–100; default 50.
+cursor
+Use the previous response’s 
+next_cursor
+ unchanged.
+activity_type
+Optional: 
+promotional
+, 
+purchase
+, 
+subscription
+, 
+storage
+, 
+search
+, 
+refund
+, 
+dispute
+, or 
+expiration
+.
+
+
+The response contains 
+data
+ and 
+next_cursor
+. Each entry includes:
+
+
+Field
+Meaning
+id
+Activity identifier.
+type
+Activity type; 
+subscription
+ includes monthly credit refills.
+description
+Human-readable description.
+amount_usd
+Signed six-place USD decimal string. Positive amounts add credit; negative amounts reduce it.
+occurred_at
+Transaction time, or UTC day start for consolidated search entries.
+search_count
+Search count as a string, or null for other entries.
+ongoing
+Whether the daily search entry is still accumulating activity.
+
+
+Keep the same filter while following pagination. Refresh ongoing entries when comparing final totals.
+
+
+POST 
+/v1/organizations/{organization_id}/billing/purchases
+
+
+Create a checkout link to buy credits. Reuse the same request key if you need to retry.
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+organization_id
+path
+string
+Yes
+Idempotency-Key
+header
+string
+Yes
+
+
+JSON body
+
+
+Field
+Type
+Presence
+Guidance
+amount_usd
+integer
+Required
+Minimum: 5. Maximum: 500. Multiples of 5
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+id
+string
+Yes
+state
+string
+Yes
+checkout_url
+string
+Yes
+uri
+
+
+GET 
+/v1/organizations/{organization_id}/billing/purchases/{purchase_id}
+
+
+Read payment confirmation
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+organization_id
+path
+string
+Yes
+purchase_id
+path
+string
+Yes
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+id
+string
+Yes
+state
+pending
+, 
+paid
+, 
+expired
+, 
+failed
+Yes
+amount_usd
+integer
+Yes
+
+
+GET 
+/v1/organizations/{organization_id}/billing/invoices
+
+
+List credit, auto-topup, and storage invoices newest first. Requires organization owner or admin.
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+organization_id
+path
+string
+Yes
+limit
+query
+integer, 1–100; default 50
+Optional
+cursor
+query
+The previous response’s 
+next_cursor
+, unchanged
+Optional
+
+
+A cursor works only for the user who received it and expires after one hour.
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+data
+array of object
+Yes
+data[].id
+string
+Yes
+Invoice identifier.
+data[].number
+string or null
+Yes
+Invoice number.
+data[].issued_at
+string or null
+Yes
+date-time
+data[].description
+string or null
+Yes
+data[].currency
+string
+Yes
+Lowercase currency code, such as 
+usd
+.
+data[].total_cents
+string
+Yes
+Invoice total in cents, as a decimal string.
+data[].status
+string
+Yes
+Invoice status, such as 
+paid
+ or 
+open
+.
+data[].hosted_url
+string or null
+Yes
+uri. Page for viewing or paying the invoice.
+data[].pdf_url
+string or null
+Yes
+uri. PDF download link.
+next_cursor
+string or null
+Yes
+
+
+GET 
+/v1/workspaces/{workspace_id}/storage
+
+
+Read the workspace’s storage plan and allowance
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+workspace_id
+path
+string
+Yes
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+workspace_id
+string
+Yes
+uuid
+organization_id
+string
+Yes
+uuid
+version
+string
+Yes
+state
+free
+, 
+active
+, 
+grace
+, 
+restricted
+, 
+legacy
+Yes
+selected_gb
+integer
+Yes
+Minimum: 0
+pending_gb
+integer or null
+Yes
+Minimum: 0
+downgrade_blocked
+boolean
+Yes
+used_bytes
+string
+Yes
+reserved_bytes
+string
+Yes
+capacity_bytes
+string
+Yes
+period_start
+string or null
+Yes
+date-time
+period_end
+string or null
+Yes
+date-time
+grace_ends_at
+string or null
+Yes
+date-time
+policy
+object
+Yes
+policy.minimum_gb
+integer
+Yes
+policy.maximum_gb
+integer
+Yes
+policy.workspace_limit
+integer
+Yes
+policy.free_storage_bytes
+string
+Yes
+policy.price_per_gb_usd
+string
+Yes
+can_manage
+boolean
+Yes
+billing_model
+"credits"
+Yes
+subscription_eligible
+boolean
+Yes
+credit_only
+boolean
+Yes
+Currently always 
+true
+: storage is paid from available credits.
+subscription_status
+string
+Yes
+subscription_cancel_at_period_end
+boolean
+Yes
+subscription_period_end
+string or null
+Yes
+date-time
+payment_pending
+boolean
+Yes
+payment_status
+string or null
+Yes
+Payment state.
+payment_recovery_status
+string or null
+Yes
+review
+, 
+pending
+, 
+retrying
+, 
+action_required
+, 
+paused
+, 
+exhausted
+, 
+paid
+, or 
+void
+.
+next_payment_attempt
+string or null
+Yes
+UTC date-time of a scheduled retry.
+payment_id
+string or null
+Yes
+invoice_url
+string or null
+Yes
+uri
+carried_usd
+string
+Yes
+available_credits_usd
+string or null
+Yes
+legacy_paid_until
+string or null
+Yes
+date-time
+
+
+POST 
+/v1/workspaces/{workspace_id}/storage
+
+
+Confirm a storage quote before it expires.
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+workspace_id
+path
+string
+Yes
+Idempotency-Key
+header
+string
+Yes
+
+
+JSON body
+
+
+Field
+Type
+Presence
+Guidance
+quote_id
+string
+Required
+uuid
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+workspace_id
+string
+Yes
+uuid
+organization_id
+string
+Yes
+uuid
+version
+string
+Yes
+state
+free
+, 
+active
+, 
+grace
+, 
+restricted
+, 
+legacy
+Yes
+selected_gb
+integer
+Yes
+Minimum: 0
+pending_gb
+integer or null
+Yes
+Minimum: 0
+downgrade_blocked
+boolean
+Yes
+used_bytes
+string
+Yes
+reserved_bytes
+string
+Yes
+capacity_bytes
+string
+Yes
+period_start
+string or null
+Yes
+date-time
+period_end
+string or null
+Yes
+date-time
+grace_ends_at
+string or null
+Yes
+date-time
+policy
+object
+Yes
+policy.minimum_gb
+integer
+Yes
+policy.maximum_gb
+integer
+Yes
+policy.workspace_limit
+integer
+Yes
+policy.free_storage_bytes
+string
+Yes
+policy.price_per_gb_usd
+string
+Yes
+can_manage
+boolean
+Yes
+billing_model
+"credits"
+Yes
+subscription_eligible
+boolean
+Yes
+credit_only
+boolean
+Yes
+Currently always 
+true
+: storage is paid from available credits.
+subscription_status
+string
+Yes
+subscription_cancel_at_period_end
+boolean
+Yes
+subscription_period_end
+string or null
+Yes
+date-time
+payment_pending
+boolean
+Yes
+payment_status
+string or null
+Yes
+Payment state.
+payment_recovery_status
+string or null
+Yes
+review
+, 
+pending
+, 
+retrying
+, 
+action_required
+, 
+paused
+, 
+exhausted
+, 
+paid
+, or 
+void
+.
+next_payment_attempt
+string or null
+Yes
+UTC date-time of a scheduled retry.
+payment_id
+string or null
+Yes
+invoice_url
+string or null
+Yes
+uri
+carried_usd
+string
+Yes
+available_credits_usd
+string or null
+Yes
+legacy_paid_until
+string or null
+Yes
+date-time
+
+
+POST 
+/v1/workspaces/{workspace_id}/storage/quote
+
+
+Quote a storage capacity change
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+workspace_id
+path
+string
+Yes
+
+
+JSON body
+
+
+Field
+Type
+Presence
+Guidance
+selected_gb
+integer
+Required
+0 for free storage, or a whole GB within the returned policy bounds (currently 5–100).
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+id
+string
+Yes
+uuid
+selected_gb
+integer
+Yes
+action
+start
+, 
+upgrade
+, 
+schedule
+, 
+keep
+, 
+restore
+, 
+free
+Yes
+charge_usd
+string
+Yes
+monthly_usd
+string
+Yes
+credits_applied_usd
+string
+Yes
+card_charge_usd
+string
+Yes
+Zero for changes fully funded by credits.
+rounding_adjustment_usd
+string
+Yes
+renewal_at
+string or null
+Yes
+date-time
+effective_at
+string
+Yes
+date-time
+expires_at
+string
+Yes
+date-time
+Search and passage API
+Errors and recovery
+WonderSearch
+A search product by 
+Evokoa
+Pricing
+Book a call
+Get support
+Privacy
+

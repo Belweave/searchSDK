@@ -1,0 +1,65 @@
+[
+  {
+    "httpStatus": 400,
+    "body": {
+      "error": {
+        "code": "invalid_request",
+        "attempts": []
+      }
+    }
+  },
+  {
+    "httpStatus": 401,
+    "body": {
+      "error": {
+        "code": "auth",
+        "attempts": []
+      }
+    }
+  },
+  {
+    "httpStatus": 429,
+    "body": {
+      "error": {
+        "code": "rate_limit",
+        "attempts": []
+      }
+    }
+  },
+  {
+    "httpStatus": 502,
+    "body": {
+      "error": {
+        "code": "invalid_response",
+        "attempts": []
+      }
+    }
+  },
+  {
+    "httpStatus": 503,
+    "body": {
+      "error": {
+        "code": "unavailable",
+        "attempts": []
+      }
+    }
+  },
+  {
+    "httpStatus": 504,
+    "body": {
+      "error": {
+        "code": "timeout",
+        "attempts": []
+      }
+    }
+  },
+  {
+    "httpStatus": 499,
+    "body": {
+      "error": {
+        "code": "aborted",
+        "attempts": []
+      }
+    }
+  }
+]

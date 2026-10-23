@@ -1,0 +1,290 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Tavily Search and Extract API",
+    "description": "Our REST API provides seamless access to Tavily Search, a powerful search engine for LLM agents, and Tavily Extract, an advanced web scraping solution optimized for LLMs.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.tavily.com/"
+    }
+  ],
+  "security": [],
+  "tags": [
+    {
+      "name": "Search"
+    },
+    {
+      "name": "Extract"
+    },
+    {
+      "name": "Crawl"
+    },
+    {
+      "name": "Map"
+    },
+    {
+      "name": "Research"
+    },
+    {
+      "name": "Feedback"
+    },
+    {
+      "name": "Usage"
+    },
+    {
+      "name": "Logs"
+    }
+  ],
+  "paths": {
+    "/research/{request_id}": {
+      "get": {
+        "summary": "Get research task status and results",
+        "description": "Retrieve the status and results of a research task using its request ID.",
+        "operationId": "getResearch",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the research task.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include_usage",
+            "in": "query",
+            "required": false,
+            "description": "Whether to include credit usage information in the response.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Research task is completed or failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ResearchTaskCompleted"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ResearchTaskFailed"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "status",
+                    "mapping": {
+                      "completed": "#/components/schemas/ResearchTaskCompleted",
+                      "failed": "#/components/schemas/ResearchTaskFailed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Research task is not yet completed (pending or in_progress).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "request_id": {
+                      "type": "string",
+                      "description": "The unique identifier of the research task."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Current status of the research task.",
+                      "enum": [
+                        "pending",
+                        "in_progress"
+                      ]
+                    },
+                    "response_time": {
+                      "type": "integer",
+                      "description": "Time in seconds it took to complete the request."
+                    }
+                  },
+                  "required": [
+                    "request_id",
+                    "response_time",
+                    "status"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Your API key is wrong or missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Research task not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - We had a problem with our server.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ResearchTaskCompleted": {
+        "title": "Completed",
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "description": "The unique identifier of the research task."
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Timestamp when the research task was created."
+          },
+          "status": {
+            "type": "string",
+            "description": "The current status of the research task.",
+            "enum": [
+              "completed"
+            ]
+          },
+          "content": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object"
+              }
+            ],
+            "description": "The research report content. Can be a string or a structured object if output_schema was provided."
+          },
+          "sources": {
+            "type": "array",
+            "description": "List of sources used in the research.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "Title or name of the source."
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "URL of the source."
+                },
+                "favicon": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "URL to the source's favicon."
+                }
+              }
+            }
+          },
+          "response_time": {
+            "type": "integer",
+            "description": "Time in seconds it took to complete the request."
+          },
+          "usage": {
+            "type": "object",
+            "description": "Credit usage details for the request."
+          }
+        },
+        "required": [
+          "request_id",
+          "created_at",
+          "status",
+          "content",
+          "sources",
+          "response_time"
+        ]
+      },
+      "ResearchTaskFailed": {
+        "title": "Failed",
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "description": "The unique identifier of the research task."
+          },
+          "status": {
+            "type": "string",
+            "description": "The current status of the research task.",
+            "enum": [
+              "failed"
+            ]
+          },
+          "response_time": {
+            "type": "integer",
+            "description": "Time in seconds it took to complete the request."
+          },
+          "usage": {
+            "type": "object",
+            "description": "Credit usage details for the request."
+          }
+        },
+        "required": [
+          "request_id",
+          "status",
+          "response_time"
+        ]
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer authentication header in the form Bearer <token>, where <token> is your Tavily API key (e.g., Bearer tvly-YOUR_API_KEY)."
+      }
+    }
+  }
+}

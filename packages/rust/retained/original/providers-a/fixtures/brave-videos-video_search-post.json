@@ -1,0 +1,998 @@
+{
+  "tagName": "Videos Search",
+  "tagDisplayName": "Video search",
+  "tagDescription": "<p>Search video content from a large independent index of web pages.</p>",
+  "path": "/v1/videos/search",
+  "method": "POST",
+  "operationId": "search_videos_post_v1_videos_search_post",
+  "summary": " ",
+  "description": "",
+  "deprecated": false,
+  "serverUrl": "https://api.search.brave.com/res",
+  "authParams": [
+    {
+      "name": "x-subscription-token",
+      "in": "header",
+      "required": true,
+      "description": "The subscription token that was generated for the product.",
+      "schema": {
+        "type": "string",
+        "title": "Subscription token",
+        "description": "The subscription token that was generated for the product."
+      },
+      "deprecated": false
+    }
+  ],
+  "headerParams": [
+    {
+      "name": "api-version",
+      "in": "header",
+      "required": false,
+      "description": "The API version to use.                 This is denoted by the format <code>YYYY-MM-DD</code>.                 Default is the latest that is available. Read                 more about <a href=\"/documentation/guides/versioning\">API versioning</a>.",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "API version",
+        "description": "The API version to use.                 This is denoted by the format <code>YYYY-MM-DD</code>.                 Default is the latest that is available. Read                 more about <a href=\"/documentation/guides/versioning\">API versioning</a>."
+      },
+      "deprecated": false
+    },
+    {
+      "name": "accept",
+      "in": "header",
+      "required": false,
+      "description": "The default supported media type is application/json.",
+      "schema": {
+        "$ref": "#/components/schemas/Accept",
+        "title": "Media type",
+        "description": "The default supported media type is application/json.",
+        "default": "application/json"
+      },
+      "deprecated": false
+    },
+    {
+      "name": "cache-control",
+      "in": "header",
+      "required": false,
+      "description": "Brave Search will return cached content by default.                 To prevent caching set the Cache-Control header to <code>no-cache</code>.                 This is currently done as best effort.",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/CacheControl"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Cache control",
+        "description": "Brave Search will return cached content by default.                 To prevent caching set the Cache-Control header to <code>no-cache</code>.                 This is currently done as best effort."
+      },
+      "deprecated": false
+    },
+    {
+      "name": "user-agent",
+      "in": "header",
+      "required": false,
+      "description": "The user agent originating the request.                 Brave search can utilize the user agent to provide a different                 experience depending on the device as described by the string.                 The user agent should follow the commonly used browser agent                 strings on each platform. For more information on curating user agents,                 see <a href=\"https://www.rfc-editor.org/rfc/rfc9110.html#name-user-agent\">RFC 9110</a>.",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "User agent",
+        "description": "The user agent originating the request.                 Brave search can utilize the user agent to provide a different                 experience depending on the device as described by the string.                 The user agent should follow the commonly used browser agent                 strings on each platform. For more information on curating user agents,                 see <a href=\"https://www.rfc-editor.org/rfc/rfc9110.html#name-user-agent\">RFC 9110</a>."
+      },
+      "deprecated": false
+    }
+  ],
+  "queryParams": [],
+  "pathParams": [],
+  "requestBody": {
+    "required": true,
+    "description": "",
+    "schema": {
+      "$ref": "#/components/schemas/VideoSearchParameters"
+    }
+  },
+  "responses": [
+    {
+      "statusCode": "200",
+      "description": "Successful Response",
+      "schema": {
+        "$ref": "#/components/schemas/VideoSearchApiResponse"
+      }
+    },
+    {
+      "statusCode": "404",
+      "description": "Not Found",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    },
+    {
+      "statusCode": "422",
+      "description": "Unprocessable Entity",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    },
+    {
+      "statusCode": "429",
+      "description": "Too Many Requests",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    }
+  ],
+  "schemas": {
+    "APIErrorCode": {
+      "type": "string",
+      "enum": [
+        "INTERNAL",
+        "QUOTA_LIMITED",
+        "RATE_LIMITED",
+        "SUBSCRIPTION_TOKEN_INVALID",
+        "SUBSCRIPTION_NOT_FOUND",
+        "RESOURCE_NOT_ALLOWED",
+        "OPTION_NOT_IN_PLAN",
+        "USAGE_LIMIT_EXCEEDED",
+        "INVALID_URL",
+        "CREDIT_EXHAUSTED"
+      ],
+      "title": "APIErrorCode"
+    },
+    "APIErrorModel": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Id",
+          "description": "A unique identifier for this particular occurrence of the problem."
+        },
+        "status": {
+          "type": "integer",
+          "title": "Status",
+          "description": "The HTTP status code applicable to this problem, expressed as a string value."
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Detail",
+          "description": "Explanation specific to this occurrence of the problem. Like title, this field’s value can be localized."
+        },
+        "meta": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Meta",
+          "description": "A meta object containing non-standard meta-information about the error."
+        },
+        "code": {
+          "$ref": "#/components/schemas/APIErrorCode",
+          "description": "An application-specific error code, expressed as a string value."
+        }
+      },
+      "type": "object",
+      "required": [
+        "id",
+        "status",
+        "code"
+      ],
+      "title": "APIErrorModel"
+    },
+    "APIErrorResponse": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Type",
+          "default": "ErrorResponse"
+        },
+        "error": {
+          "$ref": "#/components/schemas/APIErrorModel"
+        },
+        "time": {
+          "type": "integer",
+          "title": "Time",
+          "default": 0
+        }
+      },
+      "type": "object",
+      "required": [
+        "error"
+      ],
+      "title": "APIErrorResponse"
+    },
+    "Accept": {
+      "type": "string",
+      "enum": [
+        "application/json",
+        "*/*"
+      ],
+      "title": "Accept"
+    },
+    "CacheControl": {
+      "type": "string",
+      "enum": [
+        "no-cache"
+      ],
+      "const": "no-cache",
+      "title": "CacheControl"
+    },
+    "Language-Input": {
+      "type": "string",
+      "enum": [
+        "ar",
+        "eu",
+        "bn",
+        "bg",
+        "ca",
+        "zh-hans",
+        "zh-hant",
+        "hr",
+        "cs",
+        "da",
+        "nl",
+        "en",
+        "en-gb",
+        "et",
+        "fi",
+        "fr",
+        "gl",
+        "de",
+        "el",
+        "gu",
+        "he",
+        "hi",
+        "hu",
+        "is",
+        "it",
+        "ja",
+        "jp",
+        "kn",
+        "ko",
+        "lv",
+        "lt",
+        "ms",
+        "ml",
+        "mr",
+        "nb",
+        "pl",
+        "pt-br",
+        "pt-pt",
+        "pa",
+        "ro",
+        "ru",
+        "sr",
+        "sk",
+        "sl",
+        "es",
+        "sv",
+        "ta",
+        "te",
+        "th",
+        "tr",
+        "uk",
+        "vi"
+      ],
+      "title": "Language"
+    },
+    "MarketCodes": {
+      "type": "string",
+      "enum": [
+        "es-AR",
+        "en-AU",
+        "de-AT",
+        "nl-BE",
+        "fr-BE",
+        "pt-BR",
+        "en-CA",
+        "fr-CA",
+        "es-CL",
+        "da-DK",
+        "fi-FI",
+        "fr-FR",
+        "de-DE",
+        "el-GR",
+        "zh-HK",
+        "en-IN",
+        "en-ID",
+        "it-IT",
+        "ja-JP",
+        "ko-KR",
+        "en-MY",
+        "es-MX",
+        "nl-NL",
+        "en-NZ",
+        "no-NO",
+        "zh-CN",
+        "pl-PL",
+        "en-PH",
+        "ru-RU",
+        "en-ZA",
+        "es-ES",
+        "sv-SE",
+        "fr-CH",
+        "de-CH",
+        "zh-TW",
+        "tr-TR",
+        "en-GB",
+        "en-US",
+        "es-US"
+      ],
+      "title": "MarketCodes"
+    },
+    "SearchCountry": {
+      "type": "string",
+      "enum": [
+        "AR",
+        "AU",
+        "AT",
+        "BE",
+        "BR",
+        "CA",
+        "CL",
+        "DK",
+        "FI",
+        "FR",
+        "DE",
+        "GR",
+        "HK",
+        "IN",
+        "ID",
+        "IT",
+        "JP",
+        "KR",
+        "MY",
+        "MX",
+        "NL",
+        "NZ",
+        "NO",
+        "CN",
+        "PL",
+        "PT",
+        "PH",
+        "RU",
+        "SA",
+        "ZA",
+        "ES",
+        "SE",
+        "CH",
+        "TW",
+        "TR",
+        "GB",
+        "US",
+        "ALL"
+      ],
+      "title": "SearchCountry"
+    },
+    "SearchOperators": {
+      "properties": {
+        "applied": {
+          "type": "boolean",
+          "title": "Applied",
+          "description": "Whether search operators were applied to the query.",
+          "default": false
+        },
+        "cleaned_query": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cleaned Query",
+          "description": "The query after search operators have been processed."
+        },
+        "sites": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sites",
+          "description": "List of site domains extracted from site: operators."
+        }
+      },
+      "type": "object",
+      "title": "SearchOperators"
+    },
+    "VideoSearchApiResponse": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "videos"
+          ],
+          "const": "videos",
+          "title": "Type",
+          "default": "videos"
+        },
+        "query": {
+          "$ref": "#/components/schemas/app__models__products__search__v1__videos__Query",
+          "description": "Video search query string."
+        },
+        "results": {
+          "items": {
+            "$ref": "#/components/schemas/app__models__products__search__v1__videos__VideoResult"
+          },
+          "type": "array",
+          "title": "Results",
+          "description": "The list of video results for the given query.",
+          "default": []
+        },
+        "extra": {
+          "$ref": "#/components/schemas/app__models__products__search__v1__videos__Extra",
+          "description": "Additional information about the video search results."
+        }
+      },
+      "type": "object",
+      "required": [
+        "query",
+        "extra"
+      ],
+      "title": "VideoSearchApiResponse"
+    },
+    "VideoSearchParameters": {
+      "properties": {
+        "q": {
+          "type": "string",
+          "maxLength": 400,
+          "minLength": 1,
+          "title": "Q",
+          "description": "The user’s search query term. Query can not be empty. Maximum of 400 characters and 50 words in the query."
+        },
+        "search_lang": {
+          "$ref": "#/components/schemas/Language-Input",
+          "description": "The search language preference. The 2 or more character language code for which the search results are provided.",
+          "default": "en"
+        },
+        "ui_lang": {
+          "$ref": "#/components/schemas/MarketCodes",
+          "description": "User interface language preferred in response. Usually of the format <code>&lt;language_code&gt;-&lt;country_code&gt;</code>. For more, see <a href=\"https://www.rfc-editor.org/rfc/rfc9110.html#name-accept-language\">RFC 9110</a>.",
+          "default": "en-US"
+        },
+        "country": {
+          "$ref": "#/components/schemas/SearchCountry",
+          "description": "The search query country, where the results come from. The country string is limited to 2 character country codes of supported countries or <code>ALL</code> for worldwide.",
+          "default": "US"
+        },
+        "safesearch": {
+          "$ref": "#/components/schemas/app__models__general__SafeSearch",
+          "title": "Safe search",
+          "description": "<p>Filters search results for adult content. The following values are supported:</p>\n<ul>\n<li><strong>off</strong> - No filtering is done.</li>\n<li><strong>moderate</strong> - Filters explicit content, like images and videos, but allows adult domains in the search results.</li>\n<li><strong>strict</strong> - Drops all adult content from search results.</li>\n</ul>",
+          "default": "moderate"
+        },
+        "count": {
+          "type": "integer",
+          "maximum": 50,
+          "minimum": 1,
+          "title": "Count",
+          "description": "The number of search results returned in response. The maximum is 50. The actual number delivered may be less than requested. Combine this parameter with offset to paginate search results.",
+          "default": 20
+        },
+        "offset": {
+          "type": "integer",
+          "maximum": 9,
+          "minimum": 0,
+          "title": "Offset",
+          "description": "The zero based offset that indicates number of search results per page (count) to skip before returning the result. The maximum is 9. The actual number delivered may be less than requested based on the query. In order to paginate results use this parameter together with count. For example, if your user interface displays 20 search results per page, set count to 20 and offset to 0 to show the first page of results. To get subsequent pages, increment offset by 1 (e.g. 0, 1, 2). The results may overlap across multiple pages.",
+          "default": 0
+        },
+        "spellcheck": {
+          "type": "boolean",
+          "title": "Spellcheck",
+          "description": "Whether to spell check the provided query. If the spellchecker is enabled, the modified query is always used for search. The modified query can be found in altered key from the query response model.",
+          "default": true
+        },
+        "freshness": {
+          "type": "string",
+          "title": "Freshness",
+          "description": "<p>Filters search results by page age. The age of a page is determined by the most relevant date reported by the content, such as its published or last modified date. The following values are supported:</p>\n<ul>\n<li><strong>pd</strong> - Pages aged 24 hours or less.</li>\n<li><strong>pw</strong> - Pages aged 7 days or less.</li>\n<li><strong>pm</strong> - Pages aged 31 days or less.</li>\n<li><strong>py</strong> - Pages aged 365 days or less.</li>\n<li><strong>YYYY-MM-DDtoYYYY-MM-DD</strong> - A custom date range is also supported by specifying start and end dates e.g. <code>2022-04-01to2022-07-30</code>.</li>\n</ul>",
+          "default": ""
+        },
+        "include_fetch_metadata": {
+          "type": "boolean",
+          "title": "Include Fetch Metadata",
+          "description": "Include fetch metadata.",
+          "default": false
+        },
+        "operators": {
+          "type": "boolean",
+          "title": "Operators",
+          "description": "Whether to apply search operators.",
+          "default": true
+        }
+      },
+      "type": "object",
+      "required": [
+        "q"
+      ],
+      "title": "VideoSearchParameters"
+    },
+    "app__models__general__SafeSearch": {
+      "type": "string",
+      "enum": [
+        "off",
+        "moderate",
+        "strict"
+      ],
+      "title": "SafeSearch"
+    },
+    "app__models__products__search__v1__videos__Extra": {
+      "properties": {
+        "might_be_offensive": {
+          "type": "boolean",
+          "title": "Might Be Offensive",
+          "description": "Indicates whether the video search results might contain offensive content.",
+          "default": false
+        }
+      },
+      "type": "object",
+      "title": "Extra"
+    },
+    "app__models__products__search__v1__videos__MetaUrl": {
+      "properties": {
+        "scheme": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Scheme",
+          "description": "The protocol scheme extracted from the URL."
+        },
+        "netloc": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Netloc",
+          "description": "The network location part extracted from the URL."
+        },
+        "hostname": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Hostname",
+          "description": "The lowercased domain name extracted from the URL."
+        },
+        "favicon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Favicon",
+          "description": "The favicon used for the URL."
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Path",
+          "description": "The hierarchical path of the URL useful as a display string."
+        }
+      },
+      "type": "object",
+      "title": "MetaUrl"
+    },
+    "app__models__products__search__v1__videos__Profile": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "description": "The name of the profile."
+        },
+        "url": {
+          "type": "string",
+          "title": "Url",
+          "description": "The original URL where the profile is available."
+        },
+        "long_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Long Name",
+          "description": "The long name of the profile."
+        },
+        "img": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Img",
+          "description": "The served image URL representing the profile."
+        }
+      },
+      "type": "object",
+      "required": [
+        "name",
+        "url"
+      ],
+      "title": "Profile"
+    },
+    "app__models__products__search__v1__videos__Query": {
+      "properties": {
+        "original": {
+          "type": "string",
+          "title": "Original",
+          "description": "The original query that was requested."
+        },
+        "altered": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Altered",
+          "description": "The altered query by the spellchecker. This is the query that is used to search if any."
+        },
+        "cleaned": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cleaned",
+          "description": "The cleaned normalized query by the spellchecker. This is the query that is used to search if any."
+        },
+        "spellcheck_off": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Spellcheck Off",
+          "description": "Whether the spellchecker is enabled or disabled."
+        },
+        "show_strict_warning": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Show Strict Warning",
+          "description": "The value is <code>true</code> if the lack of results is due to a <code>strict</code> safesearch setting. Adult content relevant to the query was found, but was blocked by safesearch."
+        },
+        "search_operators": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/SearchOperators"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Search operators applied to the query."
+        }
+      },
+      "type": "object",
+      "required": [
+        "original"
+      ],
+      "title": "Query"
+    },
+    "app__models__products__search__v1__videos__Thumbnail": {
+      "properties": {
+        "src": {
+          "type": "string",
+          "title": "Src",
+          "description": "The served URL of the thumbnail associated with the video."
+        },
+        "original": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Original",
+          "description": "The original URL of the thumbnail associated with the video."
+        }
+      },
+      "type": "object",
+      "required": [
+        "src"
+      ],
+      "title": "Thumbnail"
+    },
+    "app__models__products__search__v1__videos__VideoData": {
+      "properties": {
+        "duration": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Duration",
+          "description": "A time string representing the duration of the video."
+        },
+        "views": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Views",
+          "description": "The number of views of the video."
+        },
+        "creator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Creator",
+          "description": "The creator of the video."
+        },
+        "publisher": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Publisher",
+          "description": "The publisher of the video."
+        },
+        "requires_subscription": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Requires Subscription",
+          "description": "Whether the video requires a subscription."
+        },
+        "tags": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Tags",
+          "description": "A list of tags relevant to the video."
+        },
+        "author": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/app__models__products__search__v1__videos__Profile"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "A profile associated with the video."
+        }
+      },
+      "type": "object",
+      "title": "VideoData"
+    },
+    "app__models__products__search__v1__videos__VideoResult": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "video_result"
+          ],
+          "const": "video_result",
+          "title": "Type",
+          "description": "The type of video search API result. The value is always <code>video_result</code>.",
+          "default": "video_result"
+        },
+        "url": {
+          "type": "string",
+          "title": "Url",
+          "description": "The source URL of the video."
+        },
+        "title": {
+          "type": "string",
+          "title": "Title",
+          "description": "The title of the video."
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Description",
+          "description": "The description for the video."
+        },
+        "age": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Age",
+          "description": "A human-readable representation of the video’s age. For example, <code>2 days ago</code>."
+        },
+        "page_age": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Page Age",
+          "description": "The page’s date, based on its published or last modified date."
+        },
+        "page_fetched": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Page Fetched",
+          "description": "The ISO date time when the page was last fetched. The format is <code>YYYY-MM-DDTHH:MM:SSZ</code>."
+        },
+        "fetched_content_timestamp": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Fetched Content Timestamp",
+          "description": "The timestamp when the content was fetched."
+        },
+        "video": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/app__models__products__search__v1__videos__VideoData"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Metadata for the video."
+        },
+        "meta_url": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/app__models__products__search__v1__videos__MetaUrl"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Aggregated information on the URL associated with the video search result."
+        },
+        "thumbnail": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/app__models__products__search__v1__videos__Thumbnail"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The thumbnail for the video."
+        }
+      },
+      "type": "object",
+      "required": [
+        "url",
+        "title"
+      ],
+      "title": "VideoResult"
+    }
+  },
+  "methodVariants": [
+    {
+      "method": "get",
+      "href": "/api-reference/videos/video_search/get",
+      "active": false
+    },
+    {
+      "method": "post",
+      "href": "/api-reference/videos/video_search/post",
+      "active": true
+    }
+  ]
+}

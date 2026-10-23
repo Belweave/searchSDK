@@ -1,0 +1,35 @@
+
+h1 Authentication and API conventions
+
+h2 Choose a credential
+Credential | When to use it
+Workspace API key | Connect an application to a workspace. Search Only permission allows reading and searching. Read / Write also allows adding and changing content.
+User access token | Manage an account, organization, members, API keys, or billing after signing in. The user’s role determines which actions are allowed.
+MCP connection | Let an AI assistant use the workspaces, drives, and actions you approve during sign-in.
+
+h2 Make a workspace request
+curl "$POLYGRES_BASE_URL/v1/sdk/context" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY"
+
+h2 Repeat an operation
+
+h2 Update a versioned resource
+# Save the ETag returned by this read, then set DRIVE_ETAG to that exact value.
+curl -i "$POLYGRES_BASE_URL/v1/drives/$DRIVE_ID" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY"
+ 
+curl -X PATCH "$POLYGRES_BASE_URL/v1/drives/$DRIVE_ID" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "If-Match: $DRIVE_ETAG" \
+  -d '{"name":"Handbooks"}'
+
+h2 Lists and errors
+{
+  "error": {
+    "code": "invalid_credentials",
+    "message": "Authentication failed. Provide a valid access token or API key.",
+    "request_id": "00000000-0000-4000-8000-000000000001",
+    "details": {}
+  }
+}

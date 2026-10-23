@@ -1,0 +1,185 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Perplexity Orchestrator API (OpenAI-compatible)",
+    "description": "OpenAI Chat Completions-compatible access to models across providers, plus the model catalog. Schema structure follows the OpenAI Chat Completions wire format (derived from the MIT-licensed OpenAI OpenAPI specification); all documentation text is Perplexity's own.",
+    "version": "2.3.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.perplexity.ai"
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/router/v1/models/{model}": {
+      "get": {
+        "summary": "Retrieve Model",
+        "description": "Retrieve one model by id, including its base token prices. Model ids contain a `/` (for example `perplexity/kimi-k3`); pass the full id in the path.",
+        "operationId": "gateway_retrieve_model",
+        "parameters": [
+          {
+            "name": "model",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The model id, e.g. `perplexity/kimi-k3`."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Model"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No model with this id is available on the Orchestrator API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Model": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Public model slug, e.g. `perplexity/kimi-k3`.",
+            "x-order": 1
+          },
+          "object": {
+            "type": "string",
+            "description": "Always `model`.",
+            "x-order": 2
+          },
+          "created": {
+            "type": "integer",
+            "format": "int64",
+            "x-order": 3
+          },
+          "owned_by": {
+            "type": "string",
+            "description": "Provider prefix of the slug, e.g. `perplexity`.",
+            "x-order": 4
+          },
+          "pricing": {
+            "$ref": "#/components/schemas/ModelPricing"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "created",
+          "owned_by",
+          "pricing"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/Error"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "ModelPricing": {
+        "type": "object",
+        "description": "Base token prices in USD per 1M tokens. Every field is a price; cache_read is the effective cached-input price.",
+        "properties": {
+          "input": {
+            "type": "number",
+            "format": "double",
+            "x-order": 1
+          },
+          "output": {
+            "type": "number",
+            "format": "double",
+            "x-order": 2
+          },
+          "cache_write": {
+            "type": "number",
+            "format": "double",
+            "x-order": 3
+          },
+          "cache_read": {
+            "type": "number",
+            "format": "double",
+            "x-order": 4
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "usd_per_1m_tokens"
+            ],
+            "x-order": 5
+          }
+        },
+        "required": [
+          "input",
+          "output",
+          "unit"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Always `null`."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable description of the error."
+          },
+          "param": {
+            "type": "string",
+            "nullable": true,
+            "description": "The request parameter the error refers to, when applicable."
+          },
+          "type": {
+            "type": "string",
+            "description": "Error category: `invalid_request_error` for 4xx, `rate_limit_error` for 429, `server_error` for 5xx."
+          }
+        },
+        "required": [
+          "type",
+          "message",
+          "param",
+          "code"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Your Perplexity API key."
+      }
+    }
+  }
+}

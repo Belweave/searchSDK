@@ -1,0 +1,4772 @@
+{
+  "schemaVersion": 1,
+  "operationCount": 493,
+  "providerCount": 13,
+  "typedJsonResponses": 426,
+  "schemaStructCount": 1782,
+  "inputs": [
+    {
+      "path": "scripts/providers-a/fixtures/brave-ai-answers.json",
+      "sha256": "3eb205eb04f0ef25e9aa92950dc416aab65140c85fd45ede5ed509d89b13af59"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-ai-llm_context-get.json",
+      "sha256": "db81c7967127296668cb3adf3375ea0e9130fca64802cade1e3b997b32d2bb69"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-ai-llm_context-post.json",
+      "sha256": "c40825258f67eb617704ebd87629260d87a05a5ca3bce8d49ae6a52a2e0117c1"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-images-image_search.json",
+      "sha256": "6856117b22e0606ea998d330a6db3ff9fcddffc893e7c760e0cfde4d73753455"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-news-news_search-get.json",
+      "sha256": "3fcbfb8b8700adff2fba22d746b97805406403e6db6dbfefab1931a861bca6bc"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-news-news_search-post.json",
+      "sha256": "c10f6f6a0b629838f210c606e85782c110d85065f94c8f878c2098f655a85b16"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-other-spell_check.json",
+      "sha256": "7da3d5060c3e549781324f1fd559feb5a86d658a2bdcae91dcc410201a254a39"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-other-suggestions.json",
+      "sha256": "1b497d0393afd3af4bf798889273892c4ae291a2da4fbebc9b76d1f23ae7174b"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-videos-video_search-get.json",
+      "sha256": "861b197053bccfd734c4ed2c19deccfb23c1a07d6a832a021c59e8660dcc1a14"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-videos-video_search-post.json",
+      "sha256": "696c07941de14b45561cc3b208fa9c5b54214da0a029b81474b7a151cf664f22"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-web-local_pois.json",
+      "sha256": "719188fdfe1782b09563fc33c27fe22dd9d5df30cab03e081301c713befbcde6"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-web-place_search.json",
+      "sha256": "b4a08076f7b0ea64631c7e0fe7155ec5574e1966f53a26f33f4decf352b28357"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-web-poi_descriptions.json",
+      "sha256": "a5ee75c46b3b24387329397f408094fc912a14be6075f10a3b3cbad1080d0af1"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-web-rich_search.json",
+      "sha256": "6c7542702f147a5a2c3c50645677a8f27bdcc252428d4dd9ae029f5445a9e47d"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-web-search-get.json",
+      "sha256": "7e4687676b1556f04bc7d1305750df874b45ddff7fd628343edae12d3f1d7f43"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/brave-web-search-post.json",
+      "sha256": "d9b400043375e38957237bda913f5ea1d53a6ae329399717798e853b67642d3f"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/context.json",
+      "sha256": "d6a39c6f661bca01539dad50e20c2ef9cf2c176b8b343ce4294fe6637db13d4d"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/exa-team.json",
+      "sha256": "4ab18be3f6e7a435eaf03d91b206b91e45304770d407eea18cf4b386f2568df0"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/exa.json",
+      "sha256": "599ff2a6b2f164979348592cd8c7d6bbc7c87270fe59ccd2991571ca80e6c038"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-crawl.json",
+      "sha256": "8a165c5871ebb0f8e3cb1b1005322bc4fad857e2faf2ed4593a2285a4fbae527"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-deactivate-keys.json",
+      "sha256": "906e433f069c9d47310bffbbaa68d848fe68ad066249dd78e82a8c8afd643b8a"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-extract.json",
+      "sha256": "6d395f9089168fa8c0df5f57db776c90bd7269c9ef688c375dd6bb1cb7b9bbda"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-feedback.json",
+      "sha256": "f8155d6dad53279d965b19b04f932a3f40769680b767a54003c397d974f08ce2"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-generate-keys.json",
+      "sha256": "d5359ce0d37e74950ce1a1373dfddab1ae9a996d50153551ce84f433fdf0f344"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-key-info.json",
+      "sha256": "23663e6132a0a461416cdec25b2b585cb660cf251cf9617f1fbde145861496a8"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-logs.json",
+      "sha256": "93a486d37dd80dc7179076a60311c7e8fd8739bb2aa050f040ff03754f910637"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-map.json",
+      "sha256": "8ca58b044adf9487636991a6e5daae680d9e4db22c6715d146d23bdbfbd95b06"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-org-usage.json",
+      "sha256": "e942dec49b8498138ca31a49ffd8006799a4d827e4c9d4f6cf9a3c5cd14ff038"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-research-get.json",
+      "sha256": "45f6f14c5815527bf200caef6a7e3a99e38dc8690688a8d1da5a9f3f4693a013"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-research.json",
+      "sha256": "3dafb813dd1cb6627f7990e8724ca7b2c5fc93804b13bee8ae79d1c25c396a7c"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-search.json",
+      "sha256": "8d031afdf9f842c8bf3d500ad4f65a338cb480d31f345d9d1680fb955806a635"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tavily-usage.json",
+      "sha256": "982b533d2846db7a39e3bcb9b9ff78b271d8c4e4ccf1b0a4a17b43d1e0609f92"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tinyfish-browser.json",
+      "sha256": "0f237c89b74f2424d3cc6b6254785575ff4d0379960923d54af7a86397595ea2"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tinyfish-fetch.json",
+      "sha256": "a095f9770e7425ca987bc58c43256d29dee8d0ad4cf9b199e8711ebd2139959b"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tinyfish-main.json",
+      "sha256": "651e932c689d620f49080243615c2d7df8a0c41123436382f4bce48dc82f780e"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tinyfish-monitor.json",
+      "sha256": "136cdfa15c6aaa0b6e8bc7a81304db7c481468f1943ed5f9d12d2361bf0ff9b3"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tinyfish-research.json",
+      "sha256": "168e66d1528afdae83dedd4f8a8e1b01a6c739557938c22baf1189643b8e1215"
+    },
+    {
+      "path": "scripts/providers-a/fixtures/tinyfish-search.json",
+      "sha256": "c633c685ebbf715e5f20c68060e189052633158c7fe0f54917db5092c3871f5a"
+    },
+    {
+      "path": "scripts/providers-a/operations.json",
+      "sha256": "3a05b8a612a8aca14e2319eec6a90f9b8a65fbefdd057ea77aca4a1cbfb27790"
+    },
+    {
+      "path": "scripts/providers-a/provenance.json",
+      "sha256": "9f4fd488dcd79898f561f50797f64a828ada5555b18001bc29deb00d498f6dab"
+    },
+    {
+      "path": "scripts/providers-b/catalogs/firecrawl-operations.json",
+      "sha256": "f5740af6fe492fa0a9ed3db29acc53b43575e0fdc9dbe80e8add89b07cd3e8ab"
+    },
+    {
+      "path": "scripts/providers-b/catalogs/linkup-operations.json",
+      "sha256": "5b1c63634a9220dac298de61a7f3c7f275bef97762b63260d32dc72b888b0081"
+    },
+    {
+      "path": "scripts/providers-b/catalogs/parallel-operations.json",
+      "sha256": "3bef5d175fab3901e35f34b272b180c2085515fbef539fd0d65f55151983cb72"
+    },
+    {
+      "path": "scripts/providers-b/catalogs/perplexity-operations.json",
+      "sha256": "0d794fae8c06a2c1cd21fa7447da8c3333178bfb8fb8e4ede30d8bbaeb0d812d"
+    },
+    {
+      "path": "scripts/providers-b/catalogs/serpapi-operations.json",
+      "sha256": "e7e2c95f6247b642d65129f84248c9cb04faddc149a7ce0624678945738d87d1"
+    },
+    {
+      "path": "scripts/providers-b/catalogs/serper-operations.json",
+      "sha256": "db4b9634705d19f0a1f4a8e49625ee7efde7c5636109a42d4d05f5f94ce58b21"
+    },
+    {
+      "path": "scripts/providers-b/catalogs/wondersearch-operations.json",
+      "sha256": "e993fe2d87ce4c3ee8ddb8489ec5e07e5cc355791e46d076f932e4dcada05da4"
+    },
+    {
+      "path": "scripts/providers-b/catalogs/you-operations.json",
+      "sha256": "2e91fc64be408228a657f8f59532537db5fe3fd9dba38b83799143a838cbb4a8"
+    },
+    {
+      "path": "scripts/providers-b/provenance.json",
+      "sha256": "eda018ba8bf8c89390baa70ad9058cafdfef6dbd34f864fc538d7a02413e9d36"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/firecrawl-openapi",
+      "sha256": "849076a3180d41c457e9d774ad773fef4f84d02b609f4e522adb36873860b3d5"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/linkup-openapi",
+      "sha256": "b9bcfb4b9efd07bb6dd5712e876592db50f153d7bf8ad038e5b9e3f1d7d6d249"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/p-auth-generate.json",
+      "sha256": "83d006e3f4d1ab8de01c80d689c7c3015629c8765457b92dedf427f73c5e4e42"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/p-auth-revoke.json",
+      "sha256": "cf3e89ad90c28bcab7e5f2d5fa37fe7a8ecd5b43948d49183f2911e25ebf0299"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/p-gateway-chat.json",
+      "sha256": "6634d66bff46edcd6d63816a6c1e5efd7ba34f24961684f692ce73c11748e250"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/p-gateway-messages.json",
+      "sha256": "a443ef1faeb3eb550c67bec9ec71cd45fcd04cd7021b9f6cc45f954761065330"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/p-gateway-model.json",
+      "sha256": "0b0d9b8b5d519d13a52dc60939e4e0f315530639e1cc6a9001f26ccb53904344"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/p-gateway-models.json",
+      "sha256": "17ef476b7f81fc286ca05aa3ed85253d396827dd41530ba88755df8252f2a656"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/p-gateway-responses.json",
+      "sha256": "a53cf8a3e119d8e4af022517080c257a0ba8ac25d43da019b232d46651bd933f"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/p-openapi",
+      "sha256": "19b166cb07af8859df9888b10d9d81eda16252a8d6ea57905ced5869a302b9d1"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/parallel-openapi",
+      "sha256": "c4ae7c37e089733342a0df2f53111faeda340ece4a7d3f4b3d60ad6efc2d57cb"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/serper-homepage-field-shapes.json",
+      "sha256": "216d4bf77e6753473f11a6953af12727b8d6cb256ad836c9b6345e3a9422e5b0"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/serper-openapi",
+      "sha256": "81a295f7f6befe28d8518fc236e896b8c83131c301ec3ae56e39f4c34191e123"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/serper-playground-code.txt",
+      "sha256": "2f7d1ae841c7c79f2d69d466e9a2ab41ef11fa04e677f1c9e26a379825f69803"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/serper-scrape",
+      "sha256": "83544e10aa9310391e008a8317798a7fa26682a4f8bccef4170429cdc5a05d80"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/wonder-access-api.compact",
+      "sha256": "6d5bfae9c8d7fe1fe2dad185786b9495a6c83cd6feb941197ed8265d651ac20d"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/wonder-authentication.compact",
+      "sha256": "b3ba5c8362573e4375797969438adc32699ae801dfb59e6c0fd28f687ee31d41"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/wonder-content-api.compact",
+      "sha256": "7287c86e52a1d289e761dfe043c8b5dedf84ae89368500e5f5b31a4618652685"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/wonder-limits.compact",
+      "sha256": "470c2770db2a77cffeb706c3ac864c9e82913cff5e02f9eea3a12ba53268e521"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/wonder-openapi",
+      "sha256": "74dced67b06321c414470a032f91b257bb70d8c21fbc0b778321a9ddb2f32d39"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/wonder-search.compact",
+      "sha256": "9a7526523c582624d454f79c6a8920b54760efecf7e41a1b751cce3d20563285"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/wonder-uploads-api.compact",
+      "sha256": "d285039cc74200a6d9284efa6a82159d3d9e9e2b1fad8f3f4054d07962245ff7"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/wonder-uploads-api.txt",
+      "sha256": "a0c1f5a3337e49d8dddf40d594c0abf90f085083b5abb1bf69bb8628c3551f75"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/wonder-usage-and-billing-api.compact",
+      "sha256": "2d70ee9360c156c298702de2a8288f27aa339246a433bbb2b73dbd05c947b0b3"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/wonder-usage-and-billing-api.txt",
+      "sha256": "a5f11e9b243003fef983a5dae2fc737a71301610515446aabc4a9147d821dbe6"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/you-answer",
+      "sha256": "393c89a21fca78950998c0c56932d009bcc30c1fa655fbb506db64d201bb6da3"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/you-billing",
+      "sha256": "6f983b56b5756247383be652224fa6d1c326f44721c7aa988a6fa7c0122ef41b"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/you-contents",
+      "sha256": "0aea489c72a1c7acd8f895d73960ff6740555cf2691a28adaba079dbf8573389"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/you-finance-research",
+      "sha256": "91d76e209f605e0481370bef08b103a5c6ccd24aeaf6b6d830ef6a4098174588"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/you-images",
+      "sha256": "048af79bf2e279d009532ed192826ee1031c8381a64bcb042393791a1a5d25ad"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/you-research",
+      "sha256": "959e88ba61b9be66e40c427db8f9d9e467122998983ce0552ce3349eb611bdb1"
+    },
+    {
+      "path": "scripts/providers-b/snapshots/you-web-search",
+      "sha256": "aea11db4b04f19372be7b50d6a759472e42c0445979c289ad55eacd21863fb6a"
+    }
+  ],
+  "operations": [
+    {
+      "provider": "brave",
+      "name": "answers",
+      "method": "POST",
+      "path": "/v1/chat/completions",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/ai/answers",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "answersStream",
+      "method": "POST",
+      "path": "/v1/chat/completions",
+      "response": "sse",
+      "source": "https://api-dashboard.search.brave.com/api-reference/ai/answers",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "images",
+      "method": "GET",
+      "path": "/v1/images/search",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/images/image_search",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "llmContext",
+      "method": "GET",
+      "path": "/v1/llm/context",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/ai/llm_context/get",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "llmContextPost",
+      "method": "POST",
+      "path": "/v1/llm/context",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/ai/llm_context/post",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "localPois",
+      "method": "GET",
+      "path": "/v1/local/pois",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/web/local_pois",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "news",
+      "method": "GET",
+      "path": "/v1/news/search",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/news/news_search/get",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "newsPost",
+      "method": "POST",
+      "path": "/v1/news/search",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/news/news_search/post",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "places",
+      "method": "GET",
+      "path": "/v1/local/place_search",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/web/place_search",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "poiDescriptions",
+      "method": "GET",
+      "path": "/v1/local/descriptions",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/web/poi_descriptions",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "rich",
+      "method": "GET",
+      "path": "/v1/web/rich",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/web/rich_search",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "search",
+      "method": "GET",
+      "path": "/v1/web/search",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/web/search/get",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "searchPost",
+      "method": "POST",
+      "path": "/v1/web/search",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/web/search/post",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "spellcheck",
+      "method": "GET",
+      "path": "/v1/spellcheck/search",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/other/spell_check",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "suggest",
+      "method": "GET",
+      "path": "/v1/suggest/search",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/other/suggestions",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "videos",
+      "method": "GET",
+      "path": "/v1/videos/search",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/videos/video_search/get",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "brave",
+      "name": "videosPost",
+      "method": "POST",
+      "path": "/v1/videos/search",
+      "response": "json",
+      "source": "https://api-dashboard.search.brave.com/api-reference/videos/video_search/post",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "answers",
+      "method": "POST",
+      "path": "/web/answers",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "cancelBatch",
+      "method": "POST",
+      "path": "/batch/{batch_id}/cancel",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "classifyNaics",
+      "method": "GET",
+      "path": "/web/naics",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "classifySic",
+      "method": "GET",
+      "path": "/web/sic",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "crawl",
+      "method": "POST",
+      "path": "/web/crawl",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "createMonitor",
+      "method": "POST",
+      "path": "/monitors",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "deleteBatch",
+      "method": "DELETE",
+      "path": "/batch/{batch_id}",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "deleteMonitor",
+      "method": "DELETE",
+      "path": "/monitors/{monitor_id}",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "enrichPerson",
+      "method": "POST",
+      "path": "/people/enrich",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "extract",
+      "method": "POST",
+      "path": "/web/extract",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "fonts",
+      "method": "GET",
+      "path": "/web/fonts",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "getBatch",
+      "method": "GET",
+      "path": "/batch/{batch_id}",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "getBatchResults",
+      "method": "GET",
+      "path": "/batch/{batch_id}/results",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "getChange",
+      "method": "GET",
+      "path": "/monitors/changes/{change_id}",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "getLog",
+      "method": "GET",
+      "path": "/org/logs/{request_id}",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "getMonitor",
+      "method": "GET",
+      "path": "/monitors/{monitor_id}",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "getMonitorLimits",
+      "method": "GET",
+      "path": "/monitors/limits",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "getMonitorRun",
+      "method": "GET",
+      "path": "/monitors/{monitor_id}/runs/{run_id}",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "getUsage",
+      "method": "GET",
+      "path": "/org/usage",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "getUsageHistory",
+      "method": "GET",
+      "path": "/org/usage/history",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "getWebhookDelivery",
+      "method": "GET",
+      "path": "/webhooks/deliveries/{delivery_id}",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "headLogo",
+      "method": "HEAD",
+      "path": "/",
+      "response": "raw",
+      "source": "https://docs.context.dev/brand/logo-link.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "listAccountRuns",
+      "method": "GET",
+      "path": "/monitors/runs",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "listBatches",
+      "method": "GET",
+      "path": "/batch/list",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "listChanges",
+      "method": "GET",
+      "path": "/monitors/changes",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "listLogs",
+      "method": "GET",
+      "path": "/org/logs",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "listMonitorChanges",
+      "method": "GET",
+      "path": "/monitors/{monitor_id}/changes",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "listMonitorCreditUsage",
+      "method": "GET",
+      "path": "/monitors/credit-usage",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "listMonitorRuns",
+      "method": "GET",
+      "path": "/monitors/{monitor_id}/runs",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "listMonitors",
+      "method": "GET",
+      "path": "/monitors",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "listProfiles",
+      "method": "GET",
+      "path": "/org/browser/profiles",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "listWebhookDeliveries",
+      "method": "POST",
+      "path": "/webhooks/deliveries",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "listWebhookDeliveryAttempts",
+      "method": "GET",
+      "path": "/webhooks/deliveries/{delivery_id}/attempts",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "logoUrl",
+      "method": "GET",
+      "path": "/",
+      "response": "embedding-url",
+      "source": "https://docs.context.dev/brand/logo-link.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "map",
+      "method": "GET",
+      "path": "/web/urls",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "parse",
+      "method": "POST",
+      "path": "/parse",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "prefetch",
+      "method": "POST",
+      "path": "/utility/prefetch",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "retrieveBrand",
+      "method": "POST",
+      "path": "/brand/retrieve",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "retryWebhookDelivery",
+      "method": "POST",
+      "path": "/webhooks/deliveries/{delivery_id}/retry",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "rotateMonitorWebhookSecret",
+      "method": "POST",
+      "path": "/monitors/{monitor_id}/webhook/rotate-secret",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "runMonitorNow",
+      "method": "POST",
+      "path": "/monitors/{monitor_id}/run",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "scrape",
+      "method": "POST",
+      "path": "/web/scrape",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "search",
+      "method": "POST",
+      "path": "/web/search",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "searchBrands",
+      "method": "GET",
+      "path": "/brand/search",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "searchCompanies",
+      "method": "POST",
+      "path": "/company/search",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "searchNews",
+      "method": "POST",
+      "path": "/news/search",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "styleguide",
+      "method": "GET",
+      "path": "/web/styleguide",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "submitBatch",
+      "method": "POST",
+      "path": "/batch/submit",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "submitFeedback",
+      "method": "POST",
+      "path": "/feedback",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "context",
+      "name": "updateMonitor",
+      "method": "PATCH",
+      "path": "/monitors/{monitor_id}",
+      "response": "json",
+      "source": "https://docs.context.dev/openapi.json",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "answer",
+      "method": "POST",
+      "path": "/answer",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "answerStream",
+      "method": "POST",
+      "path": "/answer",
+      "response": "sse",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "batchMonitors",
+      "method": "POST",
+      "path": "/monitors/batch",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "cancelAgentRun",
+      "method": "POST",
+      "path": "/agent/runs/{id}/cancel",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "cancelBatch",
+      "method": "POST",
+      "path": "/batches/{id}/cancel",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "cancelWebset",
+      "method": "POST",
+      "path": "/v0/websets/{id}/cancel",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "cancelWebsetEnrichment",
+      "method": "POST",
+      "path": "/v0/websets/{webset}/enrichments/{id}/cancel",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "cancelWebsetSearch",
+      "method": "POST",
+      "path": "/v0/websets/{webset}/searches/{id}/cancel",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "createAgentRun",
+      "method": "POST",
+      "path": "/agent/runs",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "createAgentRunStream",
+      "method": "POST",
+      "path": "/agent/runs",
+      "response": "sse",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "createApiKey",
+      "method": "POST",
+      "path": "/api-keys",
+      "response": "json",
+      "source": "https://exa.ai/docs/team-management-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "createBatch",
+      "method": "POST",
+      "path": "/batches",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "createImport",
+      "method": "POST",
+      "path": "/v0/imports",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "createMonitor",
+      "method": "POST",
+      "path": "/monitors",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "createWebhook",
+      "method": "POST",
+      "path": "/v0/webhooks",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "createWebset",
+      "method": "POST",
+      "path": "/v0/websets",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "createWebsetEnrichment",
+      "method": "POST",
+      "path": "/v0/websets/{webset}/enrichments",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "createWebsetMonitor",
+      "method": "POST",
+      "path": "/v0/monitors",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "createWebsetSearch",
+      "method": "POST",
+      "path": "/v0/websets/{webset}/searches",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "deleteAgentRun",
+      "method": "DELETE",
+      "path": "/agent/runs/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "deleteApiKey",
+      "method": "DELETE",
+      "path": "/api-keys/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/team-management-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "deleteBatch",
+      "method": "DELETE",
+      "path": "/batches/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "deleteImport",
+      "method": "DELETE",
+      "path": "/v0/imports/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "deleteMonitor",
+      "method": "DELETE",
+      "path": "/monitors/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "deleteWebhook",
+      "method": "DELETE",
+      "path": "/v0/webhooks/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "deleteWebset",
+      "method": "DELETE",
+      "path": "/v0/websets/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "deleteWebsetEnrichment",
+      "method": "DELETE",
+      "path": "/v0/websets/{webset}/enrichments/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "deleteWebsetItem",
+      "method": "DELETE",
+      "path": "/v0/websets/{webset}/items/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "deleteWebsetMonitor",
+      "method": "DELETE",
+      "path": "/v0/monitors/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "findSimilar",
+      "method": "POST",
+      "path": "/findSimilar",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getAgentRun",
+      "method": "GET",
+      "path": "/agent/runs/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getApiKey",
+      "method": "GET",
+      "path": "/api-keys/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/team-management-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getApiKeyUsage",
+      "method": "GET",
+      "path": "/api-keys/{id}/usage",
+      "response": "json",
+      "source": "https://exa.ai/docs/team-management-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getBatch",
+      "method": "GET",
+      "path": "/batches/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getContents",
+      "method": "POST",
+      "path": "/contents",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getEvent",
+      "method": "GET",
+      "path": "/v0/events/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getImport",
+      "method": "GET",
+      "path": "/v0/imports/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getMonitor",
+      "method": "GET",
+      "path": "/monitors/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getMonitorRun",
+      "method": "GET",
+      "path": "/monitors/{id}/runs/{runId}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getTeamInfo",
+      "method": "GET",
+      "path": "/v0/teams/me",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getWebhook",
+      "method": "GET",
+      "path": "/v0/webhooks/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getWebset",
+      "method": "GET",
+      "path": "/v0/websets/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getWebsetEnrichment",
+      "method": "GET",
+      "path": "/v0/websets/{webset}/enrichments/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getWebsetItem",
+      "method": "GET",
+      "path": "/v0/websets/{webset}/items/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getWebsetMonitor",
+      "method": "GET",
+      "path": "/v0/monitors/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getWebsetMonitorRun",
+      "method": "GET",
+      "path": "/v0/monitors/{monitor}/runs/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "getWebsetSearch",
+      "method": "GET",
+      "path": "/v0/websets/{webset}/searches/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listAgentRunEvents",
+      "method": "GET",
+      "path": "/agent/runs/{id}/events",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listAgentRunEventsStream",
+      "method": "GET",
+      "path": "/agent/runs/{id}/events",
+      "response": "sse",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listAgentRuns",
+      "method": "GET",
+      "path": "/agent/runs",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listApiKeys",
+      "method": "GET",
+      "path": "/api-keys",
+      "response": "json",
+      "source": "https://exa.ai/docs/team-management-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listBatches",
+      "method": "GET",
+      "path": "/batches",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listEvents",
+      "method": "GET",
+      "path": "/v0/events",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listImports",
+      "method": "GET",
+      "path": "/v0/imports",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listMonitorRuns",
+      "method": "GET",
+      "path": "/monitors/{id}/runs",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listMonitors",
+      "method": "GET",
+      "path": "/monitors",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listWebhookAttempts",
+      "method": "GET",
+      "path": "/v0/webhooks/{id}/attempts",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listWebhooks",
+      "method": "GET",
+      "path": "/v0/webhooks",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listWebsetItems",
+      "method": "GET",
+      "path": "/v0/websets/{webset}/items",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listWebsetMonitorRuns",
+      "method": "GET",
+      "path": "/v0/monitors/{monitor}/runs",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listWebsetMonitors",
+      "method": "GET",
+      "path": "/v0/monitors",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "listWebsets",
+      "method": "GET",
+      "path": "/v0/websets",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "previewWebset",
+      "method": "POST",
+      "path": "/v0/websets/preview",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "search",
+      "method": "POST",
+      "path": "/search",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "searchStream",
+      "method": "POST",
+      "path": "/search",
+      "response": "sse",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "stopAgentRun",
+      "method": "POST",
+      "path": "/agent/runs/{id}/stop",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "triggerMonitor",
+      "method": "POST",
+      "path": "/monitors/{id}/trigger",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "updateApiKey",
+      "method": "PUT",
+      "path": "/api-keys/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/team-management-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "updateImport",
+      "method": "PATCH",
+      "path": "/v0/imports/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "updateMonitor",
+      "method": "PATCH",
+      "path": "/monitors/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "updateWebhook",
+      "method": "PATCH",
+      "path": "/v0/webhooks/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "updateWebset",
+      "method": "POST",
+      "path": "/v0/websets/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "updateWebsetEnrichment",
+      "method": "PATCH",
+      "path": "/v0/websets/{webset}/enrichments/{id}",
+      "response": "empty",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "exa",
+      "name": "updateWebsetMonitor",
+      "method": "PATCH",
+      "path": "/v0/monitors/{id}",
+      "response": "json",
+      "source": "https://exa.ai/docs/exa-spec.yaml",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "askSupportAgent",
+      "method": "POST",
+      "path": "/support/ask",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "batchScrape",
+      "method": "POST",
+      "path": "/batch/scrape",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "cancelAgent",
+      "method": "DELETE",
+      "path": "/agent/{jobId}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "cancelBatchScrape",
+      "method": "DELETE",
+      "path": "/batch/scrape/{id}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "cancelCrawl",
+      "method": "DELETE",
+      "path": "/crawl/{id}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "crawl",
+      "method": "POST",
+      "path": "/crawl",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "crawlParamsPreview",
+      "method": "POST",
+      "path": "/crawl/params-preview",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "createBrowserSession",
+      "method": "POST",
+      "path": "/interact",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "createMonitor",
+      "method": "POST",
+      "path": "/monitor",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "deleteBrowserSession",
+      "method": "DELETE",
+      "path": "/interact/{sessionId}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "deleteMonitor",
+      "method": "DELETE",
+      "path": "/monitor/{monitorId}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "developerSearch",
+      "method": "GET",
+      "path": "/search/developer",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "developerSearchPost",
+      "method": "POST",
+      "path": "/search/developer",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "executeBrowserCode",
+      "method": "POST",
+      "path": "/interact/{sessionId}/execute",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "extract",
+      "method": "POST",
+      "path": "/extract",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getActiveCrawls",
+      "method": "GET",
+      "path": "/crawl/active",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getActivity",
+      "method": "GET",
+      "path": "/team/activity",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getAgentSnapshot",
+      "method": "GET",
+      "path": "/agent/{jobId}/snapshots/{snapshotId}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getAgentStatus",
+      "method": "GET",
+      "path": "/agent/{jobId}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getAgentTrace",
+      "method": "GET",
+      "path": "/agent/{jobId}/trace",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getBatchScrapeErrors",
+      "method": "GET",
+      "path": "/batch/scrape/{id}/errors",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getBatchScrapeStatus",
+      "method": "GET",
+      "path": "/batch/scrape/{id}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getCrawlErrors",
+      "method": "GET",
+      "path": "/crawl/{id}/errors",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getCrawlStatus",
+      "method": "GET",
+      "path": "/crawl/{id}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getCreditUsage",
+      "method": "GET",
+      "path": "/team/credit-usage",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getExtractStatus",
+      "method": "GET",
+      "path": "/extract/{id}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getHistoricalCreditUsage",
+      "method": "GET",
+      "path": "/team/credit-usage/historical",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getHistoricalTokenUsage",
+      "method": "GET",
+      "path": "/team/token-usage/historical",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getMonitor",
+      "method": "GET",
+      "path": "/monitor/{monitorId}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getMonitorCheck",
+      "method": "GET",
+      "path": "/monitor/{monitorId}/checks/{checkId}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getParseFormats",
+      "method": "GET",
+      "path": "/parse/formats",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getQueueStatus",
+      "method": "GET",
+      "path": "/team/queue-status",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getScrapeStatus",
+      "method": "GET",
+      "path": "/scrape/{jobId}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getThreatProtection",
+      "method": "GET",
+      "path": "/team/threat-protection",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "getTokenUsage",
+      "method": "GET",
+      "path": "/team/token-usage",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "govSearch",
+      "method": "GET",
+      "path": "/search/gov",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "govSearchPost",
+      "method": "POST",
+      "path": "/search/gov",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "interactWithScrapeBrowserSession",
+      "method": "POST",
+      "path": "/scrape/{jobId}/interact",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "listAgents",
+      "method": "GET",
+      "path": "/agent",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "listBrowserSessions",
+      "method": "GET",
+      "path": "/interact",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "listMonitorChecks",
+      "method": "GET",
+      "path": "/monitor/{monitorId}/checks",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "listMonitors",
+      "method": "GET",
+      "path": "/monitor",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "map",
+      "method": "POST",
+      "path": "/map",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "parseFile",
+      "method": "POST",
+      "path": "/parse",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "researchGetPaper",
+      "method": "GET",
+      "path": "/search/research/papers/{id}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "researchRelatedPapers",
+      "method": "GET",
+      "path": "/search/research/papers/{id}/similar",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "researchSearchPapers",
+      "method": "GET",
+      "path": "/search/research/papers",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "runMonitor",
+      "method": "POST",
+      "path": "/monitor/{monitorId}/run",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "scrape",
+      "method": "POST",
+      "path": "/scrape",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "search",
+      "method": "POST",
+      "path": "/search",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "searchSupportDocs",
+      "method": "POST",
+      "path": "/support/docs-search",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "startAgent",
+      "method": "POST",
+      "path": "/agent",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "stopInteractiveScrapeBrowserSession",
+      "method": "DELETE",
+      "path": "/scrape/{jobId}/interact",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "submitEndpointFeedback",
+      "method": "POST",
+      "path": "/feedback",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "submitSearchFeedback",
+      "method": "POST",
+      "path": "/search/{jobId}/feedback",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "updateMonitor",
+      "method": "PATCH",
+      "path": "/monitor/{monitorId}",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "firecrawl",
+      "name": "updateThreatProtection",
+      "method": "PUT",
+      "path": "/team/threat-protection",
+      "response": "json",
+      "source": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "table": "scripts/providers-b/catalogs/firecrawl-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "balance",
+      "method": "GET",
+      "path": "/v1/credits/balance",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "createExtract",
+      "method": "POST",
+      "path": "/v1/extract",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "createResearch",
+      "method": "POST",
+      "path": "/v1/research",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "createTasks",
+      "method": "POST",
+      "path": "/v1/tasks",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "fetchPage",
+      "method": "POST",
+      "path": "/v1/fetch",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "getExtract",
+      "method": "GET",
+      "path": "/v1/extract/{id}",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "getResearch",
+      "method": "GET",
+      "path": "/v1/research/{id}",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "getTask",
+      "method": "GET",
+      "path": "/v1/tasks/{id}",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "listExtract",
+      "method": "GET",
+      "path": "/v1/extract",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "listResearch",
+      "method": "GET",
+      "path": "/v1/research",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "listTasks",
+      "method": "GET",
+      "path": "/v1/tasks",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "responses",
+      "method": "POST",
+      "path": "/v1/responses",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "rewindFetch",
+      "method": "POST",
+      "path": "/v1/rewind/fetch",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "rewindSearch",
+      "method": "POST",
+      "path": "/v1/rewind/search",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "linkup",
+      "name": "search",
+      "method": "POST",
+      "path": "/v1/search",
+      "response": "json",
+      "source": "https://api.linkup.so/v1/openapi.json",
+      "table": "scripts/providers-b/catalogs/linkup-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "addEnrichmentToFindAllRun",
+      "method": "POST",
+      "path": "/v1beta/findall/runs/{findall_id}/enrich",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "addRunsToTaskGroup",
+      "method": "POST",
+      "path": "/v1/tasks/groups/{taskgroup_id}/runs",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "cancelFindAllRun",
+      "method": "POST",
+      "path": "/v1beta/findall/runs/{findall_id}/cancel",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "cancelMonitor",
+      "method": "POST",
+      "path": "/v1/monitors/{monitor_id}/cancel",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "chatCompletions",
+      "method": "POST",
+      "path": "/v1beta/chat/completions",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "chatCompletionsStream",
+      "method": "POST",
+      "path": "/v1beta/chat/completions",
+      "response": "sse",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "clearMemory",
+      "method": "POST",
+      "path": "/v1beta/memory/clear",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "createFindAllRun",
+      "method": "POST",
+      "path": "/v1beta/findall/runs",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "createMonitor",
+      "method": "POST",
+      "path": "/v1/monitors",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "createResponse",
+      "method": "POST",
+      "path": "/v1/responses",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "createResponseStream",
+      "method": "POST",
+      "path": "/v1/responses",
+      "response": "sse",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "createTaskGroup",
+      "method": "POST",
+      "path": "/v1/tasks/groups",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "createTaskRun",
+      "method": "POST",
+      "path": "/v1/tasks/runs",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "evictFromMemory",
+      "method": "POST",
+      "path": "/v1beta/memory/evict",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "extendFindAllRun",
+      "method": "POST",
+      "path": "/v1beta/findall/runs/{findall_id}/extend",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "extract",
+      "method": "POST",
+      "path": "/v1/extract",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "fastEntitySearch",
+      "method": "POST",
+      "path": "/v1beta/findall/entity-search",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "fetchTaskGroupRuns",
+      "method": "GET",
+      "path": "/v1/tasks/groups/{taskgroup_id}/runs",
+      "response": "sse",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "findAllRunResult",
+      "method": "GET",
+      "path": "/v1beta/findall/runs/{findall_id}/result",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "getFindAllRunSchema",
+      "method": "GET",
+      "path": "/v1beta/findall/runs/{findall_id}/schema",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "imageSearch",
+      "method": "POST",
+      "path": "/v1/images/search",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "ingestFindAllRun",
+      "method": "POST",
+      "path": "/v1beta/findall/ingest",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "listMonitorEvents",
+      "method": "GET",
+      "path": "/v1/monitors/{monitor_id}/events",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "listMonitors",
+      "method": "GET",
+      "path": "/v1/monitors",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "monitorStats",
+      "method": "GET",
+      "path": "/v1/monitors/stats",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "retrieveFindAllRunStatus",
+      "method": "GET",
+      "path": "/v1beta/findall/runs/{findall_id}",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "retrieveMemory",
+      "method": "POST",
+      "path": "/v1beta/memory/retrieve",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "retrieveMonitor",
+      "method": "GET",
+      "path": "/v1/monitors/{monitor_id}",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "retrieveTaskGroup",
+      "method": "GET",
+      "path": "/v1/tasks/groups/{taskgroup_id}",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "retrieveTaskGroupRun",
+      "method": "GET",
+      "path": "/v1/tasks/groups/{taskgroup_id}/runs/{run_id}",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "retrieveTaskRun",
+      "method": "GET",
+      "path": "/v1/tasks/runs/{run_id}",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "retrieveTaskRunInput",
+      "method": "GET",
+      "path": "/v1/tasks/runs/{run_id}/input",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "retrieveTaskRunResult",
+      "method": "GET",
+      "path": "/v1/tasks/runs/{run_id}/result",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "search",
+      "method": "POST",
+      "path": "/v1/search",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "streamFindAllEvents",
+      "method": "GET",
+      "path": "/v1beta/findall/runs/{findall_id}/events",
+      "response": "sse",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "streamTaskGroupEvents",
+      "method": "GET",
+      "path": "/v1/tasks/groups/{taskgroup_id}/events",
+      "response": "sse",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "streamTaskRunEvents",
+      "method": "GET",
+      "path": "/v1/tasks/runs/{run_id}/events",
+      "response": "sse",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "triggerMonitorRun",
+      "method": "POST",
+      "path": "/v1/monitors/{monitor_id}/trigger",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "parallel",
+      "name": "updateMonitor",
+      "method": "POST",
+      "path": "/v1/monitors/{monitor_id}/update",
+      "response": "json",
+      "source": "https://docs.parallel.ai/public-openapi.json",
+      "table": "scripts/providers-b/catalogs/parallel-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "answerQuestions",
+      "method": "POST",
+      "path": "/v1/decisions",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "cancelAgentResponse",
+      "method": "POST",
+      "path": "/v1/agent/{id}/cancel",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "chatCompletions",
+      "method": "POST",
+      "path": "/v1/sonar",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "chatCompletionsStream",
+      "method": "POST",
+      "path": "/v1/sonar",
+      "response": "sse",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "createAgent",
+      "method": "POST",
+      "path": "/v1/agent",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "createAgentStream",
+      "method": "POST",
+      "path": "/v1/agent",
+      "response": "sse",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "createAsyncChatCompletion",
+      "method": "POST",
+      "path": "/v1/async/sonar",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "createContextualizedEmbeddings",
+      "method": "POST",
+      "path": "/v1/contextualizedembeddings",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "createEmbeddings",
+      "method": "POST",
+      "path": "/v1/embeddings",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "createSkill",
+      "method": "POST",
+      "path": "/v1/skills",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "deleteSkill",
+      "method": "DELETE",
+      "path": "/v1/skills/{skill_id}",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "downloadAgentFile",
+      "method": "GET",
+      "path": "/v1/agent/{id}/files/{file_id}/content",
+      "response": "bytes",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "downloadSkill",
+      "method": "GET",
+      "path": "/v1/skills/{skill_id}/download",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "generateAuthToken",
+      "method": "POST",
+      "path": "/generate_auth_token",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/api-reference/generate-auth-token-post.md",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "getAsyncChatCompletion",
+      "method": "GET",
+      "path": "/v1/async/sonar/{api_request}",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "getComputerUsageAnalytics",
+      "method": "GET",
+      "path": "/v1/analytics/computer/usage",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "getComputerUsageAnalyticsV2",
+      "method": "GET",
+      "path": "/v2/analytics/computer/usage",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "getRouterModel",
+      "method": "GET",
+      "path": "/router/v1/models/{model}",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/api-reference/gateway-model-get.md",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "getSkill",
+      "method": "GET",
+      "path": "/v1/skills/{skill_id}",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "listAgentFiles",
+      "method": "GET",
+      "path": "/v1/agent/{id}/files",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "listAsyncChatCompletions",
+      "method": "GET",
+      "path": "/v1/async/sonar",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "listModels",
+      "method": "GET",
+      "path": "/v1/models",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "listRouterModels",
+      "method": "GET",
+      "path": "/router/v1/models",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/api-reference/gateway-models-get.md",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "listSkillRevisions",
+      "method": "GET",
+      "path": "/v1/skills/{skill_id}/revisions",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "listSkills",
+      "method": "GET",
+      "path": "/v1/skills",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "retrieveAgent",
+      "method": "GET",
+      "path": "/v1/agent/{id}",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "revokeAuthToken",
+      "method": "POST",
+      "path": "/revoke_auth_token",
+      "response": "text",
+      "source": "https://docs.perplexity.ai/api-reference/revoke-auth-token-post.md",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "routerChatCompletions",
+      "method": "POST",
+      "path": "/router/v1/chat/completions",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/api-reference/gateway-chat-completions-post.md",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "routerChatCompletionsStream",
+      "method": "POST",
+      "path": "/router/v1/chat/completions",
+      "response": "sse",
+      "source": "https://docs.perplexity.ai/api-reference/gateway-chat-completions-post.md",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "routerMessages",
+      "method": "POST",
+      "path": "/router/v1/messages",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/api-reference/gateway-messages-post.md",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "routerMessagesStream",
+      "method": "POST",
+      "path": "/router/v1/messages",
+      "response": "sse",
+      "source": "https://docs.perplexity.ai/api-reference/gateway-messages-post.md",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "routerResponses",
+      "method": "POST",
+      "path": "/router/v1/responses",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/api-reference/gateway-responses-post.md",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "routerResponsesStream",
+      "method": "POST",
+      "path": "/router/v1/responses",
+      "response": "sse",
+      "source": "https://docs.perplexity.ai/api-reference/gateway-responses-post.md",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "search",
+      "method": "POST",
+      "path": "/search",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "perplexity",
+      "name": "updateSkill",
+      "method": "PUT",
+      "path": "/v1/skills/{skill_id}",
+      "response": "json",
+      "source": "https://docs.perplexity.ai/openapi.json",
+      "table": "scripts/providers-b/catalogs/perplexity-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "account",
+      "method": "GET",
+      "path": "/account.json",
+      "response": "json",
+      "source": "https://serpapi.com/search-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "extract",
+      "method": "GET",
+      "path": "/search.json",
+      "response": "json",
+      "source": "https://serpapi.com/extract-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "extractMarkdown",
+      "method": "GET",
+      "path": "/search.md",
+      "response": "text",
+      "source": "https://serpapi.com/extract-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "getSearch",
+      "method": "GET",
+      "path": "/searches/{search_id}.json",
+      "response": "json",
+      "source": "https://serpapi.com/search-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "getSearchHtml",
+      "method": "GET",
+      "path": "/searches/{search_id}.html",
+      "response": "text",
+      "source": "https://serpapi.com/search-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "getSearchPixelPositions",
+      "method": "GET",
+      "path": "/searches/{search_id}.json_with_pixel_position",
+      "response": "json",
+      "source": "https://serpapi.com/search-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "google",
+      "method": "GET",
+      "path": "/search.json",
+      "response": "json",
+      "source": "https://serpapi.com/search-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "locations",
+      "method": "GET",
+      "path": "/locations.json",
+      "response": "json",
+      "source": "https://serpapi.com/search-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "search",
+      "method": "GET",
+      "path": "/search.json",
+      "response": "json",
+      "source": "https://serpapi.com/search-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "searchHtml",
+      "method": "GET",
+      "path": "/search.html",
+      "response": "text",
+      "source": "https://serpapi.com/search-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "searchMarkdown",
+      "method": "GET",
+      "path": "/search.md",
+      "response": "text",
+      "source": "https://serpapi.com/search-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "searchPixelPositions",
+      "method": "GET",
+      "path": "/search.json_with_pixel_position",
+      "response": "json",
+      "source": "https://serpapi.com/search-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serpapi",
+      "name": "uploadImage",
+      "method": "POST",
+      "path": "/image",
+      "response": "json",
+      "source": "https://serpapi.com/search-api",
+      "table": "scripts/providers-b/catalogs/serpapi-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "autocomplete",
+      "method": "POST",
+      "path": "/autocomplete",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "autocompleteGet",
+      "method": "GET",
+      "path": "/autocomplete",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "images",
+      "method": "POST",
+      "path": "/images",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "imagesGet",
+      "method": "GET",
+      "path": "/images",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "lens",
+      "method": "POST",
+      "path": "/lens",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "lensGet",
+      "method": "GET",
+      "path": "/lens",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "maps",
+      "method": "POST",
+      "path": "/maps",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "mapsGet",
+      "method": "GET",
+      "path": "/maps",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "news",
+      "method": "POST",
+      "path": "/news",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "newsGet",
+      "method": "GET",
+      "path": "/news",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "patents",
+      "method": "POST",
+      "path": "/patents",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "patentsGet",
+      "method": "GET",
+      "path": "/patents",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "places",
+      "method": "POST",
+      "path": "/places",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "placesGet",
+      "method": "GET",
+      "path": "/places",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "reviews",
+      "method": "POST",
+      "path": "/reviews",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "reviewsGet",
+      "method": "GET",
+      "path": "/reviews",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "scholar",
+      "method": "POST",
+      "path": "/scholar",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "scholarGet",
+      "method": "GET",
+      "path": "/scholar",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "scrape",
+      "method": "POST",
+      "path": "/",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "scrapeGet",
+      "method": "GET",
+      "path": "/",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "search",
+      "method": "POST",
+      "path": "/search",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "searchGet",
+      "method": "GET",
+      "path": "/search",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "shopping",
+      "method": "POST",
+      "path": "/shopping",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "shoppingGet",
+      "method": "GET",
+      "path": "/shopping",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "videos",
+      "method": "POST",
+      "path": "/videos",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "serper",
+      "name": "videosGet",
+      "method": "GET",
+      "path": "/videos",
+      "response": "json",
+      "source": "https://serper.dev/playground",
+      "table": "scripts/providers-b/catalogs/serper-operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "crawl",
+      "method": "POST",
+      "path": "/crawl",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/api-reference/endpoint/crawl.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "deactivateKeys",
+      "method": "POST",
+      "path": "/deactivate-keys",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/enterprise/deactivate-keys.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "extract",
+      "method": "POST",
+      "path": "/extract",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/api-reference/endpoint/extract.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "feedback",
+      "method": "POST",
+      "path": "/feedback",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/api-reference/endpoint/feedback.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "generateKeys",
+      "method": "POST",
+      "path": "/generate-keys",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/enterprise/generate-keys.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "getPaymentPricing",
+      "method": "GET",
+      "path": "/.well-known/pricing",
+      "response": "raw",
+      "source": "https://docs.tavily.com/documentation/machine-payments/x402.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "getResearch",
+      "method": "GET",
+      "path": "/research/{request_id}",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/api-reference/endpoint/research-get.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "getUsage",
+      "method": "GET",
+      "path": "/usage",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/api-reference/endpoint/usage.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "keyInfo",
+      "method": "GET",
+      "path": "/key-info",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/enterprise/key-info.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "logs",
+      "method": "POST",
+      "path": "/logs",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/api-reference/endpoint/logs.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "map",
+      "method": "POST",
+      "path": "/map",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/api-reference/endpoint/map.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "orgUsage",
+      "method": "POST",
+      "path": "/org-usage",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/enterprise/org-usage.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "paidSearch",
+      "method": "POST",
+      "path": "/search",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/machine-payments/x402.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "research",
+      "method": "POST",
+      "path": "/research",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/api-reference/endpoint/research.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "researchStream",
+      "method": "POST",
+      "path": "/research",
+      "response": "sse",
+      "source": "https://docs.tavily.com/documentation/api-reference/endpoint/research.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tavily",
+      "name": "search",
+      "method": "POST",
+      "path": "/search",
+      "response": "json",
+      "source": "https://docs.tavily.com/documentation/api-reference/endpoint/search.md",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "batchCancelRuns",
+      "method": "POST",
+      "path": "/v1/runs/batch/cancel",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "batchGetRuns",
+      "method": "POST",
+      "path": "/v1/runs/batch",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "cancelBrowserContextProfileSetupSession",
+      "method": "POST",
+      "path": "/v1/profiles/{profileId}/setup-session/cancel",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "cancelResearchRun",
+      "method": "POST",
+      "path": "/v1/research-run/{research_run_id}/cancel",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/research",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "cancelRunById",
+      "method": "POST",
+      "path": "/v1/runs/{id}/cancel",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "connectVault",
+      "method": "POST",
+      "path": "/v1/vault/connections",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "createBrowserContextProfile",
+      "method": "POST",
+      "path": "/v1/profiles",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "createBrowserContextProfileSetupSession",
+      "method": "POST",
+      "path": "/v1/profiles/{profileId}/setup-session",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "createBrowserSession",
+      "method": "POST",
+      "path": "/",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/browser",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "createMonitor",
+      "method": "POST",
+      "path": "/v1/monitors",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/monitor",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "deleteBrowserContextProfile",
+      "method": "DELETE",
+      "path": "/v1/profiles/{profileId}",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "deleteBrowserContextProfileDomain",
+      "method": "DELETE",
+      "path": "/v1/profiles/{profileId}/domains/{domain}",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "deleteBrowserSession",
+      "method": "DELETE",
+      "path": "/{sessionId}",
+      "response": "empty",
+      "source": "https://agent.tinyfish.ai/v1/openapi/browser",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "deleteMonitor",
+      "method": "DELETE",
+      "path": "/v1/monitors/{id}",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/monitor",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "disconnectVault",
+      "method": "DELETE",
+      "path": "/v1/vault/connections/{connectionId}",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "fetchUrls",
+      "method": "POST",
+      "path": "/",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/fetch",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "getBrowserContextProfile",
+      "method": "GET",
+      "path": "/v1/profiles/{profileId}",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "getMonitor",
+      "method": "GET",
+      "path": "/v1/monitors/{id}",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/monitor",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "getResearchRun",
+      "method": "GET",
+      "path": "/v1/research-run/{research_run_id}",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/research",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "getRunById",
+      "method": "GET",
+      "path": "/v1/runs/{id}",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "getStepHtml",
+      "method": "GET",
+      "path": "/v1/runs/{id}/steps/{stepId}/html",
+      "response": "text",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "getStepScreenshot",
+      "method": "GET",
+      "path": "/v1/runs/{id}/steps/{stepId}/screenshot",
+      "response": "bytes",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "getWallet",
+      "method": "GET",
+      "path": "/v1/wallet",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "listBrowserContextProfiles",
+      "method": "GET",
+      "path": "/v1/profiles",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "listBrowserUsage",
+      "method": "GET",
+      "path": "/usage",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/browser",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "listFetchUsage",
+      "method": "GET",
+      "path": "/usage",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/fetch",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "listMonitors",
+      "method": "GET",
+      "path": "/v1/monitors",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/monitor",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "listResearchRuns",
+      "method": "GET",
+      "path": "/v1/research-run",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/research",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "listRuns",
+      "method": "GET",
+      "path": "/v1/runs",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "listSearchUsage",
+      "method": "GET",
+      "path": "/usage",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/search",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "listVaultConnections",
+      "method": "GET",
+      "path": "/v1/vault/connections",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "listVaultItems",
+      "method": "GET",
+      "path": "/v1/vault/items",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "run",
+      "method": "POST",
+      "path": "/v1/automation/run",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "runAsync",
+      "method": "POST",
+      "path": "/v1/automation/run-async",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "runBatch",
+      "method": "POST",
+      "path": "/v1/automation/run-batch",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "runMonitor",
+      "method": "POST",
+      "path": "/v1/monitors/{id}/runs",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/monitor",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "runResearch",
+      "method": "POST",
+      "path": "/v1/automation/run-research",
+      "response": "sse",
+      "source": "https://agent.tinyfish.ai/v1/openapi/research",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "runSse",
+      "method": "POST",
+      "path": "/v1/automation/run-sse",
+      "response": "sse",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "saveBrowserContextProfileSetupSession",
+      "method": "POST",
+      "path": "/v1/profiles/{profileId}/save",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "search",
+      "method": "GET",
+      "path": "/",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/search",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "startResearchAsync",
+      "method": "POST",
+      "path": "/v1/automation/run-research-async",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/research",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "streamResearchEvents",
+      "method": "GET",
+      "path": "/v1/research-run/{research_run_id}/events",
+      "response": "sse",
+      "source": "https://agent.tinyfish.ai/v1/openapi/research",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "syncVaultItems",
+      "method": "POST",
+      "path": "/v1/vault/items/sync",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "topUpWallet",
+      "method": "POST",
+      "path": "/v1/wallet/top-up",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "updateBrowserContextProfile",
+      "method": "PATCH",
+      "path": "/v1/profiles/{profileId}",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "updateMonitor",
+      "method": "PATCH",
+      "path": "/v1/monitors/{id}",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/monitor",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "tinyfish",
+      "name": "uploadBrowserContextProfileState",
+      "method": "POST",
+      "path": "/v1/profiles/{profileId}/upload",
+      "response": "json",
+      "source": "https://agent.tinyfish.ai/v1/openapi/main",
+      "table": "scripts/providers-a/operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "acceptInvitation",
+      "method": "POST",
+      "path": "/v1/invitations/accept",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "acknowledgeImportChunk",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/imports/{import_id}/chunks/{sequence}/acknowledge",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "amountAutoTopup",
+      "method": "POST",
+      "path": "/v1/organizations/{organization_id}/billing/auto-topup/amount",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "bootstrapAccount",
+      "method": "POST",
+      "path": "/v1/account/bootstrap",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "cancelAutoTopup",
+      "method": "POST",
+      "path": "/v1/organizations/{organization_id}/billing/auto-topup/cancel",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "checkoutAutoTopup",
+      "method": "POST",
+      "path": "/v1/organizations/{organization_id}/billing/auto-topup/checkout",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "closeImport",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/imports/{import_id}/close",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "completeUpload",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/uploads/{upload_id}/complete",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "completeUploadBatch",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/uploads/batch/complete",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createBillingPortal",
+      "method": "POST",
+      "path": "/v1/organizations/{organization_id}/billing/portal",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createDriveDocument",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/documents",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createDriveFolder",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/folders",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createDriveUpload",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/uploads",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createImport",
+      "method": "PUT",
+      "path": "/v1/drives/{drive_id}/imports/{import_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createOrganizationBillingPurchase",
+      "method": "POST",
+      "path": "/v1/organizations/{organization_id}/billing/purchases",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createOrganizationInvitation",
+      "method": "POST",
+      "path": "/v1/organizations/{organization_id}/invitations",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createOrganizationWorkspace",
+      "method": "POST",
+      "path": "/v1/organizations/{organization_id}/workspaces",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createUploadBatch",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/uploads/batch",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createUploadTransfer",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/uploads/{upload_id}/transfer",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createWorkspaceApiKey",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspace_id}/api-keys",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createWorkspaceDrive",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspace_id}/drives",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "createWorkspaceMember",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspace_id}/members",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "declareImportChunks",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/imports/{import_id}/chunks",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "deleteDrive",
+      "method": "DELETE",
+      "path": "/v1/drives/{drive_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "deleteDriveDocument",
+      "method": "DELETE",
+      "path": "/v1/drives/{drive_id}/documents/{document_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "deleteDriveFolder",
+      "method": "DELETE",
+      "path": "/v1/drives/{drive_id}/folders/{folder_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "deleteOrganizationInvitation",
+      "method": "DELETE",
+      "path": "/v1/organizations/{organization_id}/invitations/{invitation_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "deleteOrganizationMember",
+      "method": "DELETE",
+      "path": "/v1/organizations/{organization_id}/members/{user_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "deleteWorkspaceApiKey",
+      "method": "DELETE",
+      "path": "/v1/workspaces/{workspace_id}/api-keys/{key_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "deleteWorkspaceMember",
+      "method": "DELETE",
+      "path": "/v1/workspaces/{workspace_id}/members/{user_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getAutoTopup",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/billing/auto-topup",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getCapabilities",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspace_id}/capabilities",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getDrive",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getDriveDocument",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}/documents/{document_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getDriveDocumentSource",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}/documents/{document_id}/source",
+      "response": "bytes",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getDriveFolder",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}/folders/{folder_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getDriveFolderRaw",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}/folders/{folder_id}",
+      "response": "raw",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getDriveRaw",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}",
+      "response": "raw",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getDriveUpload",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}/uploads/{upload_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getDriveUploadCapabilities",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}/uploads/capabilities",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getImport",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}/imports/{import_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getIngestionMetrics",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}/ingestion-metrics",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getMe",
+      "method": "GET",
+      "path": "/v1/me",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getOrganization",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getOrganizationBilling",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/billing",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getOrganizationBillingActivity",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/billing/activity",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getOrganizationBillingLimits",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/billing/limits",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getOrganizationBillingPurchase",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/billing/purchases/{purchase_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getOrganizationBillingUsage",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/billing/usage",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getOrganizationBillingWallet",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/billing/wallet",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getOrganizationInvitation",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/invitations/{invitation_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getOrganizationInvitationRaw",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/invitations/{invitation_id}",
+      "response": "raw",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getOrganizationRaw",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}",
+      "response": "raw",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getOrganizationUsage",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/usage",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getPassage",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}/passages/{passage_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getSdkContext",
+      "method": "GET",
+      "path": "/v1/sdk/context",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getUploadBatchStatus",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/uploads/batch/status",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getWorkspace",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspace_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getWorkspaceDefaultDrive",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspace_id}/default-drive",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getWorkspaceDefaultDriveRaw",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspace_id}/default-drive",
+      "response": "raw",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getWorkspaceOperation",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspace_id}/operations/{operation_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getWorkspaceOverview",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspace_id}/overview",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getWorkspaceRaw",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspace_id}",
+      "response": "raw",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "getWorkspaceStorage",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspace_id}/storage",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "listDriveDocuments",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}/documents",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "listDriveFolders",
+      "method": "GET",
+      "path": "/v1/drives/{drive_id}/folders",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "listOrganizationBillingInvoices",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/billing/invoices",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "listOrganizationInvitations",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/invitations",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "listOrganizationMembers",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/members",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "listOrganizationWorkspaces",
+      "method": "GET",
+      "path": "/v1/organizations/{organization_id}/workspaces",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "listOrganizations",
+      "method": "GET",
+      "path": "/v1/organizations",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "listWorkspaceApiKeys",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspace_id}/api-keys",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "listWorkspaceDrives",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspace_id}/drives",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "listWorkspaceInheritedMembers",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspace_id}/inherited-members",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "listWorkspaceMembers",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspace_id}/members",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "previewInvitation",
+      "method": "POST",
+      "path": "/v1/invitations/preview",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "quoteWorkspaceStorage",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspace_id}/storage/quote",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "recoverImport",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/imports/{import_id}/recover",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "replaceDocument",
+      "method": "PUT",
+      "path": "/v1/drives/{drive_id}/documents/{document_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "resendOrganizationInvitation",
+      "method": "POST",
+      "path": "/v1/organizations/{organization_id}/invitations/{invitation_id}/resend",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "resumeAutoTopup",
+      "method": "POST",
+      "path": "/v1/organizations/{organization_id}/billing/auto-topup/resume",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "retryImportOperation",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/imports/{import_id}/operations/{operation_id}/retry",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "sealImport",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/imports/{import_id}/seal",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "searchDrive",
+      "method": "POST",
+      "path": "/v1/drives/{drive_id}/search",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "searchWorkspace",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspace_id}/search",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "setBillingLimits",
+      "method": "POST",
+      "path": "/v1/organizations/{organization_id}/billing/limits",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "setDefaultDrive",
+      "method": "PUT",
+      "path": "/v1/workspaces/{workspace_id}/default-drive",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "setWorkspaceStorage",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspace_id}/storage",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "updateDrive",
+      "method": "PATCH",
+      "path": "/v1/drives/{drive_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "updateDriveFolder",
+      "method": "PATCH",
+      "path": "/v1/drives/{drive_id}/folders/{folder_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "updateOrganization",
+      "method": "PATCH",
+      "path": "/v1/organizations/{organization_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "updateOrganizationMember",
+      "method": "PATCH",
+      "path": "/v1/organizations/{organization_id}/members/{user_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "updateWorkspace",
+      "method": "PATCH",
+      "path": "/v1/workspaces/{workspace_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "updateWorkspaceMember",
+      "method": "PATCH",
+      "path": "/v1/workspaces/{workspace_id}/members/{user_id}",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "wondersearch",
+      "name": "uploadContent",
+      "method": "PUT",
+      "path": "/v1/drives/{drive_id}/uploads/{upload_id}/content",
+      "response": "json",
+      "source": "https://docs.evokoa.com/wondersearch/reference/",
+      "table": "scripts/providers-b/catalogs/wondersearch-operations.json"
+    },
+    {
+      "provider": "you",
+      "name": "answer",
+      "method": "POST",
+      "path": "/v1/answer",
+      "response": "json",
+      "source": "https://you.com/docs/openapi/answer.json",
+      "table": "scripts/providers-b/catalogs/you-operations.json"
+    },
+    {
+      "provider": "you",
+      "name": "contents",
+      "method": "POST",
+      "path": "/v1/contents",
+      "response": "json",
+      "source": "https://you.com/docs/openapi/contents.json",
+      "table": "scripts/providers-b/catalogs/you-operations.json"
+    },
+    {
+      "provider": "you",
+      "name": "financeResearch",
+      "method": "POST",
+      "path": "/v1/finance_research",
+      "response": "json",
+      "source": "https://you.com/docs/openapi/finance-research.json",
+      "table": "scripts/providers-b/catalogs/you-operations.json"
+    },
+    {
+      "provider": "you",
+      "name": "getAccountBalance",
+      "method": "GET",
+      "path": "/v1/billing/account_balance",
+      "response": "json",
+      "source": "https://you.com/docs/openapi/billing.json",
+      "table": "scripts/providers-b/catalogs/you-operations.json"
+    },
+    {
+      "provider": "you",
+      "name": "getResearchTask",
+      "method": "GET",
+      "path": "/v1/research/{task_id}",
+      "response": "json",
+      "source": "https://you.com/docs/openapi/research.json",
+      "table": "scripts/providers-b/catalogs/you-operations.json"
+    },
+    {
+      "provider": "you",
+      "name": "images",
+      "method": "GET",
+      "path": "/v1/images",
+      "response": "json",
+      "source": "https://you.com/docs/openapi/images.json",
+      "table": "scripts/providers-b/catalogs/you-operations.json"
+    },
+    {
+      "provider": "you",
+      "name": "research",
+      "method": "POST",
+      "path": "/v1/research",
+      "response": "json",
+      "source": "https://you.com/docs/openapi/research.json",
+      "table": "scripts/providers-b/catalogs/you-operations.json"
+    },
+    {
+      "provider": "you",
+      "name": "search",
+      "method": "POST",
+      "path": "/v1/search",
+      "response": "json",
+      "source": "https://you.com/docs/openapi/web-search.json",
+      "table": "scripts/providers-b/catalogs/you-operations.json"
+    },
+    {
+      "provider": "you",
+      "name": "streamResearchTask",
+      "method": "GET",
+      "path": "/v1/research/{task_id}/stream",
+      "response": "sse",
+      "source": "https://you.com/docs/openapi/research.json",
+      "table": "scripts/providers-b/catalogs/you-operations.json"
+    }
+  ]
+}

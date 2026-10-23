@@ -1,0 +1,30 @@
+{
+  "provider": "fixture",
+  "results": [
+    {
+      "url": "https://example.com/search",
+      "title": "Synthetic search result",
+      "snippet": "Deterministic SDK interoperability fixture.",
+      "highlights": [
+        "Synthetic highlight"
+      ],
+      "score": 0.75,
+      "provenance": {
+        "provider": "fixture",
+        "sourceUrl": "https://example.com/search",
+        "retrievedAt": "2026-10-22T00:00:00.000Z",
+        "requestId": "fixture-001"
+      }
+    }
+  ],
+  "usage": null,
+  "warnings": [],
+  "attempts": [
+    {
+      "provider": "fixture",
+      "startedAt": "2026-10-22T00:00:00.000Z",
+      "durationMs": 1,
+      "outcome": "success"
+    }
+  ]
+}

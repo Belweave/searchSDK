@@ -1,0 +1,344 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Tavily Search and Extract API",
+    "description": "Our REST API provides seamless access to Tavily Search, a powerful search engine for LLM agents, and Tavily Extract, an advanced web scraping solution optimized for LLMs.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.tavily.com/"
+    }
+  ],
+  "security": [],
+  "tags": [
+    {
+      "name": "Search"
+    },
+    {
+      "name": "Extract"
+    },
+    {
+      "name": "Crawl"
+    },
+    {
+      "name": "Map"
+    },
+    {
+      "name": "Research"
+    },
+    {
+      "name": "Feedback"
+    },
+    {
+      "name": "Usage"
+    },
+    {
+      "name": "Logs"
+    }
+  ],
+  "paths": {
+    "/crawl": {
+      "post": {
+        "summary": "Initiate a web crawl from a base URL",
+        "description": "Tavily Crawl is a graph-based website traversal tool that can explore hundreds of paths in parallel with built-in extraction and intelligent discovery.",
+        "operationId": "crawl",
+        "requestBody": {
+          "description": "Parameters for the Tavily Crawl request.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "The root URL to begin the crawl."
+                  },
+                  "instructions": {
+                    "type": "string",
+                    "description": "Natural language instructions for the crawler. When specified, the mapping cost increases to 2 API credits per 10 successful pages instead of 1 API credit per 10 pages."
+                  },
+                  "chunks_per_source": {
+                    "type": "integer",
+                    "description": "Chunks are short content snippets (about 800 characters each) pulled directly from the source. Use `chunks_per_source` to define the maximum number of relevant chunks returned per source and to control the `raw_content` length. Chunks will appear in the `raw_content` field as: `<chunk 1> [...] <chunk 2> [...] <chunk 3>`. If a page splits into no more chunks than `chunks_per_source`, its full content is returned. Available only when `instructions` are provided. Must be between 1 and 5.",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "default": 3
+                  },
+                  "max_depth": {
+                    "type": "integer",
+                    "description": "Max depth of the crawl. Defines how far from the base URL the crawler can explore.",
+                    "default": 1,
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "max_breadth": {
+                    "type": "integer",
+                    "description": "Max number of links to follow per level of the tree (i.e., per page).",
+                    "default": 20,
+                    "minimum": 1,
+                    "maximum": 500
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "description": "Total number of links the crawler will process before stopping.",
+                    "default": 50,
+                    "minimum": 1
+                  },
+                  "select_paths": {
+                    "type": "array",
+                    "description": "Regex patterns to select only URLs with specific path patterns (e.g., `/docs/.*`, `/api/v1.*`).",
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": null
+                  },
+                  "select_domains": {
+                    "type": "array",
+                    "description": "Regex patterns to select crawling to specific domains or subdomains (e.g., `^docs\\.example\\.com$`).",
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": null
+                  },
+                  "exclude_paths": {
+                    "type": "array",
+                    "description": "Regex patterns to exclude URLs with specific path patterns (e.g., `/private/.*`, `/admin/.*`).",
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": null
+                  },
+                  "exclude_domains": {
+                    "type": "array",
+                    "description": "Regex patterns to exclude specific domains or subdomains from crawling (e.g., `^private\\.example\\.com$`).",
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": null
+                  },
+                  "allow_external": {
+                    "type": "boolean",
+                    "description": "Whether to include external domain links in the final results list.",
+                    "default": true
+                  },
+                  "include_images": {
+                    "type": "boolean",
+                    "description": "Whether to include images in the crawl results.",
+                    "default": false
+                  },
+                  "extract_depth": {
+                    "type": "string",
+                    "description": "Advanced extraction retrieves more data, including tables and embedded content, with higher success but may increase latency. `basic` extraction costs 1 credit per 5 successful extractions, while `advanced` extraction costs 2 credits per 5 successful extractions.",
+                    "enum": [
+                      "basic",
+                      "advanced"
+                    ],
+                    "default": "basic"
+                  },
+                  "format": {
+                    "type": "string",
+                    "description": "The format of the extracted web page content. `markdown` returns content in markdown format. `text` returns plain text and may increase latency.",
+                    "enum": [
+                      "markdown",
+                      "text"
+                    ],
+                    "default": "markdown"
+                  },
+                  "include_favicon": {
+                    "type": "boolean",
+                    "description": "Whether to include the favicon URL for each result.",
+                    "default": false
+                  },
+                  "timeout": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "Maximum time in seconds to wait for the crawl operation before timing out. Must be between 10 and 150 seconds.",
+                    "minimum": 10,
+                    "maximum": 150,
+                    "default": 150
+                  },
+                  "include_usage": {
+                    "type": "boolean",
+                    "description": "Whether to include credit usage information in the response. `NOTE:`The value may be 0 if the total use of /extract and /map have not yet reached minimum requirements. See our [Credits & Pricing documentation](https://docs.tavily.com/documentation/api-credits) for details.",
+                    "default": false
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Crawl results returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "base_url": {
+                      "type": "string",
+                      "description": "The base URL that was crawled."
+                    },
+                    "results": {
+                      "type": "array",
+                      "description": "A list of extracted content from the crawled URLs.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "url": {
+                            "type": "string",
+                            "description": "The URL that was crawled."
+                          },
+                          "raw_content": {
+                            "type": "string",
+                            "description": "The full content extracted from the page. When `query` is provided, contains the top-ranked chunks joined by `[...]` separator."
+                          },
+                          "favicon": {
+                            "type": "string",
+                            "description": "The favicon URL for the result."
+                          }
+                        }
+                      }
+                    },
+                    "response_time": {
+                      "type": "number",
+                      "format": "float",
+                      "description": "Time in seconds it took to complete the request."
+                    },
+                    "usage": {
+                      "type": "object",
+                      "description": "Credit usage details for the request."
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "description": "A unique request identifier you can share with customer support to help resolve issues with specific requests."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Your request is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Your API key is wrong or missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - URL is not supported.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. Error messages and retry delays can vary by rate-limit rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            }
+          },
+          "432": {
+            "description": "Key limit or Plan Limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "433": {
+            "description": "PayGo limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - We had a problem with our server.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "headers": {
+      "RetryAfter": {
+        "description": "When present, the number of seconds to wait before retrying. Read the returned value; the delay can vary.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer authentication header in the form Bearer <token>, where <token> is your Tavily API key (e.g., Bearer tvly-YOUR_API_KEY)."
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+.local/
+dist/
+.build/
+.swiftpm/
+.gradle/
+android/build/
+android/.gradle/
+*.tgz

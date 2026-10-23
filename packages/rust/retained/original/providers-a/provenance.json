@@ -1,0 +1,374 @@
+{
+  "schemaVersion": 1,
+  "retrievedDate": "2026-10-22",
+  "sources": [
+    {
+      "url": "https://docs.context.dev/openapi.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "61627728926b28a4cd6d62e25c235d4ba929e8538b05217a4d42950f513b453a",
+      "artifact": "fixtures/context.json",
+      "artifactSha256": "d6a39c6f661bca01539dad50e20c2ef9cf2c176b8b343ce4294fe6637db13d4d",
+      "transformation": "Remove example/examples and code-sample keys; preserve schema contracts."
+    },
+    {
+      "url": "https://exa.ai/docs/exa-spec.yaml",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "f21ac0e3accc1cb1be6c902d73d86972f4bc1172925b5e34aa13d9b7ce9a5436",
+      "artifact": "fixtures/exa.json",
+      "artifactSha256": "599ff2a6b2f164979348592cd8c7d6bbc7c87270fe59ccd2991571ca80e6c038",
+      "transformation": "Parse official YAML with Ruby standard-library YAML, then remove examples/code samples."
+    },
+    {
+      "url": "https://exa.ai/docs/team-management-spec.yaml",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "8ca27b67e94fbc6ee9c10d951eaa49d71bba408dc68202373926d15496e8e643",
+      "artifact": "fixtures/exa-team.json",
+      "artifactSha256": "4ab18be3f6e7a435eaf03d91b206b91e45304770d407eea18cf4b386f2568df0",
+      "transformation": "Parse official YAML with Ruby standard-library YAML, then remove examples/code samples."
+    },
+    {
+      "url": "https://agent.tinyfish.ai/v1/openapi/main",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "8a9d7bbe3d467420d7daad798b40030f9a98b127d3531136e34b5d0d9d097c19",
+      "artifact": "fixtures/tinyfish-main.json",
+      "artifactSha256": "651e932c689d620f49080243615c2d7df8a0c41123436382f4bce48dc82f780e",
+      "transformation": "Remove example/examples and code-sample keys; preserve schema contracts."
+    },
+    {
+      "url": "https://agent.tinyfish.ai/v1/openapi/search",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "19f437ad0343f8bda28fb418dc069c86fcb2c5236d0df599a551ad805fc0dfaa",
+      "artifact": "fixtures/tinyfish-search.json",
+      "artifactSha256": "c633c685ebbf715e5f20c68060e189052633158c7fe0f54917db5092c3871f5a",
+      "transformation": "Remove example/examples and code-sample keys; preserve schema contracts."
+    },
+    {
+      "url": "https://agent.tinyfish.ai/v1/openapi/fetch",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "bd416e33fd3b7a7431c2fd3caf9e621ef6b27cc649d8454c1b20704984364478",
+      "artifact": "fixtures/tinyfish-fetch.json",
+      "artifactSha256": "a095f9770e7425ca987bc58c43256d29dee8d0ad4cf9b199e8711ebd2139959b",
+      "transformation": "Remove example/examples and code-sample keys; preserve schema contracts."
+    },
+    {
+      "url": "https://agent.tinyfish.ai/v1/openapi/browser",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "91b611acfc453221f4c664fde884782ebf3257a3eb7b596fe8e6cb970a531264",
+      "artifact": "fixtures/tinyfish-browser.json",
+      "artifactSha256": "0f237c89b74f2424d3cc6b6254785575ff4d0379960923d54af7a86397595ea2",
+      "transformation": "Remove example/examples and code-sample keys; preserve schema contracts."
+    },
+    {
+      "url": "https://agent.tinyfish.ai/v1/openapi/monitor",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "e166e70a03a1a7d357d0fb1854fe92c5f762afcc95b3ab0722d15c65c71404ae",
+      "artifact": "fixtures/tinyfish-monitor.json",
+      "artifactSha256": "136cdfa15c6aaa0b6e8bc7a81304db7c481468f1943ed5f9d12d2361bf0ff9b3",
+      "transformation": "Remove example/examples and code-sample keys; preserve schema contracts."
+    },
+    {
+      "url": "https://agent.tinyfish.ai/v1/openapi/research",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "85bf7356c87e1d7159a8e8b8fbddd019bb34a41d0c8568a3b86f6982add5e99b",
+      "artifact": "fixtures/tinyfish-research.json",
+      "artifactSha256": "168e66d1528afdae83dedd4f8a8e1b01a6c739557938c22baf1189643b8e1215",
+      "transformation": "Remove example/examples and code-sample keys; preserve schema contracts."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/api-reference/endpoint/crawl.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "9d66f4d92a844a2e2579ecb3e63e29db39bec22b4728abb87c58e6b61e927778",
+      "artifact": "fixtures/tavily-crawl.json",
+      "artifactSha256": "8a165c5871ebb0f8e3cb1b1005322bc4fad857e2faf2ed4593a2285a4fbae527",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/enterprise/deactivate-keys.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "571ccf30960c16ffdbf86380b63d06254ec5e94e743ec45de7e4189f4197eca3",
+      "artifact": "fixtures/tavily-deactivate-keys.json",
+      "artifactSha256": "906e433f069c9d47310bffbbaa68d848fe68ad066249dd78e82a8c8afd643b8a",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/api-reference/endpoint/extract.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "200fb5074a7131a24105c09eeb756c1e6deee7db35cc640244c9ecf36d4c06db",
+      "artifact": "fixtures/tavily-extract.json",
+      "artifactSha256": "6d395f9089168fa8c0df5f57db776c90bd7269c9ef688c375dd6bb1cb7b9bbda",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/api-reference/endpoint/feedback.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "f3d5ac810a3b8bbb03cd9f0a92f2d7bc9d9cf1aab5788ddf6d886e423ccd28fc",
+      "artifact": "fixtures/tavily-feedback.json",
+      "artifactSha256": "f8155d6dad53279d965b19b04f932a3f40769680b767a54003c397d974f08ce2",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/enterprise/generate-keys.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "ec9f52964887c76fc64c945181b5cac414ad9e2d83e645df19831b0280581e69",
+      "artifact": "fixtures/tavily-generate-keys.json",
+      "artifactSha256": "d5359ce0d37e74950ce1a1373dfddab1ae9a996d50153551ce84f433fdf0f344",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/enterprise/key-info.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "e9316681afead52b8e0c877dad9541cae2c26ee9e2dfe049ce1ad0ac36312e58",
+      "artifact": "fixtures/tavily-key-info.json",
+      "artifactSha256": "23663e6132a0a461416cdec25b2b585cb660cf251cf9617f1fbde145861496a8",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/api-reference/endpoint/logs.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "7fe45e7f06942b3e17931ec0ded6278451cd34bfa8dffd3179d278a4130cf3ba",
+      "artifact": "fixtures/tavily-logs.json",
+      "artifactSha256": "93a486d37dd80dc7179076a60311c7e8fd8739bb2aa050f040ff03754f910637",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/api-reference/endpoint/map.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "ffcb4bbf4b1c25055660e81be8c806d4ff601a8b58633c41566e9c71914cb773",
+      "artifact": "fixtures/tavily-map.json",
+      "artifactSha256": "8ca58b044adf9487636991a6e5daae680d9e4db22c6715d146d23bdbfbd95b06",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/enterprise/org-usage.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "5ce948da2a3440ccf7b6ba2f2ddee23f732f87c7ead5e3f949036875f7733f4d",
+      "artifact": "fixtures/tavily-org-usage.json",
+      "artifactSha256": "e942dec49b8498138ca31a49ffd8006799a4d827e4c9d4f6cf9a3c5cd14ff038",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/api-reference/endpoint/research-get.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "f68cf65aa117a83a56b69f5a05c6911d95132028de46ced1d504ff07c78631cc",
+      "artifact": "fixtures/tavily-research-get.json",
+      "artifactSha256": "45f6f14c5815527bf200caef6a7e3a99e38dc8690688a8d1da5a9f3f4693a013",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/api-reference/endpoint/research.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "32f79d6c93fe82dae298b03a5f4cc565040ad42bd4aed4d4c45aab3bdeed9e20",
+      "artifact": "fixtures/tavily-research.json",
+      "artifactSha256": "3dafb813dd1cb6627f7990e8724ca7b2c5fc93804b13bee8ae79d1c25c396a7c",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/api-reference/endpoint/search.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "3b3d3fc403cf7fee81d59d068ae876ce3fd6f5765bf0139bb98f81912dbbabd3",
+      "artifact": "fixtures/tavily-search.json",
+      "artifactSha256": "8d031afdf9f842c8bf3d500ad4f65a338cb480d31f345d9d1680fb955806a635",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/api-reference/endpoint/usage.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "23185c233be1e68ca143a408e3d91c1cc74584857ceebef5d1f3fd31cd1d249f",
+      "artifact": "fixtures/tavily-usage.json",
+      "artifactSha256": "982b533d2846db7a39e3bcb9b9ff78b271d8c4e4ccf1b0a4a17b43d1e0609f92",
+      "transformation": "Extract embedded OpenAPI YAML; parse via Ruby standard-library YAML; remove examples/code samples."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/context-dot-dev/context-typescript-sdk/main/src/internal/utils/query.ts",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "e7a10198c2a53f710338d5e29d707d9b98a9527606bbddee0f898f895a534b20",
+      "note": "Official supplemental guide reviewed; hand-reviewed protocol refinements in extensions.py and brave.py."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/context-dot-dev/context-typescript-sdk/main/src/resources/parse.ts",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "03d04a5bc2ab9564ce311c78fdae1b875af865fdbea176fa8a4cd776a120f869",
+      "note": "Official supplemental guide reviewed; hand-reviewed protocol refinements in extensions.py and brave.py."
+    },
+    {
+      "url": "https://docs.context.dev/brand/logo-link.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "99e19bd0d17b04bf72f324f476c5d6635bd4aab6e018b4b3651cff425430ea22",
+      "note": "Official supplemental guide reviewed; hand-reviewed protocol refinements in extensions.py and brave.py."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/keyless.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "3246d405b870af04b8b62cb9356890a3a80511326e133ee922d6452c488a0191",
+      "note": "Official supplemental guide reviewed; hand-reviewed protocol refinements in extensions.py and brave.py."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/machine-payments/x402.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "2b97b3b5c9d516c5c212e9a62a89ea101cb16f980d5bd87df12b12e404920b3c",
+      "note": "Official supplemental guide reviewed; hand-reviewed protocol refinements in extensions.py and brave.py."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/api-reference/endpoint/research-streaming.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "a35da399132e231b59ca4814712959a643450b71eb3f2288d9627fdb031b84a9",
+      "note": "Official supplemental guide reviewed; hand-reviewed protocol refinements in extensions.py and brave.py."
+    },
+    {
+      "url": "https://docs.tinyfish.ai/research-api/reference.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "46f04198a50387d7a6b53caa3d079e244d30d6265f69a85b8b28c3aecfc0b472",
+      "note": "Official supplemental guide reviewed; hand-reviewed protocol refinements in extensions.py and brave.py."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/documentation/services/answers/index.html.md",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "2fe149a262e65a37ed9b1d336b5104808ca9cf2a1fd60e2af2c4fa862d9d96c9",
+      "note": "Official supplemental guide reviewed; hand-reviewed protocol refinements in extensions.py and brave.py."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/ai/llm_context/get",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/ai/llm_context/get/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "0a416ed063d0064e5e97baae118cbf356d13a8d3f95b532d328aada7ed536298",
+      "artifact": "fixtures/brave-ai-llm_context-get.json",
+      "artifactSha256": "db81c7967127296668cb3adf3375ea0e9130fca64802cade1e3b997b32d2bb69",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/ai/llm_context/post",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/ai/llm_context/post/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "d25f5f5daa0974a5e5a5bf0db28292626cb5397b0b9133df7d6e1e39f7a3e54b",
+      "artifact": "fixtures/brave-ai-llm_context-post.json",
+      "artifactSha256": "c40825258f67eb617704ebd87629260d87a05a5ca3bce8d49ae6a52a2e0117c1",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/ai/answers",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/ai/answers/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "7905612ee2fdc42c0bdf89bf5bcaadd5968dbbf7374800b7307d251507828cc4",
+      "artifact": "fixtures/brave-ai-answers.json",
+      "artifactSha256": "3eb205eb04f0ef25e9aa92950dc416aab65140c85fd45ede5ed509d89b13af59",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/web/search/get",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/web/search/get/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "9937514c378cb1f202d080bf06e3484fbfc3813865a418343cabc2cae594fbd4",
+      "artifact": "fixtures/brave-web-search-get.json",
+      "artifactSha256": "7e4687676b1556f04bc7d1305750df874b45ddff7fd628343edae12d3f1d7f43",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/web/search/post",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/web/search/post/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "7f50dc1c0d3fa487493c2e4ff457aff4e30ccc178349abb29d8300a15363215f",
+      "artifact": "fixtures/brave-web-search-post.json",
+      "artifactSha256": "d9b400043375e38957237bda913f5ea1d53a6ae329399717798e853b67642d3f",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/web/local_pois",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/web/local_pois/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "4f99c0df0418a7946804d2f50f5cafd85a320ee4c845f99f887b16363a97d116",
+      "artifact": "fixtures/brave-web-local_pois.json",
+      "artifactSha256": "719188fdfe1782b09563fc33c27fe22dd9d5df30cab03e081301c713befbcde6",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/web/poi_descriptions",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/web/poi_descriptions/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "91a609121211f0ef2d6be04f44aa8bdb97f3640ab891d1e77e3af4a1d9d73423",
+      "artifact": "fixtures/brave-web-poi_descriptions.json",
+      "artifactSha256": "a5ee75c46b3b24387329397f408094fc912a14be6075f10a3b3cbad1080d0af1",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/web/rich_search",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/web/rich_search/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "975a0be1b76136be7ff40535b20f26f110aa3889f3ad0b027440331f4ddb724d",
+      "artifact": "fixtures/brave-web-rich_search.json",
+      "artifactSha256": "6c7542702f147a5a2c3c50645677a8f27bdcc252428d4dd9ae029f5445a9e47d",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/news/news_search/get",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/news/news_search/get/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "b09ef01ca179b3b97325c1cfbee91e96c2885fb0e9f16d0f705d367c546917a9",
+      "artifact": "fixtures/brave-news-news_search-get.json",
+      "artifactSha256": "3fcbfb8b8700adff2fba22d746b97805406403e6db6dbfefab1931a861bca6bc",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/news/news_search/post",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/news/news_search/post/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "a40820d266c5327781c6d7f98e305e4a0d7f25c6b5ac9547109a080212ab7351",
+      "artifact": "fixtures/brave-news-news_search-post.json",
+      "artifactSha256": "c10f6f6a0b629838f210c606e85782c110d85065f94c8f878c2098f655a85b16",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/videos/video_search/get",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/videos/video_search/get/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "55ba9de11e7c37c7a427e4c4f9a032e40c36973541429f64f7cf28fa031b73de",
+      "artifact": "fixtures/brave-videos-video_search-get.json",
+      "artifactSha256": "861b197053bccfd734c4ed2c19deccfb23c1a07d6a832a021c59e8660dcc1a14",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/videos/video_search/post",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/videos/video_search/post/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "7c4dfba15316043f2b06db29133287d6e3ead75a03d4138c6d2b762bff469e94",
+      "artifact": "fixtures/brave-videos-video_search-post.json",
+      "artifactSha256": "696c07941de14b45561cc3b208fa9c5b54214da0a029b81474b7a151cf664f22",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/images/image_search",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/images/image_search/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "563d84bb3ce044b94c00e50d35cfc767af1ccb723c2c865086df64d2b8c2828f",
+      "artifact": "fixtures/brave-images-image_search.json",
+      "artifactSha256": "6856117b22e0606ea998d330a6db3ff9fcddffc893e7c760e0cfde4d73753455",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/web/place_search",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/web/place_search/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "2471713c34388cedb906ad8688269a4b51131b40c296d8a31a6fc3f4b0562c87",
+      "artifact": "fixtures/brave-web-place_search.json",
+      "artifactSha256": "b4a08076f7b0ea64631c7e0fe7155ec5574e1966f53a26f33f4decf352b28357",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/other/suggestions",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/other/suggestions/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "1196197c4246ed736b0500c9a8935f769834e04dc9b4ff8eb7945a9f0728bb9c",
+      "artifact": "fixtures/brave-other-suggestions.json",
+      "artifactSha256": "1b497d0393afd3af4bf798889273892c4ae291a2da4fbebc9b76d1f23ae7174b",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/api-reference/other/spell_check",
+      "retrievalUrl": "https://api-dashboard.search.brave.com/api-reference/other/spell_check/__data.json",
+      "retrievedDate": "2026-10-22",
+      "sourceSha256": "5d25f2ba1902c9b4dd4f89eb2495a3e72539d68fc44fee110d5538385758efe0",
+      "artifact": "fixtures/brave-other-spell_check.json",
+      "artifactSha256": "7da3d5060c3e549781324f1fd559feb5a86d658a2bdcae91dcc410201a254a39",
+      "transformation": "Extract public apiSpec only from reference page structured Svelte data; omit UI/session state and code samples/examples."
+    }
+  ]
+}

@@ -1,0 +1,1649 @@
+{
+  "schemaVersion": 1,
+  "description": "Synthetic cross-language adapter fixtures generated from the TypeScript reference. No live verification.",
+  "credential": "fixture-key",
+  "canonicalRetrievalTime": "2026-10-22T00:00:00.000Z",
+  "cases": [
+    {
+      "name": "context-default",
+      "provider": "context",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 100,
+        "maxExcludeDomains": 100,
+        "maxQueryLength": 500
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://api.context.dev/v1/web/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "authorization": "Bearer fixture-key",
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "numResults": 10
+        }
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "context",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "context-include-domains",
+      "provider": "context",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 100,
+        "maxExcludeDomains": 100,
+        "maxQueryLength": 500
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3,
+        "includeDomains": [
+          "example.org"
+        ]
+      },
+      "upstreamRequest": {
+        "url": "https://api.context.dev/v1/web/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "authorization": "Bearer fixture-key",
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "numResults": 10,
+          "includeDomains": [
+            "example.org"
+          ]
+        }
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "context",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "tinyfish-default",
+      "provider": "tinyfish",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 100,
+        "maxExcludeDomains": 100
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://api.search.tinyfish.ai/",
+        "query": {
+          "query": "SDK conformance fixture",
+          "domain_type": "web",
+          "page": "0"
+        },
+        "method": "GET",
+        "headers": {
+          "accept": "application/json",
+          "x-api-key": "fixture-key"
+        },
+        "body": null
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "tinyfish",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "tinyfish-include-domains",
+      "provider": "tinyfish",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 100,
+        "maxExcludeDomains": 100
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3,
+        "includeDomains": [
+          "example.org"
+        ]
+      },
+      "upstreamRequest": {
+        "url": "https://api.search.tinyfish.ai/",
+        "query": {
+          "query": "SDK conformance fixture",
+          "domain_type": "web",
+          "page": "0",
+          "include_domains": "example.org"
+        },
+        "method": "GET",
+        "headers": {
+          "accept": "application/json",
+          "x-api-key": "fixture-key"
+        },
+        "body": null
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "tinyfish",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "exa-default",
+      "provider": "exa",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 1200,
+        "maxExcludeDomains": 1200
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://api.exa.ai/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "x-api-key": "fixture-key"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "numResults": 3,
+          "type": "auto",
+          "contents": {
+            "highlights": true
+          }
+        }
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "highlights": [
+              "Fixture content"
+            ],
+            "provenance": {
+              "provider": "exa",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "exa-include-domains",
+      "provider": "exa",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 1200,
+        "maxExcludeDomains": 1200
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3,
+        "includeDomains": [
+          "example.org"
+        ]
+      },
+      "upstreamRequest": {
+        "url": "https://api.exa.ai/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "x-api-key": "fixture-key"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "numResults": 3,
+          "type": "auto",
+          "contents": {
+            "highlights": true
+          },
+          "includeDomains": [
+            "example.org"
+          ]
+        }
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "highlights": [
+              "Fixture content"
+            ],
+            "provenance": {
+              "provider": "exa",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "tavily-default",
+      "provider": "tavily",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 300,
+        "maxExcludeDomains": 150
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://api.tavily.com/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "authorization": "Bearer fixture-key",
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "max_results": 3,
+          "search_depth": "basic",
+          "include_usage": true,
+          "auto_parameters": false,
+          "include_answer": false,
+          "include_raw_content": false
+        }
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "tavily",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "tavily-include-domains",
+      "provider": "tavily",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 300,
+        "maxExcludeDomains": 150
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3,
+        "includeDomains": [
+          "example.org"
+        ]
+      },
+      "upstreamRequest": {
+        "url": "https://api.tavily.com/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "authorization": "Bearer fixture-key",
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "max_results": 3,
+          "search_depth": "basic",
+          "include_usage": true,
+          "auto_parameters": false,
+          "include_answer": false,
+          "include_raw_content": false,
+          "include_domains": [
+            "example.org"
+          ],
+          "include_domains_mode": "restrict"
+        }
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "tavily",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "brave-default",
+      "provider": "brave",
+      "capabilities": {
+        "domainFilters": false,
+        "maxIncludeDomains": 0,
+        "maxExcludeDomains": 0
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://api.search.brave.com/res/v1/web/search",
+        "query": {
+          "q": "SDK conformance fixture",
+          "count": "3",
+          "extra_snippets": "true"
+        },
+        "method": "GET",
+        "headers": {
+          "accept": "application/json",
+          "x-subscription-token": "fixture-key"
+        },
+        "body": null
+      },
+      "upstreamResponse": {
+        "web": {
+          "results": [
+            {
+              "url": "https://example.org/reference",
+              "link": "https://example.org/reference",
+              "title": "Synthetic reference",
+              "name": "Synthetic reference",
+              "description": "Fixture content",
+              "snippet": "Fixture content",
+              "content": "Fixture content",
+              "highlights": [
+                "Fixture content"
+              ],
+              "excerpts": [
+                "Fixture content"
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "brave",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "perplexity-default",
+      "provider": "perplexity",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 20,
+        "maxExcludeDomains": 20,
+        "mutuallyExclusiveDomainFilters": true
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://api.perplexity.ai/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "authorization": "Bearer fixture-key",
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "max_results": 3,
+          "search_type": "web"
+        }
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "perplexity",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "perplexity-include-domains",
+      "provider": "perplexity",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 20,
+        "maxExcludeDomains": 20,
+        "mutuallyExclusiveDomainFilters": true
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3,
+        "includeDomains": [
+          "example.org"
+        ]
+      },
+      "upstreamRequest": {
+        "url": "https://api.perplexity.ai/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "authorization": "Bearer fixture-key",
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "max_results": 3,
+          "search_type": "web",
+          "search_domain_filter": [
+            "example.org"
+          ]
+        }
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "perplexity",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "parallel-default",
+      "provider": "parallel",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 200,
+        "maxExcludeDomains": 200,
+        "mutuallyExclusiveDomainFilters": true
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://api.parallel.ai/v1/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "x-api-key": "fixture-key"
+        },
+        "body": {
+          "search_queries": [
+            "SDK conformance fixture"
+          ],
+          "mode": "basic",
+          "advanced_settings": {
+            "max_results": 3
+          }
+        }
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "highlights": [
+              "Fixture content"
+            ],
+            "provenance": {
+              "provider": "parallel",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "parallel-include-domains",
+      "provider": "parallel",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 200,
+        "maxExcludeDomains": 200,
+        "mutuallyExclusiveDomainFilters": true
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3,
+        "includeDomains": [
+          "example.org"
+        ]
+      },
+      "upstreamRequest": {
+        "url": "https://api.parallel.ai/v1/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "x-api-key": "fixture-key"
+        },
+        "body": {
+          "search_queries": [
+            "SDK conformance fixture"
+          ],
+          "mode": "basic",
+          "advanced_settings": {
+            "max_results": 3,
+            "source_policy": {
+              "include_domains": [
+                "example.org"
+              ]
+            }
+          }
+        }
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "highlights": [
+              "Fixture content"
+            ],
+            "provenance": {
+              "provider": "parallel",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "linkup-default",
+      "provider": "linkup",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 100,
+        "maxExcludeDomains": 50
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://api.linkup.so/v1/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "authorization": "Bearer fixture-key",
+          "content-type": "application/json"
+        },
+        "body": {
+          "q": "SDK conformance fixture",
+          "depth": "fast",
+          "outputType": "searchResults",
+          "includeImages": false,
+          "maxResults": 3
+        }
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "linkup",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "linkup-include-domains",
+      "provider": "linkup",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 100,
+        "maxExcludeDomains": 50
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3,
+        "includeDomains": [
+          "example.org"
+        ]
+      },
+      "upstreamRequest": {
+        "url": "https://api.linkup.so/v1/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "authorization": "Bearer fixture-key",
+          "content-type": "application/json"
+        },
+        "body": {
+          "q": "SDK conformance fixture",
+          "depth": "fast",
+          "outputType": "searchResults",
+          "includeImages": false,
+          "maxResults": 3,
+          "includeDomains": [
+            "example.org"
+          ]
+        }
+      },
+      "upstreamResponse": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "linkup",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "firecrawl-default",
+      "provider": "firecrawl",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 100,
+        "maxExcludeDomains": 100,
+        "mutuallyExclusiveDomainFilters": true,
+        "maxQueryLength": 500
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://api.firecrawl.dev/v2/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "authorization": "Bearer fixture-key",
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "limit": 3,
+          "sources": [
+            {
+              "type": "web"
+            }
+          ],
+          "highlights": false
+        }
+      },
+      "upstreamResponse": {
+        "success": true,
+        "data": {
+          "web": [
+            {
+              "url": "https://example.org/reference",
+              "link": "https://example.org/reference",
+              "title": "Synthetic reference",
+              "name": "Synthetic reference",
+              "description": "Fixture content",
+              "snippet": "Fixture content",
+              "content": "Fixture content",
+              "highlights": [
+                "Fixture content"
+              ],
+              "excerpts": [
+                "Fixture content"
+              ]
+            }
+          ]
+        },
+        "creditsUsed": 1
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "firecrawl",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": {
+          "unit": "credits",
+          "value": 1
+        },
+        "warnings": []
+      }
+    },
+    {
+      "name": "firecrawl-include-domains",
+      "provider": "firecrawl",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 100,
+        "maxExcludeDomains": 100,
+        "mutuallyExclusiveDomainFilters": true,
+        "maxQueryLength": 500
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3,
+        "includeDomains": [
+          "example.org"
+        ]
+      },
+      "upstreamRequest": {
+        "url": "https://api.firecrawl.dev/v2/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "authorization": "Bearer fixture-key",
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "limit": 3,
+          "sources": [
+            {
+              "type": "web"
+            }
+          ],
+          "highlights": false,
+          "includeDomains": [
+            "example.org"
+          ]
+        }
+      },
+      "upstreamResponse": {
+        "success": true,
+        "data": {
+          "web": [
+            {
+              "url": "https://example.org/reference",
+              "link": "https://example.org/reference",
+              "title": "Synthetic reference",
+              "name": "Synthetic reference",
+              "description": "Fixture content",
+              "snippet": "Fixture content",
+              "content": "Fixture content",
+              "highlights": [
+                "Fixture content"
+              ],
+              "excerpts": [
+                "Fixture content"
+              ]
+            }
+          ]
+        },
+        "creditsUsed": 1
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "firecrawl",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": {
+          "unit": "credits",
+          "value": 1
+        },
+        "warnings": []
+      }
+    },
+    {
+      "name": "you-default",
+      "provider": "you",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 500,
+        "maxExcludeDomains": 5000,
+        "mutuallyExclusiveDomainFilters": true
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://ydc-index.io/v1/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "x-api-key": "fixture-key"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "count": 3
+        }
+      },
+      "upstreamResponse": {
+        "results": {
+          "web": [
+            {
+              "url": "https://example.org/reference",
+              "link": "https://example.org/reference",
+              "title": "Synthetic reference",
+              "name": "Synthetic reference",
+              "description": "Fixture content",
+              "snippet": "Fixture content",
+              "content": "Fixture content",
+              "highlights": [
+                "Fixture content"
+              ],
+              "excerpts": [
+                "Fixture content"
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "you",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "you-include-domains",
+      "provider": "you",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 500,
+        "maxExcludeDomains": 5000,
+        "mutuallyExclusiveDomainFilters": true
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3,
+        "includeDomains": [
+          "example.org"
+        ]
+      },
+      "upstreamRequest": {
+        "url": "https://ydc-index.io/v1/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "x-api-key": "fixture-key"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "count": 3,
+          "include_domains": [
+            "example.org"
+          ]
+        }
+      },
+      "upstreamResponse": {
+        "results": {
+          "web": [
+            {
+              "url": "https://example.org/reference",
+              "link": "https://example.org/reference",
+              "title": "Synthetic reference",
+              "name": "Synthetic reference",
+              "description": "Fixture content",
+              "snippet": "Fixture content",
+              "content": "Fixture content",
+              "highlights": [
+                "Fixture content"
+              ],
+              "excerpts": [
+                "Fixture content"
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "you",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "serper-default",
+      "provider": "serper",
+      "capabilities": {
+        "domainFilters": false,
+        "maxIncludeDomains": 0,
+        "maxExcludeDomains": 0
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://google.serper.dev/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "x-api-key": "fixture-key"
+        },
+        "body": {
+          "q": "SDK conformance fixture",
+          "num": 3
+        }
+      },
+      "upstreamResponse": {
+        "organic": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ],
+        "credits": 1
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "serper",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": {
+          "unit": "credits",
+          "value": 1
+        },
+        "warnings": []
+      }
+    },
+    {
+      "name": "serpapi-default",
+      "provider": "serpapi",
+      "capabilities": {
+        "domainFilters": false,
+        "maxIncludeDomains": 0,
+        "maxExcludeDomains": 0
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://serpapi.com/search.json",
+        "query": {
+          "engine": "google",
+          "q": "SDK conformance fixture",
+          "api_key": "fixture-key"
+        },
+        "method": "GET",
+        "headers": {
+          "accept": "application/json"
+        },
+        "body": null
+      },
+      "upstreamResponse": {
+        "search_metadata": {
+          "status": "Success"
+        },
+        "organic_results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "serpapi",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    },
+    {
+      "name": "valyu-default",
+      "provider": "valyu",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 100,
+        "maxExcludeDomains": 100
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://api.valyu.ai/v1/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "accept": "application/json",
+          "content-type": "application/json",
+          "x-api-key": "fixture-key"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "search_type": "web",
+          "max_num_results": 3
+        }
+      },
+      "upstreamResponse": {
+        "success": true,
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ],
+        "total_deduction_dollars": 0.001
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "valyu",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": {
+          "unit": "usd",
+          "value": 0.001
+        },
+        "warnings": []
+      }
+    },
+    {
+      "name": "valyu-include-domains",
+      "provider": "valyu",
+      "capabilities": {
+        "domainFilters": true,
+        "maxIncludeDomains": 100,
+        "maxExcludeDomains": 100
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3,
+        "includeDomains": [
+          "example.org"
+        ]
+      },
+      "upstreamRequest": {
+        "url": "https://api.valyu.ai/v1/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "accept": "application/json",
+          "content-type": "application/json",
+          "x-api-key": "fixture-key"
+        },
+        "body": {
+          "query": "SDK conformance fixture",
+          "search_type": "web",
+          "max_num_results": 3,
+          "included_sources": [
+            "example.org"
+          ]
+        }
+      },
+      "upstreamResponse": {
+        "success": true,
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ],
+        "total_deduction_dollars": 0.001
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "valyu",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": {
+          "unit": "usd",
+          "value": 0.001
+        },
+        "warnings": []
+      }
+    },
+    {
+      "name": "searxng-default",
+      "provider": "searxng",
+      "capabilities": {
+        "domainFilters": false,
+        "maxIncludeDomains": 0,
+        "maxExcludeDomains": 0
+      },
+      "request": {
+        "query": "SDK conformance fixture",
+        "limit": 3
+      },
+      "upstreamRequest": {
+        "url": "https://searxng.example/search",
+        "query": {},
+        "method": "POST",
+        "headers": {
+          "accept": "application/json",
+          "content-type": "application/x-www-form-urlencoded"
+        },
+        "body": {
+          "format": "json",
+          "pageno": "1",
+          "categories": "general",
+          "q": "SDK conformance fixture"
+        }
+      },
+      "upstreamResponse": {
+        "query": "fixture",
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "link": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "name": "Synthetic reference",
+            "description": "Fixture content",
+            "snippet": "Fixture content",
+            "content": "Fixture content",
+            "highlights": [
+              "Fixture content"
+            ],
+            "excerpts": [
+              "Fixture content"
+            ]
+          }
+        ],
+        "unresponsive_engines": []
+      },
+      "response": {
+        "results": [
+          {
+            "url": "https://example.org/reference",
+            "title": "Synthetic reference",
+            "snippet": "Fixture content",
+            "provenance": {
+              "provider": "searxng",
+              "sourceUrl": "https://example.org/reference",
+              "retrievedAt": "2026-10-22T00:00:00.000Z"
+            }
+          }
+        ],
+        "usage": null,
+        "warnings": []
+      }
+    }
+  ]
+}

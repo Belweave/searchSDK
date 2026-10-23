@@ -1,0 +1,37 @@
+[package]
+name = "searchsdk"
+version = "0.1.0-alpha.1"
+edition = "2024"
+rust-version = "1.98"
+description = "Server-side normalized search, typed native provider clients, and application gateway protocol v1"
+license = "MIT"
+repository = "https://github.com/Belweave/searchSDK"
+readme = "README.md"
+include = ["src/**", "tests/**", "examples/**", "scripts/**", "retained/**", "Cargo.toml", "Cargo.lock", "README.md", "LICENSE", "SOURCES.json"]
+
+[lib]
+# Tests live in tests/; avoid building a second empty harness for generated models.
+test = false
+
+[dependencies]
+bytes = "=1.12.1"
+futures-util = { version = "=0.3.34", default-features = false, features = ["std", "async-await"] }
+httpdate = "=1.0.3"
+reqwest = { version = "=0.12.28", default-features = false, features = ["rustls-tls", "stream", "gzip", "brotli", "deflate", "multipart"] }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.154"
+time = { version = "=0.3.55", features = ["formatting", "parsing"] }
+tokio = { version = "=1.53.1", features = ["rt", "macros", "time", "sync", "net", "io-util"] }
+tokio-util = { version = "=0.7.19", features = ["rt"] }
+url = "=2.5.8"
+
+[dev-dependencies]
+flate2 = "=1.1.10"
+
+[profile.dev]
+debug = 0
+incremental = false
+
+[profile.test]
+debug = 0
+incremental = false

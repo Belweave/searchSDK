@@ -1,0 +1,242 @@
+{
+  "reviewedAt": "2026-10-22",
+  "sources": [
+    {
+      "file": "snapshots/p-openapi",
+      "officialUrl": "https://docs.perplexity.ai/openapi.json",
+      "retrievedAt": "2026-10-22",
+      "sha256": "19b166cb07af8859df9888b10d9d81eda16252a8d6ea57905ced5869a302b9d1",
+      "kind": "upstream-openapi-json"
+    },
+    {
+      "file": "snapshots/parallel-openapi",
+      "officialUrl": "https://docs.parallel.ai/public-openapi.json",
+      "retrievedAt": "2026-10-22",
+      "sha256": "c4ae7c37e089733342a0df2f53111faeda340ece4a7d3f4b3d60ad6efc2d57cb",
+      "kind": "upstream-openapi-json"
+    },
+    {
+      "file": "snapshots/linkup-openapi",
+      "officialUrl": "https://api.linkup.so/v1/openapi.json",
+      "retrievedAt": "2026-10-22",
+      "sha256": "b9bcfb4b9efd07bb6dd5712e876592db50f153d7bf8ad038e5b9e3f1d7d6d249",
+      "kind": "upstream-openapi-json"
+    },
+    {
+      "file": "snapshots/firecrawl-openapi",
+      "officialUrl": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "retrievedAt": "2026-10-22",
+      "sha256": "849076a3180d41c457e9d774ad773fef4f84d02b609f4e522adb36873860b3d5",
+      "kind": "upstream-openapi-json"
+    },
+    {
+      "file": "snapshots/you-web-search",
+      "officialUrl": "https://you.com/docs/openapi/web-search.json",
+      "retrievedAt": "2026-10-22",
+      "sha256": "aea11db4b04f19372be7b50d6a759472e42c0445979c289ad55eacd21863fb6a",
+      "kind": "upstream-openapi-json"
+    },
+    {
+      "file": "snapshots/you-contents",
+      "officialUrl": "https://you.com/docs/openapi/contents.json",
+      "retrievedAt": "2026-10-22",
+      "sha256": "0aea489c72a1c7acd8f895d73960ff6740555cf2691a28adaba079dbf8573389",
+      "kind": "upstream-openapi-json"
+    },
+    {
+      "file": "snapshots/you-answer",
+      "officialUrl": "https://you.com/docs/openapi/answer.json",
+      "retrievedAt": "2026-10-22",
+      "sha256": "393c89a21fca78950998c0c56932d009bcc30c1fa655fbb506db64d201bb6da3",
+      "kind": "upstream-openapi-json"
+    },
+    {
+      "file": "snapshots/you-research",
+      "officialUrl": "https://you.com/docs/openapi/research.json",
+      "retrievedAt": "2026-10-22",
+      "sha256": "959e88ba61b9be66e40c427db8f9d9e467122998983ce0552ce3349eb611bdb1",
+      "kind": "upstream-openapi-json"
+    },
+    {
+      "file": "snapshots/you-finance-research",
+      "officialUrl": "https://you.com/docs/openapi/finance-research.json",
+      "retrievedAt": "2026-10-22",
+      "sha256": "91d76e209f605e0481370bef08b103a5c6ccd24aeaf6b6d830ef6a4098174588",
+      "kind": "upstream-openapi-json"
+    },
+    {
+      "file": "snapshots/you-billing",
+      "officialUrl": "https://you.com/docs/openapi/billing.json",
+      "retrievedAt": "2026-10-22",
+      "sha256": "6f983b56b5756247383be652224fa6d1c326f44721c7aa988a6fa7c0122ef41b",
+      "kind": "upstream-openapi-json"
+    },
+    {
+      "file": "snapshots/you-images",
+      "officialUrl": "https://you.com/docs/openapi/images.json",
+      "retrievedAt": "2026-10-22",
+      "sha256": "048af79bf2e279d009532ed192826ee1031c8381a64bcb042393791a1a5d25ad",
+      "kind": "upstream-openapi-json"
+    },
+    {
+      "file": "snapshots/p-gateway-chat.json",
+      "officialUrl": "https://docs.perplexity.ai/api-reference/gateway-chat-completions-post.md",
+      "retrievedAt": "2026-10-22",
+      "sha256": "6634d66bff46edcd6d63816a6c1e5efd7ba34f24961684f692ce73c11748e250",
+      "kind": "openapi-json-converted-from-official-markdown-yaml"
+    },
+    {
+      "file": "snapshots/p-gateway-responses.json",
+      "officialUrl": "https://docs.perplexity.ai/api-reference/gateway-responses-post.md",
+      "retrievedAt": "2026-10-22",
+      "sha256": "a53cf8a3e119d8e4af022517080c257a0ba8ac25d43da019b232d46651bd933f",
+      "kind": "openapi-json-converted-from-official-markdown-yaml"
+    },
+    {
+      "file": "snapshots/p-gateway-messages.json",
+      "officialUrl": "https://docs.perplexity.ai/api-reference/gateway-messages-post.md",
+      "retrievedAt": "2026-10-22",
+      "sha256": "a443ef1faeb3eb550c67bec9ec71cd45fcd04cd7021b9f6cc45f954761065330",
+      "kind": "openapi-json-converted-from-official-markdown-yaml"
+    },
+    {
+      "file": "snapshots/p-gateway-models.json",
+      "officialUrl": "https://docs.perplexity.ai/api-reference/gateway-models-get.md",
+      "retrievedAt": "2026-10-22",
+      "sha256": "17ef476b7f81fc286ca05aa3ed85253d396827dd41530ba88755df8252f2a656",
+      "kind": "openapi-json-converted-from-official-markdown-yaml"
+    },
+    {
+      "file": "snapshots/p-gateway-model.json",
+      "officialUrl": "https://docs.perplexity.ai/api-reference/gateway-model-get.md",
+      "retrievedAt": "2026-10-22",
+      "sha256": "0b0d9b8b5d519d13a52dc60939e4e0f315530639e1cc6a9001f26ccb53904344",
+      "kind": "openapi-json-converted-from-official-markdown-yaml"
+    },
+    {
+      "file": "snapshots/p-auth-generate.json",
+      "officialUrl": "https://docs.perplexity.ai/api-reference/generate-auth-token-post.md",
+      "retrievedAt": "2026-10-22",
+      "sha256": "83d006e3f4d1ab8de01c80d689c7c3015629c8765457b92dedf427f73c5e4e42",
+      "kind": "openapi-json-converted-from-official-markdown-yaml"
+    },
+    {
+      "file": "snapshots/p-auth-revoke.json",
+      "officialUrl": "https://docs.perplexity.ai/api-reference/revoke-auth-token-post.md",
+      "retrievedAt": "2026-10-22",
+      "sha256": "cf3e89ad90c28bcab7e5f2d5fa37fe7a8ecd5b43948d49183f2911e25ebf0299",
+      "kind": "openapi-json-converted-from-official-markdown-yaml"
+    },
+    {
+      "file": "snapshots/wonder-search.compact",
+      "officialUrl": "https://docs.evokoa.com/wondersearch/reference/search-api",
+      "retrievedAt": "2026-10-22",
+      "sha256": "9a7526523c582624d454f79c6a8920b54760efecf7e41a1b751cce3d20563285",
+      "upstreamHtmlSha256": "7e3aae423108752c2ad92eee428d92c620f3f3a40eb256542fce59121946234a",
+      "kind": "public-headings-tables-code-extracted-from-official-html"
+    },
+    {
+      "file": "snapshots/wonder-access-api.compact",
+      "officialUrl": "https://docs.evokoa.com/wondersearch/reference/access-api",
+      "retrievedAt": "2026-10-22",
+      "sha256": "6d5bfae9c8d7fe1fe2dad185786b9495a6c83cd6feb941197ed8265d651ac20d",
+      "upstreamHtmlSha256": "00ad760a47ccb32f82c58bea38945d26352cc4d5094ac09d67d6b3680f4187bf",
+      "kind": "public-headings-tables-code-extracted-from-official-html"
+    },
+    {
+      "file": "snapshots/wonder-content-api.compact",
+      "officialUrl": "https://docs.evokoa.com/wondersearch/reference/content-api",
+      "retrievedAt": "2026-10-22",
+      "sha256": "7287c86e52a1d289e761dfe043c8b5dedf84ae89368500e5f5b31a4618652685",
+      "upstreamHtmlSha256": "a4f5770287c6739063ad2342b270430d3e271b8b65960b7cab4ae2f76b14e036",
+      "kind": "public-headings-tables-code-extracted-from-official-html"
+    },
+    {
+      "file": "snapshots/wonder-uploads-api.compact",
+      "officialUrl": "https://docs.evokoa.com/wondersearch/reference/uploads-api",
+      "retrievedAt": "2026-10-22",
+      "sha256": "d285039cc74200a6d9284efa6a82159d3d9e9e2b1fad8f3f4054d07962245ff7",
+      "upstreamHtmlSha256": "0dc5e2560f5dc0d1501ad081b3ddf129125984699bd1dfa2beab9757ea6a1872",
+      "kind": "public-headings-tables-code-extracted-from-official-html"
+    },
+    {
+      "file": "snapshots/wonder-usage-and-billing-api.compact",
+      "officialUrl": "https://docs.evokoa.com/wondersearch/reference/usage-and-billing-api",
+      "retrievedAt": "2026-10-22",
+      "sha256": "2d70ee9360c156c298702de2a8288f27aa339246a433bbb2b73dbd05c947b0b3",
+      "upstreamHtmlSha256": "271afeda47fb4d99db93d3de29aacacfdf40bb7497e039301f9586a4bc061648",
+      "kind": "public-headings-tables-code-extracted-from-official-html"
+    },
+    {
+      "file": "snapshots/wonder-authentication.compact",
+      "officialUrl": "https://docs.evokoa.com/wondersearch/reference/authentication",
+      "retrievedAt": "2026-10-22",
+      "sha256": "b3ba5c8362573e4375797969438adc32699ae801dfb59e6c0fd28f687ee31d41",
+      "upstreamHtmlSha256": "4da0b5d79156d58e11de5d5fe1404c887e8b96cb3685425ebfb735e175b5fc69",
+      "kind": "public-headings-tables-code-extracted-from-official-html"
+    },
+    {
+      "file": "snapshots/wonder-limits.compact",
+      "officialUrl": "https://docs.evokoa.com/wondersearch/reference/limits",
+      "retrievedAt": "2026-10-22",
+      "sha256": "470c2770db2a77cffeb706c3ac864c9e82913cff5e02f9eea3a12ba53268e521",
+      "upstreamHtmlSha256": "b53a7fc636d521031a519881b971fe1e23b0f6ba2289b1c368ef55169f3433c2",
+      "kind": "public-headings-tables-code-extracted-from-official-html"
+    },
+    {
+      "file": "snapshots/wonder-uploads-api.txt",
+      "officialUrl": "https://docs.evokoa.com/wondersearch/reference/uploads-api",
+      "retrievedAt": "2026-10-22",
+      "sha256": "a0c1f5a3337e49d8dddf40d594c0abf90f085083b5abb1bf69bb8628c3551f75",
+      "kind": "public-prose-extracted-from-official-html"
+    },
+    {
+      "file": "snapshots/wonder-usage-and-billing-api.txt",
+      "officialUrl": "https://docs.evokoa.com/wondersearch/reference/usage-and-billing-api",
+      "retrievedAt": "2026-10-22",
+      "sha256": "a5f11e9b243003fef983a5dae2fc737a71301610515446aabc4a9147d821dbe6",
+      "kind": "public-prose-extracted-from-official-html"
+    },
+    {
+      "file": "snapshots/serper-playground-code.txt",
+      "officialUrl": "https://serper.dev/_next/static/chunks/pages/playground-7ce8960e9fe2fc99.js",
+      "retrievedAt": "2026-10-22",
+      "sha256": "2f7d1ae841c7c79f2d69d466e9a2ab41ef11fa04e677f1c9e26a379825f69803",
+      "upstreamBundleSha256": "2a280fd6b3518dd83a6d6882904cf4d8a15e579c09d095ba82a8a7dc6d6ec554",
+      "kind": "public-playground-request-serializer-excerpt",
+      "notes": "No internal account routes or allowlisted account identifiers retained."
+    },
+    {
+      "file": "snapshots/serper-homepage-field-shapes.json",
+      "officialUrl": "https://serper.dev/",
+      "retrievedAt": "2026-10-22",
+      "sha256": "216d4bf77e6753473f11a6953af12727b8d6cb256ad836c9b6345e3a9422e5b0",
+      "upstreamHtmlSha256": "e7d7a60b90c1c324d5006cfcc4b96d1b5c71fe58a5b0e618a2f54cf5d1890c29",
+      "kind": "sanitized-native-field-shapes-derived-from-public-json-examples",
+      "notes": "Values removed; retained public property names and primitive/array/object shapes only."
+    }
+  ],
+  "limitations": [
+    "No API keys or authenticated/live provider calls used.",
+    "JSON snapshots are public schema descriptions and examples, never user credentials.",
+    "Serper request/response descriptions are hand-transcribed from public homepage examples and the public playground generator. Private/internal beta routes are excluded.",
+    "WonderSearch tables plus separately retained prose drive a hand-reviewed derived schema, not an official OpenAPI export."
+  ],
+  "derivedContracts": [
+    {
+      "file": "snapshots/wonder-openapi",
+      "sha256": "74dced67b06321c414470a032f91b257bb70d8c21fbc0b778321a9ddb2f32d39",
+      "generator": "wonder.py"
+    },
+    {
+      "file": "snapshots/serper-openapi",
+      "sha256": "81a295f7f6befe28d8518fc236e896b8c83131c301ec3ae56e39f4c34191e123",
+      "generator": "serper.py"
+    },
+    {
+      "file": "snapshots/serper-scrape",
+      "sha256": "83544e10aa9310391e008a8317798a7fa26682a4f8bccef4170429cdc5a05d80",
+      "generator": "serper.py"
+    }
+  ]
+}

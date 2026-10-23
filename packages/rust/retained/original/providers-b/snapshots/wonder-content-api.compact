@@ -1,0 +1,254 @@
+
+h1 Drives, folders, and documents API
+
+h2 Example: create a drive
+curl -X POST "$POLYGRES_BASE_URL/v1/workspaces/$WORKSPACE_ID/drives" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: create-handbooks-1" \
+  -d '{"name":"Handbooks"}'
+
+h2 Resource responses
+{
+  "id": "DRIVE_UUID",
+  "name": "Handbooks",
+  "version": "1",
+  "status": "provisioning",
+  "document_count": 0,
+  "indexed_document_count": 0,
+  "index_snapshot_id": null
+}
+{
+  "id": "FOLDER_UUID",
+  "name": "Policies",
+  "parent_folder_id": null,
+  "version": "1"
+}
+
+h2 Add and replace text
+curl -X POST "$POLYGRES_BASE_URL/v1/drives/$DRIVE_ID/documents" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: handbook-text-v1" \
+  -d '{"documents":[{"external_id":"handbook","text":"Refunds are available within 30 days.","metadata":{"edition":1}}]}'
+curl -X PUT "$POLYGRES_BASE_URL/v1/drives/$DRIVE_ID/documents/$DOCUMENT_ID" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: handbook-text-v2" \
+  -d '{"text":"Refunds are available within 45 days.","metadata":{"edition":2},"folder_id":null}'
+
+h2 Progressive text imports
+curl -X POST "$POLYGRES_BASE_URL/v1/drives/$DRIVE_ID/documents" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: library-text-group-0001" \
+  -H "X-Ingestion-Mode: progressive" \
+  --data-binary @documents.json
+
+h2 GET /v1/workspaces/{workspace_id}/drives
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+limit | query | integer | Optional
+cursor | query | string | Optional
+Field | Type | Present | Constraints
+data | array of object | Yes | 
+data[].id | string | Yes | uuid
+data[].name | string | Yes | 
+data[].version | string | Yes | 
+data[].etag | string | Yes | 
+next_cursor | string or null | Yes | 
+
+h2 POST /v1/workspaces/{workspace_id}/drives
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+name | string | Required | Maximum length: 120
+
+h2 GET /v1/drives/{drive_id}
+Name | Location | Value | Required
+drive_id | path | string | Yes
+
+h2 PATCH /v1/drives/{drive_id}
+Name | Location | Value | Required
+drive_id | path | string | Yes
+If-Match | header | string | Yes
+Field | Type | Presence | Guidance
+name | string | Required | Maximum length: 120
+
+h2 DELETE /v1/drives/{drive_id}
+Name | Location | Value | Required
+drive_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+If-Match | header | string | Yes
+
+h2 GET /v1/drives/{drive_id}/folders
+Name | Location | Value | Required
+drive_id | path | string | Yes
+limit | query | integer | Optional
+cursor | query | string | Optional
+parent_folder_id | query | string | Optional
+Field | Type | Present | Constraints
+data | array of object | Yes | 
+next_cursor | string or null | Yes | 
+
+h2 POST /v1/drives/{drive_id}/folders
+Name | Location | Value | Required
+drive_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+name | string | Required | Maximum length: 120
+parent_folder_id | string or null | Optional | uuid
+
+h2 GET /v1/drives/{drive_id}/folders/{folder_id}
+Name | Location | Value | Required
+drive_id | path | string | Yes
+folder_id | path | string | Yes
+
+h2 PATCH /v1/drives/{drive_id}/folders/{folder_id}
+Name | Location | Value | Required
+drive_id | path | string | Yes
+folder_id | path | string | Yes
+If-Match | header | string | Yes
+Field | Type | Presence | Guidance
+name | string | Required | Maximum length: 120
+
+h2 DELETE /v1/drives/{drive_id}/folders/{folder_id}
+Name | Location | Value | Required
+drive_id | path | string | Yes
+folder_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+If-Match | header | string | Yes
+
+h2 POST /v1/drives/{drive_id}/documents
+Name | Location | Value | Required
+drive_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+documents | array of object | Required | 1–1,000 document records; external IDs must be distinct within the batch.
+Field | Type | Presence | Guidance
+external_id | string | Required | Your stable document identifier within this drive; at most 1,024 UTF-8 bytes.
+text | string | Required | Document text, at most 2,000,000 UTF-8 bytes.
+metadata | object | Optional | Flat labels, at most 64 fields and 8,000 encoded bytes. Replacement does not merge old labels.
+folder_id | string or null | Optional | uuid
+Field | Type | Present | Constraints
+operation_id | string | Yes | uuid
+documents | array of object | Optional | 
+documents[].id | string | Yes | uuid
+documents[].revision | string | Yes | 
+usage | object | Yes | cost.amount is 0.000000; no ingestion fee.
+
+h2 GET /v1/drives/{drive_id}/documents
+Name | Location | Value | Required
+drive_id | path | string | Yes
+limit | query | integer | Optional
+cursor | query | string | Optional
+folder_id | query | string | Optional
+Field | Type | Present | Constraints
+data | array of object | Yes | 
+data[].id | string | Yes | uuid
+data[].external_id | string | Yes | At most 1,024 UTF-8 bytes.
+data[].filename | string or null | Yes | 
+data[].source_format | string or null | Yes | 
+data[].source_bytes | integer or string or null | Yes | 
+data[].latest_revision | string | Yes | 
+data[].searchable_revision | string or null | Yes | 
+data[].folder_id | string or null | Yes | uuid
+data[].metadata | object | Yes | At most 8,000 serialized UTF-8 bytes.
+data[].operation_id | string | Yes | uuid
+data[].operation_state | string | Yes | 
+next_cursor | string or null | Yes | 
+
+h2 GET /v1/drives/{drive_id}/documents/{document_id}
+Name | Location | Value | Required
+drive_id | path | string | Yes
+document_id | path | string | Yes
+Field | Type | Present | Constraints
+id | string | Yes | uuid
+external_id | string | Yes | At most 1,024 UTF-8 bytes.
+filename | string or null | Yes | 
+source_format | string or null | Yes | 
+source_bytes | integer or string or null | Yes | 
+latest_revision | string | Yes | 
+searchable_revision | string or null | Yes | 
+folder_id | string or null | Yes | uuid
+metadata | object | Yes | At most 8,000 serialized UTF-8 bytes.
+operation_id | string | Yes | uuid
+operation_state | string | Yes | 
+
+h2 PUT /v1/drives/{drive_id}/documents/{document_id}
+Name | Location | Value | Required
+drive_id | path | string | Yes
+document_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+text | string | Required | Document text, at most 2,000,000 UTF-8 bytes.
+metadata | object | Optional | Flat labels, at most 64 fields and 8,000 encoded bytes. Replacement does not merge old labels.
+folder_id | string or null | Optional | uuid
+Field | Type | Present | Constraints
+operation_id | string | Yes | uuid
+documents | array of object | Optional | 
+documents[].id | string | Yes | uuid
+documents[].revision | string | Yes | 
+usage | object | Yes | cost.amount is 0.000000; no ingestion fee.
+
+h2 DELETE /v1/drives/{drive_id}/documents/{document_id}
+Name | Location | Value | Required
+drive_id | path | string | Yes
+document_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Present | Constraints
+operation_id | string | Yes | uuid
+documents | array of object | Optional | 
+documents[].id | string | Yes | uuid
+documents[].revision | string | Yes | 
+usage | object | Yes | cost.amount is 0.000000; no ingestion fee.
+
+h2 GET /v1/drives/{drive_id}/documents/{document_id}/source
+Name | Location | Value | Required
+drive_id | path | string | Yes
+document_id | path | string | Yes
+
+h2 GET /v1/workspaces/{workspace_id}/default-drive
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+Field | Type | Present | Constraints
+default_drive_id | string | Yes | uuid
+version | string | Yes | 
+
+h2 PUT /v1/workspaces/{workspace_id}/default-drive
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+If-Match | header | string | Yes
+Field | Type | Presence | Guidance
+drive_id | string | Required | uuid
+Field | Type | Present | Constraints
+default_drive_id | string | Yes | uuid
+version | string | Yes | 
+
+h2 GET /v1/sdk/context
+Field | Type | Present | Constraints
+workspace_id | string | Yes | uuid
+permission | search, read_write | Yes | 
+default_drive_id | string | Yes | uuid
+default_version | string | Yes | 
+compatibility | object | Yes | 
+upload_batch | object | When bulk file requests are supported | SDK upload capability information.
+upload_batch.version | integer | With upload_batch | Currently 1.
+upload_batch.max_items | integer | With upload_batch | Currently 50.
+upload_batch.max_body_bytes | integer | With upload_batch | Currently 65536.
+compatibility.api_major | integer | Yes | 
+compatibility.minimum_sdk_version | string | Yes | 
+compatibility.latest_stable_sdk_version | string or null | Yes | 
+compatibility.notices | array of object | Yes | 
+compatibility.cli | object | Yes | CLI compatibility guidance.
+compatibility.cli.api_major | integer | Yes | Supported API major version.
+compatibility.cli.minimum_cli_version | string | Yes | Minimum supported CLI version.
+compatibility.cli.latest_stable_cli_version | string or null | Yes | Latest stable version when available.
+compatibility.cli.notices | array of object | Yes | Upgrade or deprecation notices with ID, severity, message, and optional effective date and documentation URL.
+compatibility.notices[].id | string | Yes | 
+compatibility.notices[].severity | upgrade, deprecation | Yes | 
+compatibility.notices[].message | string | Yes | 
+compatibility.notices[].effective_date | string | Yes | date-time
+compatibility.notices[].documentation_url | string | Yes | uri

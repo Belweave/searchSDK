@@ -36,3 +36,5 @@ SPONSORS.md
 docs/sponsors/
 __pycache__/
 *.pyc
+.build/
+.swiftpm/

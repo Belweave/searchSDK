@@ -1,0 +1,294 @@
+name: Native SDK packages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sdk-variants-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust:
+    name: Rust crate and extracted consumer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_TARGET_DIR: ${{ github.workspace }}/packages/rust/.local/target
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_INCREMENTAL: '0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.15'
+      - name: Select Rust compiler, formatter and linter
+        run: |
+          rustup toolchain install 1.98.0 --profile minimal --component rustfmt --component clippy
+          rustup default 1.98.0
+      - name: Verify generation, formatting, tests and lint
+        run: |
+          python3 -B packages/rust/scripts/generate.py --check
+          cargo fmt --manifest-path packages/rust/Cargo.toml --check
+          cargo test --locked --manifest-path packages/rust/Cargo.toml
+          cargo clippy --locked --manifest-path packages/rust/Cargo.toml --all-targets -- -D warnings
+      - name: Verify Cargo package and extracted artifact consumer
+        run: python3 -B packages/rust/scripts/verify-package.py
+
+  dotnet:
+    name: .NET 10 NuGet consumer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      DOTNET_PROCESSOR_COUNT: '2'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.402'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Verify generated models, locked build, tests and installed NuGet consumer
+        run: bash packages/dotnet/scripts/verify.sh
+
+  c-and-cpp:
+    name: C and C++ installed consumers (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        os: [ubuntu-24.04, macos-26]
+    env:
+      ASAN_OPTIONS: detect_stack_use_after_return=1
+      UBSAN_OPTIONS: halt_on_error=1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.15'
+      - name: Install Linux transport headers
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+      - name: Inspect Apple toolchain
+        if: runner.os == 'macOS'
+        run: xcodebuild -version
+      - name: Test contracts and HTTPS transport with sanitizers
+        run: |
+          cmake -S packages/c -B .local/c-ci -DCMAKE_BUILD_TYPE=Debug -DSEARCHSDK_SANITIZERS=ON
+          cmake --build .local/c-ci --parallel 2
+          ctest --test-dir .local/c-ci --output-on-failure --parallel 2
+      - name: Verify install, archive and pkg-config consumers
+        run: sh packages/c/scripts/verify-package.sh
+      - name: Verify C++ facade with sanitizers and archive consumers
+        run: python3 -B packages/cpp/scripts/verify.py --sanitizers
+      - name: Verify C++ HTTPS transport and installed-C composition
+        run: python3 -B packages/cpp/scripts/verify.py --curl
+      - name: Verify a multiarch library installation layout
+        if: runner.os == 'Linux'
+        run: python3 -B packages/cpp/scripts/verify.py --libdir lib/x86_64-linux-gnu
+
+  go:
+    name: Go ${{ matrix.go }} module consumer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        go: ['1.23.x', '1.27.3']
+    env:
+      GOMAXPROCS: '2'
+      GOTOOLCHAIN: local
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version: ${{ matrix.go }}
+          cache: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Check generated bindings, race detection, vet and build
+        run: |
+          python3 -B packages/go/internal/generate/generate.py --check
+          go -C packages/go test -race -p 2 ./...
+          go -C packages/go vet -p 2 ./...
+          go -C packages/go build -p 2 ./...
+      - name: Verify installed module zip without a replace directive
+        run: python3 -B packages/go/internal/verify_consumer.py
+
+  expo-bundles:
+    name: Installed Expo consumer bundles
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Install workspace tools and build mobile packages
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build:mobile
+      - name: Install locked packed consumers and export web, iOS and Android
+        run: npm run test:metro -w @belweave/search-sdk-expo
+
+  python:
+    name: Python ${{ matrix.python }} wheel and source consumers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        python: ['3.11', '3.15']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install pinned verification tools
+        run: python -m pip install -r packages/python/requirements-dev.txt
+      - name: Verify generated bindings, types, tests, wheel and source consumers
+        run: python -B packages/python/scripts/verify.py
+
+  swift:
+    name: Swift package and extracted consumer
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Inspect Apple toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+      - name: Verify shared fixture copies
+        run: python3 packages/swift/Scripts/sync-fixtures.py --check
+      - name: Test the repository-root SPM package
+        run: swift test --scratch-path .local/swift-ci --jobs 2
+      - name: Verify the extracted release consumer
+        run: sh packages/swift/Scripts/verify-consumer.sh .local/swift-consumer-ci
+
+  react-native-ios:
+    name: React Native iOS transport and bridge
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Inspect Apple toolchain
+        run: xcodebuild -version
+      - name: Test URLSession transport
+        run: swift test --package-path packages/react-native --scratch-path .local/rn-swift-ci --jobs 2
+      - name: Retrieve verified upstream React Native headers
+        run: node packages/react-native/scripts/prepare-reference.mjs
+      - name: Compile the Objective-C and Swift React Native bridge
+        run: REACT_NATIVE_SOURCE_PATH="$GITHUB_WORKSPACE/packages/react-native/.local/upstream/package" node packages/react-native/scripts/verify-ios-bridge.mjs
+
+  react-native-android:
+    name: React Native Android transport and AAR
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Set up Android SDK and build components
+        run: bash scripts/setup-android-ci.sh
+      - name: Verify release AAR and native HTTPS transport
+        run: GRADLE_BIN="$GITHUB_WORKSPACE/packages/android/gradlew" node packages/react-native/scripts/verify-android.mjs
+
+  android:
+    name: Android AAR and Maven consumer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Set up Android SDK and build components
+        run: bash scripts/setup-android-ci.sh
+      - name: Test and assemble the Android library
+        working-directory: packages/android
+        run: ./gradlew testReleaseUnitTest assembleRelease lintRelease publishReleasePublicationToVerificationRepository --no-daemon --max-workers=2
+      - name: Verify consumption from the local Maven artifact
+        working-directory: packages/android
+        run: ./gradlew -p consumer testReleaseUnitTest assembleRelease --no-daemon --max-workers=2
+      - name: Install the Android emulator image
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpulse0 libnss3 libasound2t64 libx11-6 libxcb1 libxkbcommon0 libxcomposite1 libxcursor1 libxi6 libxtst6 libxrandr2 libglu1-mesa
+          sdkmanager 'emulator' 'system-images;android-36;google_apis;x86_64'
+      - name: Boot the isolated CI emulator
+        timeout-minutes: 7
+        run: |
+          python3 -B scripts/test-boot-android-ci.py
+          sudo chmod a+rw /dev/kvm
+          python3 -B scripts/boot-android-ci.py
+      - name: Verify installed AAR on Android over local HTTPS
+        run: python3 -B packages/android/scripts/verify-device.py --serial emulator-5554
+
+  java:
+    name: Java ${{ matrix.java }} package consumer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        java: ['17', '21']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+      - name: Verify generated clients, tests and packaged classpath/module consumers
+        run: bash packages/java/scripts/verify.sh
+      - name: Verify Maven installation and separate package consumer
+        run: bash packages/java/scripts/verify-maven.sh

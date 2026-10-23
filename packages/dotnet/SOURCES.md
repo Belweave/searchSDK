@@ -1,0 +1,7 @@
+# Native source attribution
+
+Generated operation identities, fixed origins, HTTP methods, schemas and response modes derive from the retained public provider artifacts and operation catalogs under `scripts/providers-a` and `scripts/providers-b` in the searchSDK repository. Retained schemas were reviewed on 2026-10-22. `native-manifest.json` records each official source URL and the SHA-256 of every consumed artifact. SerpAPI models derive from the explicitly attributed public interfaces in `packages/sdk/src/native-serpapi.ts` because no retained OpenAPI is available. Brave's structured API tables use the reference generator's schema transformation without running its output writer.
+
+Provider schemas describe wire contracts; generation does not establish account access, endpoint availability, or live compatibility. All provider names and trademarks belong to their respective owners. Retained provenance and notices remain in the repository; this package does not replace their attribution.
+
+Regenerate offline from the repository root: `python3 -B packages/dotnet/scripts/generate.py`. Verify without writing: `python3 -B packages/dotnet/scripts/generate.py --check`. The SerpAPI parser uses `NODE` when set, otherwise `node` resolved from `PATH`; select the repository `.nvmrc` version before generation. All other generation uses standard-library Python. Changes to retained snapshots require deliberate source review; generation checks their upstream provenance digests first.
