@@ -1,0 +1,142 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Tavily Enterprise API Key Generator",
+    "description": "Generate, manage, and deactivate Tavily API keys programmatically with custom configurations.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-key-generator.tavily.com/"
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/generate-keys": {
+      "post": {
+        "summary": "Generate API Keys",
+        "description": "Generate one or more API keys with custom configuration.",
+        "requestBody": {
+          "description": "Parameters for generating API keys.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "permission_level"
+                ],
+                "properties": {
+                  "permission_level": {
+                    "type": "string",
+                    "description": "The permission level for the key.",
+                    "enum": [
+                      "admin",
+                      "user"
+                    ]
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the key(s). Auto-generated in the format `{key_type}-{expiration}-#{index}`"
+                  },
+                  "scope": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "api:generate_keys"
+                      ]
+                    },
+                    "description": "Permission scopes for the key. Only applicable when `permission_level` is `\"user\"`."
+                  },
+                  "key_type": {
+                    "type": "string",
+                    "description": "The type of key.",
+                    "default": "development",
+                    "enum": [
+                      "development",
+                      "production"
+                    ]
+                  },
+                  "key_limit": {
+                    "type": "integer",
+                    "description": "The number of credits for the generated keys.",
+                    "default": 200,
+                    "minimum": 1,
+                    "maximum": 100000
+                  },
+                  "ttl_hours": {
+                    "type": "integer",
+                    "description": "Number of hours before the keys become deactivated.",
+                    "default": 10,
+                    "minimum": 1,
+                    "maximum": 8760
+                  },
+                  "count": {
+                    "type": "integer",
+                    "description": "The total number of keys to generate.",
+                    "default": 1,
+                    "minimum": 1,
+                    "maximum": 200
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Keys generated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "keys": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "The generated API keys."
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "description": "The expiration timestamp for the keys."
+                    },
+                    "created": {
+                      "type": "string",
+                      "description": "The creation timestamp."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A summary message about the generated keys."
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "description": "Unique identifier for this generation request. Use this to bulk-deactivate the keys later."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer authentication header in the form Bearer <token>, where <token> is your Tavily API key (e.g., Bearer tvly-YOUR_API_KEY)."
+      }
+    }
+  }
+}

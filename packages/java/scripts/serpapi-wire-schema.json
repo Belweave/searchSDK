@@ -1,0 +1,1671 @@
+{
+  "x-attribution": {
+    "kind": "derived schema from retained TypeScript provider-native public interface inventory and endpoint catalog",
+    "officialSources": [
+      "https://serpapi.com/search-api",
+      "https://serpapi.com/extract-api"
+    ],
+    "typescriptReference": "packages/sdk/src/native-serpapi.ts",
+    "typescriptSha256": "a4bc6ace69af1eff1c4e2bbcbbd7f162014cc392b18db7065b7158fae0516d16"
+  },
+  "components": {
+    "schemas": {
+      "CommonSearchQuery": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "google_domain": {
+            "type": "string"
+          },
+          "gl": {
+            "type": "string"
+          },
+          "hl": {
+            "type": "string"
+          },
+          "device": {
+            "type": "string",
+            "enum": [
+              "desktop",
+              "tablet",
+              "mobile"
+            ]
+          },
+          "start": {
+            "type": "number"
+          },
+          "num": {
+            "type": "number"
+          },
+          "tbm": {
+            "type": "string"
+          },
+          "tbs": {
+            "type": "string"
+          },
+          "safe": {
+            "type": "string",
+            "enum": [
+              "active",
+              "off"
+            ]
+          },
+          "no_cache": {
+            "type": "boolean"
+          },
+          "async": {
+            "type": "boolean"
+          },
+          "zero_trace": {
+            "type": "boolean"
+          },
+          "json_restrictor": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "SearchQuery": {
+        "type": "object",
+        "properties": {
+          "engine": {
+            "type": "string"
+          },
+          "q": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "google_domain": {
+            "type": "string"
+          },
+          "gl": {
+            "type": "string"
+          },
+          "hl": {
+            "type": "string"
+          },
+          "device": {
+            "type": "string",
+            "enum": [
+              "desktop",
+              "tablet",
+              "mobile"
+            ]
+          },
+          "start": {
+            "type": "number"
+          },
+          "num": {
+            "type": "number"
+          },
+          "tbm": {
+            "type": "string"
+          },
+          "tbs": {
+            "type": "string"
+          },
+          "safe": {
+            "type": "string",
+            "enum": [
+              "active",
+              "off"
+            ]
+          },
+          "no_cache": {
+            "type": "boolean"
+          },
+          "async": {
+            "type": "boolean"
+          },
+          "zero_trace": {
+            "type": "boolean"
+          },
+          "json_restrictor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "engine"
+        ],
+        "additionalProperties": true
+      },
+      "ExtractQuery": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "scrape",
+              "map",
+              "crawl"
+            ]
+          },
+          "max_pages": {
+            "type": "number"
+          },
+          "max_depth": {
+            "type": "number"
+          },
+          "include_subdomains": {
+            "type": "boolean"
+          },
+          "include_sitemap": {
+            "type": "boolean"
+          },
+          "prefetch_delay": {
+            "type": "number"
+          },
+          "timeout": {
+            "type": "number"
+          },
+          "include_tags": {
+            "type": "string"
+          },
+          "exclude_tags": {
+            "type": "string"
+          },
+          "include_markdown": {
+            "type": "boolean"
+          },
+          "include_inline_assets": {
+            "type": "boolean"
+          },
+          "device": {
+            "type": "string",
+            "enum": [
+              "desktop",
+              "tablet",
+              "mobile"
+            ]
+          },
+          "no_cache": {
+            "type": "boolean"
+          },
+          "async": {
+            "type": "boolean"
+          },
+          "zero_trace": {
+            "type": "boolean"
+          },
+          "json_restrictor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": true
+      },
+      "SearchMetadata": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "json_endpoint": {
+            "type": "string"
+          },
+          "raw_html_file": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "processed_at": {
+            "type": "string"
+          },
+          "total_time_taken": {
+            "type": "number"
+          },
+          "credits_consumed": {
+            "type": "number"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "OrganicResult": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "snippet": {
+            "type": "string"
+          },
+          "displayed_link": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "sitelinks": {}
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "SearchResponse": {
+        "type": "object",
+        "properties": {
+          "search_metadata": {
+            "$ref": "#/components/schemas/SearchMetadata"
+          },
+          "search_parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": true
+          },
+          "search_information": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": true
+          },
+          "organic_results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrganicResult"
+            }
+          },
+          "answer_box": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": true
+          },
+          "knowledge_graph": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": true
+          },
+          "related_questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": true
+            }
+          },
+          "serpapi_pagination": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": true
+          },
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "ExtractResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SearchResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "page_information": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": true
+              },
+              "text_content": {
+                "type": "object",
+                "properties": {
+                  "snippet": {
+                    "type": "string"
+                  },
+                  "excerpt": {
+                    "type": "string"
+                  },
+                  "full": {
+                    "type": "string"
+                  },
+                  "markdown": {
+                    "type": "string"
+                  },
+                  "character_count": {
+                    "type": "number"
+                  },
+                  "word_count": {
+                    "type": "number"
+                  }
+                },
+                "required": [],
+                "additionalProperties": true
+              },
+              "headings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "position": {
+                      "type": "number"
+                    },
+                    "level": {
+                      "type": "number"
+                    },
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [],
+                  "additionalProperties": true
+                }
+              },
+              "inline_links": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {},
+                  "required": [],
+                  "additionalProperties": true
+                }
+              },
+              "urls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "serpapi_extract_link": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [],
+                  "additionalProperties": true
+                }
+              },
+              "pages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {},
+                  "required": [],
+                  "additionalProperties": true
+                }
+              }
+            },
+            "required": [],
+            "additionalProperties": true
+          }
+        ]
+      },
+      "Location": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "google_id": {
+            "type": "number"
+          },
+          "google_parent_id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "canonical_name": {
+            "type": "string"
+          },
+          "country_code": {
+            "type": "string"
+          },
+          "target_type": {
+            "type": "string"
+          },
+          "reach": {
+            "type": "number"
+          },
+          "gps": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "AccountResponse": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string"
+          },
+          "api_key": {
+            "type": "string"
+          },
+          "account_email": {
+            "type": "string"
+          },
+          "account_status": {
+            "type": "string"
+          },
+          "plan_id": {
+            "type": "string"
+          },
+          "plan_name": {
+            "type": "string"
+          },
+          "plan_monthly_price": {
+            "type": "number"
+          },
+          "plan_renewal_date": {
+            "type": "string"
+          },
+          "searches_per_month": {
+            "type": "number"
+          },
+          "plan_searches_left": {
+            "type": "number"
+          },
+          "extra_credits": {
+            "type": "number"
+          },
+          "total_searches_left": {
+            "type": "number"
+          },
+          "this_month_usage": {
+            "type": "number"
+          },
+          "this_hour_searches": {
+            "type": "number"
+          },
+          "account_rate_limit_per_hour": {
+            "type": "number"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "PixelPositionResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SearchResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "pixel_position_information": {
+                "type": "object",
+                "properties": {
+                  "viewport_width": {
+                    "type": "number"
+                  },
+                  "viewport_height": {
+                    "type": "number"
+                  },
+                  "time_taken": {
+                    "type": "number"
+                  },
+                  "parent_rectangles": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "number"
+                        },
+                        "y": {
+                          "type": "number"
+                        },
+                        "width": {
+                          "type": "number"
+                        },
+                        "height": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [],
+                      "additionalProperties": true
+                    }
+                  }
+                },
+                "required": [],
+                "additionalProperties": true
+              }
+            },
+            "required": [],
+            "additionalProperties": true
+          }
+        ]
+      },
+      "UploadImageResponse": {
+        "type": "object",
+        "properties": {
+          "image_id": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      }
+    }
+  },
+  "paths": {
+    "/search.json": {
+      "get": {
+        "parameters": [
+          {
+            "name": "engine",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "google_domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "gl",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hl",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "desktop",
+                "tablet",
+                "mobile"
+              ]
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "num",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "tbm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tbs",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "safe",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "off"
+              ]
+            }
+          },
+          {
+            "name": "no_cache",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "async",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "zero_trace",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "json_restrictor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search.html": {
+      "get": {
+        "parameters": [
+          {
+            "name": "engine",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "google_domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "gl",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hl",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "desktop",
+                "tablet",
+                "mobile"
+              ]
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "num",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "tbm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tbs",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "safe",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "off"
+              ]
+            }
+          },
+          {
+            "name": "no_cache",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "async",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "zero_trace",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "json_restrictor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search.md": {
+      "get": {
+        "parameters": [
+          {
+            "name": "engine",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "google_domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "gl",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hl",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "desktop",
+                "tablet",
+                "mobile"
+              ]
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "num",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "tbm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tbs",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "safe",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "off"
+              ]
+            }
+          },
+          {
+            "name": "no_cache",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "async",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "zero_trace",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "json_restrictor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search.json_with_pixel_position": {
+      "get": {
+        "parameters": [
+          {
+            "name": "engine",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "google_domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "gl",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hl",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "desktop",
+                "tablet",
+                "mobile"
+              ]
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "num",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "tbm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tbs",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "safe",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "off"
+              ]
+            }
+          },
+          {
+            "name": "no_cache",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "async",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "zero_trace",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "json_restrictor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixelPositionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/searches/{search_id}.json": {
+      "get": {
+        "parameters": [
+          {
+            "name": "search_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/searches/{search_id}.html": {
+      "get": {
+        "parameters": [
+          {
+            "name": "search_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/searches/{search_id}.json_with_pixel_position": {
+      "get": {
+        "parameters": [
+          {
+            "name": "search_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixelPositionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/locations.json": {
+      "get": {
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account.json": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/image": {
+      "post": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadImageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-operation-overrides": {
+    "extract": {
+      "parameters": [
+        {
+          "name": "url",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "mode",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "scrape",
+              "map",
+              "crawl"
+            ]
+          }
+        },
+        {
+          "name": "max_pages",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "max_depth",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "include_subdomains",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "include_sitemap",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "prefetch_delay",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "timeout",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "include_tags",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "exclude_tags",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "include_markdown",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "include_inline_assets",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "device",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "desktop",
+              "tablet",
+              "mobile"
+            ]
+          }
+        },
+        {
+          "name": "no_cache",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "async",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "zero_trace",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "json_restrictor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtractResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "extractMarkdown": {
+      "parameters": [
+        {
+          "name": "url",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "mode",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "scrape",
+              "map",
+              "crawl"
+            ]
+          }
+        },
+        {
+          "name": "max_pages",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "max_depth",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "include_subdomains",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "include_sitemap",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "prefetch_delay",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "timeout",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "include_tags",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "exclude_tags",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "include_markdown",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "include_inline_assets",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "device",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "desktop",
+              "tablet",
+              "mobile"
+            ]
+          }
+        },
+        {
+          "name": "no_cache",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "async",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "zero_trace",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "json_restrictor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtractResponse"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

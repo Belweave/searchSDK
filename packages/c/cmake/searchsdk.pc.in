@@ -1,0 +1,10 @@
+prefix=${pcfiledir}/@SEARCHSDK_PC_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+Name: searchsdk
+Description: C11 searchSDK transport-neutral core
+Version: 0.1.0-alpha.1
+Libs: -L${libdir} -lsearchsdk
+Libs.private: -lpthread -lm
+Cflags: -I${includedir}

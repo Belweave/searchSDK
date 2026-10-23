@@ -1,0 +1,53 @@
+{
+  "name": "@belweave/search-sdk-expo",
+  "version": "0.1.0-alpha.0",
+  "description": "Expo integration for the searchSDK application gateway client, with bounded native and streaming web transports",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "react-native": "./dist/index.native.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.js",
+      "react-native": "./dist/index.native.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "examples", "README.md", "LICENSE"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test --test-concurrency=1 test/*.test.mjs",
+    "test:package": "node scripts/verify-package.mjs",
+    "test:metro": "node scripts/verify-metro.mjs",
+    "prepare:reference": "node scripts/prepare-reference.mjs",
+    "check:expo-source": "node scripts/verify-expo-source.mjs .local/upstream/55/package .local/upstream/56/package .local/upstream/package",
+    "check:expo-types": "node scripts/verify-expo-types.mjs .local/upstream/55/package .local/upstream/56/package .local/upstream/package",
+    "check": "npm run prepare:reference && npm run build && npm test && npm run test:package && npm run check:expo-types && npm run check:expo-source",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "@belweave/search-sdk-react-native": "0.1.0-alpha.0",
+    "expo": ">=55.0.0 <58.0.0"
+  },
+  "peerDependenciesMeta": {
+    "expo": { "optional": true }
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Belweave/searchSDK.git",
+    "directory": "packages/expo"
+  },
+  "homepage": "https://searchsdk.dev",
+  "bugs": { "url": "https://github.com/Belweave/searchSDK/issues" },
+  "keywords": ["search", "expo", "react-native", "gateway"],
+  "publishConfig": { "access": "public", "tag": "alpha", "registry": "https://registry.npmjs.org/" }
+}

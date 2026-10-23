@@ -1,0 +1,7 @@
+prefix=${pcfiledir}/@SEARCHSDK_PC_PREFIX@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+Name: searchsdk-curl
+Description: searchSDK optional system-libcurl HTTPS transport
+Version: 0.1.0-alpha.1
+Requires: searchsdk libcurl >= 7.85
+Libs: -L${libdir} -lsearchsdk_curl

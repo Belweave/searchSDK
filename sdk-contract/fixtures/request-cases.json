@@ -1,0 +1,211 @@
+{
+  "protocolVersion": 1,
+  "valid": [
+    {
+      "name": "defaults",
+      "input": {
+        "query": "search"
+      },
+      "normalized": {
+        "query": "search",
+        "limit": 5
+      }
+    },
+    {
+      "name": "preserve-query",
+      "input": {
+        "query": "  search  ",
+        "limit": 20
+      },
+      "normalized": {
+        "query": "  search  ",
+        "limit": 20
+      }
+    },
+    {
+      "name": "domains",
+      "input": {
+        "query": "x",
+        "includeDomains": [
+          "EXAMPLE.COM",
+          "example.com",
+          "docs.example.org"
+        ]
+      },
+      "normalized": {
+        "query": "x",
+        "limit": 5,
+        "includeDomains": [
+          "example.com",
+          "docs.example.org"
+        ]
+      }
+    },
+    {
+      "name": "exclude",
+      "input": {
+        "query": "x",
+        "excludeDomains": [
+          "example.com"
+        ]
+      },
+      "normalized": {
+        "query": "x",
+        "limit": 5,
+        "excludeDomains": [
+          "example.com"
+        ]
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "blank",
+      "input": {
+        "query": "  "
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "missing",
+      "input": {},
+      "code": "invalid_request"
+    },
+    {
+      "name": "query-type",
+      "input": {
+        "query": 7
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "limit-null",
+      "input": {
+        "query": "x",
+        "limit": null
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "limit-zero",
+      "input": {
+        "query": "x",
+        "limit": 0
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "limit-large",
+      "input": {
+        "query": "x",
+        "limit": 21
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "limit-fraction",
+      "input": {
+        "query": "x",
+        "limit": 1.5
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "limit-boolean",
+      "input": {
+        "query": "x",
+        "limit": true
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "unknown-field",
+      "input": {
+        "query": "x",
+        "provider": "exa"
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "empty-domains",
+      "input": {
+        "query": "x",
+        "includeDomains": []
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "domain-url",
+      "input": {
+        "query": "x",
+        "includeDomains": [
+          "https://example.com"
+        ]
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "domain-port",
+      "input": {
+        "query": "x",
+        "includeDomains": [
+          "example.com:443"
+        ]
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "domain-wildcard",
+      "input": {
+        "query": "x",
+        "includeDomains": [
+          "*.example.com"
+        ]
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "domain-trailing-dot",
+      "input": {
+        "query": "x",
+        "includeDomains": [
+          "example.com."
+        ]
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "domain-label-length",
+      "input": {
+        "query": "x",
+        "includeDomains": [
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com"
+        ]
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "overlap",
+      "input": {
+        "query": "x",
+        "includeDomains": [
+          "EXAMPLE.COM"
+        ],
+        "excludeDomains": [
+          "example.com"
+        ]
+      },
+      "code": "invalid_request"
+    },
+    {
+      "name": "array",
+      "input": [],
+      "code": "invalid_request"
+    },
+    {
+      "name": "null",
+      "input": null,
+      "code": "invalid_request"
+    }
+  ]
+}

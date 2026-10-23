@@ -1,0 +1,144 @@
+
+h1 Search and passage API
+
+h2 Example: search a drive
+curl -X POST "$POLYGRES_BASE_URL/v1/drives/$DRIVE_ID/search" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: refund-question-1" \
+  -d '{"query":"How do refunds work?","effort":"small"}'
+
+h2 Folder selection
+
+h2 Example response
+{
+  "request_id": "00000000-0000-4000-8000-000000000001",
+  "drive_id": "00000000-0000-4000-8000-000000000002",
+  "model": "wondersearch-1.1",
+  "effort_requested": "medium",
+  "effort_served": "medium",
+  "results": [{
+    "document_id": "00000000-0000-4000-8000-000000000003",
+    "external_id": "handbook",
+    "document_revision": "1",
+    "passage_id": "example-passage",
+    "row_id": "1",
+    "text": "Refunds are available within 30 days.",
+    "start_byte": 0,
+    "end_byte": 37,
+    "metadata": {"edition": 1},
+    "score": 0.8
+  }],
+  "usage": {"cost": {"amount": "0.002500", "currency": "USD"}},
+  "warnings": []
+}
+
+h2 Read the response
+
+h2 Effort, notices, and charges
+
+h2 Request validation
+
+h3 Query text
+
+h2 POST /v1/drives/{drive_id}/search
+Name | Location | Value | Required
+drive_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+query | string | Required | Nonempty question or search text. Questions have a length limit. Shorten or rephrase on query_too_long or invalid_search_query; ask in English on unsupported_language.
+effort | small, medium, large | Optional | Default: "medium"
+folder_id | UUID string, "root", or null | Optional | UUID: direct documents in that folder. "root": documents without a folder. Omitted or null: whole drive.
+allow_degraded | boolean | Optional | Defaults to false. Allow reduced-quality results for at most the Small price; otherwise incomplete searches return an unbilled error.
+group_by_document | boolean | Optional | Default: true
+timeout_ms | integer | Optional | Minimum: 1. Maximum: 20000. Omission uses the selected effort’s default time limit.
+Field | Type | Present | Constraints
+request_id | string | Yes | uuid
+drive_id | string | Yes | uuid
+model | string | Optional | Product version used for this search.
+effort_requested | small, medium, large | Optional | Requested setting.
+effort_served | small, medium, large | Optional | Setting used to fulfill the request.
+results | array of object | Yes | Display in returned order.
+results[].document_id | string | Yes | uuid
+results[].external_id | string | Yes | 
+results[].document_revision | string | Yes | 
+results[].passage_id | string | Yes | 
+results[].row_id | string | Yes | Decimal digits. Index reference for the passage; use passage_id to identify passages.
+results[].text | string | Yes | 
+results[].start_byte | integer | Yes | Minimum: 0
+results[].end_byte | integer | Yes | Minimum: 0
+results[].metadata | object | Yes | 
+results[].score | number | Yes | 
+usage | object | Yes | 
+usage.cost | object | Yes | 
+usage.cost.amount | string | Yes | 
+usage.cost.currency | "USD" | Yes | 
+warnings | array of string | Yes | 
+
+h2 GET /v1/drives/{drive_id}/passages/{passage_id}
+Name | Location | Value | Required
+drive_id | path | string | Yes
+passage_id | path | string | Yes
+index_snapshot_id | query | string | Yes
+Field | Type | Present | Constraints
+document_id | string | Yes | uuid
+external_id | string | Yes | 
+document_revision | string | Yes | 
+passage_id | string | Yes | 
+row_id | string | Yes | Decimal digits. Index reference for the passage; use passage_id to identify passages.
+text | string | Yes | 
+start_byte | integer | Yes | Minimum: 0
+end_byte | integer | Yes | Minimum: 0
+metadata | object | Yes | 
+score | number | Yes | 
+index_snapshot_id | string | Yes | uuid
+
+h2 GET /v1/workspaces/{workspace_id}/capabilities
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+Field | Type | Present | Constraints
+search_enabled | boolean | Yes | 
+models | array of string | Yes | Supported WonderSearch product versions.
+default_model | string | Yes | Product version currently served.
+enabled_efforts | array of small, medium, large | Yes | 
+effort_config | object | Yes | 
+effort_config.small | object | Yes | 
+effort_config.small.timeout_ms | integer | Yes | Minimum: 1. Maximum: 20000
+effort_config.medium | object | Yes | 
+effort_config.medium.timeout_ms | integer | Yes | Minimum: 1. Maximum: 20000
+effort_config.large | object | Yes | 
+effort_config.large.timeout_ms | integer | Yes | Minimum: 1. Maximum: 20000
+
+h2 POST /v1/workspaces/{workspace_id}/search
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+query | string | Required | Nonempty question or search text. Questions have a length limit. Shorten or rephrase on query_too_long or invalid_search_query; ask in English on unsupported_language.
+effort | small, medium, large | Optional | Default: "medium"
+folder_id | UUID string, "root", or null | Optional | UUID: direct documents in that folder. "root": documents without a folder. Omitted or null: whole drive.
+allow_degraded | boolean | Optional | Defaults to false. Allow reduced-quality results for at most the Small price; otherwise incomplete searches return an unbilled error.
+group_by_document | boolean | Optional | Default: true
+timeout_ms | integer | Optional | Minimum: 1. Maximum: 20000. Omission uses the selected effort’s default time limit.
+Field | Type | Present | Constraints
+request_id | string | Yes | uuid
+drive_id | string | Yes | uuid
+model | string | Optional | Product version used for this search.
+effort_requested | small, medium, large | Optional | Requested setting.
+effort_served | small, medium, large | Optional | Setting used to fulfill the request.
+results | array of object | Yes | Display in returned order.
+results[].document_id | string | Yes | uuid
+results[].external_id | string | Yes | 
+results[].document_revision | string | Yes | 
+results[].passage_id | string | Yes | 
+results[].row_id | string | Yes | Decimal digits. Index reference for the passage; use passage_id to identify passages.
+results[].text | string | Yes | 
+results[].start_byte | integer | Yes | Minimum: 0
+results[].end_byte | integer | Yes | Minimum: 0
+results[].metadata | object | Yes | 
+results[].score | number | Yes | 
+usage | object | Yes | 
+usage.cost | object | Yes | 
+usage.cost.amount | string | Yes | 
+usage.cost.currency | "USD" | Yes | 
+warnings | array of string | Yes | 

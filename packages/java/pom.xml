@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>dev.belweave</groupId>
+  <artifactId>search-sdk</artifactId>
+  <version>0.1.0-alpha.0</version>
+  <name>searchSDK Java</name>
+  <description>Dependency-free Java 17 server search SDK, native provider clients and application gateway client.</description>
+  <licenses><license><name>MIT License</name><url>https://opensource.org/license/mit</url><distribution>repo</distribution></license></licenses>
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.outputTimestamp>2026-10-22T00:00:00Z</project.build.outputTimestamp>
+    <skipTests>false</skipTests>
+  </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.14.0</version>
+        <configuration><fork>true</fork><meminitial>64m</meminitial><maxmem>768m</maxmem><compilerArgs><arg>-J-XX:ActiveProcessorCount=2</arg><arg>-Xlint:all</arg><arg>-Werror</arg></compilerArgs></configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.2</version>
+        <configuration><skipTests>true</skipTests></configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-antrun-plugin</artifactId><version>3.1.0</version>
+        <executions>
+          <execution><id>deterministic-tests</id><phase>test</phase><goals><goal>run</goal></goals>
+            <configuration><skip>${skipTests}</skip><target>
+              <java classname="dev.searchsdk.SdkTest" fork="true" failonerror="true">
+                <jvmarg value="-XX:ActiveProcessorCount=2"/><jvmarg value="--add-modules=jdk.httpserver"/>
+                <arg value="${project.basedir}/../.."/>
+                <classpath><pathelement location="${project.build.outputDirectory}"/><pathelement location="${project.build.testOutputDirectory}"/></classpath>
+              </java>
+            </target></configuration>
+          </execution>
+          <execution><id>packed-consumer</id><phase>verify</phase><goals><goal>run</goal></goals>
+            <configuration><skip>${skipTests}</skip><target>
+              <mkdir dir="${project.build.directory}/consumer"/>
+              <javac srcdir="${project.basedir}/examples" destdir="${project.build.directory}/consumer" release="17" includeantruntime="false" encoding="UTF-8">
+                <classpath><pathelement location="${project.build.directory}/${project.build.finalName}.jar"/></classpath>
+              </javac>
+              <java classname="Consumer" fork="true" failonerror="true">
+                <jvmarg value="-XX:ActiveProcessorCount=2"/>
+                <classpath><pathelement location="${project.build.directory}/${project.build.finalName}.jar"/><pathelement location="${project.build.directory}/consumer"/></classpath>
+              </java>
+            </target></configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>3.4.2</version>
+        <configuration><archive><manifestEntries><Automatic-Module-Name>dev.searchsdk</Automatic-Module-Name></manifestEntries></archive></configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-source-plugin</artifactId><version>3.3.1</version>
+        <executions><execution><id>sources</id><goals><goal>jar-no-fork</goal></goals></execution></executions>
+      </plugin>
+    </plugins>
+    <resources>
+      <resource><directory>src/main/resources</directory></resource>
+      <resource><directory>.</directory><targetPath>META-INF</targetPath><includes><include>LICENSE</include><include>NOTICE.md</include></includes></resource>
+    </resources>
+  </build>
+</project>

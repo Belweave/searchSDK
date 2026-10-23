@@ -1,0 +1,72 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Tavily Enterprise API Key Generator",
+    "description": "Generate, manage, and deactivate Tavily API keys programmatically with custom configurations.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-key-generator.tavily.com/"
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/deactivate-keys": {
+      "post": {
+        "summary": "Deactivate API Keys",
+        "description": "Deactivate API keys either in bulk by `request_id` or individually.\n\n**Option A — Deactivate by request ID:** Pass a `request_id` in the request body to deactivate all keys from that generation request.\n\n**Option B — Deactivate individual key:** Set the key you want to deactivate in the `Authorization` header. No request body is required.",
+        "requestBody": {
+          "description": "Optionally provide a `request_id` to bulk-deactivate keys. If omitted, the key in the Authorization header is deactivated.",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "request_id": {
+                    "type": "string",
+                    "description": "The request ID from a previous `/generate-keys` call. All keys from that request will be deactivated."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Keys deactivated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "A confirmation message."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer authentication header in the form Bearer <token>, where <token> is your Tavily API key (e.g., Bearer tvly-YOUR_API_KEY)."
+      }
+    }
+  }
+}

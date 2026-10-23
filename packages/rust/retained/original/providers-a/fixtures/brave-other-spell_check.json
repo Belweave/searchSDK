@@ -1,0 +1,443 @@
+{
+  "tagName": "Other",
+  "tagDisplayName": "Spell check",
+  "tagDescription": "<p>Intelligent spell checking to improve query quality and help users find what they’re looking for.</p>",
+  "path": "/v1/spellcheck/search",
+  "method": "GET",
+  "operationId": "search_spellcheck_v1_spellcheck_search_get",
+  "summary": " ",
+  "description": "",
+  "deprecated": false,
+  "serverUrl": "https://api.search.brave.com/res",
+  "authParams": [
+    {
+      "name": "x-subscription-token",
+      "in": "header",
+      "required": true,
+      "description": "The subscription token that was generated for the product.",
+      "schema": {
+        "type": "string",
+        "title": "Subscription token",
+        "description": "The subscription token that was generated for the product."
+      },
+      "deprecated": false
+    }
+  ],
+  "headerParams": [
+    {
+      "name": "api-version",
+      "in": "header",
+      "required": false,
+      "description": "The API version to use.                 This is denoted by the format <code>YYYY-MM-DD</code>.                 Default is the latest that is available. Read                 more about <a href=\"/documentation/guides/versioning\">API versioning</a>.",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "API version",
+        "description": "The API version to use.                 This is denoted by the format <code>YYYY-MM-DD</code>.                 Default is the latest that is available. Read                 more about <a href=\"/documentation/guides/versioning\">API versioning</a>."
+      },
+      "deprecated": false
+    },
+    {
+      "name": "accept",
+      "in": "header",
+      "required": false,
+      "description": "The default supported media type is application/json.",
+      "schema": {
+        "$ref": "#/components/schemas/Accept",
+        "title": "Media type",
+        "description": "The default supported media type is application/json.",
+        "default": "application/json"
+      },
+      "deprecated": false
+    },
+    {
+      "name": "cache-control",
+      "in": "header",
+      "required": false,
+      "description": "Brave Search will return cached content by default.                 To prevent caching set the Cache-Control header to <code>no-cache</code>.                 This is currently done as best effort.",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/CacheControl"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Cache control",
+        "description": "Brave Search will return cached content by default.                 To prevent caching set the Cache-Control header to <code>no-cache</code>.                 This is currently done as best effort."
+      },
+      "deprecated": false
+    },
+    {
+      "name": "user-agent",
+      "in": "header",
+      "required": false,
+      "description": "The user agent originating the request.                 Brave search can utilize the user agent to provide a different                 experience depending on the device as described by the string.                 The user agent should follow the commonly used browser agent                 strings on each platform. For more information on curating user agents,                 see <a href=\"https://www.rfc-editor.org/rfc/rfc9110.html#name-user-agent\">RFC 9110</a>.",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "User agent",
+        "description": "The user agent originating the request.                 Brave search can utilize the user agent to provide a different                 experience depending on the device as described by the string.                 The user agent should follow the commonly used browser agent                 strings on each platform. For more information on curating user agents,                 see <a href=\"https://www.rfc-editor.org/rfc/rfc9110.html#name-user-agent\">RFC 9110</a>."
+      },
+      "deprecated": false
+    }
+  ],
+  "queryParams": [
+    {
+      "name": "q",
+      "in": "query",
+      "required": true,
+      "description": "The phrase to be spell checked. Query can not be empty. Maximum of 400 characters and 50 words in the query.",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 400,
+        "description": "The phrase to be spell checked. Query can not be empty. Maximum of 400 characters and 50 words in the query.",
+        "title": "Q"
+      },
+      "deprecated": false
+    },
+    {
+      "name": "lang",
+      "in": "query",
+      "required": false,
+      "description": "The spell check language preference, where potentially the results could come from. The 2 or more character language code for which the spell check search results are provided. This is a just a hint for calculating spell check responses.",
+      "schema": {
+        "$ref": "#/components/schemas/Language-Input",
+        "description": "The spell check language preference, where potentially the results could come from. The 2 or more character language code for which the spell check search results are provided. This is a just a hint for calculating spell check responses.",
+        "default": "en"
+      },
+      "deprecated": false
+    },
+    {
+      "name": "country",
+      "in": "query",
+      "required": false,
+      "description": "The spell check country, where potentially the results could come from. The country string is limited to 2 character country codes of supported countries. This is a just a hint for calculating spellcheck responses.",
+      "schema": {
+        "$ref": "#/components/schemas/SearchCountry",
+        "description": "The spell check country, where potentially the results could come from. The country string is limited to 2 character country codes of supported countries. This is a just a hint for calculating spellcheck responses.",
+        "default": "US"
+      },
+      "deprecated": false
+    }
+  ],
+  "pathParams": [],
+  "requestBody": null,
+  "responses": [
+    {
+      "statusCode": "200",
+      "description": "Successful Response",
+      "schema": {
+        "$ref": "#/components/schemas/SpellCheckSearchApiResponse"
+      }
+    },
+    {
+      "statusCode": "404",
+      "description": "Not Found",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    },
+    {
+      "statusCode": "422",
+      "description": "Unprocessable Entity",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    },
+    {
+      "statusCode": "429",
+      "description": "Too Many Requests",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    }
+  ],
+  "schemas": {
+    "APIErrorCode": {
+      "type": "string",
+      "enum": [
+        "INTERNAL",
+        "QUOTA_LIMITED",
+        "RATE_LIMITED",
+        "SUBSCRIPTION_TOKEN_INVALID",
+        "SUBSCRIPTION_NOT_FOUND",
+        "RESOURCE_NOT_ALLOWED",
+        "OPTION_NOT_IN_PLAN",
+        "USAGE_LIMIT_EXCEEDED",
+        "INVALID_URL",
+        "CREDIT_EXHAUSTED"
+      ],
+      "title": "APIErrorCode"
+    },
+    "APIErrorModel": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Id",
+          "description": "A unique identifier for this particular occurrence of the problem."
+        },
+        "status": {
+          "type": "integer",
+          "title": "Status",
+          "description": "The HTTP status code applicable to this problem, expressed as a string value."
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Detail",
+          "description": "Explanation specific to this occurrence of the problem. Like title, this field’s value can be localized."
+        },
+        "meta": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Meta",
+          "description": "A meta object containing non-standard meta-information about the error."
+        },
+        "code": {
+          "$ref": "#/components/schemas/APIErrorCode",
+          "description": "An application-specific error code, expressed as a string value."
+        }
+      },
+      "type": "object",
+      "required": [
+        "id",
+        "status",
+        "code"
+      ],
+      "title": "APIErrorModel"
+    },
+    "APIErrorResponse": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Type",
+          "default": "ErrorResponse"
+        },
+        "error": {
+          "$ref": "#/components/schemas/APIErrorModel"
+        },
+        "time": {
+          "type": "integer",
+          "title": "Time",
+          "default": 0
+        }
+      },
+      "type": "object",
+      "required": [
+        "error"
+      ],
+      "title": "APIErrorResponse"
+    },
+    "Accept": {
+      "type": "string",
+      "enum": [
+        "application/json",
+        "*/*"
+      ],
+      "title": "Accept"
+    },
+    "CacheControl": {
+      "type": "string",
+      "enum": [
+        "no-cache"
+      ],
+      "const": "no-cache",
+      "title": "CacheControl"
+    },
+    "Language-Input": {
+      "type": "string",
+      "enum": [
+        "ar",
+        "eu",
+        "bn",
+        "bg",
+        "ca",
+        "zh-hans",
+        "zh-hant",
+        "hr",
+        "cs",
+        "da",
+        "nl",
+        "en",
+        "en-gb",
+        "et",
+        "fi",
+        "fr",
+        "gl",
+        "de",
+        "el",
+        "gu",
+        "he",
+        "hi",
+        "hu",
+        "is",
+        "it",
+        "ja",
+        "jp",
+        "kn",
+        "ko",
+        "lv",
+        "lt",
+        "ms",
+        "ml",
+        "mr",
+        "nb",
+        "pl",
+        "pt-br",
+        "pt-pt",
+        "pa",
+        "ro",
+        "ru",
+        "sr",
+        "sk",
+        "sl",
+        "es",
+        "sv",
+        "ta",
+        "te",
+        "th",
+        "tr",
+        "uk",
+        "vi"
+      ],
+      "title": "Language"
+    },
+    "OriginalQuery": {
+      "properties": {
+        "original": {
+          "type": "string",
+          "title": "Original",
+          "description": "The original query that was requested."
+        }
+      },
+      "type": "object",
+      "required": [
+        "original"
+      ],
+      "title": "OriginalQuery"
+    },
+    "SearchCountry": {
+      "type": "string",
+      "enum": [
+        "AR",
+        "AU",
+        "AT",
+        "BE",
+        "BR",
+        "CA",
+        "CL",
+        "DK",
+        "FI",
+        "FR",
+        "DE",
+        "GR",
+        "HK",
+        "IN",
+        "ID",
+        "IT",
+        "JP",
+        "KR",
+        "MY",
+        "MX",
+        "NL",
+        "NZ",
+        "NO",
+        "CN",
+        "PL",
+        "PT",
+        "PH",
+        "RU",
+        "SA",
+        "ZA",
+        "ES",
+        "SE",
+        "CH",
+        "TW",
+        "TR",
+        "GB",
+        "US",
+        "ALL"
+      ],
+      "title": "SearchCountry"
+    },
+    "SpellCheckResult": {
+      "properties": {
+        "query": {
+          "type": "string",
+          "title": "Query",
+          "description": "The spellcheck-corrected query."
+        }
+      },
+      "type": "object",
+      "required": [
+        "query"
+      ],
+      "title": "SpellCheckResult"
+    },
+    "SpellCheckSearchApiResponse": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "spellcheck"
+          ],
+          "const": "spellcheck",
+          "title": "Type",
+          "default": "spellcheck"
+        },
+        "query": {
+          "$ref": "#/components/schemas/OriginalQuery",
+          "description": "Spellcheck search query string. Only the original query is returned."
+        },
+        "results": {
+          "items": {
+            "$ref": "#/components/schemas/SpellCheckResult"
+          },
+          "type": "array",
+          "title": "Results",
+          "description": "The list of spell-checked results for given query.",
+          "default": []
+        }
+      },
+      "type": "object",
+      "required": [
+        "query"
+      ],
+      "title": "SpellCheckSearchApiResponse"
+    }
+  },
+  "methodVariants": [
+    {
+      "method": "get",
+      "href": "/api-reference/other/spell_check",
+      "active": true
+    }
+  ]
+}

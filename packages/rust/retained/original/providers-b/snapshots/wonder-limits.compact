@@ -1,0 +1,51 @@
+
+h1 Limits and supported files
+
+h2 Files and text records
+Input | Limit or requirement
+File formats | PDF, DOCX, TXT, Markdown (.md).
+File size | 1–1,000,000,000 original bytes (1 decimal GB), subject to available storage.
+TXT and Markdown | UTF-8 text, optionally with a UTF-8 byte-order mark.
+PDF | Extractable text is required. Run OCR on scans first. PDFs that open with an empty password are supported; provide an unlocked copy when a password is required.
+Inline JSON/NDJSON batch | 1–1,000 documents and at most 10,000,000 request bytes.
+Inline document text | At most 2,000,000 UTF-8 bytes per document.
+External ID | Nonempty string, at most 1,024 UTF-8 bytes; identifies a document within one drive.
+Metadata | Flat object, at most 64 fields and 8,000 encoded bytes; string, number, boolean, or null values.
+File checksum | SHA-256 of original bytes, 64 lowercase hexadecimal characters.
+Drive/folder names | 1–120 characters.
+Upload recovery | 24 hours to finish transferring a file or retry its creation request. Files already saved for processing continue after that window.
+
+h2 Drive limits
+
+h3 GET /v1/limits
+{"schema":"wondersearch-limits.v1","max_drive_documents":1000000,"max_drive_source_bytes":100000000000,"max_file_bytes":1000000000,"max_text_bytes":1000000000}
+
+h2 Upload capacity
+Capacity | Scope and meaning
+Active transfers | 50 unfinished, unexpired transfers per drive. A slot becomes available once a file is verified and saved for processing.
+Outstanding uploads | 10,000 per drive across active transfers and files waiting to be read or being read.
+Queued processing | Does not consume transfer slots or expire at the unfinished transfer’s 24-hour deadline.
+Storage | Files saved for processing count toward your workspace storage.
+
+h2 Bulk request sizes
+Setting | What it controls
+Bulk file API request | Up to 50 files or upload IDs, with a JSON body up to 65,536 bytes.
+SDK transfer concurrency | 1–50 files sending bytes at once, default 3 per call.
+SDK completion grouping | Up to 50 files and 64,000,000 source bytes per group. A larger individual file completes on its own.
+Inline text request | Up to 1,000 documents and 10,000,000 request bytes, including metadata and JSON formatting.
+Progressive text processing | Changed documents become searchable progressively, in request order.
+Bulk import | Up to 100,000,000,000 source bytes and 100,000 chunks of up to 32,000,000 bytes per import, within the drive limits, for organizations with imports enabled. See bulk imports.
+
+h2 Search
+Setting | Limit
+Query | Nonempty text. A blank query returns invalid_search_input. Keep questions concise; if the API returns invalid_search_query, shorten or rephrase the question.
+Results | Up to 10 for every effort. You may get fewer when there are fewer matching documents or when results are grouped by document.
+Request timeout | 1–20,000 milliseconds; omitted value uses the selected effort’s default.
+SDK 0.2.0 timeouts | Search: 30 seconds. Upload: 600 seconds for transfers plus a separate 600 seconds for processing.
+SDK 0.2.0 upload concurrency | Configurable from 1 through 50, default 3 per call.
+
+h2 Lists and MCP output
+
+h2 Question length
+
+h2 Language

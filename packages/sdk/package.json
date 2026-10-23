@@ -15,9 +15,14 @@
   "files": [
     "dist",
     "README.md",
+    "GATEWAY.md",
     "LICENSE"
   ],
   "exports": {
+    "./gateway": {
+      "types": "./dist/gateway.d.ts",
+      "import": "./dist/gateway.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"

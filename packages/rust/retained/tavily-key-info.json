@@ -1,0 +1,79 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Tavily Enterprise API Key Generator",
+    "description": "Generate, manage, and deactivate Tavily API keys programmatically with custom configurations.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-key-generator.tavily.com/"
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/key-info": {
+      "get": {
+        "summary": "Get Key Info",
+        "description": "Get information about an API key. The key to query is specified in the `Authorization` header.",
+        "responses": {
+          "200": {
+            "description": "Key information retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "The name of the API key."
+                    },
+                    "created": {
+                      "type": "string",
+                      "description": "The creation timestamp."
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "description": "The expiration timestamp, or `\"never\"` if the key does not expire."
+                    },
+                    "key_type": {
+                      "type": "string",
+                      "description": "The type of key.",
+                      "enum": [
+                        "development",
+                        "production"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "The current status of the key.",
+                      "enum": [
+                        "active",
+                        "deactivated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer authentication header in the form Bearer <token>, where <token> is your Tavily API key (e.g., Bearer tvly-YOUR_API_KEY)."
+      }
+    }
+  }
+}

@@ -9,11 +9,25 @@ Alpha APIs may change before a stable release; retain the resolved version in yo
 
 ## Install
 
-Use Node 24.22.1 or a newer patched Node 24 release. In your server application:
+The current alpha is available from source and locally packed artifacts. Public
+npm availability is not established; the package name and version below identify
+the local artifact. Use the Node version in `.nvmrc` to build from a checkout
+containing this SDK:
 
 ```sh
-npm install @belweave/search-sdk@alpha
+npm ci
+npm run release:prepare
 ```
+
+Then, in your server application, install the generated archive:
+
+```sh
+npm install /path/to/searchSDK/.local/releases/0.1.0-alpha.0/belweave-search-sdk-0.1.0-alpha.0.tgz
+```
+
+The `/gateway` export requires an artifact built from this source revision;
+an older archive with the same alpha version may not contain it. Registry install
+commands apply only after an explicit publication to your configured registry.
 
 For a new project, run `npm init --yes` first. The `.mjs` examples run directly
 with Node; TypeScript declarations are included for typed applications.

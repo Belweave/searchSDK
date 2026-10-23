@@ -1,0 +1,10 @@
+prefix=${pcfiledir}/@SEARCHSDK_CPP_PC_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+Name: searchsdk-cpp
+Description: C++17 RAII facade over the searchSDK C ABI
+Version: 0.1.0-alpha.1
+Requires: searchsdk
+Libs: -L${libdir} -lsearchsdk_cpp
+Cflags: -I${includedir}

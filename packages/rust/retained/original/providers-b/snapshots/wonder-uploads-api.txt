@@ -1,0 +1,1647 @@
+Uploads and ingestion operations API | WonderSearch Docs
+Skip to Content
+WonderSearch 
+Docs
+Website
+ Open Console
+Getting Started
+What is WonderSearch?
+Quickstart
+Key concepts
+WonderSearch 1.1
+Common use cases
+Platform Guide
+Organizations and workspaces
+Members, invitations, and roles
+API keys and permissions
+Drives and the default drive
+Folders and document management
+Upload files and follow indexing
+Search Playground
+Usage and activity
+Billing and credits
+Workspace storage and upgrades
+Account settings and security
+Search Guide
+Search effort and result limits
+Searching within drives and folders
+Understanding results and citations
+Document updates and search freshness
+SDK Guide
+Python installation and configuration
+Upload your first files
+Import a large collection
+Search and retrieve passages
+Manage drives and defaults
+Replace documents and attach metadata
+Upload recovery and partial failures
+Async workflows
+Errors, timeouts, and retries
+Versions and compatibility
+CLI Guide
+Get Started
+Profiles and Access
+Uploads and Recovery
+Search and Results
+Command Reference
+MCP
+Connect an AI client
+Choose an assistant’s permissions
+Search and retrieve sources
+Upload and manage content
+Tool reference
+Troubleshooting and revoking access
+Reference
+Authentication and API conventions
+Organizations, workspaces, and access API
+Drives, folders, and documents API
+Uploads and ingestion operations API
+Search and passage API
+Usage and billing API
+Errors and recovery
+Limits and supported files
+Troubleshooting
+Changelog
+Getting Started
+What is WonderSearch?
+Quickstart
+Key concepts
+WonderSearch 1.1
+Common use cases
+Platform Guide
+Organizations and workspaces
+Members, invitations, and roles
+API keys and permissions
+Drives and the default drive
+Folders and document management
+Upload files and follow indexing
+Search Playground
+Usage and activity
+Billing and credits
+Workspace storage and upgrades
+Account settings and security
+Search Guide
+Search effort and result limits
+Searching within drives and folders
+Understanding results and citations
+Document updates and search freshness
+SDK Guide
+Python installation and configuration
+Upload your first files
+Import a large collection
+Search and retrieve passages
+Manage drives and defaults
+Replace documents and attach metadata
+Upload recovery and partial failures
+Async workflows
+Errors, timeouts, and retries
+Versions and compatibility
+CLI Guide
+Get Started
+Profiles and Access
+Uploads and Recovery
+Search and Results
+Command Reference
+MCP
+Connect an AI client
+Choose an assistant’s permissions
+Search and retrieve sources
+Upload and manage content
+Tool reference
+Troubleshooting and revoking access
+Reference
+Authentication and API conventions
+Organizations, workspaces, and access API
+Drives, folders, and documents API
+Uploads and ingestion operations API
+Search and passage API
+Usage and billing API
+Errors and recovery
+Limits and supported files
+Troubleshooting
+Changelog
+On This Page
+Upload sequence
+Bulk file uploads
+GET 
+/v1/drives/{drive_id}/uploads/capabilities
+POST 
+/v1/drives/{drive_id}/uploads/batch
+POST 
+/v1/drives/{drive_id}/uploads/batch/complete
+POST 
+/v1/drives/{drive_id}/uploads/batch/status
+Prepare the file
+Inspect an upload
+Follow the transfer instructions
+Wait for searchable content
+POST 
+/v1/drives/{drive_id}/uploads
+GET 
+/v1/drives/{drive_id}/uploads/{upload_id}
+PUT 
+/v1/drives/{drive_id}/uploads/{upload_id}/content
+POST 
+/v1/drives/{drive_id}/uploads/{upload_id}/transfer
+POST 
+/v1/drives/{drive_id}/uploads/{upload_id}/complete
+GET 
+/v1/workspaces/{workspace_id}/operations/{operation_id}
+Bulk imports
+Chunk format
+PUT 
+/v1/drives/{drive_id}/imports/{import_id}
+POST 
+/v1/drives/{drive_id}/imports/{import_id}/chunks
+POST 
+/v1/drives/{drive_id}/imports/{import_id}/chunks/{sequence}/acknowledge
+POST 
+/v1/drives/{drive_id}/imports/{import_id}/seal
+GET 
+/v1/drives/{drive_id}/imports/{import_id}
+Other actions
+Progressive import progress
+Upload timings and drive queues
+Upload completion timings
+GET 
+/v1/drives/{drive_id}/ingestion-metrics
+Scroll to top
+Reference
+Uploads and ingestion operations API
+Uploads and ingestion operations API
+
+
+To upload files, use a workspace API key with 
+Read / Write
+ permission. You can also use an access token from a user who is a workspace editor or admin. A 
+Search Only
+ key is enough to check an operation’s status. Save the upload, drive, and workspace IDs so you can check progress later.
+
+
+See 
+authentication
+ for request headers and response formats, and 
+error recovery
+ for help with failed requests.
+
+
+Upload sequence
+
+
+
+
+Prepare an upload with filename, format, byte length, SHA-256 digest, and external ID.
+
+
+Obtain transfer instructions and send the original bytes using the selected transport.
+
+
+Complete the upload to queue processing.
+
+
+Read upload and operation status until the content is searchable.
+
+
+
+
+Use the 
+Python upload workflow
+ when you want the client to handle hashing, transfers, and polling.
+
+
+Bulk file uploads
+
+
+For several files, bulk requests let you reserve uploads, complete transfers, and check progress with fewer API calls. The 
+Python SDK
+ handles these steps automatically. Each file has its own outcome, so your application can keep successful uploads and follow up on individual files that need attention.
+
+
+Use 
+Content-Type: application/json
+ for each POST below. Each request accepts 1–50 unique entries and a JSON body up to 65,536 bytes. All entries belong to the drive in the URL. Reservation and completion require content-write access; status and capabilities use the drive’s read access. These routes support workspace API keys and authorized user sessions.
+
+
+GET 
+/v1/drives/{drive_id}/uploads/capabilities
+
+
+Read the available bulk request version and limits:
+
+
+{
+"version"
+:
+1
+,
+"max_items"
+:
+50
+,
+"max_body_bytes"
+:
+65536
+}
+
+
+Workspace API-key clients can also read 
+upload_batch
+ from 
+/v1/sdk/context
+. SDK 0.2.0 uses this information to select bulk requests automatically. A client connecting to an older server can use the 
+single-file sequence
+.
+
+
+POST 
+/v1/drives/{drive_id}/uploads/batch
+
+
+Send a 
+files
+ array. Each entry uses the 
+single-upload fields
+, plus its own 
+key
+: 1–128 printable ASCII characters, excluding spaces. Keep each key unique within the request and stable when retrying that file. Reusing a file’s key and inputs lets you retry its setup without creating another upload.
+
+
+{
+
+
+  "files"
+: [
+
+
+    {
+
+
+      "key"
+: 
+"library-0001-file-0001"
+,
+
+
+      "external_id"
+: 
+"opening-hours"
+,
+
+
+      "filename"
+: 
+"opening-hours.txt"
+,
+
+
+      "format"
+: 
+"txt"
+,
+
+
+      "size_bytes"
+: 
+18
+,
+
+
+      "sha256"
+: 
+"REPLACE_WITH_SHA256_OF_ORIGINAL_FILE"
+
+
+    }
+
+
+  ]
+
+
+}
+
+
+Replace 
+size_bytes
+ and 
+sha256
+ with the actual file size and 64-character lowercase SHA-256 digest. Optional 
+folder_id
+ and 
+metadata
+ select the destination and labels. Use this route for new external IDs; for a replacement, use the 
+single-file workflow
+.
+
+
+The 
+201
+ response contains 
+files
+ in request order. Each accepted entry includes its 
+key
+, upload 
+id
+, 
+state
+, and transfer instructions when bytes are still needed. An entry that needs attention includes 
+key
+ and 
+error_code
+. Check every entry, save accepted upload IDs, and retry capacity-limited entries with their original keys and inputs.
+
+
+Send each file’s original bytes using the returned 
+transfer
+ instructions, just as in the single-file workflow. Keep transfers bounded by your chosen concurrency.
+
+
+POST 
+/v1/drives/{drive_id}/uploads/batch/complete
+
+
+After sending the bytes, submit the upload IDs and transport used for each file:
+
+
+{
+"files"
+:[{
+"id"
+:
+"UPLOAD_UUID"
+,
+"transport"
+:
+"direct"
+}]}
+
+
+Use actual UUIDs from the reservation response. 
+transport
+ is 
+direct
+ for a direct transfer or 
+proxy
+ for the API content route. The 
+202
+ response contains a 
+files
+ array with each upload’s current state and any 
+error_code
+. Check that each file has been accepted for processing, then continue polling its status. You can repeat completion with the same upload IDs to recover an interrupted response.
+
+
+The SDK groups completion calls by up to 50 files and 64,000,000 source bytes; larger individual files complete on their own. The API’s JSON body limit applies to the completion request, while original file bytes use the separate transfer destination.
+
+
+POST 
+/v1/drives/{drive_id}/uploads/batch/status
+
+
+{
+"ids"
+:[
+"UPLOAD_UUID"
+,
+"ANOTHER_UPLOAD_UUID"
+]}
+
+
+The 
+200
+ response contains 
+files
+ in the requested ID order. Use unique upload IDs belonging to this drive.
+
+
+Field
+Meaning
+id
+Upload ID to save for recovery.
+state
+Upload state, such as 
+awaiting_content
+, 
+queued
+, 
+running
+, 
+accepted
+, or 
+failed
+.
+document_id
+Document ID when available.
+operation_id
+Indexing operation ID when available.
+warnings
+File-processing warning codes.
+error_code
+Upload or extraction error, if present.
+processing_status
+Associated operation status: 
+queued
+, 
+running
+, 
+searchable
+, or 
+failed
+, when available.
+processing_error_code
+Associated operation error, if present.
+index_snapshot_id
+Published index snapshot ID when available.
+
+
+An 
+accepted
+ upload is being prepared for search. Check 
+processing_status
+ until it becomes 
+searchable
+. Wait between checks and set a time limit. Save the upload IDs so you can 
+continue checking later
+.
+
+
+Prepare the file
+
+
+For macOS or Linux, create a small UTF-8 file and calculate its original byte length and checksum:
+
+
+printf
+ '%s\n'
+ 'Refunds are available within 30 days of purchase.'
+ >
+ handbook.txt
+
+
+FILE_SIZE
+=
+$(
+wc
+ -c
+ <
+ handbook.txt
+ |
+ tr
+ -d
+ ' '
+)
+
+
+FILE_SHA256
+=
+$(
+shasum
+ -a
+ 256
+ handbook.txt
+ |
+ cut
+ -d
+ ' '
+ -f
+ 1
+)
+
+
+ 
+
+
+curl
+ -X
+ POST
+ "
+$POLYGRES_BASE_URL
+/v1/drives/
+$DRIVE_ID
+/uploads"
+ \
+
+
+  -H
+ "Authorization: Bearer 
+$POLYGRES_API_KEY
+"
+ \
+
+
+  -H
+ "Content-Type: application/json"
+ \
+
+
+  -H
+ "Idempotency-Key: handbook-prepare-1"
+ \
+
+
+  -d
+ "{
+\"
+external_id
+\"
+:
+\"
+handbook
+\"
+,
+\"
+filename
+\"
+:
+\"
+handbook.txt
+\"
+,
+\"
+format
+\"
+:
+\"
+txt
+\"
+,
+\"
+size_bytes
+\"
+:
+$FILE_SIZE
+,
+\"
+sha256
+\"
+:
+\"
+$FILE_SHA256
+\"
+}"
+
+
+Set 
+UPLOAD_ID
+ to the response’s 
+id
+. Request the transfer destination:
+
+
+curl
+ -X
+ POST
+ "
+$POLYGRES_BASE_URL
+/v1/drives/
+$DRIVE_ID
+/uploads/
+$UPLOAD_ID
+/transfer"
+ \
+
+
+  -H
+ "Authorization: Bearer 
+$POLYGRES_API_KEY
+"
+ \
+
+
+  -H
+ "Content-Type: application/json"
+ \
+
+
+  -H
+ "Idempotency-Key: handbook-destination-1"
+ \
+
+
+  -d
+ '{}'
+
+
+Follow the transport-specific instructions below, then inspect the upload:
+
+
+Inspect an upload
+
+
+curl
+ "
+$POLYGRES_BASE_URL
+/v1/drives/
+$DRIVE_ID
+/uploads/
+$UPLOAD_ID
+"
+ \
+
+
+  -H
+ "Authorization: Bearer 
+$POLYGRES_API_KEY
+"
+
+
+See 
+supported files and limits
+ before preparing the upload.
+
+
+Follow the transfer instructions
+
+
+The transfer response chooses one of two paths:
+
+
+Response
+Next step
+{"transport":"proxy"}
+PUT the original file bytes to the upload’s 
+/content
+ endpoint. Send the workspace bearer key, 
+Content-Type: application/octet-stream
+, and an idempotency key for that transfer.
+{"transport":"direct","url":"…","headers":{…},"expires_in":600}
+PUT the original bytes to the returned signed URL with the returned headers and the file’s exact Content-Length. The signed URL authorizes this transfer; keep the workspace bearer key for API requests. The actual expiry is supplied by the response.
+
+
+After a proxy transfer, POST 
+{}
+ to 
+/complete
+. After a direct transfer, POST
+
+{"transport":"direct"}
+ to 
+/complete
+. Both completion requests use
+
+Content-Type: application/json
+, workspace authorization, and an idempotency key
+for the completion action. Keep the same payload and key when retrying each step.
+
+
+For example, a proxy transfer followed by completion:
+
+
+curl
+ -X
+ PUT
+ "
+$POLYGRES_BASE_URL
+/v1/drives/
+$DRIVE_ID
+/uploads/
+$UPLOAD_ID
+/content"
+ \
+
+
+  -H
+ "Authorization: Bearer 
+$POLYGRES_API_KEY
+"
+ \
+
+
+  -H
+ "Content-Type: application/octet-stream"
+ \
+
+
+  -H
+ "Idempotency-Key: handbook-transfer-1"
+ \
+
+
+  --data-binary
+ @handbook.txt
+
+
+ 
+
+
+curl
+ -X
+ POST
+ "
+$POLYGRES_BASE_URL
+/v1/drives/
+$DRIVE_ID
+/uploads/
+$UPLOAD_ID
+/complete"
+ \
+
+
+  -H
+ "Authorization: Bearer 
+$POLYGRES_API_KEY
+"
+ \
+
+
+  -H
+ "Content-Type: application/json"
+ \
+
+
+  -H
+ "Idempotency-Key: handbook-complete-1"
+ \
+
+
+  -d
+ '{}'
+
+
+The prepared size and SHA-256 digest must describe these exact original bytes.
+If a signed URL expires, request fresh transfer instructions for the same active
+upload session. Completion returns the upload’s 
+id
+ and 
+state
+. Read upload
+status to obtain 
+operation_id
+, then follow that operation until searchable.
+
+
+Wait for searchable content
+
+
+After completion, poll the upload until it provides 
+operation_id
+, or reports failure. Set 
+OPERATION_ID
+ to that ID and 
+WORKSPACE_ID
+ to the workspace containing the drive:
+
+
+curl
+ "
+$POLYGRES_BASE_URL
+/v1/workspaces/
+$WORKSPACE_ID
+/operations/
+$OPERATION_ID
+"
+ \
+
+
+  -H
+ "Authorization: Bearer 
+$POLYGRES_API_KEY
+"
+
+
+Wait between polls. 
+queued
+ and 
+running
+ mean work continues; 
+searchable
+ means indexing completed; 
+failed
+ means inspect 
+error_code
+ and 
+error_message
+. Stop checking when the operation becomes 
+searchable
+ or 
+failed
+, or when your chosen time limit is reached. Keep upload and operation IDs for 
+recovery
+.
+
+
+POST 
+/v1/drives/{drive_id}/uploads
+
+
+Create an upload and reserve storage for the file.
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+drive_id
+path
+string
+Yes
+Idempotency-Key
+header
+string
+Yes
+
+
+JSON body
+
+
+Field
+Type
+Presence
+Guidance
+external_id
+string
+Required
+Your stable document identifier within this drive; at most 1,024 UTF-8 bytes.
+filename
+string
+Required
+1 to 255 UTF-8 bytes; longer names return 
+400 invalid_text
+. Path separators (
+/
+, 
+\
+), line breaks, and other control characters return 
+400 invalid_filename
+.
+format
+pdf
+, 
+docx
+, 
+txt
+, 
+md
+Required
+Original file format; must match the file bytes.
+size_bytes
+integer
+Required
+Minimum: 1. Maximum: 1000000000
+sha256
+string
+Required
+SHA-256 of original bytes as 64 lowercase hexadecimal characters.
+folder_id
+string or null
+Optional
+uuid
+metadata
+object
+Optional
+Flat labels, at most 64 fields and 8,000 encoded bytes. Replacement does not merge old labels.
+
+
+Response
+
+
+201 response
+
+
+Field
+Type
+Present
+Constraints
+id
+string
+Yes
+uuid
+state
+string
+Yes
+expires_in
+integer
+Yes
+Always 
+86400
+: the upload session lasts 24 hours. Send and complete the file before then. After it expires, transfer and completion requests return 
+409 upload_expired
+ or 
+409 upload_sealed
+; create a new upload. Completing an upload whose file was never sent returns 
+409 upload_incomplete
+.
+
+
+GET 
+/v1/drives/{drive_id}/uploads/{upload_id}
+
+
+Check the upload status and find its processing operation.
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+drive_id
+path
+string
+Yes
+upload_id
+path
+string
+Yes
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+id
+string
+Yes
+uuid
+state
+string
+Yes
+document_id
+string or null
+Yes
+uuid
+operation_id
+string or null
+Yes
+uuid
+warnings
+array of object
+Yes
+Each has a 
+code
+ string; PDF page warnings also have a 
+page
+ number, from 1.
+error_code
+string or null
+Yes
+error_message
+string or null
+Yes
+
+
+PUT 
+/v1/drives/{drive_id}/uploads/{upload_id}/content
+
+
+Send the original file. Its size and checksum must match the upload details.
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+drive_id
+path
+string
+Yes
+upload_id
+path
+string
+Yes
+Idempotency-Key
+header
+string
+Yes
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+id
+string
+Yes
+uuid
+state
+string
+Yes
+uploaded
+true
+Yes
+
+
+POST 
+/v1/drives/{drive_id}/uploads/{upload_id}/transfer
+
+
+Get or refresh the URL and headers for transferring this file.
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+drive_id
+path
+string
+Yes
+upload_id
+path
+string
+Yes
+Idempotency-Key
+header
+string
+Yes
+
+
+JSON body
+
+
+Send an empty JSON object: 
+{}
+.
+
+
+Response
+
+
+200
+: One of the proxy or signed-URL objects described in 
+transfer instructions
+.
+
+
+POST 
+/v1/drives/{drive_id}/uploads/{upload_id}/complete
+
+
+Verify the uploaded file and save it for processing
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+drive_id
+path
+string
+Yes
+upload_id
+path
+string
+Yes
+Idempotency-Key
+header
+string
+Yes
+
+
+JSON body
+
+
+Field
+Type
+Presence
+Guidance
+transport
+direct
+Optional
+Send 
+direct
+ after a direct transfer; omit after a proxy transfer.
+
+
+Response
+
+
+202 response
+
+
+Field
+Type
+Present
+Constraints
+id
+string
+Yes
+uuid
+state
+string
+Yes
+
+
+GET 
+/v1/workspaces/{workspace_id}/operations/{operation_id}
+
+
+Check whether the documents are ready to search.
+
+
+Parameters
+
+
+Name
+Location
+Value
+Required
+workspace_id
+path
+string
+Yes
+operation_id
+path
+string
+Yes
+
+
+Response
+
+
+200 response
+
+
+Field
+Type
+Present
+Constraints
+id
+string
+Yes
+uuid
+status
+queued
+, 
+running
+, 
+searchable
+, 
+failed
+Yes
+index_snapshot_id
+string or null
+Yes
+uuid
+error_code
+string or null
+Yes
+error_message
+string or null
+Yes
+created_at
+string
+Yes
+completed_at
+string or null
+Yes
+document_count
+integer
+Yes
+usage
+object
+Yes
+
+
+Bulk imports
+
+
+Bulk imports load a large collection of text files into one drive. They are available only to organizations that have them enabled. For other organizations, the import routes return 404 
+not_found
+.
+
+
+An import groups files into chunks. You declare the totals, upload each chunk to its own upload URL, acknowledge it, then seal the import. Documents become searchable over time after their chunk is acknowledged, while later chunks are still uploading. Use the same access as 
+file uploads
+. Choose a new UUID for each import and keep it: the import ID makes creation safe to retry, so these routes do not use 
+Idempotency-Key
+.
+
+
+While an import batch is being applied to a drive, other writes to that drive (uploads, document changes and deletes) return 503 
+temporarily_unavailable
+. Retry them later. Other drives are not affected.
+
+
+Limit
+Value
+Source bytes per import
+100,000,000,000
+Documents per import
+1,000,000 (the drive limit)
+Chunks per import
+100,000
+Bytes per chunk
+32,000,000
+Documents per chunk
+10,000
+Chunks declared per request
+32
+Chunks declared but not yet acknowledged
+32, and at most 1,000,000,000 bytes
+Formats
+txt
+ and 
+md
+, UTF-8
+
+
+Imports also count toward 
+drive limits
+ and your workspace storage.
+
+
+Chunk format
+
+
+A chunk is a 4-byte big-endian manifest length, a JSON manifest, then the file bodies one after another. The manifest is:
+
+
+{
+"schema"
+:
+"wondersearch-import-chunk.v1"
+,
+"mode"
+:
+"create"
+,
+"documents"
+:[
+
+
+ {
+"external_id"
+:
+"guides/setup.md"
+,
+"filename"
+:
+"setup.md"
+,
+"format"
+:
+"md"
+,
+"metadata"
+:{},
+
+
+  "expected_revision"
+:null,
+"offset"
+:
+0
+,
+"size_bytes"
+:
+1834
+,
+"sha256"
+:
+"<hex>"
+}]}
+
+
+offset
+ and 
+size_bytes
+ locate each file in the bodies, and 
+sha256
+ is the file’s digest. In 
+create
+ mode, 
+expected_revision
+ is 
+null
+. Use 
+replace
+ mode, with each document’s current revision in 
+expected_revision
+, to replace existing documents. The chunk’s 
+sha256
+ and 
+encoded_bytes
+ cover the whole chunk; 
+source_bytes
+ is the sum of its file sizes.
+
+
+PUT 
+/v1/drives/{drive_id}/imports/{import_id}
+
+
+Create the import with 
+{"source_bytes": <total>, "documents": <total>}
+. Returns 201 with the import’s progress. Repeating the same request returns the same import; different totals return 409 
+idempotency_conflict
+. The import reserves storage for the declared totals. Unused storage is released once the import is sealed or closed and its processing finishes. A total past the 
+drive limits
+ returns 409 
+drive_limit_exceeded
+.
+
+
+POST 
+/v1/drives/{drive_id}/imports/{import_id}/chunks
+
+
+Declare 1 to 32 chunks: 
+{"chunks":[{"sequence":0,"sha256":"<hex>","encoded_bytes":4096,"source_bytes":4000,"documents":12}]}
+. Number chunks from 0 without gaps. Each returned chunk has a 
+transfer
+ object: send a 
+PUT
+ to its 
+url
+ with exactly its 
+headers
+ and the chunk bytes before 
+expires_in
+ seconds. Destinations are create-only. Declaring the same chunk again returns a fresh destination, which helps only if the earlier upload never completed. 409 
+request_in_progress
+ means too many chunks are waiting for acknowledgement, or too much declared content is not yet searchable; acknowledge chunks or wait, then retry. Declaring past the import’s totals, or the same sequence with different values, returns 409 
+idempotency_conflict
+.
+
+
+POST 
+/v1/drives/{drive_id}/imports/{import_id}/chunks/{sequence}/acknowledge
+
+
+Send 
+{}
+ after the upload succeeds. The service checks the stored chunk against its declaration and returns a receipt. Repeating the request returns the same receipt. 404 
+not_found
+ means the chunk has not been stored yet. 409 
+idempotency_conflict
+ means the stored chunk does not match its declaration. 400 
+invalid_upload_batch
+ means the chunk does not match its declaration or contains an unsupported format, invalid UTF-8 or an empty file.
+
+
+POST 
+/v1/drives/{drive_id}/imports/{import_id}/seal
+
+
+Send the final totals: 
+{"chunks": <count>, "source_bytes": <total>, "documents": <total>}
+. They must match the declared chunks, and every chunk must be acknowledged; otherwise the request returns 409 
+idempotency_conflict
+. Sealing ends the import’s uploads; processing continues.
+
+
+GET 
+/v1/drives/{drive_id}/imports/{import_id}
+
+
+Returns progress and a page of chunks (
+after
+, default -1, and 
+limit
+, 1 to 1,000, default 100). 
+state
+ is 
+open
+, 
+sealed
+ or 
+closed
+. Compare 
+acknowledged_*
+, 
+searchable_*
+ and 
+failed_*
+ counters; 
+complete
+ is true when a sealed import’s acknowledged content is all searchable. Each chunk lists its 
+state
+, 
+attempts
+, 
+last_error
+ and any 
+failed_operations
+.
+
+
+Other actions
+
+
+
+
+POST .../close
+ with 
+{}
+ stops the import early and releases unused storage.
+
+
+POST .../recover
+ with 
+{}
+ restores access to an existing import, for example after a lost reply to creation.
+
+
+POST .../operations/{operation_id}/retry
+ with 
+{"request_id": "<uuid>"}
+ retries a failed operation listed in 
+failed_operations
+. Reuse the same 
+request_id
+ when retrying the request.
+
+
+
+
+An open import expires 24 hours after creation. 503 
+temporarily_unavailable
+ means retry later.
+
+
+Bulk imports can be paused for maintenance. While paused, creating an import returns 503 
+temporarily_unavailable
+, and declaring or acknowledging chunks returns 409 
+upload_expired
+. Read the import: if its 
+state
+ is still 
+open
+, retry later. Calling 
+recover
+ while imports are paused closes the import.
+
+
+Progressive import progress
+
+
+For 
+progressive text imports
+, the operation response also includes 
+progress
+:
+
+
+Field
+Meaning
+accepted_documents
+Number of documents accepted in this request.
+indexed_documents
+Documents whose associated work has become searchable.
+failed_documents
+Documents associated with failed processing work.
+
+
+Indexed documents become searchable as their part of the request is published, so 
+indexed_documents
+ can increase before the overall operation becomes 
+searchable
+. If the operation reports 
+failed
+, inspect 
+error_code
+ and the counters; documents already published remain searchable. Keep the operation ID to follow subsequent recovery.
+
+
+Upload timings and drive queues
+
+
+Use these fields to see how long uploads take and how much work is waiting. Check the upload state and associated operation to find out when a document is searchable.
+
+
+A successful 
+/complete
+ saves the file for processing and makes its transfer slot available for another file. Processing continues after your client disconnects. See 
+upload capacity
+.
+
+
+Upload completion timings
+
+
+GET /v1/drives/{drive_id}/uploads/{upload_id}
+ adds a 
+timings
+ object:
+
+
+Field
+Meaning
+created_at
+Upload session creation timestamp.
+uploaded_at
+File verified and saved for processing.
+searchable_at
+Associated operation completed publication.
+transfer_ms
+Time from creating the upload to saving the file for processing.
+queue_ms
+Time the file spent waiting to be processed.
+processing_ms
+Time spent processing the file until it was searchable.
+uploaded_to_searchable_ms
+Time from saving the file to the document becoming searchable.
+total_ms
+Session creation to publication completion.
+
+
+Timestamps are date-time strings and durations are milliseconds. Values are 
+null
+ until they are known, for example while the file is still being processed, when a step was skipped because identical content was already searchable, or for older uploads; null does not mean zero. Durations measure elapsed lifecycle time, including retries and backoff, rather than CPU time. 
+transfer_ms
+ can include time before bytes start moving.
+
+
+GET 
+/v1/drives/{drive_id}/ingestion-metrics
+
+
+Use the same authenticated read access as the drive:
+
+
+curl
+ "
+$POLYGRES_BASE_URL
+/v1/drives/
+$DRIVE_ID
+/ingestion-metrics"
+ \
+
+
+  -H
+ "Authorization: Bearer 
+$POLYGRES_API_KEY
+"
+
+
+Field
+Meaning
+scope
+drive
+.
+drive_id
+Selected drive ID.
+active_transfers
+Unfinished, unexpired sessions.
+transfer_limit
+50.
+outstanding_limit
+10,000 across active transfers and files waiting to be read or being read.
+processing
+A summary of the drive’s processing work.
+
+
+processing
+ reports 
+queued
+, 
+running
+, 
+failed
+, 
+pending_bytes
+, and 
+oldest_queued_ms
+. 
+queued
+ and 
+running
+ count current work. 
+failed
+ counts your uploads and processing operations that are still failed. Uploading the file again does not clear an earlier failure, so 
+failed
+ is not a time-window failure rate. 
+pending_bytes
+ is a decimal string counting the original-file bytes of files still waiting to be read or being read.
+
+
+oldest_queued_ms
+ is the age of the oldest queued item with a known timestamp, or null when none has a known timestamp. Running work is excluded from that age. Use these values to distinguish completed uploads from processing backlog. Poll with a deadline and a delay between requests, and 
+resume accepted uploads
+ rather than creating duplicates.
+Drives, folders, and documents API
+Search and passage API
+WonderSearch
+A search product by 
+Evokoa
+Pricing
+Book a call
+Get support
+Privacy
+

@@ -1,0 +1,13 @@
+{
+  "name": "@searchsdk/cpp",
+  "version": "0.1.0-alpha.1",
+  "private": true,
+  "description": "C++17 searchSDK RAII facade, normalized adapters and schema-derived native clients",
+  "license": "MIT",
+  "scripts": {
+    "generate": "python3 -B scripts/generate.py",
+    "check:generated": "python3 -B scripts/generate.py --check",
+    "test": "python3 -B scripts/verify.py"
+  },
+  "files": ["CMakeLists.txt", "cmake", "include", "src", "scripts", "tests", "examples", "LICENSE", "README.md", "native-manifest.json"]
+}

@@ -1,0 +1,209 @@
+
+h1 Uploads and ingestion operations API
+
+h2 Upload sequence
+
+h2 Bulk file uploads
+
+h3 GET /v1/drives/{drive_id}/uploads/capabilities
+{"version":1,"max_items":50,"max_body_bytes":65536}
+
+h3 POST /v1/drives/{drive_id}/uploads/batch
+{
+  "files": [
+    {
+      "key": "library-0001-file-0001",
+      "external_id": "opening-hours",
+      "filename": "opening-hours.txt",
+      "format": "txt",
+      "size_bytes": 18,
+      "sha256": "REPLACE_WITH_SHA256_OF_ORIGINAL_FILE"
+    }
+  ]
+}
+
+h3 POST /v1/drives/{drive_id}/uploads/batch/complete
+{"files":[{"id":"UPLOAD_UUID","transport":"direct"}]}
+
+h3 POST /v1/drives/{drive_id}/uploads/batch/status
+{"ids":["UPLOAD_UUID","ANOTHER_UPLOAD_UUID"]}
+Field | Meaning
+id | Upload ID to save for recovery.
+state | Upload state, such as awaiting_content, queued, running, accepted, or failed.
+document_id | Document ID when available.
+operation_id | Indexing operation ID when available.
+warnings | File-processing warning codes.
+error_code | Upload or extraction error, if present.
+processing_status | Associated operation status: queued, running, searchable, or failed, when available.
+processing_error_code | Associated operation error, if present.
+index_snapshot_id | Published index snapshot ID when available.
+
+h2 Prepare the file
+printf '%s\n' 'Refunds are available within 30 days of purchase.' > handbook.txt
+FILE_SIZE=$(wc -c < handbook.txt | tr -d ' ')
+FILE_SHA256=$(shasum -a 256 handbook.txt | cut -d ' ' -f 1)
+ 
+curl -X POST "$POLYGRES_BASE_URL/v1/drives/$DRIVE_ID/uploads" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: handbook-prepare-1" \
+  -d "{\"external_id\":\"handbook\",\"filename\":\"handbook.txt\",\"format\":\"txt\",\"size_bytes\":$FILE_SIZE,\"sha256\":\"$FILE_SHA256\"}"
+curl -X POST "$POLYGRES_BASE_URL/v1/drives/$DRIVE_ID/uploads/$UPLOAD_ID/transfer" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: handbook-destination-1" \
+  -d '{}'
+
+h2 Inspect an upload
+curl "$POLYGRES_BASE_URL/v1/drives/$DRIVE_ID/uploads/$UPLOAD_ID" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY"
+
+h2 Follow the transfer instructions
+Response | Next step
+{"transport":"proxy"} | PUT the original file bytes to the upload’s /content endpoint. Send the workspace bearer key, Content-Type: application/octet-stream, and an idempotency key for that transfer.
+{"transport":"direct","url":"…","headers":{…},"expires_in":600} | PUT the original bytes to the returned signed URL with the returned headers and the file’s exact Content-Length. The signed URL authorizes this transfer; keep the workspace bearer key for API requests. The actual expiry is supplied by the response.
+curl -X PUT "$POLYGRES_BASE_URL/v1/drives/$DRIVE_ID/uploads/$UPLOAD_ID/content" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY" \
+  -H "Content-Type: application/octet-stream" \
+  -H "Idempotency-Key: handbook-transfer-1" \
+  --data-binary @handbook.txt
+ 
+curl -X POST "$POLYGRES_BASE_URL/v1/drives/$DRIVE_ID/uploads/$UPLOAD_ID/complete" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: handbook-complete-1" \
+  -d '{}'
+
+h2 Wait for searchable content
+curl "$POLYGRES_BASE_URL/v1/workspaces/$WORKSPACE_ID/operations/$OPERATION_ID" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY"
+
+h2 POST /v1/drives/{drive_id}/uploads
+Name | Location | Value | Required
+drive_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+external_id | string | Required | Your stable document identifier within this drive; at most 1,024 UTF-8 bytes.
+filename | string | Required | 1 to 255 UTF-8 bytes; longer names return 400 invalid_text. Path separators (/, \), line breaks, and other control characters return 400 invalid_filename.
+format | pdf, docx, txt, md | Required | Original file format; must match the file bytes.
+size_bytes | integer | Required | Minimum: 1. Maximum: 1000000000
+sha256 | string | Required | SHA-256 of original bytes as 64 lowercase hexadecimal characters.
+folder_id | string or null | Optional | uuid
+metadata | object | Optional | Flat labels, at most 64 fields and 8,000 encoded bytes. Replacement does not merge old labels.
+Field | Type | Present | Constraints
+id | string | Yes | uuid
+state | string | Yes | 
+expires_in | integer | Yes | Always 86400: the upload session lasts 24 hours. Send and complete the file before then. After it expires, transfer and completion requests return 409 upload_expired or 409 upload_sealed; create a new upload. Completing an upload whose file was never sent returns 409 upload_incomplete.
+
+h2 GET /v1/drives/{drive_id}/uploads/{upload_id}
+Name | Location | Value | Required
+drive_id | path | string | Yes
+upload_id | path | string | Yes
+Field | Type | Present | Constraints
+id | string | Yes | uuid
+state | string | Yes | 
+document_id | string or null | Yes | uuid
+operation_id | string or null | Yes | uuid
+warnings | array of object | Yes | Each has a code string; PDF page warnings also have a page number, from 1.
+error_code | string or null | Yes | 
+error_message | string or null | Yes | 
+
+h2 PUT /v1/drives/{drive_id}/uploads/{upload_id}/content
+Name | Location | Value | Required
+drive_id | path | string | Yes
+upload_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Present | Constraints
+id | string | Yes | uuid
+state | string | Yes | 
+uploaded | true | Yes | 
+
+h2 POST /v1/drives/{drive_id}/uploads/{upload_id}/transfer
+Name | Location | Value | Required
+drive_id | path | string | Yes
+upload_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+
+h2 POST /v1/drives/{drive_id}/uploads/{upload_id}/complete
+Name | Location | Value | Required
+drive_id | path | string | Yes
+upload_id | path | string | Yes
+Idempotency-Key | header | string | Yes
+Field | Type | Presence | Guidance
+transport | direct | Optional | Send direct after a direct transfer; omit after a proxy transfer.
+Field | Type | Present | Constraints
+id | string | Yes | uuid
+state | string | Yes | 
+
+h2 GET /v1/workspaces/{workspace_id}/operations/{operation_id}
+Name | Location | Value | Required
+workspace_id | path | string | Yes
+operation_id | path | string | Yes
+Field | Type | Present | Constraints
+id | string | Yes | uuid
+status | queued, running, searchable, failed | Yes | 
+index_snapshot_id | string or null | Yes | uuid
+error_code | string or null | Yes | 
+error_message | string or null | Yes | 
+created_at | string | Yes | 
+completed_at | string or null | Yes | 
+document_count | integer | Yes | 
+usage | object | Yes | 
+
+h2 Bulk imports
+Limit | Value
+Source bytes per import | 100,000,000,000
+Documents per import | 1,000,000 (the drive limit)
+Chunks per import | 100,000
+Bytes per chunk | 32,000,000
+Documents per chunk | 10,000
+Chunks declared per request | 32
+Chunks declared but not yet acknowledged | 32, and at most 1,000,000,000 bytes
+Formats | txt and md, UTF-8
+
+h3 Chunk format
+{"schema":"wondersearch-import-chunk.v1","mode":"create","documents":[
+ {"external_id":"guides/setup.md","filename":"setup.md","format":"md","metadata":{},
+  "expected_revision":null,"offset":0,"size_bytes":1834,"sha256":"<hex>"}]}
+
+h3 PUT /v1/drives/{drive_id}/imports/{import_id}
+
+h3 POST /v1/drives/{drive_id}/imports/{import_id}/chunks
+
+h3 POST /v1/drives/{drive_id}/imports/{import_id}/chunks/{sequence}/acknowledge
+
+h3 POST /v1/drives/{drive_id}/imports/{import_id}/seal
+
+h3 GET /v1/drives/{drive_id}/imports/{import_id}
+
+h3 Other actions
+
+h2 Progressive import progress
+Field | Meaning
+accepted_documents | Number of documents accepted in this request.
+indexed_documents | Documents whose associated work has become searchable.
+failed_documents | Documents associated with failed processing work.
+
+h2 Upload timings and drive queues
+
+h3 Upload completion timings
+Field | Meaning
+created_at | Upload session creation timestamp.
+uploaded_at | File verified and saved for processing.
+searchable_at | Associated operation completed publication.
+transfer_ms | Time from creating the upload to saving the file for processing.
+queue_ms | Time the file spent waiting to be processed.
+processing_ms | Time spent processing the file until it was searchable.
+uploaded_to_searchable_ms | Time from saving the file to the document becoming searchable.
+total_ms | Session creation to publication completion.
+
+h3 GET /v1/drives/{drive_id}/ingestion-metrics
+curl "$POLYGRES_BASE_URL/v1/drives/$DRIVE_ID/ingestion-metrics" \
+  -H "Authorization: Bearer $POLYGRES_API_KEY"
+Field | Meaning
+scope | drive.
+drive_id | Selected drive ID.
+active_transfers | Unfinished, unexpired sessions.
+transfer_limit | 50.
+outstanding_limit | 10,000 across active transfers and files waiting to be read or being read.
+processing | A summary of the drive’s processing work.

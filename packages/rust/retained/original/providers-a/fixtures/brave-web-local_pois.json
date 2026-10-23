@@ -1,0 +1,1694 @@
+{
+  "tagName": "Web Search",
+  "tagDisplayName": "Local POIs",
+  "tagDescription": "<p>Get detailed information about points of interest.</p>",
+  "path": "/v1/local/pois",
+  "method": "GET",
+  "operationId": "search_local_pois_v1_local_pois_get",
+  "summary": " ",
+  "description": "",
+  "deprecated": false,
+  "serverUrl": "https://api.search.brave.com/res",
+  "authParams": [
+    {
+      "name": "x-subscription-token",
+      "in": "header",
+      "required": true,
+      "description": "The subscription token that was generated for the product.",
+      "schema": {
+        "type": "string",
+        "title": "Subscription token",
+        "description": "The subscription token that was generated for the product."
+      },
+      "deprecated": false
+    }
+  ],
+  "headerParams": [
+    {
+      "name": "x-loc-lat",
+      "in": "header",
+      "required": false,
+      "description": "The latitude of the client’s geographical location in degrees,                 to provide relevant local results. The latitude must be greater                 than or equal to -90.0 degrees and less than or equal to +90.0 degrees.",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "number",
+            "maximum": 90,
+            "minimum": -90
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "The latitude of the client’s geographical location in degrees,                 to provide relevant local results. The latitude must be greater                 than or equal to -90.0 degrees and less than or equal to +90.0 degrees.",
+        "title": "X-Loc-Lat"
+      },
+      "deprecated": false
+    },
+    {
+      "name": "x-loc-long",
+      "in": "header",
+      "required": false,
+      "description": "The longitude of the client’s geographical location in degrees,                 to provide relevant local results. The longitude must be greater                 than or equal to -180.0 and less than or equal to +180.0 degrees.",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "number",
+            "maximum": 180,
+            "minimum": -180
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "The longitude of the client’s geographical location in degrees,                 to provide relevant local results. The longitude must be greater                 than or equal to -180.0 and less than or equal to +180.0 degrees.",
+        "title": "X-Loc-Long"
+      },
+      "deprecated": false
+    },
+    {
+      "name": "api-version",
+      "in": "header",
+      "required": false,
+      "description": "The API version to use.                 This is denoted by the format <code>YYYY-MM-DD</code>.                 Default is the latest that is available. Read                 more about <a href=\"/documentation/guides/versioning\">API versioning</a>.",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "API version",
+        "description": "The API version to use.                 This is denoted by the format <code>YYYY-MM-DD</code>.                 Default is the latest that is available. Read                 more about <a href=\"/documentation/guides/versioning\">API versioning</a>."
+      },
+      "deprecated": false
+    },
+    {
+      "name": "accept",
+      "in": "header",
+      "required": false,
+      "description": "The default supported media type is application/json.",
+      "schema": {
+        "$ref": "#/components/schemas/Accept",
+        "title": "Media type",
+        "description": "The default supported media type is application/json.",
+        "default": "application/json"
+      },
+      "deprecated": false
+    },
+    {
+      "name": "cache-control",
+      "in": "header",
+      "required": false,
+      "description": "Brave Search will return cached content by default.                 To prevent caching set the Cache-Control header to <code>no-cache</code>.                 This is currently done as best effort.",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/CacheControl"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Cache control",
+        "description": "Brave Search will return cached content by default.                 To prevent caching set the Cache-Control header to <code>no-cache</code>.                 This is currently done as best effort."
+      },
+      "deprecated": false
+    },
+    {
+      "name": "user-agent",
+      "in": "header",
+      "required": false,
+      "description": "The user agent originating the request.                 Brave search can utilize the user agent to provide a different                 experience depending on the device as described by the string.                 The user agent should follow the commonly used browser agent                 strings on each platform. For more information on curating user agents,                 see <a href=\"https://www.rfc-editor.org/rfc/rfc9110.html#name-user-agent\">RFC 9110</a>.",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "User agent",
+        "description": "The user agent originating the request.                 Brave search can utilize the user agent to provide a different                 experience depending on the device as described by the string.                 The user agent should follow the commonly used browser agent                 strings on each platform. For more information on curating user agents,                 see <a href=\"https://www.rfc-editor.org/rfc/rfc9110.html#name-user-agent\">RFC 9110</a>."
+      },
+      "deprecated": false
+    }
+  ],
+  "queryParams": [
+    {
+      "name": "ids",
+      "in": "query",
+      "required": true,
+      "description": "A list of unique identifiers for the location. The ids are valid only for 8 hours.",
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "maxItems": 20,
+        "description": "A list of unique identifiers for the location. The ids are valid only for 8 hours.",
+        "title": "Ids"
+      },
+      "deprecated": false
+    },
+    {
+      "name": "search_lang",
+      "in": "query",
+      "required": false,
+      "description": "The search language preference. The 2 or more character language code for which the search results are provided.",
+      "schema": {
+        "$ref": "#/components/schemas/Language-Input",
+        "description": "The search language preference. The 2 or more character language code for which the search results are provided.",
+        "default": "en"
+      },
+      "deprecated": false
+    },
+    {
+      "name": "ui_lang",
+      "in": "query",
+      "required": false,
+      "description": "User interface language preferred in response. Usually of the format &lt;language_code&gt;-&lt;country_code&gt;. For more, see <a href=\"https://www.rfc-editor.org/rfc/rfc9110.html#name-accept-language\">RFC 9110</a>.",
+      "schema": {
+        "$ref": "#/components/schemas/MarketCodes",
+        "description": "User interface language preferred in response. Usually of the format &lt;language_code&gt;-&lt;country_code&gt;. For more, see <a href=\"https://www.rfc-editor.org/rfc/rfc9110.html#name-accept-language\">RFC 9110</a>.",
+        "default": "en-US"
+      },
+      "deprecated": false
+    },
+    {
+      "name": "units",
+      "in": "query",
+      "required": false,
+      "description": "<p>The measurement units. The following values are supported:</p>\n<ul>\n<li><strong>metric</strong> - The standardized measurement system (km, celcius…)</li>\n<li><strong>imperial</strong> - The British Imperial system of units (mile, fahrenheit…)</li>\n</ul>",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/MeasurementUnit"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "<p>The measurement units. The following values are supported:</p>\n<ul>\n<li><strong>metric</strong> - The standardized measurement system (km, celcius…)</li>\n<li><strong>imperial</strong> - The British Imperial system of units (mile, fahrenheit…)</li>\n</ul>",
+        "title": "Units"
+      },
+      "deprecated": false
+    }
+  ],
+  "pathParams": [],
+  "requestBody": null,
+  "responses": [
+    {
+      "statusCode": "200",
+      "description": "Successful Response",
+      "schema": {
+        "$ref": "#/components/schemas/LocalPoiSearchApiResponse"
+      }
+    },
+    {
+      "statusCode": "400",
+      "description": "Bad Request",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    },
+    {
+      "statusCode": "404",
+      "description": "Not Found",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    },
+    {
+      "statusCode": "422",
+      "description": "Unprocessable Entity",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    },
+    {
+      "statusCode": "429",
+      "description": "Too Many Requests",
+      "schema": {
+        "$ref": "#/components/schemas/APIErrorResponse"
+      }
+    }
+  ],
+  "schemas": {
+    "APIErrorCode": {
+      "type": "string",
+      "enum": [
+        "INTERNAL",
+        "QUOTA_LIMITED",
+        "RATE_LIMITED",
+        "SUBSCRIPTION_TOKEN_INVALID",
+        "SUBSCRIPTION_NOT_FOUND",
+        "RESOURCE_NOT_ALLOWED",
+        "OPTION_NOT_IN_PLAN",
+        "USAGE_LIMIT_EXCEEDED",
+        "INVALID_URL",
+        "CREDIT_EXHAUSTED"
+      ],
+      "title": "APIErrorCode"
+    },
+    "APIErrorModel": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Id",
+          "description": "A unique identifier for this particular occurrence of the problem."
+        },
+        "status": {
+          "type": "integer",
+          "title": "Status",
+          "description": "The HTTP status code applicable to this problem, expressed as a string value."
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Detail",
+          "description": "Explanation specific to this occurrence of the problem. Like title, this field’s value can be localized."
+        },
+        "meta": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Meta",
+          "description": "A meta object containing non-standard meta-information about the error."
+        },
+        "code": {
+          "$ref": "#/components/schemas/APIErrorCode",
+          "description": "An application-specific error code, expressed as a string value."
+        }
+      },
+      "type": "object",
+      "required": [
+        "id",
+        "status",
+        "code"
+      ],
+      "title": "APIErrorModel"
+    },
+    "APIErrorResponse": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Type",
+          "default": "ErrorResponse"
+        },
+        "error": {
+          "$ref": "#/components/schemas/APIErrorModel"
+        },
+        "time": {
+          "type": "integer",
+          "title": "Time",
+          "default": 0
+        }
+      },
+      "type": "object",
+      "required": [
+        "error"
+      ],
+      "title": "APIErrorResponse"
+    },
+    "Accept": {
+      "type": "string",
+      "enum": [
+        "application/json",
+        "*/*"
+      ],
+      "title": "Accept"
+    },
+    "Action": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Type",
+          "description": "The type representing the action."
+        },
+        "url": {
+          "type": "string",
+          "title": "Url",
+          "description": "A URL representing the action to be taken."
+        }
+      },
+      "type": "object",
+      "required": [
+        "type",
+        "url"
+      ],
+      "title": "Action",
+      "description": "A model representing an action to be taken."
+    },
+    "CacheControl": {
+      "type": "string",
+      "enum": [
+        "no-cache"
+      ],
+      "const": "no-cache",
+      "title": "CacheControl"
+    },
+    "Contact": {
+      "properties": {
+        "email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Email",
+          "description": "The email address."
+        },
+        "telephone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Telephone",
+          "description": "The telephone number."
+        }
+      },
+      "type": "object",
+      "title": "Contact",
+      "description": "A model representing contact information for an entity."
+    },
+    "DayOpeningHours": {
+      "properties": {
+        "abbr_name": {
+          "type": "string",
+          "title": "Abbr Name",
+          "description": "A short string representing the day of the week."
+        },
+        "full_name": {
+          "type": "string",
+          "title": "Full Name",
+          "description": "A full string representing the day of the week."
+        },
+        "opens": {
+          "type": "string",
+          "title": "Opens",
+          "description": "A 24 hr clock time string for the opening time of the business on a particular day."
+        },
+        "closes": {
+          "type": "string",
+          "title": "Closes",
+          "description": "A 24 hr clock time string for the closing time of the business on a particular day."
+        }
+      },
+      "type": "object",
+      "required": [
+        "abbr_name",
+        "full_name",
+        "opens",
+        "closes"
+      ],
+      "title": "DayOpeningHours",
+      "description": "A model representing the opening hours for a particular day for a business at a particular location."
+    },
+    "Language-Input": {
+      "type": "string",
+      "enum": [
+        "ar",
+        "eu",
+        "bn",
+        "bg",
+        "ca",
+        "zh-hans",
+        "zh-hant",
+        "hr",
+        "cs",
+        "da",
+        "nl",
+        "en",
+        "en-gb",
+        "et",
+        "fi",
+        "fr",
+        "gl",
+        "de",
+        "el",
+        "gu",
+        "he",
+        "hi",
+        "hu",
+        "is",
+        "it",
+        "ja",
+        "jp",
+        "kn",
+        "ko",
+        "lv",
+        "lt",
+        "ms",
+        "ml",
+        "mr",
+        "nb",
+        "pl",
+        "pt-br",
+        "pt-pt",
+        "pa",
+        "ro",
+        "ru",
+        "sr",
+        "sk",
+        "sl",
+        "es",
+        "sv",
+        "ta",
+        "te",
+        "th",
+        "tr",
+        "uk",
+        "vi"
+      ],
+      "title": "Language"
+    },
+    "LocalPoiSearchApiResponse": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "local_pois"
+          ],
+          "const": "local_pois",
+          "title": "Type",
+          "default": "local_pois"
+        },
+        "results": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/LocationResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Results",
+          "description": "The list of location results (POIs) for the given location identifiers."
+        }
+      },
+      "type": "object",
+      "title": "LocalPoiSearchApiResponse"
+    },
+    "LocationResult": {
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "Title",
+          "description": "The title of the web page."
+        },
+        "url": {
+          "type": "string",
+          "title": "Url",
+          "description": "The URL where the page is served."
+        },
+        "is_source_local": {
+          "type": "boolean",
+          "title": "Is Source Local",
+          "description": "Whether the result is from a local source.",
+          "default": false
+        },
+        "is_source_both": {
+          "type": "boolean",
+          "title": "Is Source Both",
+          "description": "Whether the result is from both local and global sources.",
+          "default": false
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Description",
+          "description": "A description for the web page.",
+          "default": ""
+        },
+        "page_age": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Page Age",
+          "description": "The page’s date, based on its published or last modified date."
+        },
+        "page_fetched": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Page Fetched",
+          "description": "A date representing when the web page was last fetched."
+        },
+        "fetched_content_timestamp": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Fetched Content Timestamp",
+          "description": "The timestamp when the content was fetched."
+        },
+        "profile": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/app__models__products__search__v1__shared__Profile"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "A profile associated with the web page."
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Language",
+          "description": "A language classification for the web page."
+        },
+        "family_friendly": {
+          "type": "boolean",
+          "title": "Family Friendly",
+          "description": "Whether the web page is family friendly.",
+          "default": true
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "location_result"
+          ],
+          "const": "location_result",
+          "title": "Type",
+          "description": "Location result type identifier. The value is always <code>location_result</code>.",
+          "default": "location_result"
+        },
+        "provider_url": {
+          "type": "string",
+          "title": "Provider Url",
+          "description": "The complete URL of the provider."
+        },
+        "coordinates": {
+          "anyOf": [
+            {
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array",
+              "maxItems": 2,
+              "minItems": 2
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Coordinates",
+          "description": "A list of coordinates associated with the location. This is a lat long represented as a floating point."
+        },
+        "zoom_level": {
+          "type": "integer",
+          "title": "Zoom Level",
+          "description": "The zoom level on the map.",
+          "default": 7
+        },
+        "thumbnail": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/app__models__products__search__v1__shared__Thumbnail"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The thumbnail associated with the location."
+        },
+        "postal_address": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/PostalAddress"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The postal address associated with the location."
+        },
+        "opening_hours": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/OpeningHours"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The opening hours, if it is a business, associated with the location."
+        },
+        "contact": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/Contact"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The contact of the business associated with the location."
+        },
+        "price_range": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Price Range",
+          "description": "A display string used to show the price classification for the business."
+        },
+        "rating": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/app__models__products__search__v1__shared__Rating"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The ratings of the business."
+        },
+        "distance": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/Unit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The distance of the location from the client."
+        },
+        "profiles": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/components/schemas/app__models__products__search__v1__shared__DataProvider"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Profiles",
+          "description": "Profiles associated with the business."
+        },
+        "reviews": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/Reviews"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Aggregated reviews from various sources relevant to the business."
+        },
+        "pictures": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/PictureResults"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "A bunch of pictures associated with the business."
+        },
+        "action": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/Action"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "An action to be taken."
+        },
+        "serves_cuisine": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Serves Cuisine",
+          "description": "A list of cuisine categories served."
+        },
+        "categories": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "title": "Categories",
+          "description": "A list of categories.",
+          "default": []
+        },
+        "icon_category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Icon Category",
+          "description": "An icon category."
+        },
+        "timezone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Timezone",
+          "description": "IANA timezone identifier."
+        },
+        "timezone_offset": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Timezone Offset",
+          "description": "The UTC offset of the timezone."
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Id",
+          "description": "A temporary id associated with this result, which can be used to retrieve extra information about the location. It remains valid for 8 hours."
+        },
+        "results": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/components/schemas/LocationWebResult"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Results",
+          "description": "Web results related to this location."
+        }
+      },
+      "type": "object",
+      "required": [
+        "title",
+        "url",
+        "provider_url"
+      ],
+      "title": "LocationResult",
+      "description": "A result that is location relevant."
+    },
+    "LocationWebResult": {
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "Title",
+          "description": "The title of the web page."
+        },
+        "url": {
+          "type": "string",
+          "title": "Url",
+          "description": "The URL where the page is served."
+        },
+        "is_source_local": {
+          "type": "boolean",
+          "title": "Is Source Local",
+          "description": "Whether the result is from a local source.",
+          "default": false
+        },
+        "is_source_both": {
+          "type": "boolean",
+          "title": "Is Source Both",
+          "description": "Whether the result is from both local and global sources.",
+          "default": false
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Description",
+          "description": "A description for the web page.",
+          "default": ""
+        },
+        "page_age": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Page Age",
+          "description": "The page’s date, based on its published or last modified date."
+        },
+        "page_fetched": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Page Fetched",
+          "description": "A date representing when the web page was last fetched."
+        },
+        "fetched_content_timestamp": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Fetched Content Timestamp",
+          "description": "The timestamp when the content was fetched."
+        },
+        "profile": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/app__models__products__search__v1__shared__Profile"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "A profile associated with the web page."
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Language",
+          "description": "A language classification for the web page."
+        },
+        "family_friendly": {
+          "type": "boolean",
+          "title": "Family Friendly",
+          "description": "Whether the web page is family friendly.",
+          "default": true
+        },
+        "meta_url": {
+          "$ref": "#/components/schemas/app__models__products__search__v1__shared__MetaUrl",
+          "description": "Aggregated information about the URL."
+        }
+      },
+      "type": "object",
+      "required": [
+        "title",
+        "url",
+        "meta_url"
+      ],
+      "title": "LocationWebResult",
+      "description": "A model representing a web result related to a location."
+    },
+    "MarketCodes": {
+      "type": "string",
+      "enum": [
+        "es-AR",
+        "en-AU",
+        "de-AT",
+        "nl-BE",
+        "fr-BE",
+        "pt-BR",
+        "en-CA",
+        "fr-CA",
+        "es-CL",
+        "da-DK",
+        "fi-FI",
+        "fr-FR",
+        "de-DE",
+        "el-GR",
+        "zh-HK",
+        "en-IN",
+        "en-ID",
+        "it-IT",
+        "ja-JP",
+        "ko-KR",
+        "en-MY",
+        "es-MX",
+        "nl-NL",
+        "en-NZ",
+        "no-NO",
+        "zh-CN",
+        "pl-PL",
+        "en-PH",
+        "ru-RU",
+        "en-ZA",
+        "es-ES",
+        "sv-SE",
+        "fr-CH",
+        "de-CH",
+        "zh-TW",
+        "tr-TR",
+        "en-GB",
+        "en-US",
+        "es-US"
+      ],
+      "title": "MarketCodes"
+    },
+    "MeasurementUnit": {
+      "type": "string",
+      "enum": [
+        "imperial",
+        "metric"
+      ],
+      "title": "MeasurementUnit"
+    },
+    "OpeningHours": {
+      "properties": {
+        "current_day": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/components/schemas/DayOpeningHours"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Current Day",
+          "description": "The current day opening hours. Can have two sets of opening hours."
+        },
+        "days": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "$ref": "#/components/schemas/DayOpeningHours"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Days",
+          "description": "The opening hours for the whole week."
+        }
+      },
+      "type": "object",
+      "title": "OpeningHours",
+      "description": "Opening hours of a business at a particular location."
+    },
+    "Person": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "person"
+          ],
+          "const": "person",
+          "title": "Type",
+          "description": "A type identifying a person. The value is always <code>person</code>.",
+          "default": "person"
+        },
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "description": "The name of the thing."
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Url",
+          "description": "A URL for the thing."
+        },
+        "thumbnail": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/app__models__products__search__v1__shared__Thumbnail"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Thumbnail associated with the thing."
+        },
+        "email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Email",
+          "description": "Email address of the person."
+        }
+      },
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "title": "Person",
+      "description": "A model describing a person entity."
+    },
+    "PictureResults": {
+      "properties": {
+        "viewMoreUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Viewmoreurl",
+          "description": "A URL to view more pictures."
+        },
+        "results": {
+          "items": {
+            "$ref": "#/components/schemas/app__models__products__search__v1__shared__Thumbnail"
+          },
+          "type": "array",
+          "title": "Results",
+          "description": "A list of thumbnail results."
+        }
+      },
+      "type": "object",
+      "required": [
+        "viewMoreUrl",
+        "results"
+      ],
+      "title": "PictureResults",
+      "description": "A model representing a list of pictures."
+    },
+    "PostalAddress": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "PostalAddress"
+          ],
+          "const": "PostalAddress",
+          "title": "Type",
+          "description": "The type identifying a postal address. The value is always <code>PostalAddress</code>.",
+          "default": "PostalAddress"
+        },
+        "country": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Country",
+          "description": "The country associated with the location."
+        },
+        "postalCode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Postalcode",
+          "description": "The postal code associated with the location."
+        },
+        "streetAddress": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Streetaddress",
+          "description": "The street address associated with the location."
+        },
+        "addressRegion": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Addressregion",
+          "description": "The region associated with the location. This is usually a state."
+        },
+        "addressLocality": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Addresslocality",
+          "description": "The address locality or subregion associated with the location."
+        },
+        "displayAddress": {
+          "type": "string",
+          "title": "Displayaddress",
+          "description": "The displayed address string."
+        }
+      },
+      "type": "object",
+      "required": [
+        "displayAddress"
+      ],
+      "title": "PostalAddress",
+      "description": "A model representing a postal address of a location."
+    },
+    "Reviews": {
+      "properties": {
+        "results": {
+          "items": {
+            "$ref": "#/components/schemas/TripadvisorReview"
+          },
+          "type": "array",
+          "title": "Results",
+          "description": "A list of trip advisor reviews for the entity."
+        },
+        "viewMoreUrl": {
+          "type": "string",
+          "title": "Viewmoreurl",
+          "description": "A URL to a web page where more information on the result can be seen."
+        },
+        "reviews_in_foreign_language": {
+          "type": "boolean",
+          "title": "Reviews In Foreign Language",
+          "description": "Any reviews available in a foreign language."
+        }
+      },
+      "type": "object",
+      "required": [
+        "results",
+        "viewMoreUrl",
+        "reviews_in_foreign_language"
+      ],
+      "title": "Reviews",
+      "description": "The reviews associated with an entity."
+    },
+    "TripadvisorReview": {
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "Title",
+          "description": "The title of the review."
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "description": "A description seen in the review."
+        },
+        "date": {
+          "type": "string",
+          "title": "Date",
+          "description": "The date when the review was published."
+        },
+        "rating": {
+          "$ref": "#/components/schemas/app__models__products__search__v1__shared__Rating",
+          "description": "A rating given by the reviewer."
+        },
+        "author": {
+          "$ref": "#/components/schemas/Person",
+          "description": "The author of the review."
+        },
+        "review_url": {
+          "type": "string",
+          "title": "Review Url",
+          "description": "A URL link to the page where the review can be found."
+        },
+        "language": {
+          "type": "string",
+          "title": "Language",
+          "description": "The language of the review."
+        }
+      },
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "date",
+        "rating",
+        "author",
+        "review_url",
+        "language"
+      ],
+      "title": "TripadvisorReview",
+      "description": "A model representing a Tripadvisor review."
+    },
+    "Unit": {
+      "properties": {
+        "value": {
+          "type": "number",
+          "title": "Value",
+          "description": "The quantity of the unit."
+        },
+        "units": {
+          "type": "string",
+          "title": "Units",
+          "description": "The name of the unit associated with the quantity."
+        }
+      },
+      "type": "object",
+      "required": [
+        "value",
+        "units"
+      ],
+      "title": "Unit",
+      "description": "A model representing a unit of measurement."
+    },
+    "app__models__products__search__v1__shared__DataProvider": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "external"
+          ],
+          "const": "external",
+          "title": "Type",
+          "description": "The type representing the source of data. This is usually <code>external</code>.",
+          "default": "external"
+        },
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "description": "The name of the data provider. This can be a domain."
+        },
+        "url": {
+          "type": "string",
+          "title": "Url",
+          "description": "The URL where the information is coming from."
+        },
+        "long_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Long Name",
+          "description": "The long name for the data provider."
+        },
+        "img": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Img",
+          "description": "The served URL for the image data."
+        }
+      },
+      "type": "object",
+      "required": [
+        "name",
+        "url"
+      ],
+      "title": "DataProvider",
+      "description": "A model representing the data provider associated with the entity."
+    },
+    "app__models__products__search__v1__shared__MetaUrl": {
+      "properties": {
+        "scheme": {
+          "type": "string",
+          "title": "Scheme",
+          "description": "The protocol scheme extracted from the URL."
+        },
+        "netloc": {
+          "type": "string",
+          "title": "Netloc",
+          "description": "The network location part extracted from the URL."
+        },
+        "hostname": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Hostname",
+          "description": "The lowercased domain name extracted from the URL."
+        },
+        "favicon": {
+          "type": "string",
+          "title": "Favicon",
+          "description": "The favicon used for the URL."
+        },
+        "path": {
+          "type": "string",
+          "title": "Path",
+          "description": "The hierarchical path of the URL useful as a display string."
+        }
+      },
+      "type": "object",
+      "required": [
+        "scheme",
+        "netloc",
+        "favicon",
+        "path"
+      ],
+      "title": "MetaUrl",
+      "description": "Aggregated information about a URL."
+    },
+    "app__models__products__search__v1__shared__Profile": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "description": "The name of the profile."
+        },
+        "url": {
+          "type": "string",
+          "title": "Url",
+          "description": "The original URL where the profile is available."
+        },
+        "long_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Long Name",
+          "description": "The long name of the profile."
+        },
+        "img": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Img",
+          "description": "The served image URL representing the profile."
+        }
+      },
+      "type": "object",
+      "required": [
+        "name",
+        "url"
+      ],
+      "title": "Profile",
+      "description": "A profile of an entity."
+    },
+    "app__models__products__search__v1__shared__Rating": {
+      "properties": {
+        "ratingValue": {
+          "type": "number",
+          "minimum": 0,
+          "title": "Ratingvalue",
+          "description": "The current value of the rating."
+        },
+        "bestRating": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "title": "Bestrating",
+          "description": "Best rating received."
+        },
+        "reviewCount": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reviewcount",
+          "description": "The number of reviews associated with the rating."
+        },
+        "profile": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/app__models__products__search__v1__shared__Profile"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The profile associated with the rating."
+        },
+        "is_tripadvisor": {
+          "type": "boolean",
+          "title": "Is Tripadvisor",
+          "description": "Whether the rating is coming from Tripadvisor.",
+          "default": false
+        }
+      },
+      "type": "object",
+      "required": [
+        "ratingValue",
+        "bestRating"
+      ],
+      "title": "Rating",
+      "description": "The rating associated with an entity."
+    },
+    "app__models__products__search__v1__shared__Thumbnail": {
+      "properties": {
+        "src": {
+          "type": "string",
+          "title": "Src",
+          "description": "The served URL of the picture thumbnail."
+        },
+        "alt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Alt",
+          "description": "The alt text for the thumbnail image."
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Height",
+          "description": "The height of the thumbnail."
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Width",
+          "description": "The width of the thumbnail."
+        },
+        "bg_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Bg Color",
+          "description": "The background color of the thumbnail."
+        },
+        "original": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Original",
+          "description": "The original URL of the image."
+        },
+        "logo": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Logo",
+          "description": "Whether the thumbnail is a logo."
+        },
+        "duplicated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Duplicated",
+          "description": "Whether the thumbnail is a duplicate."
+        },
+        "theme": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Theme",
+          "description": "The theme of the thumbnail (e.g., light or dark)."
+        }
+      },
+      "type": "object",
+      "required": [
+        "src"
+      ],
+      "title": "Thumbnail",
+      "description": "Aggregated details representing a picture thumbnail."
+    }
+  },
+  "methodVariants": [
+    {
+      "method": "get",
+      "href": "/api-reference/web/local_pois",
+      "active": true
+    }
+  ]
+}

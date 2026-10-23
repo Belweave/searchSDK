@@ -28,9 +28,15 @@ import { createContextClient } from '@belweave/search-sdk/native-context';
 import { createTinyfishClient } from '@belweave/search-sdk/native-tinyfish';
 import { createFileCheckpointStore } from '@belweave/search-sdk/durable-node';
 import { runDurableOperation } from '@belweave/search-sdk/durable';
+import { createSearchGateway } from '@belweave/search-sdk/gateway';
 const search = createSearch({ provider: createMockProvider(), retry: { maxRetries: 1 }, maxConcurrency: 2, deduplicate: true, cache: { ttlMs: 1000, maxEntries: 4 } });
 const result: SearchResponse = await search.web.search({ query: 'fixture' });
 void result;
+const gateway = createSearchGateway({ search, authorize: () => true });
+const gatewayResponse = await gateway(new Request('https://app.example/search', {
+  method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ query: 'fixture' }),
+}));
+if (gatewayResponse.status !== 200) throw new Error('Packaged gateway failed');
 const context = createContextClient({ apiKey: 'not-a-live-key' });
 const tinyfish = createTinyfishClient({ apiKey: 'not-a-live-key' });
 void context; void tinyfish; void createFileCheckpointStore; void runDurableOperation;
@@ -42,6 +48,7 @@ void context; void tinyfish; void createFileCheckpointStore; void runDurableOper
     console.log(`Packed consumer declarations: ${moduleResolution} (skipLibCheck: false)`);
   }
   process.stdout.write(command(process.execPath, ["exports.mjs"]));
+  process.stdout.write(command(process.execPath, ["consumer.ts"]));
   console.log(`Package boundary verified: ${packed.files.length} files, ${packed.size} bytes packed.`);
 } catch (error) {
   if (error?.stdout) process.stderr.write(String(error.stdout));

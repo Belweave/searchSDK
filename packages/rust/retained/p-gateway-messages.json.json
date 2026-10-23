@@ -1,0 +1,1186 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Perplexity Orchestrator API (Anthropic-compatible)",
+    "description": "Anthropic Messages-compatible access to models across providers.",
+    "version": "0.5.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.perplexity.ai"
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/router/v1/messages": {
+      "post": {
+        "summary": "Create Message",
+        "description": "Send a conversation to any Orchestrator API model using the Anthropic Messages schema. Set `stream: true` to receive server-sent events. Authenticate with your Perplexity API key — both `Authorization: Bearer` and the Anthropic SDK's default `x-api-key` header are accepted.",
+        "operationId": "gateway_create_message",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response. JSON for non-streaming requests; a `text/event-stream` of typed events (`message_start` through `message_stop`) when `stream` is true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — malformed body, unsupported parameter, or a model that is not available on the Orchestrator API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded or the upstream model is overloaded. Retry after the `Retry-After` interval.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateMessageRequest": {
+        "type": "object",
+        "description": "Request body for POST /router/v1/messages.",
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "Public model slug, e.g. `perplexity/kimi-k3`."
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Maximum number of tokens to generate. Required by the Messages API."
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InputMessage"
+            }
+          },
+          "system": {
+            "description": "System prompt as plain text or an array of text blocks.",
+            "oneOf": [
+              {
+                "type": "string",
+                "title": "Text"
+              },
+              {
+                "type": "array",
+                "title": "Text blocks",
+                "items": {
+                  "$ref": "#/components/schemas/TextBlock"
+                }
+              }
+            ]
+          },
+          "temperature": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "top_p": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "top_k": {
+            "type": "integer",
+            "description": "Only sample from the top K options for each subsequent token."
+          },
+          "stop_sequences": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "When true, respond with server-sent events."
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tool"
+            }
+          },
+          "tool_choice": {
+            "$ref": "#/components/schemas/ToolChoice"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/RequestMetadata"
+          },
+          "thinking": {
+            "$ref": "#/components/schemas/ThinkingConfig"
+          },
+          "service_tier": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "standard_only"
+            ],
+            "description": "Accepted and ignored — llm-api's service_tier is OpenAI-only."
+          },
+          "cache_control": {
+            "$ref": "#/components/schemas/CacheControl"
+          },
+          "output_config": {
+            "$ref": "#/components/schemas/OutputConfig"
+          },
+          "context_management": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Accepted and ignored — context edits are not applied. Kept raw so evolving strategies decode.",
+            "x-go-type": "json.RawMessage"
+          },
+          "container": {
+            "description": "Rejected by validation — no code-execution containers.",
+            "x-go-type": "json.RawMessage"
+          },
+          "inference_geo": {
+            "type": "string",
+            "description": "Rejected by validation — geo pinning cannot be honored, silently ignoring it would break residency expectations."
+          },
+          "mcp_servers": {
+            "description": "Rejected by validation — no server-side MCP execution.",
+            "x-go-type": "json.RawMessage"
+          },
+          "speed": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "fast"
+            ],
+            "description": "\"standard\" is inert; \"fast\" is rejected (no fast-mode routing)."
+          },
+          "fallbacks": {
+            "description": "Rejected by validation — fallback models would bill as the requested slug.",
+            "x-go-type": "json.RawMessage"
+          },
+          "fallback_credit_token": {
+            "type": "string",
+            "description": "Rejected by validation together with fallbacks."
+          }
+        },
+        "required": [
+          "model",
+          "max_tokens",
+          "messages"
+        ]
+      },
+      "Message": {
+        "type": "object",
+        "description": "Non-streaming response body and the message_start payload.",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "message"
+            ]
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "assistant"
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentBlock"
+            }
+          },
+          "stop_reason": {
+            "type": "string",
+            "enum": [
+              "end_turn",
+              "max_tokens",
+              "stop_sequence",
+              "tool_use",
+              "pause_turn",
+              "refusal",
+              "model_context_window_exceeded"
+            ],
+            "nullable": true
+          },
+          "stop_sequence": {
+            "type": "string",
+            "nullable": true
+          },
+          "usage": {
+            "$ref": "#/components/schemas/Usage"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "role",
+          "model",
+          "content",
+          "stop_reason",
+          "stop_sequence",
+          "usage"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Error envelope, as a JSON body and as the SSE error event payload.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorObject"
+          }
+        },
+        "required": [
+          "type",
+          "error"
+        ]
+      },
+      "InputMessage": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant",
+              "system"
+            ]
+          },
+          "content": {
+            "description": "Message content as plain text or an array of content blocks.",
+            "oneOf": [
+              {
+                "type": "string",
+                "title": "Text"
+              },
+              {
+                "type": "array",
+                "title": "Content blocks",
+                "items": {
+                  "$ref": "#/components/schemas/InputContentBlock"
+                }
+              }
+            ]
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ]
+      },
+      "TextBlock": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "text"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "cache_control": {
+            "$ref": "#/components/schemas/CacheControl"
+          }
+        },
+        "required": [
+          "type",
+          "text"
+        ]
+      },
+      "Tool": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "custom"
+            ],
+            "description": "Optional explicit tool kind; `custom` is the default. Server tool types are rejected by validation."
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "input_schema": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "JSON Schema for the tool input, kept as raw JSON and forwarded verbatim.",
+            "x-go-type": "json.RawMessage"
+          },
+          "cache_control": {
+            "$ref": "#/components/schemas/CacheControl"
+          },
+          "strict": {
+            "type": "boolean",
+            "description": "Forwarded to llm-api; guarantees schema-valid tool input where the provider supports it."
+          },
+          "defer_loading": {
+            "type": "boolean",
+            "description": "Forwarded to llm-api with the deferred-tool-loading beta."
+          },
+          "input_examples": {
+            "description": "Accepted and ignored — llm-api has no carrier; a quality hint, not a contract.",
+            "x-go-type": "json.RawMessage"
+          },
+          "eager_input_streaming": {
+            "type": "boolean",
+            "description": "Accepted and ignored — fine-grained tool streaming is not enabled on this path."
+          },
+          "allowed_callers": {
+            "description": "Accepted and ignored — meaningless without code-execution tools.",
+            "x-go-type": "json.RawMessage"
+          }
+        },
+        "required": [
+          "name",
+          "input_schema"
+        ]
+      },
+      "ToolChoice": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ToolChoiceAuto"
+          },
+          {
+            "$ref": "#/components/schemas/ToolChoiceAny"
+          },
+          {
+            "$ref": "#/components/schemas/ToolChoiceTool"
+          },
+          {
+            "$ref": "#/components/schemas/ToolChoiceNone"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "auto": "#/components/schemas/ToolChoiceAuto",
+            "any": "#/components/schemas/ToolChoiceAny",
+            "tool": "#/components/schemas/ToolChoiceTool",
+            "none": "#/components/schemas/ToolChoiceNone"
+          }
+        }
+      },
+      "RequestMetadata": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ThinkingConfig": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ThinkingConfigEnabled"
+          },
+          {
+            "$ref": "#/components/schemas/ThinkingConfigAdaptive"
+          },
+          {
+            "$ref": "#/components/schemas/ThinkingConfigDisabled"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "enabled": "#/components/schemas/ThinkingConfigEnabled",
+            "adaptive": "#/components/schemas/ThinkingConfigAdaptive",
+            "disabled": "#/components/schemas/ThinkingConfigDisabled"
+          }
+        }
+      },
+      "CacheControl": {
+        "type": "object",
+        "description": "Ephemeral cache breakpoint. ttl \"1h\" is rejected until 1h writes are billed distinctly (they price 2x the 5m rate).",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "ephemeral"
+            ]
+          },
+          "ttl": {
+            "type": "string",
+            "enum": [
+              "5m",
+              "1h"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "OutputConfig": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "$ref": "#/components/schemas/OutputConfigFormat"
+          },
+          "effort": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ]
+          },
+          "task_budget": {
+            "description": "Accepted and ignored — llm-api has no task-budget carrier.",
+            "x-go-type": "json.RawMessage"
+          }
+        }
+      },
+      "ContentBlock": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TextBlock"
+          },
+          {
+            "$ref": "#/components/schemas/ToolUseBlock"
+          },
+          {
+            "$ref": "#/components/schemas/ThinkingBlock"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "text": "#/components/schemas/TextBlock",
+            "tool_use": "#/components/schemas/ToolUseBlock",
+            "thinking": "#/components/schemas/ThinkingBlock"
+          }
+        }
+      },
+      "Usage": {
+        "type": "object",
+        "properties": {
+          "input_tokens": {
+            "type": "integer"
+          },
+          "output_tokens": {
+            "type": "integer"
+          },
+          "cache_creation_input_tokens": {
+            "type": "integer",
+            "nullable": true
+          },
+          "cache_read_input_tokens": {
+            "type": "integer",
+            "nullable": true
+          },
+          "cache_creation": {
+            "$ref": "#/components/schemas/CacheCreation"
+          },
+          "service_tier": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "input_tokens",
+          "output_tokens",
+          "cache_creation_input_tokens",
+          "cache_read_input_tokens"
+        ]
+      },
+      "ErrorObject": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "invalid_request_error",
+              "authentication_error",
+              "permission_error",
+              "not_found_error",
+              "request_too_large",
+              "rate_limit_error",
+              "api_error",
+              "timeout_error",
+              "overloaded_error"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "message"
+        ]
+      },
+      "InputContentBlock": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TextBlock"
+          },
+          {
+            "$ref": "#/components/schemas/ImageBlock"
+          },
+          {
+            "$ref": "#/components/schemas/DocumentBlock"
+          },
+          {
+            "$ref": "#/components/schemas/SearchResultBlock"
+          },
+          {
+            "$ref": "#/components/schemas/ToolUseBlock"
+          },
+          {
+            "$ref": "#/components/schemas/ToolResultBlock"
+          },
+          {
+            "$ref": "#/components/schemas/ThinkingBlock"
+          },
+          {
+            "$ref": "#/components/schemas/RedactedThinkingBlock"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "text": "#/components/schemas/TextBlock",
+            "image": "#/components/schemas/ImageBlock",
+            "document": "#/components/schemas/DocumentBlock",
+            "search_result": "#/components/schemas/SearchResultBlock",
+            "tool_use": "#/components/schemas/ToolUseBlock",
+            "tool_result": "#/components/schemas/ToolResultBlock",
+            "thinking": "#/components/schemas/ThinkingBlock",
+            "redacted_thinking": "#/components/schemas/RedactedThinkingBlock"
+          }
+        }
+      },
+      "ToolChoiceAuto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "auto"
+            ]
+          },
+          "disable_parallel_tool_use": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "ToolChoiceAny": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "any"
+            ]
+          },
+          "disable_parallel_tool_use": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "ToolChoiceTool": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "tool"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "disable_parallel_tool_use": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type",
+          "name"
+        ]
+      },
+      "ToolChoiceNone": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "none"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "ThinkingConfigEnabled": {
+        "type": "object",
+        "description": "Legacy budget-based thinking; budget_tokens maps to the nearest llm-api reasoning-effort tier.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "enabled"
+            ]
+          },
+          "budget_tokens": {
+            "type": "integer"
+          },
+          "display": {
+            "$ref": "#/components/schemas/ThinkingDisplay"
+          }
+        },
+        "required": [
+          "type",
+          "budget_tokens"
+        ]
+      },
+      "ThinkingConfigAdaptive": {
+        "type": "object",
+        "description": "Model-controlled thinking; maps to llm-api auto thinking.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "adaptive"
+            ]
+          },
+          "display": {
+            "$ref": "#/components/schemas/ThinkingDisplay"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "ThinkingConfigDisabled": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "disabled"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "OutputConfigFormat": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "json_schema"
+            ]
+          },
+          "schema": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "JSON Schema for the response, kept as raw JSON and forwarded verbatim.",
+            "x-go-type": "json.RawMessage"
+          }
+        },
+        "required": [
+          "type",
+          "schema"
+        ]
+      },
+      "ToolUseBlock": {
+        "type": "object",
+        "description": "Tool invocation, in assistant history and in responses.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "tool_use"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "input": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Kept as raw JSON so caller bytes (e.g. int64 ids) pass through verbatim.",
+            "x-go-type": "json.RawMessage"
+          },
+          "cache_control": {
+            "$ref": "#/components/schemas/CacheControl"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "input"
+        ]
+      },
+      "ThinkingBlock": {
+        "type": "object",
+        "description": "Extended-thinking output; in requests only as replayed history. Empty thinking text is valid under display \"omitted\".",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "thinking"
+            ]
+          },
+          "thinking": {
+            "type": "string"
+          },
+          "signature": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "thinking",
+          "signature"
+        ]
+      },
+      "CacheCreation": {
+        "type": "object",
+        "description": "Cache-write breakdown by TTL. 1h stays zero until explicit 1h breakpoints are billable.",
+        "properties": {
+          "ephemeral_5m_input_tokens": {
+            "type": "integer"
+          },
+          "ephemeral_1h_input_tokens": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ephemeral_5m_input_tokens",
+          "ephemeral_1h_input_tokens"
+        ]
+      },
+      "ImageBlock": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "image"
+            ]
+          },
+          "source": {
+            "$ref": "#/components/schemas/ImageSource"
+          },
+          "cache_control": {
+            "$ref": "#/components/schemas/CacheControl"
+          }
+        },
+        "required": [
+          "type",
+          "source"
+        ]
+      },
+      "DocumentBlock": {
+        "type": "object",
+        "description": "Document input. Base64 application/pdf, plain-text, and URL sources map to llm-api (non-base64 sources and title/context on anthropic/ models only); the content source and citation config are rejected by validation.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "document"
+            ]
+          },
+          "source": {
+            "$ref": "#/components/schemas/DocumentSource"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "context": {
+            "type": "string",
+            "nullable": true
+          },
+          "citations": {
+            "description": "Non-null citation config is rejected — the Orchestrator API never emits citations.",
+            "x-go-type": "json.RawMessage"
+          },
+          "cache_control": {
+            "$ref": "#/components/schemas/CacheControl"
+          }
+        },
+        "required": [
+          "type",
+          "source"
+        ]
+      },
+      "SearchResultBlock": {
+        "type": "object",
+        "description": "RAG search result with source attribution. Maps to llm-api on anthropic/ models only; the citation config is rejected by validation.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "search_result"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "description": "Source URL or identifier for the result."
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResultTextBlock"
+            }
+          },
+          "citations": {
+            "description": "Non-null citation config is rejected — the Orchestrator API never emits citations.",
+            "x-go-type": "json.RawMessage"
+          },
+          "cache_control": {
+            "$ref": "#/components/schemas/CacheControl"
+          }
+        },
+        "required": [
+          "type",
+          "source",
+          "title",
+          "content"
+        ]
+      },
+      "ToolResultBlock": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "tool_result"
+            ]
+          },
+          "tool_use_id": {
+            "type": "string"
+          },
+          "content": {
+            "description": "Tool output as plain text or an array of content blocks.",
+            "oneOf": [
+              {
+                "type": "string",
+                "title": "Text"
+              },
+              {
+                "type": "array",
+                "title": "Content blocks",
+                "items": {
+                  "$ref": "#/components/schemas/ToolResultContentBlock"
+                }
+              }
+            ]
+          },
+          "is_error": {
+            "type": "boolean"
+          },
+          "cache_control": {
+            "$ref": "#/components/schemas/CacheControl"
+          }
+        },
+        "required": [
+          "type",
+          "tool_use_id"
+        ]
+      },
+      "RedactedThinkingBlock": {
+        "type": "object",
+        "description": "Redacted thinking replay. Accepted by the spec, rejected by validation.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "redacted_thinking"
+            ]
+          },
+          "data": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "data"
+        ]
+      },
+      "ThinkingDisplay": {
+        "type": "string",
+        "enum": [
+          "summarized",
+          "omitted"
+        ]
+      },
+      "ImageSource": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Base64ImageSource"
+          },
+          {
+            "$ref": "#/components/schemas/URLImageSource"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "base64": "#/components/schemas/Base64ImageSource",
+            "url": "#/components/schemas/URLImageSource"
+          }
+        }
+      },
+      "DocumentSource": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Base64DocumentSource"
+          },
+          {
+            "$ref": "#/components/schemas/PlainTextDocumentSource"
+          },
+          {
+            "$ref": "#/components/schemas/URLDocumentSource"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "base64": "#/components/schemas/Base64DocumentSource",
+            "text": "#/components/schemas/PlainTextDocumentSource",
+            "url": "#/components/schemas/URLDocumentSource"
+          }
+        }
+      },
+      "SearchResultTextBlock": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "text"
+            ]
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "text"
+        ]
+      },
+      "ToolResultContentBlock": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TextBlock"
+          },
+          {
+            "$ref": "#/components/schemas/ImageBlock"
+          },
+          {
+            "$ref": "#/components/schemas/DocumentBlock"
+          },
+          {
+            "$ref": "#/components/schemas/SearchResultBlock"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "text": "#/components/schemas/TextBlock",
+            "image": "#/components/schemas/ImageBlock",
+            "document": "#/components/schemas/DocumentBlock",
+            "search_result": "#/components/schemas/SearchResultBlock"
+          }
+        }
+      },
+      "Base64ImageSource": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "base64"
+            ]
+          },
+          "media_type": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/gif",
+              "image/webp"
+            ]
+          },
+          "data": {
+            "type": "string",
+            "description": "Base64-encoded image bytes, kept as a string end to end."
+          }
+        },
+        "required": [
+          "type",
+          "media_type",
+          "data"
+        ]
+      },
+      "URLImageSource": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "url"
+            ]
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "url"
+        ]
+      },
+      "Base64DocumentSource": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "base64"
+            ]
+          },
+          "media_type": {
+            "type": "string",
+            "enum": [
+              "application/pdf"
+            ]
+          },
+          "data": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "media_type",
+          "data"
+        ]
+      },
+      "PlainTextDocumentSource": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "text"
+            ]
+          },
+          "media_type": {
+            "type": "string",
+            "enum": [
+              "text/plain"
+            ]
+          },
+          "data": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "media_type",
+          "data"
+        ]
+      },
+      "URLDocumentSource": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "url"
+            ]
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "url"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Your Perplexity API key."
+      }
+    }
+  }
+}

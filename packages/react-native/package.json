@@ -1,0 +1,38 @@
+{
+  "name": "@belweave/search-sdk-react-native",
+  "version": "0.1.0-alpha.0",
+  "description": "Application-owned search gateway client for React Native, with bounded responses and explicit transport security.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "react-native": "./dist/react-native.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "react-native": "./dist/react-native.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "README.md", "LICENSE", "examples", "ios", "android/src", "android/build.gradle", "android/consumer-rules.pro", "SearchSDKReactNative.podspec", "react-native.config.cjs"],
+  "peerDependencies": { "react-native": ">=0.76 <1" },
+  "peerDependenciesMeta": { "react-native": { "optional": true } },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test --test-concurrency=1 test/*.test.mjs",
+    "test:package": "node scripts/verify-package.mjs",
+    "test:native:ios": "swift test --scratch-path .local/swift-build --jobs 2",
+    "test:native:android": "node scripts/verify-android.mjs"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Belweave/searchSDK.git",
+    "directory": "packages/react-native"
+  },
+  "homepage": "https://searchsdk.dev",
+  "bugs": { "url": "https://github.com/Belweave/searchSDK/issues" },
+  "publishConfig": { "access": "public", "tag": "alpha", "registry": "https://registry.npmjs.org/" }
+}
