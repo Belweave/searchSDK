@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { sdks, sdkHref, sdkReadme } from '../apps/web/src/sdk-catalog.ts';
+import { sdks, sdkHref, sdkReadme, sdkSourceUrl } from '../apps/web/src/sdk-catalog.ts';
 import { legalPages } from '../apps/web/src/legal-content.ts';
 
 export const siteOrigin = 'https://searchsdk.dev';
@@ -34,12 +34,12 @@ export function articleMarkdown(article) {
 
 export function siteRoutes(docArticles) {
   return [
-    { path: '/', title: 'searchSDK · Search anywhere. In your language.', description: 'Twelve language and platform SDKs. Fifteen provider integrations. Search from your server or app, with sources and every attempt.' },
-    { path: '/providers', title: 'Providers · searchSDK', description: 'Compare 15 provider integrations, explore their search and native API capabilities, and find the supported SDK surface for each.' },
-    { path: '/playground', title: 'Playground · searchSDK', description: 'Run live server-side searches with your own provider keys. Inspect real sources, fallback attempts, JSON, and a TypeScript example.' },
+    { path: '/', title: 'searchSDK — Open-source search SDKs for web and AI apps', description: 'An open-source search SDK for web search, AI agents and apps. Explore 12 language and platform SDKs, 15 provider integrations, source provenance and explicit fallback.' },
+    { path: '/providers', title: 'Compare search API providers and SDK integrations · searchSDK', description: 'Compare 15 provider integrations, explore their search and native API capabilities, and find the supported SDK surface for each.' },
+    { path: '/playground', title: 'Search API playground · searchSDK', description: 'Run live server-side searches with your own provider keys. Inspect real sources, fallback attempts, JSON, and a TypeScript example.' },
     { path: '/benchmarks', title: 'Search provider benchmarks · searchSDK', description: 'In development: reproducible comparisons of search relevance, latency, cost, and reliability. No benchmark scores published yet.' },
     ...legalPages.map(page => ({ path: page.path, title: `${page.title} · searchSDK`, description: page.description, legal: page })),
-    ...docArticles.map(article => ({ path: docPath(article), title: `${article.label ?? article.title} · searchSDK Docs`, description: article.description, article })),
+    ...docArticles.map(article => ({ path: docPath(article), title: `${article.title} · searchSDK Docs`, description: article.description, article })),
     { path: '/404', title: 'Page not found · searchSDK', description: 'Find your next step in the searchSDK documentation.', notFound: true },
   ];
 }
@@ -71,6 +71,10 @@ export async function writeAgentArtifacts(directory, docArticles, providers, ski
   const data = buildAgentArtifacts(docArticles, providers, skills);
   const files = new Map();
   const json = value => JSON.stringify(value, null, 2) + '\n';
+  const overview = `searchSDK is an open-source search SDK family for web search, AI agents, and applications. It provides ${sdks.length} language/platform SDKs and ${providers.length} provider integrations. Server SDKs call providers directly; app SDKs use an authenticated application-owned HTTPS gateway. Normalized search results and provider-native API clients are separate surfaces; capabilities and reliability policies vary by language and provider.`;
+  const availability = 'Source alpha: build from a reviewed checkout or local artifacts. Package identities do not imply public registry availability. The SDK is MIT-licensed; provider services and third-party assets have their own terms.';
+  const languages = sdks.map(sdk => `- [${sdk.name}](${siteOrigin}${sdkHref(sdk.id)}.md): ${sdk.target === 'server' ? 'Server SDK' : 'Application gateway client'}.`).join('\n');
+  const providerLinks = providers.map(provider => `- [${provider.name}](${provider.markdownUrl}): ${provider.corpus ? 'Private-corpus retrieval; not open-web search.' : provider.normalizedWebSearch ? 'Normalized web search' + (provider.nativeClient ? ' and provider-native APIs.' : '.') : 'Provider-native APIs; review the documented capability boundaries.'}`).join('\n');
   for (const skill of skills) {
     // Curated skills currently contain only SKILL.md; preserve its exact bytes
     // in isolated generation output as well as in the checked-in public source.
@@ -93,8 +97,43 @@ export async function writeAgentArtifacts(directory, docArticles, providers, ski
     if (!article) throw new Error(`Missing llms.txt entry: ${slug}`);
     return `- [${article.label ?? article.title}](${absolute(markdownPath(article))}): ${article.description}`;
   };
-  files.set('/llms.txt', `# searchSDK\n\n> Search anywhere with twelve language/platform SDKs and fifteen provider integrations. Source alphas: build from a reviewed checkout or local artifacts. Package identities do not imply public registry availability. Choose a language guide before integrating; policies and runtime support differ.\n\nProvider requests belong on your server. Documentation and deterministic fixtures establish local contracts, not live availability, quality, latency, or pricing. WonderSearch retrieves a private corpus rather than the open web.\n\n## Start here\n\n${['', 'sdks', 'installation', 'guides/application-gateway', 'quickstart', 'guides/mcp', 'providers', 'api/search', 'api/native-transport', 'reliability/verification'].map(link).join('\n')}\n\n## Catalogs\n\n- [Language and platform SDKs](${siteOrigin}/sdk-catalog.json): Runtime, installation, verification and capability boundaries.\n- [All articles and canonical Markdown URLs](${siteOrigin}/agent-index.json): Small searchSDK-specific content index, including MCP endpoint details.\n- [Provider capabilities](${siteOrigin}/provider-capabilities.json): SDK limits and native operation catalogs, generated from source.\n- [Documentation, providers, and examples](${siteOrigin}/mcp-public-data.json): Full searchSDK-specific dataset used by the read-only MCP tools.\n\n## Optional\n\n- [Integration workflow skill](${siteOrigin}/skills/searchsdk/SKILL.md): One curated Agent Skill, also available through the official MCP Skills extension.\n- [All documentation in one file](${siteOrigin}/llms-full.txt): Convenience concatenation; fetch individual articles when possible.\n- [Website overview](${siteOrigin}/index.md): Public routes and entry points.\n- [Benchmark methodology draft](${siteOrigin}/benchmark-methodology.json): No measured scores are published.\n`);
-  files.set('/llms-full.txt', `# searchSDK documentation\n\nGenerated from the same article data as the website and MCP tools. This full-text convenience file is not required by the llms.txt proposal.\n\n${data.docs.map(doc => doc.text).join('\n---\n\n')}`);
+  files.set('/llms.txt', `# searchSDK
+
+> ${overview}
+
+${availability}
+
+Official website: [searchsdk.dev](${siteOrigin}/). Source code: [Belweave/searchSDK](${sdkSourceUrl}).
+
+Provider credentials and execution belong on your server. Documentation and deterministic fixtures establish local contracts, not live availability, quality, latency, or pricing. WonderSearch retrieves a private corpus rather than the open web. The public MCP endpoint serves documentation only; it does not execute searches.
+
+## Start here
+
+${['', 'sdks', 'installation', 'guides/application-gateway', 'quickstart', 'guides/mcp', 'providers', 'api/search', 'api/native-transport', 'reliability/verification'].map(link).join('\n')}
+
+## Language and platform guides
+
+${languages}
+
+## Provider guides
+
+${providerLinks}
+
+## Catalogs
+
+- [Language and platform SDKs](${siteOrigin}/sdk-catalog.json): Runtime, installation, verification and capability boundaries.
+- [All articles and canonical Markdown URLs](${siteOrigin}/agent-index.json): Small searchSDK-specific content index, including MCP endpoint details.
+- [Provider capabilities](${siteOrigin}/provider-capabilities.json): SDK limits and native operation catalogs, generated from source.
+- [Documentation, providers, and examples](${siteOrigin}/mcp-public-data.json): Full searchSDK-specific dataset used by the read-only MCP tools.
+
+## Optional
+
+- [Integration workflow skill](${siteOrigin}/skills/searchsdk/SKILL.md): One curated Agent Skill, also available through the official MCP Skills extension.
+- [All documentation in one file](${siteOrigin}/llms-full.txt): Convenience concatenation; fetch individual articles when possible.
+- [Website overview](${siteOrigin}/index.md): Public routes and entry points.
+- [Benchmark methodology draft](${siteOrigin}/benchmark-methodology.json): No measured scores are published.
+`);
+  files.set('/llms-full.txt', `# searchSDK documentation\n\n${overview}\n\n${availability}\n\nSource code: ${sdkSourceUrl}\n\nGenerated from the same article data as the website and MCP tools. This full-text convenience file is not required by the llms.txt proposal.\n\n${data.docs.map(doc => doc.text).join('\n---\n\n')}`);
   const publicRoutes = siteRoutes(docArticles).filter(route => !route.notFound);
   files.set('/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${publicRoutes.map(route => `  <url><loc>${xml(absolute(route.path))}</loc></url>`).join('\n')}\n</urlset>\n`);
   files.set('/robots.txt', `User-agent: *\nAllow: /\n\nSitemap: ${siteOrigin}/sitemap.xml\n`);
@@ -107,7 +146,7 @@ export async function writeAgentArtifacts(directory, docArticles, providers, ski
         ? `The live playground uses visitor-supplied provider keys for request-scoped, server-side calls. Keys are not persisted or logged. The key-free fixture demo is separate from live provider verification. Review the interface before submitting a billable request.\n\n- [Server integration](${siteOrigin}/docs/guides/server-integration.md)\n- [Deterministic testing](${siteOrigin}/docs/guides/testing.md)`
         : route.path === '/benchmarks'
           ? `No provider scores, ratings, or measured latencies are published. Live benchmark runs require explicit opt-in; automated checks use deterministic fixtures.\n\n- [Methodology draft](${siteOrigin}/benchmark-methodology.json)\n- [Verification limits](${siteOrigin}/docs/reliability/verification.md)`
-          : `searchSDK offers twelve language/platform SDKs. Server SDKs access providers directly; app SDKs use an authenticated application gateway. Preserve source identity, cancellation and response bounds. Read each language guide for policy differences. Normalized search and provider-native APIs have separate contracts.\n\n- [Choose your SDK](${siteOrigin}/docs/sdks.md)\n- [Installation](${siteOrigin}/docs/installation.md)\n- [Quickstart](${siteOrigin}/docs/quickstart.md)\n- [Provider catalog](${siteOrigin}/providers.md)\n- [Playground](${siteOrigin}/playground.md)\n- [Benchmarks](${siteOrigin}/benchmarks.md)\n- [MCP documentation server](${siteOrigin}/docs/guides/mcp.md)\n- [Full article index](${siteOrigin}/agent-index.json)`;
+          : `${overview}\n\n${availability}\n\nSource code: [Belweave/searchSDK](${sdkSourceUrl})\n\n- [Choose your SDK](${siteOrigin}/docs/sdks.md)\n- [Installation](${siteOrigin}/docs/installation.md)\n- [Quickstart](${siteOrigin}/docs/quickstart.md)\n- [Provider catalog](${siteOrigin}/providers.md)\n- [Playground](${siteOrigin}/playground.md)\n- [Benchmarks](${siteOrigin}/benchmarks.md)\n- [MCP documentation server](${siteOrigin}/docs/guides/mcp.md)\n- [Full article index](${siteOrigin}/agent-index.json)`;
     files.set(pageMarkdownPath(route.path), `# ${route.title}\n\n${route.description}\n\nCanonical: ${absolute(route.path)}\nMarkdown: ${absolute(pageMarkdownPath(route.path))}\n\n${body}\n`);
   }
   for (const [path, content] of files) {

@@ -4,6 +4,8 @@ import { execFileSync } from "node:child_process";
 const root = new URL("../", import.meta.url);
 const output = new URL(".vercel/output/", root);
 const manifest = JSON.parse(await readFile(new URL("apps/web/dist/route-manifest.json", root), "utf8"));
+const publicRoutes = manifest.filter((route) => !route.notFound);
+const escapePattern = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 await rm(output, { recursive: true, force: true });
 await mkdir(new URL("static/", output), { recursive: true });
 await cp(new URL("apps/web/dist/", root), new URL("static/", output), {
@@ -61,6 +63,12 @@ const config = {
       },
       continue: true,
     },
+    // Consolidate known page aliases without redirecting API or unknown paths.
+    ...publicRoutes.map((route) => ({
+      src: route.path === "/" ? "^/index\\.html$" : `^${escapePattern(route.path)}/(?:index\\.html)?$`,
+      headers: { Location: route.path },
+      status: 308,
+    })),
     {
       src: "/assets/(.*)",
       headers: { "Cache-Control": "public, max-age=31536000, immutable" },
@@ -74,12 +82,19 @@ const config = {
     { src: "/(.*)\\.txt$", headers: { "Content-Type": "text/plain; charset=utf-8" }, continue: true },
     { src: "/sitemap\\.xml$", headers: { "Content-Type": "application/xml; charset=utf-8" }, continue: true },
     { src: "/(.*)\\.json$", headers: { "Content-Type": "application/json; charset=utf-8" }, continue: true },
-    ...manifest.filter((route) => !route.notFound).map((route) => ({
+    // Keep Markdown accessible to agents while identifying its HTML equivalent.
+    ...publicRoutes.map((route) => ({
+      src: route.path === "/" ? "^/index\\.md$" : route.path === "/docs" ? "^/docs(?:/index)?\\.md$" : `^${escapePattern(route.path)}\\.md$`,
+      headers: { Link: `<https://searchsdk.dev${route.path}>; rel="canonical", <https://searchsdk.dev/llms.txt>; rel="describedby"` },
+      continue: true,
+    })),
+    ...publicRoutes.map((route) => ({
       src: route.path === "/" ? "^/$" : `^${route.path}/?$`,
       dest: `/${route.file}`,
     })),
     { src: "^/api/playground/search$", dest: "/api/playground/search" },
     { src: "^/(?:api/)?mcp$", dest: "/api/mcp" },
+    { src: "^/404(?:\\.html)?/?$", dest: "/404.html", status: 404 },
     { handle: "filesystem" },
     { src: "/(.*)", dest: "/404.html", status: 404 },
   ],

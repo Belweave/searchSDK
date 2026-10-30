@@ -4,9 +4,9 @@ import { examples } from "./examples.js";
 
 export const coreArticles: readonly DocArticle[] = [
   {
-    slug: "", title: "Search, with the details intact.", group: "Get started", label: "Introduction",
-    description: "Search anywhere, in your language. Twelve SDKs connect servers and apps to explicit provider APIs and traceable sources.",
-    keywords: ["overview", "alpha", "start"],
+    slug: "", title: "searchSDK: search SDKs for servers and apps", group: "Get started", label: "Introduction",
+    description: "searchSDK is an open-source search SDK family for web search, AI agents and apps, with twelve language and platform packages and traceable sources.",
+    keywords: ["overview", "alpha", "start", "search SDK", "searchSDK", "web search", "AI agents"],
     sections: [
       s("one-search-contract", "Choose your language, keep your sources", p("Use TypeScript, Python, Go, Java, Rust, C#, C or C++ on your server. Connect Swift, Android, React Native or Expo apps through your application gateway. Normalized web search shares query, result and provenance semantics; provider-native operations remain a separate surface."), links({ label: "Choose your SDK", href: "/docs/sdks", description: "Installation, first search and exact support for all twelve packages." }, { label: "Connect a mobile or browser app", href: "/docs/guides/application-gateway", description: "Keep provider credentials and policy behind your server." })),
       s("choose-your-path", "Choose your path", links({ label: "Install the SDK", href: "/docs/installation", description: "Build and install the alpha for your language." }, { label: "Run without a key", href: "/docs/quickstart#try-without-credentials", description: "Use deterministic local fixtures." }, { label: "Explore all providers", href: "/docs/providers", description: "See normalized support and native boundaries." }, { label: "Handle failures deliberately", href: "/docs/reliability/fallback", description: "Set an ordered fallback chain and bounded deadlines." })),

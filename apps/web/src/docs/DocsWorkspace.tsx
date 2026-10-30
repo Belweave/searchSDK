@@ -102,7 +102,9 @@ export function DocsWorkspace({ path }: { path?: string }) {
   const previous = index > 0 ? docArticles[index - 1] : undefined;
   const next = index >= 0 ? docArticles[index + 1] : undefined;
   useEffect(() => {
-    document.title = `${article?.label ?? article?.title ?? "Page not found"} · searchSDK Docs`;
+    // Full-page navigation receives canonical metadata from the static export.
+    // Only development pages need a client-side title fallback.
+    if (!document.getElementById("root")?.dataset.route) document.title = `${article?.title ?? "Page not found"} · searchSDK Docs`;
     const listener = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k" && !event.altKey) { event.preventDefault(); setSearchOpen(value => !value); }
     };

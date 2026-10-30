@@ -69,7 +69,51 @@ function verifyMetadata(html, route) {
   assert.equal(canonicals[0].href, origin + route.path, `Incorrect canonical URL: ${label}`);
   const robots = tags.filter(tag => /^(?:robots|twitterbot|facebookexternalhit)$/i.test(tag.name ?? ''));
   if (route.notFound) assert(robots.some(tag => tag.name === 'robots' && tag.content === 'noindex'), '404 must remain noindex');
-  else assert(!robots.some(tag => /\b(?:noindex|none|noimageindex)\b/i.test(tag.content ?? '')), `Public route blocks indexing or images: ${label}`);
+  else {
+    assert(!robots.some(tag => /\b(?:noindex|none|noimageindex|nosnippet)\b/i.test(tag.content ?? '')), `Public route blocks indexing or previews: ${label}`);
+    assert(robots.some(tag => tag.name === 'robots' && tag.content.includes('max-image-preview:large')), `Public route must allow large image previews: ${label}`);
+  }
+}
+
+function verifyStructuredData(html, route) {
+  const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+  assert.equal(blocks.length, route.notFound ? 0 : 1, `Expected one structured data graph on public routes only: ${route.path}`);
+  if (route.notFound) return;
+  const data = JSON.parse(blocks[0][1]);
+  assert.equal(data['@context'], 'https://schema.org');
+  assert(Array.isArray(data['@graph']), `Missing structured data graph: ${route.path}`);
+  const graph = data['@graph'];
+  assert.equal(new Set(graph.map(item => item['@id'])).size, graph.length, `Duplicate structured data entities: ${route.path}`);
+  const page = graph.find(item => item['@type'] === 'WebPage');
+  assert(page, `Missing WebPage entity: ${route.path}`);
+  assert.equal(page.url, origin + route.path);
+  assert.equal(page.name, route.title);
+  assert.equal(page.description, route.description);
+  assert.equal(page.isPartOf['@id'], `${origin}/#website`);
+  assert.equal(page.about['@id'], `${origin}/#software`);
+  if (route.path === '/') {
+    const site = graph.find(item => item['@type'] === 'WebSite');
+    assert.equal(site?.name, 'searchSDK');
+    assert.equal(site?.url, `${origin}/`);
+    const software = graph.find(item => item['@type'] === 'SoftwareSourceCode');
+    assert.equal(software?.codeRepository, 'https://github.com/Belweave/searchSDK');
+    assert.equal(software?.license, 'https://github.com/Belweave/searchSDK/blob/main/LICENSE');
+  } else {
+    const breadcrumb = graph.find(item => item['@type'] === 'BreadcrumbList');
+    assert.equal(page.breadcrumb?.['@id'], breadcrumb?.['@id']);
+    assert(breadcrumb?.itemListElement.length >= 2, `Missing breadcrumb trail: ${route.path}`);
+    for (const [index, item] of breadcrumb.itemListElement.entries()) {
+      assert.equal(item.position, index + 1);
+      assert(item.name && manifest.some(entry => !entry.notFound && `${origin}${entry.path}` === item.item), `Breadcrumb must reference a canonical page: ${route.path}`);
+    }
+    assert.equal(breadcrumb.itemListElement.at(-1).item, page.url);
+  }
+  const article = graph.find(item => item['@type'] === 'TechArticle');
+  if (route.path === '/docs' || route.path.startsWith('/docs/')) {
+    assert.equal(article?.url, page.url);
+    assert.equal(article?.headline + ' · searchSDK Docs', route.title);
+    assert.equal(article?.mainEntityOfPage['@id'], page['@id']);
+  } else assert.equal(article, undefined, `Non-documentation route marked as a technical article: ${route.path}`);
 }
 
 // The source index is also a usable homepage fallback without prerendering.
@@ -108,10 +152,15 @@ for (const route of manifest) {
   assert.equal((html.match(/<h1(?:\s|>)/g) ?? []).length, 1, `Expected one page heading: ${route.path}`);
   assert(!html.includes('Loading workspace…') && !/\bid="[SB]:\d/.test(html), `Unresolved streamed content: ${route.path}`);
   for (const script of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    if (script[1].trim() === 'type="application/ld+json"') {
+      JSON.parse(script[2]);
+      continue;
+    }
     const src = script[1].match(/\bsrc="([^"]+)"/)?.[1];
     assert(src && src.startsWith('/') && new URL(decode(src), origin).origin === origin && !script[2].trim(), `Inline or remote script: ${route.path}`);
   }
   verifyMetadata(html, route);
+  verifyStructuredData(html, route);
   if (!route.notFound) {
     const markdownPath = route.path === '/' ? '/index.md' : route.path === '/docs' ? '/docs/index.md' : `${route.path}.md`;
     assert(html.includes(`<link rel="alternate" type="text/markdown" href="${origin}${markdownPath}" />`), `Missing Markdown discovery: ${route.path}`);
@@ -143,4 +192,4 @@ for (const path of ['/.env.local', '/docs/vision-workshop.html', '/packages/sdk/
 const agent = await verifyAgentData(root);
 assert.equal(agent.pages, manifest.filter(route => !route.notFound).length, 'Agent index must cover all canonical routes');
 console.log(`Agent discovery passed: ${agent.articles} Markdown articles, ${agent.providers} providers, ${agent.examples} examples, exact skill manifest, ${agent.links} canonical links.`);
-console.log(`Static site passed: ${routes.size} complete documents with unique route-specific social metadata, 1200×630 JPEG card, ${checked} local links/assets, one heading per page, no inline scripts or private artifacts.`);
+console.log(`Static site passed: ${routes.size} complete documents with canonical social metadata and structured data, 1200×630 JPEG card, ${checked} local links/assets, one heading per page, no executable inline scripts or private artifacts.`);

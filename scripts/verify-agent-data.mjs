@@ -83,6 +83,15 @@ export async function verifyAgentData(directory) {
   const llms = await text('/llms.txt');
   assert(llms.startsWith('# searchSDK\n\n> '), 'Invalid llms.txt introduction');
   assert(Buffer.byteLength(llms) < 8 * 1024, 'Keep the llms.txt entry point concise');
+  // The compact entry point must let an agent choose any supported SDK or
+  // provider without first downloading the large operation catalogs.
+  for (const sdk of sdkCatalog.sdks) {
+    const doc = data.docs.find(doc => doc.url === sdk.url);
+    assert(llms.includes(`](${doc.markdownUrl})`), `SDK missing from llms.txt: ${sdk.id}`);
+  }
+  for (const provider of data.providers) {
+    assert(llms.includes(`](${provider.markdownUrl})`), `Provider missing from llms.txt: ${provider.id}`);
+  }
   const knownPaths = new Set([...canonicalPages].map(url => new URL(url).pathname));
   // Check links in actual Markdown, including the curated skill. Absolute
   // canonical targets must resolve to a shipped page or static file.

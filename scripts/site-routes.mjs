@@ -31,12 +31,58 @@ function render(element) {
   return html;
 }
 
-function metadata(route) {
+function structuredData(route, routes) {
+  if (route.notFound) return [];
+  const url = `${origin}${route.path}`;
+  const websiteId = `${origin}/#website`;
+  const projectId = `${origin}/#software`;
+  const publisher = { '@type': 'Organization', '@id': 'https://belweave.com/#organization', name: 'Belweave', url: 'https://belweave.com' };
+  const graph = [];
+  if (route.path === '/') {
+    graph.push(publisher, {
+      '@type': 'WebSite', '@id': websiteId, url: `${origin}/`, name: 'searchSDK',
+      alternateName: 'searchsdk.dev', description: route.description, inLanguage: 'en',
+      publisher: { '@id': publisher['@id'] }, about: { '@id': projectId },
+    }, {
+      '@type': 'SoftwareSourceCode', '@id': projectId, name: 'searchSDK', url: `${origin}/`,
+      description: 'Open-source search SDKs for servers and apps. Source-alpha packages with normalized web search, source provenance and separate provider-native APIs.',
+      codeRepository: 'https://github.com/Belweave/searchSDK',
+      license: 'https://github.com/Belweave/searchSDK/blob/main/LICENSE',
+      programmingLanguage: ['TypeScript', 'JavaScript', 'Python', 'Go', 'Java', 'Rust', 'C#', 'C', 'C++', 'Swift', 'Kotlin'],
+      publisher: { '@id': publisher['@id'] },
+    });
+  }
+  const breadcrumbs = route.path === '/' ? [] : [routes.find(item => item.path === '/'), ...route.path.split('/').slice(1).map((_, index, parts) => routes.find(item => item.path === '/' + parts.slice(0, index + 1).join('/')))].filter(Boolean);
+  const page = {
+    '@type': 'WebPage', '@id': `${url}#webpage`, url, name: route.title,
+    description: route.description, inLanguage: 'en', isPartOf: { '@id': websiteId },
+    about: { '@id': projectId },
+    ...(breadcrumbs.length ? { breadcrumb: { '@id': `${url}#breadcrumb` } } : {}),
+    ...(route.article ? { mainEntity: { '@id': `${url}#article` } } : {}),
+  };
+  graph.push(page);
+  if (route.article) graph.push({
+    '@type': 'TechArticle', '@id': `${url}#article`, url, headline: route.article.title,
+    description: route.description, inLanguage: 'en', mainEntityOfPage: { '@id': page['@id'] },
+    publisher, about: { '@id': projectId },
+  });
+  if (breadcrumbs.length) graph.push({
+    '@type': 'BreadcrumbList', '@id': `${url}#breadcrumb`,
+    itemListElement: breadcrumbs.map((item, index) => ({
+      '@type': 'ListItem', position: index + 1, name: item.path === '/' ? 'searchSDK' : item.article?.label ?? item.article?.title ?? item.title.replace(/ · searchSDK$/, ''),
+      item: `${origin}${item.path}`,
+    })),
+  });
+  return graph;
+}
+
+function metadata(route, routes) {
   const meta = (attribute, key, value) => `<meta ${attribute}="${key}" content="${escape(value)}" />`;
   return [
     "<!-- searchsdk:metadata:start -->",
     `<title>${escape(route.title)}</title>`,
     meta("name", "description", route.description),
+    meta("name", "robots", route.notFound ? "noindex" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"),
     `<link rel="canonical" href="${origin}${escape(route.path)}" />`,
     ...(!route.notFound ? [
       `<link rel="alternate" type="text/markdown" href="${origin}${escape(pageMarkdownPath(route.path))}" />`,
@@ -62,7 +108,9 @@ function metadata(route) {
       "twitter:image": socialImage,
       "twitter:image:alt": socialImageAlt,
     }).map(([key, value]) => meta("name", key, value)),
-    ...(route.notFound ? [meta("name", "robots", "noindex")] : []),
+    // JSON-LD is nonexecutable data. Escape HTML delimiters so content can never
+    // terminate this data block; keep executable inline scripts forbidden.
+    ...(!route.notFound ? [`<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': structuredData(route, routes) }).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026')}</script>`] : []),
     "<!-- searchsdk:metadata:end -->",
   ].join("\n");
 }
@@ -80,7 +128,7 @@ try {
     if (paths.has(route.path) || !/^\/(?:[a-z0-9-]+(?:\/[a-z0-9-]+)*)?$/.test(route.path)) throw new Error(`Invalid or duplicate route: ${route.path}`);
     paths.add(route.path);
     const body = await render(createElement(App, { path: route.path, staticWorkspaces }));
-    const html = template.replace(metadataBlock, () => metadata(route))
+    const html = template.replace(metadataBlock, () => metadata(route, routes))
       .replace("</head>", `${extraStyles}\n</head>`).replace('<div id="root"></div>', `<div id="root" data-route="${escape(route.path)}">${body}</div>`);
     if (html === template || !html.includes(body)) throw new Error(`Route template replacement failed: ${route.path}`);
     const file = route.path === "/" ? "index.html" : route.notFound ? "404.html" : `${route.path.slice(1)}/index.html`;

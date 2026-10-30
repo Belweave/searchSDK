@@ -137,7 +137,7 @@ export function Home() {
     <section className="landing-hero" aria-labelledby="landing-title">
       <div className="landing-intro">
         <h1 id="landing-title">Search anywhere.<br />In your language.</h1>
-        <p>Pick your SDK. Choose your provider.<br className="landing-desktop-break" /> Keep the sources and every attempt.</p>
+        <p>searchSDK is an open-source search SDK for web and AI apps.<br className="landing-desktop-break" /> Twelve languages and platforms. Your providers. Traceable sources.</p>
         <div className="landing-actions"><a className="landing-primary" href="/docs/sdks"><DitherButtonInk /><span>Choose your SDK</span><span aria-hidden="true">↗</span></a><a className="landing-secondary-action" href="/playground">Open playground <span aria-hidden="true">→</span></a></div>
       </div>
       <div ref={art} className="landing-art" tabIndex={0} role="group" aria-label="Search illustration" aria-haspopup="menu" aria-expanded={artMenu !== null} aria-controls={artMenu ? "landing-art-menu" : undefined}
@@ -176,6 +176,15 @@ export function Home() {
           <span className="landing-provider-copy"><span className="landing-provider-name">{provider.name}</span>{(provider.priority || provider.corpus) && <span className="landing-provider-kind">{provider.priority ? "Start here" : "Document corpus"}</span>}</span><span className="landing-provider-arrow" aria-hidden="true">↗</span>
         </a>;
       })}</div>
+    </section>
+    <HomeDitherSeam reverse />
+    <section className="landing-about" aria-labelledby="landing-about-title">
+      <div className="landing-section-heading"><div><h2 id="landing-about-title">A search SDK, explained.</h2><p>One place to start. Explicit support for each language and provider.</p></div><a href="/docs">Read the introduction <span aria-hidden="true">↗</span></a></div>
+      <div className="landing-answers">
+        <div><h3>What is searchSDK?</h3><p>searchSDK is a family of open-source libraries for integrating search APIs into servers and apps. It provides normalized web results with source provenance, deadlines, and explicit provider fallback. Provider-native APIs are a separate surface.</p><a href="/docs/sdks">Compare language support</a></div>
+        <div><h3>Can I use it in an AI app?</h3><p>Use retrieved sources in an AI agent, chatbot, or retrieval-augmented generation (RAG) pipeline. Your application chooses how to use the results. Coding assistants can read the same public documentation through Markdown or the read-only documentation MCP server.</p><a href="/docs/guides/mcp">Connect a coding assistant</a></div>
+        <div><h3>How do I get started?</h3><p>Build a source-alpha package from a reviewed checkout, then follow your language guide. Server SDKs call providers directly; mobile and browser apps use your authenticated HTTPS gateway. Provider credentials stay on your server.</p><a href="/docs/installation">Install from source</a></div>
+      </div>
     </section>
   </div>;
 }

@@ -24,7 +24,7 @@
     "test:site": "node scripts/verify-site.mjs",
     "typecheck": "npm run typecheck -w @belweave/search-sdk-site",
     "check": "npm run check:public && npm run check:generators && npm run test && npm run test:mobile && npm run typecheck && npm run build && npm run test:server && npm run test:docs && npm run test:site && npm run test:package && npm run test:mobile:package && npm run test:benchmarks",
-    "build:vercel": "npm run check && node scripts/vercel-output.mjs",
+    "build:vercel": "npm run check && node scripts/vercel-output.mjs && node scripts/verify-vercel-output.mjs",
     "release:prepare": "npm run check && node scripts/prepare-release.mjs",
     "benchmark:plan": "node benchmarks/run.mjs --mode plan",
     "benchmark:fixture": "node benchmarks/run.mjs --mode fixture",

@@ -74,9 +74,9 @@ export function App({ path: suppliedPath, staticWorkspaces }: {
   const docsRoute = path === "/docs" || path.startsWith("/docs/");
   useEffect(() => {
     // DocsWorkspace owns article and documentation-not-found titles.
-    if (!docsRoute) {
+    if (!docsRoute && !document.getElementById("root")?.dataset.route) {
       const label = routes.find(([route]) => route === path)?.[1] ?? legalPages.find(page => page.path === path)?.title;
-      document.title = path === "/" ? "searchSDK · Search anywhere. In your language."
+      document.title = path === "/" ? "searchSDK — Open-source search SDKs for web and AI apps"
         : path === "/benchmarks" ? "Search provider benchmarks · searchSDK"
         : label ? `${label} · searchSDK` : "Page not found · searchSDK";
     }
@@ -99,6 +99,6 @@ export function App({ path: suppliedPath, staticWorkspaces }: {
       // A supplied static docs route has a generated Markdown counterpart.
       // Unknown production URLs carry /404; development has no static exports.
       markdownHref={docsRoute && suppliedPath ? `${path}.md` : undefined}>{content}</WorkspaceBoundary> : content}</main>
-    <footer className="site-footer"><DitherFooter /><div className="footer-links"><span className="footer-credit">searchSDK by <a href="https://belweave.com" target="_blank" rel="noreferrer">Belweave ↗</a></span><a href="/docs">Documentation <span aria-hidden="true">↗</span></a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div><div className="footer-appearance"><ThemeControl /></div></footer>
+    <footer className="site-footer"><DitherFooter /><div className="footer-links"><span className="footer-credit">searchSDK by <a href="https://belweave.com" target="_blank" rel="noreferrer">Belweave ↗</a></span><a href="/docs">Documentation <span aria-hidden="true">↗</span></a><a href="https://github.com/Belweave/searchSDK">GitHub</a><a href="/llms.txt">For AI agents</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div><div className="footer-appearance"><ThemeControl /></div></footer>
   </>;
 }

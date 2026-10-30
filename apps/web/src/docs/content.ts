@@ -45,7 +45,10 @@ export function searchArticles(query: string): DocSearchResult[] {
   return searchIndex.flatMap(record => {
     if (!terms.every(term => `${record.title} ${record.text} ${record.sections.map(section => section.text).join(" ")}`.includes(term))) return [];
     const matching = record.sections.map(value => ({ ...value, score: terms.reduce((score, term) => score + (value.text.includes(term) ? 1 : 0) + (value.section.title.toLowerCase().includes(term) ? 4 : 0), 0) })).sort((a, b) => b.score - a.score)[0];
-    const titleScore = terms.reduce((score, term) => score + (record.title.includes(term) ? 12 : 0) + (record.text.includes(term) ? 3 : 0), 0);
+    // Exact package names and curated keywords should outrank a brand mention
+    // shared by many titles (for example, the Swift package named SearchSDK).
+    const exactKeyword = record.article.keywords?.some(keyword => keyword.toLowerCase() === query.trim().toLowerCase());
+    const titleScore = (exactKeyword ? 20 : 0) + terms.reduce((score, term) => score + (record.title.includes(term) ? 12 : 0) + (record.text.includes(term) ? 3 : 0), 0);
     const section = titleScore >= terms.length * 12 ? undefined : matching?.section;
     const source = section ? section.blocks.map(blockText).join(" ").replace(/`/g, "") : record.article.description;
     const position = Math.max(0, source.toLowerCase().indexOf(terms[0]) - 55);

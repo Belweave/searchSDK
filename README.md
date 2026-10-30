@@ -25,8 +25,10 @@
   <a href="CONTRIBUTING.md">Contribute</a>
 </p>
 
-searchSDK brings search to your server and your app, with explicit provider
-choice, traceable sources, and bounded requests. Choose from twelve language
+searchSDK is an open-source search SDK family for web search, AI agents, and
+applications, built by [Belweave](https://belweave.com). It brings search to your
+server and your app, with explicit provider choice, traceable sources, and bounded
+requests. Choose from twelve language
 and platform SDKs. Server SDKs call providers directly; app SDKs call your own
 authenticated HTTPS gateway so provider keys stay on the server.
 
@@ -210,6 +212,14 @@ request, not a comparative benchmark.
   limits, and guides.
 - [Contributing](CONTRIBUTING.md): local checks and reproducible provider changes.
 - [Security policy](SECURITY.md): private reporting and integration boundaries.
+
+For AI coding assistants and documentation clients, start with the
+[llms.txt guide](https://searchsdk.dev/llms.txt), the
+[complete documentation text](https://searchsdk.dev/llms-full.txt), or the
+[public documentation MCP guide](https://searchsdk.dev/docs/guides/mcp).
+Every documentation page also has a Markdown export. The public MCP endpoint is
+read-only documentation retrieval; it does not execute provider searches or accept
+provider credentials.
 
 The repository contains language SDKs in `packages/`, shared contract fixtures
 in `sdk-contract/`, and the static React/Vite docs and server-backed playground
