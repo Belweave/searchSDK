@@ -1,0 +1,53 @@
+{
+  "description": "Caller cancellation through an abort signal. abortAt is virtual milliseconds from the call start; \"before\" aborts before the call. Cancellation is never retried and never falls back.",
+  "defaults": { "options": { "provider": "exa" } },
+  "cases": [
+    {
+      "name": "already aborted: nothing is sent",
+      "call": "search", "query": "q", "abortAt": "before",
+      "responses": [{ "status": 200, "body": { "results": [] } }],
+      "expect": { "requestCount": 0, "error": { "code": "aborted", "attempts": [] } }
+    },
+    {
+      "name": "abort during the request",
+      "call": "search", "query": "q", "abortAt": 100,
+      "responses": [{ "delayMs": 500, "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "error": {
+          "code": "aborted", "provider": "exa",
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "aborted", "startMs": 0, "durationMs": 100 }]
+        }
+      }
+    },
+    {
+      "name": "abort reaches a transport that ignores it",
+      "call": "search", "query": "q", "abortAt": 100,
+      "responses": [{ "delayMs": 500, "ignoreAbort": true, "status": 200, "body": { "results": [] } }],
+      "expect": { "error": { "code": "aborted" } }
+    },
+    {
+      "name": "abort during body reading",
+      "call": "search", "query": "q", "abortAt": 100,
+      "responses": [{ "delayMs": 50, "bodyDelayMs": 500, "status": 200, "body": { "results": [] } }],
+      "expect": { "error": { "code": "aborted" } }
+    },
+    {
+      "name": "abort during backoff",
+      "call": "search", "query": "q", "options": { "maxRetries": 2 }, "random": [0.5], "abortAt": 100,
+      "responses": [{ "status": 503 }, { "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "requestCount": 1,
+        "error": {
+          "code": "aborted",
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0 }]
+        }
+      }
+    },
+    {
+      "name": "abort does not fall back",
+      "call": "search", "query": "q", "options": { "fallback": ["tavily"] }, "abortAt": 100,
+      "responses": [{ "delayMs": 500, "status": 200, "body": { "results": [] } }, { "status": 200, "body": { "results": [] } }],
+      "expect": { "requestCount": 1, "error": { "code": "aborted", "provider": "exa" } }
+    }
+  ]
+}

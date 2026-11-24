@@ -1,0 +1,197 @@
+{
+  "description": "TinyFish: normalized request to HTTP request, and synthetic response to normalized response.",
+  "synthetic": "Response bodies are synthetic, shaped after the public reference pages read 2026-11-24. They were not recorded from the live API.",
+  "cases": [
+    {
+      "name": "search encodes a GET query with RFC 3986 unreserved characters only; runtime truncates to maxResults",
+      "call": "search",
+      "query": "web automation tools*~!'()",
+      "options": {
+        "provider": "tinyfish",
+        "maxResults": 2,
+        "includeDomains": ["github.com", "arxiv.org"],
+        "recency": "day",
+        "country": "us",
+        "language": "EN"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": { "x-request-id": "synthetic-tinyfish-1" },
+          "body": {
+            "query": "web automation tools*~!'()",
+            "results": [
+              { "position": 1, "site_name": "github.com", "title": "Tools", "snippet": "Synthetic snippet one.", "url": "https://github.com/example/tools", "date": "2026-11-20" },
+              { "position": 2, "site_name": "arxiv.org", "title": "Paper", "snippet": "Synthetic snippet two.", "url": "https://arxiv.org/abs/0000.00000", "authors": ["A. Author", "B. Author"] },
+              { "position": 3, "site_name": "github.com", "title": "Third", "snippet": "Cut by maxResults.", "url": "https://github.com/example/third" }
+            ],
+            "total_results": 3,
+            "page": 0
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "GET",
+            "url": "https://api.search.tinyfish.ai?query=web%20automation%20tools%2A~%21%27%28%29&include_domains=github.com%2Carxiv.org&recency_minutes=1440&location=US&language=en",
+            "headers": { "accept": "application/json", "x-api-key": "test-key-tinyfish" },
+            "body": null
+          }
+        ],
+        "response": {
+          "provider": "tinyfish",
+          "results": [
+            {
+              "url": "https://github.com/example/tools",
+              "title": "Tools",
+              "excerpts": ["Synthetic snippet one."],
+              "publishedAt": "2026-11-20T00:00:00.000Z",
+              "author": null,
+              "rank": 1,
+              "providerFields": { "position": 1, "siteName": "github.com" }
+            },
+            {
+              "url": "https://arxiv.org/abs/0000.00000",
+              "title": "Paper",
+              "excerpts": ["Synthetic snippet two."],
+              "publishedAt": null,
+              "author": "A. Author, B. Author",
+              "rank": 2,
+              "providerFields": { "position": 2, "siteName": "arxiv.org" }
+            }
+          ],
+          "cost": { "usd": 0, "estimated": true, "source": "computed" },
+          "requestId": "synthetic-tinyfish-1",
+          "latencyMs": 0,
+          "warnings": [],
+          "attempts": [{ "provider": "tinyfish", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+        }
+      }
+    },
+    {
+      "name": "search date range becomes after_date and before_date",
+      "call": "search",
+      "query": "q",
+      "options": { "provider": "tinyfish", "startDate": "2026-06-01", "endDate": "2026-06-18", "excludeDomains": ["pinterest.com", "quora.com"] },
+      "responses": [{ "status": 200, "body": { "query": "q", "results": [], "total_results": 0, "page": 0 } }],
+      "expect": {
+        "requests": [
+          {
+            "method": "GET",
+            "url": "https://api.search.tinyfish.ai?query=q&exclude_domains=pinterest.com%2Cquora.com&after_date=2026-06-01&before_date=2026-06-18",
+            "body": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "429 with the free allowance exhausted maps to quota, not rate_limit",
+      "call": "search",
+      "query": "q",
+      "options": { "provider": "tinyfish", "maxRetries": 2 },
+      "responses": [
+        {
+          "status": 429,
+          "body": { "error": { "code": "RATE_LIMIT_EXCEEDED", "message": "Synthetic.", "details": { "reason": "free_allowance_exhausted" } } }
+        }
+      ],
+      "expect": {
+        "requestCount": 1,
+        "error": { "code": "quota", "provider": "tinyfish", "status": 429, "providerCode": "RATE_LIMIT_EXCEEDED" }
+      }
+    },
+    {
+      "name": "429 per-minute limit maps to rate_limit",
+      "call": "search",
+      "query": "q",
+      "options": { "provider": "tinyfish" },
+      "responses": [{ "status": 429, "body": { "error": { "code": "RATE_LIMIT_EXCEEDED", "message": "Synthetic." } } }],
+      "expect": { "error": { "code": "rate_limit", "provider": "tinyfish", "status": 429, "providerCode": "RATE_LIMIT_EXCEEDED" } }
+    },
+    {
+      "name": "duplicate x-request-id headers give no request id",
+      "call": "search",
+      "query": "q",
+      "options": { "provider": "tinyfish" },
+      "responses": [{ "status": 200, "headers": [["x-request-id", "a"], ["x-request-id", "b"]], "body": { "query": "q", "results": [], "total_results": 0, "page": 0 } }],
+      "expect": { "responseIncludes": { "requestId": null } }
+    },
+    {
+      "name": "fetch maps results and per-URL errors",
+      "call": "contents",
+      "urls": ["https://example.com/a", "https://example.com/b"],
+      "options": { "provider": "tinyfish" },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": [
+              {
+                "url": "https://example.com/a",
+                "final_url": "https://example.com/a2",
+                "title": "Page A",
+                "description": null,
+                "language": "en",
+                "author": null,
+                "published_date": "2026-01-05T10:00:00Z",
+                "text": "# A",
+                "latency_ms": 120,
+                "format": "markdown"
+              }
+            ],
+            "errors": [{ "url": "https://example.com/b", "error": "bot_blocked" }]
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.fetch.tinyfish.ai",
+            "headers": { "accept": "application/json", "content-type": "application/json", "x-api-key": "test-key-tinyfish" },
+            "body": { "format": "markdown", "urls": ["https://example.com/a", "https://example.com/b"] }
+          }
+        ],
+        "response": {
+          "provider": "tinyfish",
+          "pages": [
+            {
+              "url": "https://example.com/a",
+              "status": "ok",
+              "finalUrl": "https://example.com/a2",
+              "title": "Page A",
+              "content": "# A",
+              "publishedAt": "2026-01-05T10:00:00.000Z",
+              "author": null,
+              "error": null
+            },
+            {
+              "url": "https://example.com/b",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": { "code": "bot_blocked", "message": null }
+            }
+          ],
+          "cost": { "usd": 0, "estimated": true, "source": "computed" },
+          "requestId": null,
+          "latencyMs": 0,
+          "warnings": [],
+          "attempts": [{ "provider": "tinyfish", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+        }
+      }
+    },
+    {
+      "name": "fetch rejects a provider option the spec does not declare",
+      "call": "contents",
+      "urls": ["https://example.com/a"],
+      "options": { "provider": "tinyfish", "providerOptions": { "tinyfish": { "format": "json" } } },
+      "responses": [],
+      "expect": { "requestCount": 0, "error": { "code": "invalid_request", "provider": "tinyfish", "field": "providerOptions.tinyfish.format" } }
+    }
+  ]
+}

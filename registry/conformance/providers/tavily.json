@@ -1,0 +1,266 @@
+{
+  "description": "Tavily: normalized request to HTTP request, and synthetic response to normalized response.",
+  "synthetic": "Response bodies are synthetic, shaped after the public OpenAPI schema read 2026-11-24. They were not recorded from the live API.",
+  "cases": [
+    {
+      "name": "search maps every supported option",
+      "call": "search",
+      "query": "sqlite wal",
+      "options": {
+        "provider": "tavily",
+        "maxResults": 3,
+        "includeDomains": ["sqlite.org", "example.org"],
+        "recency": "month",
+        "country": "gb",
+        "language": "EN",
+        "depth": "deep"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "query": "sqlite wal",
+            "answer": null,
+            "images": [],
+            "results": [
+              {
+                "title": "WAL",
+                "url": "https://sqlite.org/wal.html",
+                "content": "Synthetic chunk one. [...] Synthetic chunk two.",
+                "score": 0.81,
+                "published_date": "Tue, 11 Mar 2025 17:00:00 GMT",
+                "favicon": "https://sqlite.org/favicon.ico"
+              },
+              { "title": "Bad row", "url": "ftp://example.org/file", "content": "dropped", "score": 0.5 },
+              { "title": "   ", "url": "https://example.org/a", "content": "", "score": 0.2, "published_date": null }
+            ],
+            "response_time": 1.2,
+            "usage": { "credits": 2 },
+            "request_id": "synthetic-tavily-1"
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.tavily.com/search",
+            "headers": { "accept": "application/json", "content-type": "application/json", "authorization": "Bearer test-key-tavily" },
+            "body": {
+              "search_depth": "advanced",
+              "include_usage": true,
+              "include_published_date": true,
+              "include_answer": false,
+              "include_raw_content": false,
+              "auto_parameters": false,
+              "query": "sqlite wal",
+              "max_results": 3,
+              "include_domains": ["sqlite.org", "example.org"],
+              "time_range": "month",
+              "country": "united kingdom",
+              "language": "en"
+            }
+          }
+        ],
+        "response": {
+          "provider": "tavily",
+          "results": [
+            {
+              "url": "https://sqlite.org/wal.html",
+              "title": "WAL",
+              "excerpts": ["Synthetic chunk one. [...] Synthetic chunk two."],
+              "publishedAt": "2025-03-11T17:00:00.000Z",
+              "author": null,
+              "rank": 1,
+              "providerFields": { "score": 0.81, "favicon": "https://sqlite.org/favicon.ico" }
+            },
+            {
+              "url": "https://example.org/a",
+              "title": null,
+              "excerpts": [],
+              "publishedAt": null,
+              "author": null,
+              "rank": 2,
+              "providerFields": { "score": 0.2 }
+            }
+          ],
+          "cost": { "usd": 0.016, "estimated": true, "source": "reported-credits", "credits": 2 },
+          "requestId": "synthetic-tavily-1",
+          "latencyMs": 0,
+          "warnings": [{ "code": "invalid_rows_dropped", "provider": "tavily", "count": 1 }],
+          "attempts": [{ "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+        }
+      }
+    },
+    {
+      "name": "search dates pass through as YYYY-MM-DD; default depth costs one credit when usage is absent",
+      "call": "search",
+      "query": "sqlite release",
+      "options": { "provider": "tavily", "startDate": "2025-01-01", "endDate": "2025-12-31", "excludeDomains": ["example.net"] },
+      "responses": [{ "status": 200, "body": { "query": "sqlite release", "results": [], "images": [], "response_time": 0.4, "answer": null } }],
+      "expect": {
+        "requests": [
+          {
+            "body": {
+              "search_depth": "basic",
+              "include_usage": true,
+              "include_published_date": true,
+              "include_answer": false,
+              "include_raw_content": false,
+              "auto_parameters": false,
+              "query": "sqlite release",
+              "max_results": 10,
+              "exclude_domains": ["example.net"],
+              "start_date": "2025-01-01",
+              "end_date": "2025-12-31"
+            }
+          }
+        ],
+        "response": {
+          "provider": "tavily",
+          "results": [],
+          "cost": { "usd": 0.008, "estimated": true, "source": "computed" },
+          "requestId": null,
+          "latencyMs": 0,
+          "warnings": [],
+          "attempts": [{ "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+        }
+      }
+    },
+    {
+      "name": "a country with no Tavily name is unsupported",
+      "call": "search",
+      "query": "news",
+      "options": { "provider": "tavily", "country": "XK" },
+      "responses": [],
+      "expect": { "requestCount": 0, "error": { "code": "unsupported", "provider": "tavily", "field": "country" } }
+    },
+    {
+      "name": "more than 20 results is unsupported",
+      "call": "search",
+      "query": "news",
+      "options": { "provider": "tavily", "maxResults": 21 },
+      "responses": [],
+      "expect": { "requestCount": 0, "error": { "code": "unsupported", "provider": "tavily", "field": "maxResults" } }
+    },
+    {
+      "name": "432 plan limit maps to quota",
+      "call": "search",
+      "query": "x",
+      "options": { "provider": "tavily" },
+      "responses": [{ "status": 432, "body": { "detail": { "error": "Synthetic plan limit." } } }],
+      "expect": { "error": { "code": "quota", "provider": "tavily", "status": 432 } }
+    },
+    {
+      "name": "433 pay-as-you-go limit maps to quota",
+      "call": "search",
+      "query": "x",
+      "options": { "provider": "tavily" },
+      "responses": [{ "status": 433, "body": { "detail": { "error": "Synthetic paygo limit." } } }],
+      "expect": { "error": { "code": "quota", "provider": "tavily", "status": 433 } }
+    },
+    {
+      "name": "434 flex capacity maps to unavailable and is retried",
+      "call": "search",
+      "query": "x",
+      "options": { "provider": "tavily", "maxRetries": 1 },
+      "responses": [
+        { "status": 434, "body": { "detail": { "error": "Synthetic flex capacity." } } },
+        { "status": 200, "body": { "results": [], "usage": { "credits": 1 } } }
+      ],
+      "expect": {
+        "response": {
+          "provider": "tavily",
+          "results": [],
+          "cost": { "usd": 0.008, "estimated": true, "source": "reported-credits", "credits": 1 },
+          "requestId": null,
+          "latencyMs": 187,
+          "warnings": [],
+          "attempts": [
+            { "provider": "tavily", "outcome": "error", "code": "unavailable", "status": 434, "startMs": 0, "durationMs": 0 },
+            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 187, "durationMs": 0 }
+          ]
+        }
+      }
+    },
+    {
+      "name": "extract maps results and failed_results",
+      "call": "contents",
+      "urls": ["https://example.com/a", "https://example.com/b"],
+      "options": { "provider": "tavily" },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": [
+              { "url": "https://example.com/a", "raw_content": "Synthetic A", "published_date": "Thu, 18 Sep 2025 15:19:00 GMT", "images": [] }
+            ],
+            "failed_results": [{ "url": "https://example.com/b", "error": "Failed to retrieve content" }],
+            "response_time": 0.5,
+            "usage": { "credits": 0 },
+            "request_id": "synthetic-tavily-extract-1"
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.tavily.com/extract",
+            "headers": { "accept": "application/json", "content-type": "application/json", "authorization": "Bearer test-key-tavily" },
+            "body": { "format": "markdown", "include_usage": true, "include_published_date": true, "urls": ["https://example.com/a", "https://example.com/b"] }
+          }
+        ],
+        "response": {
+          "provider": "tavily",
+          "pages": [
+            {
+              "url": "https://example.com/a",
+              "status": "ok",
+              "finalUrl": null,
+              "title": null,
+              "content": "Synthetic A",
+              "publishedAt": "2025-09-18T15:19:00.000Z",
+              "author": null,
+              "error": null
+            },
+            {
+              "url": "https://example.com/b",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": { "code": null, "message": "Failed to retrieve content" }
+            }
+          ],
+          "cost": { "usd": 0, "estimated": true, "source": "reported-credits", "credits": 0 },
+          "requestId": "synthetic-tavily-extract-1",
+          "latencyMs": 0,
+          "warnings": [],
+          "attempts": [{ "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+        }
+      }
+    },
+    {
+      "name": "extract computes cost per 5 ok pages when usage is absent",
+      "call": "contents",
+      "urls": ["https://example.com/1", "https://example.com/2"],
+      "options": { "provider": "tavily" },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": [
+              { "url": "https://example.com/1", "raw_content": "One" },
+              { "url": "https://example.com/2", "raw_content": "Two" }
+            ],
+            "failed_results": []
+          }
+        }
+      ],
+      "expect": { "responseIncludes": { "cost": { "usd": 0.008, "estimated": true, "source": "computed" } } }
+    }
+  ]
+}

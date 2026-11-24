@@ -1,0 +1,149 @@
+{
+  "description": "Retries and backoff. Delay for retry i (from 0) = floor(e/2 + r*e/2) with e = min(maxDelayMs, baseDelayMs*2^i), r from the random source, and never less than Retry-After. Times are virtual milliseconds from the call start.",
+  "defaults": { "options": { "provider": "exa" } },
+  "cases": [
+    {
+      "name": "retries are off by default",
+      "call": "search", "query": "q",
+      "responses": [{ "status": 503 }, { "status": 200, "body": { "results": [] } }],
+      "expect": { "requestCount": 1, "error": { "code": "unavailable" } }
+    },
+    {
+      "name": "two transient failures then success, r = 0.5",
+      "call": "search", "query": "q", "options": { "maxRetries": 2 }, "random": [0.5],
+      "responses": [{ "status": 503 }, { "status": 503 }, { "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "responseIncludes": {
+          "latencyMs": 562,
+          "attempts": [
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0 },
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 187, "durationMs": 0 },
+            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 562, "durationMs": 0 }
+          ]
+        }
+      }
+    },
+    {
+      "name": "r = 0 gives the lower bound",
+      "call": "search", "query": "q", "options": { "maxRetries": 2 }, "random": [0],
+      "responses": [{ "status": 503 }, { "status": 503 }, { "status": 200, "body": { "results": [] } }],
+      "expect": { "responseIncludes": { "latencyMs": 375 } }
+    },
+    {
+      "name": "r close to 1 stays below the upper bound",
+      "call": "search", "query": "q", "options": { "maxRetries": 1 }, "random": [0.999],
+      "responses": [{ "status": 503 }, { "status": 200, "body": { "results": [] } }],
+      "expect": { "responseIncludes": { "latencyMs": 249 } }
+    },
+    {
+      "name": "five retries, r = 0",
+      "call": "search", "query": "q", "options": { "maxRetries": 5 }, "random": [0],
+      "responses": [{ "status": 503 }, { "status": 503 }, { "status": 503 }, { "status": 503 }, { "status": 503 }, { "status": 503 }],
+      "expect": {
+        "requestCount": 6,
+        "error": {
+          "code": "unavailable",
+          "attempts": [
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0 },
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 125, "durationMs": 0 },
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 375, "durationMs": 0 },
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 875, "durationMs": 0 },
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 1875, "durationMs": 0 },
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 3875, "durationMs": 0 }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Retry-After in seconds is never shortened",
+      "call": "search", "query": "q", "options": { "maxRetries": 1 }, "random": [0.5],
+      "responses": [{ "status": 429, "headers": { "retry-after": "2" } }, { "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "responseIncludes": {
+          "attempts": [
+            { "provider": "exa", "outcome": "error", "code": "rate_limit", "status": 429, "startMs": 0, "durationMs": 0, "retryAfterMs": 2000 },
+            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 2000, "durationMs": 0 }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Retry-After as an HTTP date",
+      "call": "search", "query": "q", "options": { "maxRetries": 1 },
+      "responses": [{ "status": 503, "headers": { "retry-after": "Tue, 24 Nov 2026 12:00:03 GMT" } }, { "status": 200, "body": { "results": [] } }],
+      "expect": { "responseIncludes": { "latencyMs": 3000 } }
+    },
+    {
+      "name": "Retry-After in the past counts as zero",
+      "call": "search", "query": "q", "options": { "maxRetries": 1 }, "random": [0.5],
+      "responses": [{ "status": 503, "headers": { "retry-after": "Tue, 24 Nov 2026 11:00:00 GMT" } }, { "status": 200, "body": { "results": [] } }],
+      "expect": { "responseIncludes": { "latencyMs": 187 } }
+    },
+    {
+      "name": "duplicate Retry-After headers are ignored",
+      "call": "search", "query": "q", "options": { "maxRetries": 1 }, "random": [0.5],
+      "responses": [{ "status": 429, "headers": [["retry-after", "2"], ["retry-after", "3"]] }, { "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "responseIncludes": {
+          "attempts": [
+            { "provider": "exa", "outcome": "error", "code": "rate_limit", "status": 429, "startMs": 0, "durationMs": 0 },
+            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 187, "durationMs": 0 }
+          ]
+        }
+      }
+    },
+    {
+      "name": "malformed Retry-After values are ignored",
+      "call": "search", "query": "q", "options": { "maxRetries": 3 }, "random": [0],
+      "responses": [
+        { "status": 429, "headers": { "retry-after": "-1" } },
+        { "status": 429, "headers": { "retry-after": "1.5" } },
+        { "status": 429, "headers": { "retry-after": "soon" } },
+        { "status": 200, "body": { "results": [] } }
+      ],
+      "expect": { "responseIncludes": { "latencyMs": 875 } }
+    },
+    {
+      "name": "Retry-After above 60 s is not waited for",
+      "call": "search", "query": "q", "options": { "maxRetries": 3 },
+      "responses": [{ "status": 429, "headers": { "retry-after": "61" } }],
+      "expect": { "requestCount": 1, "error": { "code": "rate_limit", "retryAfterMs": 61000 } }
+    },
+    {
+      "name": "no retry when the wait would reach the call deadline",
+      "call": "search", "query": "q", "options": { "maxRetries": 3, "timeoutMs": 1000 },
+      "responses": [{ "status": 429, "headers": { "retry-after": "1" } }],
+      "expect": { "requestCount": 1, "error": { "code": "rate_limit", "retryAfterMs": 1000 } }
+    },
+    {
+      "name": "400 is never retried",
+      "call": "search", "query": "q", "options": { "maxRetries": 3 },
+      "responses": [{ "status": 400 }],
+      "expect": { "requestCount": 1, "error": { "code": "provider_error" } }
+    },
+    {
+      "name": "402 is never retried",
+      "call": "search", "query": "q", "options": { "maxRetries": 3 },
+      "responses": [{ "status": 402 }],
+      "expect": { "requestCount": 1, "error": { "code": "quota" } }
+    },
+    {
+      "name": "invalid_response is never retried",
+      "call": "search", "query": "q", "options": { "maxRetries": 3 },
+      "responses": [{ "status": 200, "bodyText": "not json" }],
+      "expect": { "requestCount": 1, "error": { "code": "invalid_response" } }
+    },
+    {
+      "name": "network failures are retried",
+      "call": "search", "query": "q", "options": { "maxRetries": 1 }, "random": [0.5],
+      "responses": [{ "network": true }, { "status": 200, "body": { "results": [] } }],
+      "expect": { "requestCount": 2, "responseIncludes": { "latencyMs": 187 } }
+    },
+    {
+      "name": "client-level retries apply when the call sets none",
+      "call": "search", "query": "q", "client": { "maxRetries": 1 }, "random": [0.5],
+      "responses": [{ "status": 503 }, { "status": 200, "body": { "results": [] } }],
+      "expect": { "requestCount": 2 }
+    }
+  ]
+}

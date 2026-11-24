@@ -1,0 +1,60 @@
+{
+  "description": "Response size limits, counted in bytes of the body as received. Content-Length is used for an early reject only when it is a single decimal integer.",
+  "defaults": { "options": { "provider": "exa", "maxResponseBytes": 1024 } },
+  "cases": [
+    {
+      "name": "Content-Length over the limit is rejected before reading",
+      "call": "search", "query": "q",
+      "responses": [{ "status": 200, "headers": { "content-length": "2048" }, "body": { "results": [] } }],
+      "expect": { "error": { "code": "response_too_large", "status": 200 } }
+    },
+    {
+      "name": "a streamed body over the limit is rejected",
+      "call": "search", "query": "q",
+      "responses": [{ "status": 200, "bodyFill": { "prefix": "{\"results\":[],\"pad\":\"", "repeat": "a", "count": 1002, "suffix": "\"}" } }],
+      "expect": { "error": { "code": "response_too_large", "status": 200 } }
+    },
+    {
+      "name": "a body of exactly the limit is accepted",
+      "call": "search", "query": "q",
+      "responses": [{ "status": 200, "bodyFill": { "prefix": "{\"results\":[],\"pad\":\"", "repeat": "a", "count": 1001, "suffix": "\"}" } }],
+      "expect": { "responseIncludes": { "results": [] } }
+    },
+    {
+      "name": "multi-byte characters count as bytes, not characters (1025 bytes)",
+      "call": "search", "query": "q",
+      "responses": [{ "status": 200, "bodyFill": { "prefix": "{\"results\":[],\"pad\":\"", "repeat": "é", "count": 501, "suffix": "\"}" } }],
+      "expect": { "error": { "code": "response_too_large" } }
+    },
+    {
+      "name": "multi-byte characters under the limit (1023 bytes)",
+      "call": "search", "query": "q",
+      "responses": [{ "status": 200, "bodyFill": { "prefix": "{\"results\":[],\"pad\":\"", "repeat": "é", "count": 500, "suffix": "\"}" } }],
+      "expect": { "responseIncludes": { "results": [] } }
+    },
+    {
+      "name": "duplicate Content-Length headers are ignored; the streamed size decides",
+      "call": "search", "query": "q",
+      "responses": [{ "status": 200, "headers": [["content-length", "2048"], ["content-length", "2048"]], "body": { "results": [] } }],
+      "expect": { "responseIncludes": { "results": [] } }
+    },
+    {
+      "name": "an oversized error body still yields the status error",
+      "call": "search", "query": "q",
+      "responses": [{ "status": 503, "bodyFill": { "prefix": "", "repeat": "x", "count": 2000, "suffix": "" } }],
+      "expect": { "error": { "code": "unavailable", "status": 503 } }
+    },
+    {
+      "name": "a too-large response is not retried or fallen back (it may have been billed)",
+      "call": "search", "query": "q", "options": { "maxRetries": 2, "fallback": ["tavily"] },
+      "responses": [{ "status": 200, "headers": { "content-length": "4096" }, "body": { "results": [] } }],
+      "expect": { "requestCount": 1, "error": { "code": "response_too_large" } }
+    },
+    {
+      "name": "search defaults to a 10 MiB limit",
+      "call": "search", "query": "q", "options": { "maxResponseBytes": null },
+      "responses": [{ "status": 200, "headers": { "content-length": "10485761" }, "body": { "results": [] } }],
+      "expect": { "error": { "code": "response_too_large" } }
+    }
+  ]
+}
