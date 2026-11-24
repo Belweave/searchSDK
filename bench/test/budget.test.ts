@@ -5,8 +5,8 @@ import { test } from "node:test";
 import { Budget } from "../src/run/budget.ts";
 import { loadMethod } from "../src/run/config.ts";
 import { paceFor, Pacer } from "../src/run/pacer.ts";
-import { listPrice, reservation } from "../src/run/pricing.ts";
-import { registry, type ProviderSpec } from "../src/sdk.ts";
+import { reservation } from "../src/run/pricing.ts";
+import { costBound, registry, type ProviderSpec } from "../src/sdk.ts";
 import { tempStore } from "./helpers.ts";
 
 const reg = registry as unknown as Record<string, ProviderSpec>;
@@ -77,29 +77,33 @@ test("declared credits are spent before cash", () => {
   assert.equal(b.reserve("judge:k", "judge", 0.6), null);
 });
 
-test("list prices follow registry/steps.md request-price", () => {
-  assert.equal(listPrice(reg.exa!, "search", 10), 0.007);
-  assert.equal(listPrice(reg.exa!, "search", 10, { depth: "deep" }), 0.012);
-  assert.equal(listPrice(reg.exa!, "search", 12), 0.007 + 2 * 0.001);
-  assert.equal(listPrice(reg.exa!, "search", 10, { providerOptions: { contents: {} } }), null);
-  assert.equal(listPrice(reg.tavily!, "search", 10, { depth: "deep" }), 0.016);
-  assert.equal(listPrice(reg.context!, "search", 10), 0.002);
-  assert.equal(listPrice(reg.context!, "search", 11), 0.004);
-  assert.equal(listPrice(reg.firecrawl!, "search", 10), 0.0076);
-  assert.equal(listPrice(reg.brave!, "search", 10), 0.005);
-  assert.equal(listPrice(reg.perplexity!, "search", 10, { depth: "fast" }), 0.001);
-  assert.equal(listPrice(reg.tinyfish!, "search", 10), null);
-  assert.equal(listPrice(reg.context!, "contents", 1), 0.002);
+test("a reservation is the SDK's cost bound, with no margin added", () => {
+  const r = (id: string, s = {}, n = 10) => reservation(reg[id]!, "search", n, s, method);
+  assert.equal(r("exa").usd, 0.007);
+  assert.equal(r("exa", { depth: "deep" }).usd, 0.015); // top of Exa's published $12-15 range
+  assert.equal(r("exa", {}, 12).usd, 0.007 + 2 * 0.001);
+  assert.equal(r("tavily", { depth: "deep" }).usd, 0.016);
+  assert.equal(r("context").usd, 0.003); // Developer overage rate
+  assert.equal(r("context", {}, 11).usd, 0.006);
+  assert.equal(r("firecrawl").usd, 0.01); // Hobby extra credits
+  assert.equal(r("brave").usd, 0.005);
+  assert.equal(r("perplexity", { depth: "fast" }).usd, 0.001);
+  const tf = r("tinyfish");
+  assert.equal(tf.usd, 0);
+  assert.equal(tf.requiresOverageOff, true);
+  for (const id of Object.keys(reg)) {
+    const b = costBound(reg[id]!, "search", { maxResults: 10 });
+    assert.equal(r(id).usd, b.usd ?? method.budget.unknownPriceUsd, id);
+  }
 });
 
-test("an unknown price reserves the configured worst case", () => {
-  const r = reservation(reg.tinyfish!, "search", 10, {}, method);
-  assert.equal(r.listUsd, null);
+test("a call the SDK cannot bound reserves the configured worst case, above every known bound", () => {
+  const r = reservation(reg.exa!, "search", 10, { providerOptions: { contents: { text: true } } }, method);
+  assert.equal(r.boundUsd, null);
   assert.equal(r.usd, method.budget.unknownPriceUsd);
-  // The worst case is above every known per-call search price in the registry, times the safety factor.
   for (const id of Object.keys(reg)) {
-    const known = reservation(reg[id]!, "search", 10, { depth: "deep" }, method);
-    if (known.listUsd !== null && reg[id]!.search!.request.params.depth) assert.ok(known.usd <= r.usd, id);
+    const known = reservation(reg[id]!, "search", 10, reg[id]!.search!.request.params.depth ? { depth: "deep" } : {}, method);
+    if (known.boundUsd !== null) assert.ok(known.usd <= r.usd, id);
   }
 });
 
@@ -111,8 +115,17 @@ test("pacing keeps to half the strictest documented limit", () => {
   assert.equal(dev.intervalMs, 0);
   assert.equal(dev.maxInFlight, 2);
   const tf = paceFor(reg.tinyfish!.search!.rateLimits as never, undefined, 0.5, 2);
-  assert.equal(tf.perDay, 6000);
+  assert.equal(tf.perDay, null); // the 12,000-a-day free allowance is pricing data, checked by the planner
   assert.equal(tf.intervalMs, 14400); // 500 per hour at half rate is stricter than 30 per minute
+});
+
+test("pacing counts each limit in its own unit", () => {
+  // 150 URLs a minute at half rate, 10 URLs per call: 7.5 calls a minute.
+  assert.equal(paceFor(reg.tinyfish!.contents!.rateLimits as never, undefined, 0.5, 2, { urls: 10 }).intervalMs, 8000);
+  // Perplexity counts query units, one per search call: 25 a second at half rate.
+  assert.equal(paceFor(reg.perplexity!.search!.rateLimits as never, undefined, 0.5, 2, { results: 10 }).intervalMs, 40);
+  // A limit on results is divided by the results each call asks for.
+  assert.equal(paceFor([{ plan: "x", limit: 100, unit: "results", per: "second" }], undefined, 0.5, 2, { results: 10 }).intervalMs, 200);
 });
 
 test("the pacer spaces request starts and honours pauses", async () => {

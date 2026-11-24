@@ -30,49 +30,35 @@ export const FIXTURE_PROVIDERS: Record<string, FixtureBehaviour> = {
   "fx-unpriced": { hit: 0.5, price: null },
 };
 
-export const FIXTURE_FETCHER = "fx-pages";
-
-function spec(id: string, b: FixtureBehaviour | null): Record<string, unknown> {
+function spec(id: string, b: FixtureBehaviour): Record<string, unknown> {
   const pricing = (usd: number | null) => ({ plan: "fixture", source: "https://fixture.invalid/pricing", retrievedOn: "2026-11-24", perRequestUsd: usd });
   const base: Record<string, unknown> = {
     formatVersion: 1, id, name: `Fixture ${id}`, specVersion: "2026-11-24",
     sources: [{ url: "https://fixture.invalid/docs", retrievedOn: "2026-11-24", covers: "synthetic fixture provider" }],
     auth: { in: "header", name: "x-fixture-key", env: ["FIXTURE_KEY"] },
-    capabilities: { search: b !== null, contents: b === null },
+    capabilities: { search: true, contents: false },
     index: { type: "unknown", note: "Synthetic fixture." },
     terms: { url: "https://fixture.invalid/terms", readOn: "2026-11-24", benchmarkPublication: "allowed", rawResponseStorage: "allowed" },
     errors: [],
     unverified: [],
   };
-  if (b) {
-    base.search = {
-      request: { method: "POST", url: `https://fixture.invalid/${id}/search`, encoding: "json", params: { query: { to: "q" }, maxResults: { to: "n" } } },
-      limits: { maxResults: 20, maxQueryLength: null, maxIncludeDomains: 0, maxExcludeDomains: 0 },
-      dateBasis: "unknown",
-      response: { results: "results", fields: { url: "url", title: "title", excerpts: { path: "snippet", steps: [{ step: "to-list" }] } } },
-      ...(b.reportedUsd !== undefined ? { cost: { reported: { path: "costUsd", unit: "usd" } } } : {}),
-      pricing: pricing(b.price ?? null),
-      rateLimits: [],
-      providerOptions: { mode: { enum: ["plain", "boosted"] } },
-    };
-  } else {
-    base.contents = {
-      request: { method: "POST", url: `https://fixture.invalid/${id}/contents`, encoding: "json", params: { urls: { to: "urls" } } },
-      limits: { maxUrls: 10 },
-      contentFormat: "text",
-      response: { pages: [{ from: "pages", status: "ok", fields: { url: "url", title: "title", content: "text" } }] },
-      pricing: { ...pricing(0), extraBlock: { items: 1, usd: 0.001 } },
-      rateLimits: [],
-      providerOptions: {},
-    };
-  }
+  base.search = {
+    verification: { status: "unverified" },
+    request: { method: "POST", url: `https://fixture.invalid/${id}/search`, encoding: "json", params: { query: { to: "q" }, maxResults: { to: "n" } } },
+    limits: { maxResults: 20, maxQueryLength: null, maxIncludeDomains: 0, maxExcludeDomains: 0 },
+    dateBasis: "unknown",
+    response: { results: "results", excerptKind: "description", fields: { url: "url", title: "title", excerpts: { path: "snippet", steps: [{ step: "to-list" }] } } },
+    ...(b.reportedUsd !== undefined ? { cost: { reported: { path: "costUsd", unit: "usd" } } } : {}),
+    pricing: pricing(b.price ?? null),
+    rateLimits: [],
+    providerOptions: { mode: { enum: ["plain", "boosted"] } },
+  };
   return base;
 }
 
 export function fixtureRegistry(providers: Record<string, FixtureBehaviour> = FIXTURE_PROVIDERS): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [id, b] of Object.entries(providers)) out[id] = spec(id, b);
-  out[FIXTURE_FETCHER] = spec(FIXTURE_FETCHER, null);
   return out;
 }
 
@@ -98,9 +84,17 @@ export function fixturePageText(url: string, items: Map<string, Item>): string {
   return "Synthetic page about something else entirely, with filler text and no answer.";
 }
 
+/** A synthetic HTML page around the fixture text, so the harness's own fetcher extracts it like a real page. */
+export function fixturePageHtml(url: string, items: Map<string, Item>): string {
+  const text = fixturePageText(url, items);
+  return `<!doctype html><html><head><title>Synthetic page</title><script>var ignored = "${"x".repeat(8)}";</script></head><body><nav>Menu</nav><main><p>${text}</p></main></body></html>`;
+}
+
 /**
- * An injected fetch for the fixture registry. Deterministic per (provider,
- * query, attempt number), so fixture runs are reproducible.
+ * An injected fetch for the fixture registry and the fixture web. Provider
+ * calls go to fixture.invalid; any other URL is a synthetic page (robots.txt
+ * is absent, so everything may be read). Deterministic per (provider, query,
+ * attempt number), so fixture runs are reproducible.
  */
 export function fixtureFetch(items: readonly Item[], providers: Record<string, FixtureBehaviour> = FIXTURE_PROVIDERS, opts: { calls?: string[] } = {}): typeof fetch {
   const byQuery = new Map(items.map((i) => [i.query, i]));
@@ -109,14 +103,14 @@ export function fixtureFetch(items: readonly Item[], providers: Record<string, F
   return (async (input: unknown, init?: RequestInit) => {
     const url = String(input instanceof Request ? input.url : input);
     opts.calls?.push(url);
-    const m = url.match(/^https:\/\/fixture\.invalid\/([a-z0-9-]+)\/(search|contents)$/);
-    if (!m) throw new TypeError(`fixture fetch: unexpected URL ${url}`);
-    const [, id, kind] = m;
-    const body = JSON.parse(String(init?.body ?? "{}")) as { q?: string; n?: number; urls?: string[] };
-    const json = (status: number, value: unknown) => new Response(JSON.stringify(value), { status, headers: { "content-type": "application/json" } });
-    if (kind === "contents") {
-      return json(200, { pages: (body.urls ?? []).map((u) => ({ url: u, title: "Synthetic page", text: fixturePageText(u, byId) })) });
+    const m = url.match(/^https:\/\/fixture\.invalid\/([a-z0-9-]+)\/search$/);
+    if (!m) {
+      if (/^https?:\/\/[^/]+\/robots\.txt$/.test(url)) return new Response("not found", { status: 404 });
+      return new Response(fixturePageHtml(url, byId), { status: 200, headers: { "content-type": "text/html; charset=utf-8" } });
     }
+    const [, id] = m;
+    const body = JSON.parse(String(init?.body ?? "{}")) as { q?: string; n?: number };
+    const json = (status: number, value: unknown) => new Response(JSON.stringify(value), { status, headers: { "content-type": "application/json" } });
     const b = providers[id!];
     const item = byQuery.get(body.q ?? "");
     if (!b || !item) return json(200, { results: [] });
@@ -159,7 +153,7 @@ export function fixtureJudge(items: readonly Item[], noise = 0.1): Judge {
       const has = item ? textHasAnswer(input.passage, item) : false;
       let grade: 0 | 1 | 2 | 3 = has ? 3 : input.passage.includes("Synthetic page about") ? 0 : 1;
       if (rng(seedOf("judge-noise", input.query, input.url, calls))() < noise) grade = (grade === 3 ? 2 : grade + 1) as 0 | 1 | 2 | 3;
-      return { grade, rationale: "synthetic", inputTokens: 100, outputTokens: 20, costUsd: 0.0005, model: "fixture", raw: { synthetic: true } };
+      return { grade, rationale: "synthetic", inputTokens: 100, outputTokens: 20, costUsd: 0.0005, chargedUsd: null, model: "fixture", raw: { synthetic: true } };
     },
   };
 }

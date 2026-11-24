@@ -5,10 +5,16 @@
 // used, which the tuned column then leaves out.
 import { resolve } from "node:path";
 import type { Method, RunConfig, Settings } from "./run/config.ts";
-import { listPrice } from "./run/pricing.ts";
-import type { ProviderSpec } from "./sdk.ts";
+import { costBound, type ProviderSpec } from "./sdk.ts";
 import type { Scores } from "./score/score.ts";
 import { readJson } from "./util/core.ts";
+
+/** The SDK's bound on one search's cost under these settings (registry/steps.md, Cost bound), or null when unbounded. */
+function boundUsd(spec: ProviderSpec, maxResults: number, s: Settings): number | null {
+  return costBound(spec, "search", { maxResults, ...(s.depth ? { depth: s.depth } : {}), ...(s.providerOptions ? { providerOptions: s.providerOptions } : {}) }).usd;
+}
+
+const UNBOUNDED = { price: "price not public", option: "a cost option makes the price unknown", count: "the billed count is unbounded" } as const;
 
 export interface TuningConfig {
   name: string;
@@ -26,7 +32,7 @@ export interface Selection {
   method: string;
   maxListPriceUsd: number;
   items: string[];
-  chosen: Record<string, { profile: string; settings: Settings; knownAnswer: number; defaultKnownAnswer: number; listPriceUsd: number | null }>;
+  chosen: Record<string, { profile: string; settings: Settings; knownAnswer: number; defaultKnownAnswer: number; listPriceUsd: number | null }>; // the SDK cost bound for the chosen settings
   rejected: { provider: string; settings: Settings; reason: string }[];
 }
 
@@ -44,9 +50,10 @@ export function tuningRunConfig(t: TuningConfig, registry: Readonly<Record<strin
     for (const s of t.candidates[p] ?? []) {
       const spec = registry[p];
       if (!spec?.search) { rejected.push({ provider: p, settings: s, reason: "no search endpoint" }); continue; }
-      const price = listPrice(spec, "search", method.search.maxResults, s);
-      if (price === null) { rejected.push({ provider: p, settings: s, reason: "price not public" }); continue; }
-      if (price > t.maxListPriceUsd) { rejected.push({ provider: p, settings: s, reason: `list price ${price} above the cap ${t.maxListPriceUsd}` }); continue; }
+      const b = costBound(spec, "search", { maxResults: method.search.maxResults, ...(s.depth ? { depth: s.depth } : {}), ...(s.providerOptions ? { providerOptions: s.providerOptions } : {}) });
+      const price = b.usd;
+      if (price === null) { rejected.push({ provider: p, settings: s, reason: UNBOUNDED[b.unknownBecause ?? "price"] }); continue; }
+      if (price > t.maxListPriceUsd) { rejected.push({ provider: p, settings: s, reason: `cost bound ${price} above the cap ${t.maxListPriceUsd}` }); continue; }
       const profile = `t${++k}`;
       (settings[profile] ??= {})[p] = s;
       slots = Math.max(slots, k);
@@ -67,7 +74,7 @@ export function select(runId: string, config: RunConfig, scores: Scores, registr
     const rows = scores.profiles.filter((x) => x.provider === p && x.status === "scored");
     const def = rows.find((x) => x.profile === "default");
     if (!def) continue;
-    const price = (profile: string) => listPrice(registry[p]!, "search", method.search.maxResults, profile === "default" ? {} : (config.settings?.[profile]?.[p] ?? {}));
+    const price = (profile: string) => boundUsd(registry[p]!, method.search.maxResults, profile === "default" ? {} : (config.settings?.[profile]?.[p] ?? {}));
     const eligible = rows.filter((x) => x.profile === "default" || (x.rank?.reliable ?? false));
     const best = eligible.sort((a, b) =>
       b.knownAnswer.mean - a.knownAnswer.mean || (price(a.profile) ?? Infinity) - (price(b.profile) ?? Infinity) || (a.profile === "default" ? -1 : b.profile === "default" ? 1 : 0))[0]!;

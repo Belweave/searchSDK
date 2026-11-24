@@ -4,8 +4,9 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Item } from "./dataset/items.ts";
-import { FIXTURE_FETCHER, fixtureFetch, fixtureJudge, fixtureKeys, fixtureRegistry } from "./fixtures.ts";
+import { fixtureFetch, fixtureJudge, fixtureKeys, fixtureRegistry } from "./fixtures.ts";
 import { createJudge, type Judge } from "./judge/judge.ts";
+import { PlainFetcher, type FetchedPage } from "./pages/fetcher.ts";
 import { Budget } from "./run/budget.ts";
 import { loadMethod, type Method, type RunConfig } from "./run/config.ts";
 import { loadRunItems, makePlan, planHash, runsDir, type Plan } from "./run/plan.ts";
@@ -14,6 +15,22 @@ import { createClient, registry as builtInRegistry, type Client, type ProviderSp
 import { readJson, storeDir, writeJson } from "./util/core.ts";
 
 export type Mode = "live" | "fixture";
+
+/** What the page phase needs from a fetcher. */
+export interface PageFetcher {
+  fetchPage(url: string, signal?: AbortSignal): Promise<FetchedPage>;
+  /** The host's robots.txt Crawl-delay in ms, or 0. */
+  crawlDelayMs(url: string): Promise<number>;
+}
+
+/** The harness's own fetcher with the method's limits and user agent, on the given fetch. */
+export function pageFetcherFor(method: Method, fetchFn: typeof fetch): PageFetcher {
+  const p = method.pages;
+  return new PlainFetcher({
+    fetch: fetchFn, userAgent: p.userAgent, robotsToken: p.robotsToken, timeoutMs: p.timeoutMs,
+    maxBytes: p.maxBytes, maxRedirects: p.maxRedirects, maxCrawlDelayMs: p.maxCrawlDelayMs,
+  });
+}
 
 export interface Session {
   runId: string;
@@ -24,7 +41,8 @@ export interface Session {
   items: Item[];
   plan: Plan;
   registry: Readonly<Record<string, ProviderSpec>>;
-  client: Client;
+  client: Client<string>;
+  pageFetcher: PageFetcher;
   judge: Judge | null;
   budget: Budget;
   createdAt: string;
@@ -46,9 +64,8 @@ export function liveGuards(o: { env: Record<string, string | undefined>; registr
   if (o.env.CI) out.push("CI is set: live runs never start from automated CI");
   if (o.env.BENCH_TEST) out.push("BENCH_TEST is set: tests never run live");
   if (o.env.BENCH_ALLOW_LIVE !== "1") out.push("set BENCH_ALLOW_LIVE=1 to allow provider calls");
-  const needs = new Set(o.config.providers);
-  if (o.config.pagePasses.length) needs.add(o.method.pages.fetcher);
-  for (const id of needs) {
+  // Pages come from the harness's own fetcher, which needs no key.
+  for (const id of new Set(o.config.providers)) {
     const env = (o.registry[id]?.auth.env ?? []) as string[];
     if (!env.some((n) => (o.env[n] ?? "") !== "")) out.push(`${id}: no key in ${env.join(" or ")}`);
   }
@@ -79,19 +96,23 @@ export function openSession(o: {
   const config = o.config;
   const items = loadRunItems(config);
   let registry: Readonly<Record<string, ProviderSpec>>;
-  let client: Client;
+  let client: Client<string>;
+  let pageFetcher: PageFetcher;
   let judge: Judge | null;
   if (o.mode === "fixture") {
     const reg = fixtureRegistry(o.fixtureProviders);
     registry = reg as unknown as Record<string, ProviderSpec>;
-    // Synthetic providers answer instantly; a 30-second pause after a synthetic 429 would only slow tests.
-    method = { ...method, pages: { ...method.pages, fetcher: FIXTURE_FETCHER }, pacing: { ...method.pacing, rateLimitPauseMs: 0 } };
-    client = createClient({ registry: reg, keys: fixtureKeys(reg) as never, fetch: o.fetch ?? fixtureFetch(items, o.fixtureProviders) });
+    // Synthetic providers and pages answer instantly; real pauses would only slow tests.
+    method = { ...method, pages: { ...method.pages, perHostIntervalMs: 0 }, pacing: { ...method.pacing, rateLimitPauseMs: 0 } };
+    const fx = o.fetch ?? fixtureFetch(items, o.fixtureProviders);
+    client = createClient({ registry: reg, keys: fixtureKeys(reg), fetch: fx });
+    pageFetcher = pageFetcherFor(method, fx);
     judge = o.judge === undefined ? fixtureJudge(items) : o.judge;
   } else {
     registry = builtInRegistry as unknown as Record<string, ProviderSpec>;
     judge = o.judge === undefined ? (config.judgeItems > 0 ? createJudge(method.judge.id, method.judge.rubric, { fetch: globalThis.fetch, env }) : null) : o.judge;
-    client = createClient({ env });
+    client = createClient<string>({ env });
+    pageFetcher = pageFetcherFor(method, globalThis.fetch);
   }
   const plan = makePlan({ config, method, items, registry, judge, checkCommitted: o.mode === "live" });
   const hash = planHash(plan, config);
@@ -117,5 +138,5 @@ export function openSession(o: {
   if (!o.runId) {
     writeJson(runPaths(dir).run, { runId, mode: o.mode, config, method, planHash: hash, createdAt, judge: judge?.info ?? null } satisfies RunMeta, 0o600);
   }
-  return { runId, dir, mode: o.mode, config, method, items, plan, registry, client, judge, budget, createdAt };
+  return { runId, dir, mode: o.mode, config, method, items, plan, registry, client, pageFetcher, judge, budget, createdAt };
 }

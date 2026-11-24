@@ -1,7 +1,12 @@
 // Record shapes in a run directory. Attempt, page and judgment records hold
 // no response text: text lives only under raw/, which is never published.
 import { join } from "node:path";
+import type { UnreadableReason } from "../pages/fetcher.ts";
+import { urlKey } from "../sdk.ts";
 import { sha256 } from "../util/core.ts";
+
+/** URL identity for de-duplicating pages and judged pairs: the SDK's own URL key (registry/policy.md). */
+export { urlKey };
 
 export type Outcome =
   | "ok_nonempty" | "ok_empty" | "rate_limited" | "timeout" | "server_error" | "network_error" | "invalid_response"
@@ -41,14 +46,18 @@ export interface AttemptRecord {
   warnings: string[];
 }
 
+/** One page read by the harness's own fetcher. Unreadable pages count the same for every provider that returned them. */
 export interface PageRecord {
   urlKey: string;
   url: string;
-  status: "ok" | "failed" | "error";
-  code?: string;
+  status: "ok" | "unreadable";
+  reason?: UnreadableReason;
+  httpStatus?: number;
+  finalUrl?: string;
+  /** The body was longer than pages.maxBytes; the first part was read. */
+  truncated?: boolean;
   contentSha256: string | null;
   contentChars: number;
-  costUsd: number | null;
   durationMs: number;
 }
 
@@ -80,20 +89,6 @@ export interface EventRecord {
   event: string;
   detail?: string;
   provider?: string;
-}
-
-/** A conservative URL key for de-duplicating pages: lowercased host, no fragment, no trailing slash. */
-export function urlKey(url: string): string {
-  try {
-    const u = new URL(url);
-    u.hash = "";
-    u.hostname = u.hostname.toLowerCase();
-    let s = u.toString();
-    if (s.endsWith("/") && u.pathname !== "/") s = s.slice(0, -1);
-    return s;
-  } catch {
-    return url;
-  }
 }
 
 export const pairIdOf = (itemId: string, key: string) => sha256(`${itemId}\n${key}`).slice(0, 20);

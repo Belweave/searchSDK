@@ -1,13 +1,14 @@
 {
   "name": "monthly",
-  "description": "Template for the monthly run: about 400 items (public, private, fresh), one pass, default and tuned profiles. Pass --tuned with the month's selection. Declare Morph Ultra coverage of the judge as a credit only when the key is on an Ultra seat.",
+  "description": "Template for the monthly run: about 400 items (public, private, fresh), one pass, default and tuned profiles. Pass --tuned with the month's selection. The judge is covered by the owner's Morph Ultra plan, so it scores every item and the cap counts provider calls only.",
   "providers": ["brave", "context", "exa", "firecrawl", "perplexity", "tavily", "tinyfish"],
   "datasets": ["datasets/public/seed-0.1.0.jsonl", "datasets/fresh/fresh-2026-11.jsonl"],
   "privateDatasets": [],
   "passes": 1,
   "profiles": ["default"],
   "pagePasses": [1],
-  "judgeItems": 120,
+  "judgeItems": 400,
+  "judgePricing": "covered-by-plan",
   "capUsd": 90,
   "creditsUsd": {},
   "seed": 20261201

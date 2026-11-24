@@ -1,12 +1,13 @@
 {
   "name": "pilot",
-  "description": "First live pilot: every registry provider, the seed and November freshness sets, two search passes for run-to-run variance, judging on 30 items with a 15% repeat for self-consistency, human check afterwards.",
+  "description": "First live pilot: every registry provider, the seed and November freshness sets, two search passes for run-to-run variance, judging every item (covered by the owner's Morph Ultra plan) with a 15% repeat for self-consistency, human check afterwards. Waits until all seven provider keys are in hand.",
   "providers": ["brave", "context", "exa", "firecrawl", "perplexity", "tavily", "tinyfish"],
   "datasets": ["datasets/public/seed-0.1.0.jsonl", "datasets/fresh/fresh-2026-11.jsonl"],
   "passes": 2,
   "profiles": ["default"],
   "pagePasses": [1, 2],
-  "judgeItems": 30,
+  "judgeItems": 96,
+  "judgePricing": "covered-by-plan",
   "capUsd": 45,
   "seed": 20261124
 }

@@ -74,7 +74,8 @@ export function buildOutputs(c: Ctx) {
     reliability: { usableRate: round(p.reliability.usableRate), ci95: [round(p.reliability.ci[0]), round(p.reliability.ci[1])], attempts: p.reliability.attempts, rates: p.reliability.rates },
     latencyMs: p.latencyMs,
     cost: p.cost,
-    pageFetchFailRate: p.pageFetchFailRate,
+    excerptKind: (c.registry[p.provider] as { search?: { response?: { excerptKind?: string } } } | undefined)?.search?.response?.excerptKind ?? null,
+    pageUnreadableRate: p.pageUnreadableRate,
     stale: p.stale,
     retest: p.retest,
     rank: p.rank ? { group: p.rank.group, tied: p.rank.tied, reliable: p.rank.reliable, position: p.rank.position } : null,
@@ -97,7 +98,7 @@ export function buildOutputs(c: Ctx) {
     judge: c.judge ? { id: c.judge.id, model: c.judge.model, rubric: c.judge.rubric, rubricSha256: c.judge.rubricSha256, promptSha256: c.judge.promptSha256, params: c.judge.params } : null,
     conditions: {
       maxResults: method.search.maxResults, timeoutMs: method.search.timeoutMs, retries: method.search.maxRetries, fallback: "none",
-      pageFetcher: method.pages.fetcher, pageTopK: method.pages.topK, snippetTopK: method.knownAnswer.snippetTopK, navTopK: method.knownAnswer.navTopK,
+      pageFetcher: method.pages.fetcher, pageUserAgent: method.pages.userAgent, pageTopK: method.pages.topK, snippetTopK: method.knownAnswer.snippetTopK, navTopK: method.knownAnswer.navTopK,
       judgeTopK: method.judge.topK, passes: config.passes, seed: config.seed,
     },
     agreement: scores.agreement ? {
@@ -108,6 +109,7 @@ export function buildOutputs(c: Ctx) {
       judgedPublished: publishJudged, gate: scores.agreement.gateReason,
     } : null,
     ranking: { rule: RANK_RULE, floor: method.reliability.floor, minSeparation: method.stats.minSeparation, pairedItems: scores.pairedN, droppedItems: scores.droppedItems },
+    pages: scores.pages,
     providers,
     items: c.items.map((i) => ({ ref: ref(i), class: i.class, split: i.split })),
   };

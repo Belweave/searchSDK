@@ -6,13 +6,19 @@ import { BENCH_DIR, readJson } from "../util/core.ts";
 export interface Method {
   method: string;
   search: { maxResults: number; timeoutMs: number; maxRetries: number };
-  pages: { fetcher: string; topK: number; timeoutMs: number; maxStoredChars: number };
+  /** The harness's own page fetcher (src/pages/fetcher.ts): never a ranked provider, and free. */
+  pages: {
+    fetcher: string; topK: number; timeoutMs: number; maxBytes: number; maxRedirects: number;
+    maxInFlight: number; perHostIntervalMs: number; maxCrawlDelayMs: number;
+    userAgent: string; robotsToken: string; maxStoredChars: number;
+  };
   knownAnswer: { snippetTopK: number; pageTopK: number; navTopK: number };
   judge: { id: string; topK: number; passageMaxBytes: number; selfConsistencyShare: number; rubric: string };
   gate: { minHumanLabels: number; minJudgeHumanKappa: number; minSelfKappa: number };
   stats: { bootstrap: number; seed: number; confidence: number; minSeparation: number };
   reliability: { floor: number };
-  budget: { monthlyCapUsd: number; priceSafetyFactor: number; unknownPriceUsd: number };
+  /** unknownPriceUsd is reserved only when the SDK's cost bound is unknown; known bounds are reserved as they are. */
+  budget: { monthlyCapUsd: number; unknownPriceUsd: number };
   pacing: { shareOfLimit: number; maxInFlightPerProvider: number; itemWindow: number; rateLimitPauseMs: number };
   routing: { minCellN: number; validDays: number };
 }
@@ -22,6 +28,8 @@ export interface Settings {
   depth?: "fast" | "standard" | "deep";
   providerOptions?: Record<string, unknown>;
 }
+
+export type JudgePricing = "covered-by-plan" | "list-price";
 
 export interface RunConfig {
   name: string;
@@ -44,8 +52,14 @@ export interface RunConfig {
   profileExclude?: Record<string, string[]>;
   /** Search passes whose top URLs get fetched for the page check. Empty disables page fetching. */
   pagePasses: number[];
-  /** Judge this many items (drawn by seed within classes), from pass 1. Zero disables judging. */
+  /** Judge this many items (drawn by seed within classes), from pass 1. Zero disables judging; at least the item count judges every item. */
   judgeItems: number;
+  /**
+   * How judge calls are paid for. "covered-by-plan": a subscription covers them, so they reserve nothing,
+   * the cap counts provider calls only, and any charge the judge reports halts the run. "list-price"
+   * (the default): each call reserves its worst case at the judge's list price.
+   */
+  judgePricing?: JudgePricing;
   /** The most this run may spend, in USD. A live run must repeat it to confirm. */
   capUsd: number;
   /** Free credit per provider, in USD, which spend uses before the cash caps. */
@@ -72,6 +86,7 @@ export function loadRunConfig(path: string): RunConfig {
   for (const p of c.profiles ?? []) if (p !== "default" && !c.settings?.[p]) problems.push(`settings.${p}: missing`);
   if (!Array.isArray(c.pagePasses) || c.pagePasses.some((p) => !Number.isInteger(p) || p < 1 || p > c.passes)) problems.push("pagePasses: pass numbers");
   if (!Number.isInteger(c.judgeItems) || c.judgeItems < 0) problems.push("judgeItems: a whole number");
+  if (c.judgePricing !== undefined && c.judgePricing !== "covered-by-plan" && c.judgePricing !== "list-price") problems.push("judgePricing: covered-by-plan or list-price");
   if (typeof c.capUsd !== "number" || !(c.capUsd > 0)) problems.push("capUsd: a positive number");
   if (!Number.isInteger(c.seed)) problems.push("seed: an integer");
   if (problems.length) throw new Error(`${path}:\n  ${problems.join("\n  ")}`);

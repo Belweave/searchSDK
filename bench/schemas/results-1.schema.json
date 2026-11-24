@@ -20,6 +20,7 @@
     "conditions",
     "agreement",
     "ranking",
+    "pages",
     "providers",
     "items"
   ],
@@ -306,6 +307,44 @@
         }
       }
     },
+    "pages": {
+      "description": "The page check: distinct top URLs the harness's own fetcher tried, how many it could read, and why the rest were unreadable. An unreadable page counts the same for every provider.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "urls",
+        "read",
+        "unreadable",
+        "unreadableRate",
+        "reasons"
+      ],
+      "properties": {
+        "urls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "read": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unreadable": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unreadableRate": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "reasons": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      }
+    },
     "providers": {
       "type": "array",
       "items": {
@@ -324,7 +363,8 @@
           "reliability",
           "latencyMs",
           "cost",
-          "pageFetchFailRate",
+          "excerptKind",
+          "pageUnreadableRate",
           "stale",
           "retest",
           "rank"
@@ -564,7 +604,17 @@
               }
             }
           },
-          "pageFetchFailRate": {
+          "excerptKind": {
+            "description": "What the provider's excerpts are (registry response.excerptKind); snippet credit depends on it.",
+            "enum": [
+              "description",
+              "content-chunk",
+              "highlights",
+              "none",
+              null
+            ]
+          },
+          "pageUnreadableRate": {
             "type": [
               "number",
               "null"

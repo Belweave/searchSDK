@@ -43,7 +43,8 @@ export interface ProfileScore {
   reliability: Reliability;
   latencyMs: Latency;
   cost: CostSummary;
-  pageFetchFailRate: number | null;
+  /** Share of this provider's top URLs the harness's fetcher could not read (the same pages count as unreadable for everyone). */
+  pageUnreadableRate: number | null;
   stale: { n: number; rate: number } | null;
   retest: { n: number; agreement: number; flipped: number; meanDelta: number; urlJaccard: number } | null;
   rank: RankRow | null;
@@ -75,8 +76,18 @@ export interface JudgeAgreement {
   gateReason: string;
 }
 
+/** The page check's reach: how many distinct top URLs were read, and why the rest were not. */
+export interface PageSummary {
+  urls: number;
+  read: number;
+  unreadable: number;
+  unreadableRate: number | null;
+  reasons: Record<string, number>;
+}
+
 export interface Scores {
   items: { id: string; class: string; split: string }[];
+  pages: PageSummary;
   pairedN: Record<string, number>;
   droppedItems: Record<string, number>;
   profiles: ProfileScore[];
@@ -287,7 +298,7 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
       const comp = [...per.entries()];
       const nonNav = comp.filter(([id]) => items[index.get(id)!]!.class !== "nav");
       const navs = comp.filter(([id]) => items[index.get(id)!]!.class === "nav");
-      // Page fetch failures among this provider's top URLs: a fetcher bias check.
+      // Unreadable pages among this provider's top URLs: shows whether the page check reached its results as often as others'.
       const tops = pass1.filter((a) => a.outcome === "ok_nonempty").flatMap((a) => a.urls.slice(0, method.pages.topK));
       const fetched = tops.map((u) => pages.get(urlKey(u))).filter((x): x is PageRecord => !!x);
       // Freshness: results show only a superseded version and not the current one.
@@ -328,7 +339,7 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
         reliability: reliability(list, conf),
         latencyMs: latency(list, method.search.timeoutMs),
         cost: cost(list, correct, pass1),
-        pageFetchFailRate: fetched.length ? round(fetched.filter((p) => p.status !== "ok").length / fetched.length) : null,
+        pageUnreadableRate: fetched.length ? round(fetched.filter((p) => p.status !== "ok").length / fetched.length) : null,
         stale: freshIds.length ? { n: freshIds.length, rate: round(staleN / freshIds.length) } : null,
         retest: rt,
         rank: ranks.find((r) => r.id === provider) ?? null,
@@ -375,5 +386,9 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
       }
     }
   }
-  return { items: items.map((i) => ({ id: i.id, class: i.class, split: i.split })), pairedN, droppedItems, profiles, cells, agreement };
+  const reasons: Record<string, number> = {};
+  for (const p of pages.values()) if (p.status !== "ok") reasons[p.reason ?? "unknown"] = (reasons[p.reason ?? "unknown"] ?? 0) + 1;
+  const unreadable = Object.values(reasons).reduce((a, b) => a + b, 0);
+  const pageSummary: PageSummary = { urls: pages.size, read: pages.size - unreadable, unreadable, unreadableRate: pages.size ? round(unreadable / pages.size) : null, reasons };
+  return { items: items.map((i) => ({ id: i.id, class: i.class, split: i.split })), pages: pageSummary, pairedN, droppedItems, profiles, cells, agreement };
 }

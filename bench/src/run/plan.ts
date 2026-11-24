@@ -7,7 +7,7 @@ import type { Judge } from "../judge/judge.ts";
 import { selectPassage } from "../judge/judge.ts";
 import type { ProviderSpec } from "../sdk.ts";
 import { BENCH_DIR, canonical, rng, seedOf, sha256, shuffle, storeDir, usd } from "../util/core.ts";
-import type { Method, RunConfig, Settings } from "./config.ts";
+import type { JudgePricing, Method, RunConfig, Settings } from "./config.ts";
 import { paceFor, type Pace, type RateLimit } from "./pacer.ts";
 import { reservation, type Reservation } from "./pricing.ts";
 
@@ -28,8 +28,10 @@ export interface Plan {
   judgeItemIds: string[];
   providers: ProviderPlan[];
   search: { calls: number; maxUsd: number };
-  pages: { fetcher: string; maxUrls: number; reservation: Reservation; maxUsd: number; pace: Pace };
-  judge: { id: string; maxPairs: number; maxRepeats: number; perCallMaxUsd: number; maxUsd: number } | null;
+  /** The harness's own fetcher: no provider, no spend, so it is not in the spend total. */
+  pages: { fetcher: string; maxUrls: number; maxInFlight: number; perHostIntervalMs: number };
+  /** maxUsd is 0 when the judge is covered by a plan; the cap then counts provider calls only. */
+  judge: { id: string; pricing: JudgePricing; maxPairs: number; maxRepeats: number; perCallMaxUsd: number; maxUsd: number } | null;
   maxUsd: number;
   capUsd: number;
   warnings: string[];
@@ -92,7 +94,7 @@ export function makePlan(o: {
     const spec = registry[id];
     if (!spec) throw new Error(`provider ${id} is not in the registry`);
     if (!spec.search) throw new Error(`provider ${id} has no search endpoint`);
-    const pace = paceFor(spec.search.rateLimits as RateLimit[], config.rateLimitPlans?.[id], method.pacing.shareOfLimit, method.pacing.maxInFlightPerProvider);
+    const pace = paceFor(spec.search.rateLimits as RateLimit[], config.rateLimitPlans?.[id], method.pacing.shareOfLimit, method.pacing.maxInFlightPerProvider, { results: method.search.maxResults });
     const pw: string[] = [];
     const profiles = config.profiles.filter((profile) => hasProfile(config, profile, id)).map((profile) => {
       const settings = settingsFor(config, profile, id);
@@ -102,11 +104,16 @@ export function makePlan(o: {
       }
       const r = reservation(spec, "search", method.search.maxResults, settings, method);
       const calls = items.length * config.passes;
-      if (r.listUsd === null) pw.push(`${profile}: price not public, reserving the worst case ${usd(r.usd, 4)} per call`);
+      if (r.boundUsd === null) pw.push(`${profile}: the SDK cannot bound this call's cost (${r.basis}), reserving ${usd(r.usd, 4)} per call`);
+      if (r.requiresOverageOff) pw.push(`${profile}: free within its allowance; the ${usd(r.usd, 4)} bound holds only while paid use past the allowance is off on the account`);
       return { profile, settings, reservation: r, calls, maxUsd: calls * r.usd };
     });
     const perDayCalls = profiles.reduce((a, p) => a + p.calls, 0);
     if (pace.perDay !== null && perDayCalls > pace.perDay) pw.push(`plans ${perDayCalls} calls, above half the documented daily limit (${pace.perDay}); split the run across days`);
+    const allowance = spec.search.pricing.allowance;
+    if (allowance && allowance.unit === "requests" && perDayCalls > allowance.limit) {
+      pw.push(`plans ${perDayCalls} calls, above the free allowance of ${allowance.limit} per ${allowance.per}; past it calls are ${allowance.beyond.billing === "opt-in" ? "refused unless paid use is on" : "billed"}`);
+    }
     const terms = (spec as { terms?: { benchmarkPublication: string; rawResponseStorage: string } }).terms ?? null;
     if (terms && (terms.benchmarkPublication === "restricted" || terms.rawResponseStorage === "restricted")) {
       pw.push(`terms restrict benchmarking or storing results (publication: ${terms.benchmarkPublication}, storage: ${terms.rawResponseStorage}); owner decided to publish regardless`);
@@ -115,23 +122,15 @@ export function makePlan(o: {
     providers.push({ id, name: spec.name, profiles, pace, terms, warnings: pw });
   }
 
-  const fetcherSpec = registry[method.pages.fetcher];
-  if (config.pagePasses.length && !fetcherSpec?.contents) throw new Error(`page fetcher ${method.pages.fetcher} has no contents endpoint`);
-  const pageRes = fetcherSpec?.contents
-    ? reservation(fetcherSpec, "contents", 1, {}, method)
-    : { usd: 0, listUsd: 0, basis: "no fetcher" };
   // Worst case: every search in a page pass returns a full list and no URL repeats.
   const units = config.providers.reduce((n, p) => n + config.profiles.filter((x) => hasProfile(config, x, p)).length, 0);
   const maxUrls = config.pagePasses.length * items.length * units * method.pages.topK;
-  const pagePace = fetcherSpec?.contents
-    ? paceFor(fetcherSpec.contents.rateLimits as RateLimit[], config.rateLimitPlans?.[method.pages.fetcher], method.pacing.shareOfLimit, method.pacing.maxInFlightPerProvider)
-    : { intervalMs: 0, maxInFlight: 1, perDay: null, basis: [] };
-  if (pagePace.perDay !== null && maxUrls > pagePace.perDay) warnings.push(`page fetcher: up to ${maxUrls} fetches, above half its daily limit (${pagePace.perDay})`);
 
   const judgeItems = config.judgeItems > 0 ? stratifiedSample(items, config.judgeItems, seedOf(config.seed, "judge")) : [];
   let judge: Plan["judge"] = null;
   if (judgeItems.length) {
     if (!o.judge) throw new Error("judgeItems is set but no judge is configured");
+    const pricing: JudgePricing = config.judgePricing ?? "list-price";
     const maxPairs = judgeItems.length * config.providers.length * method.judge.topK;
     const maxRepeats = Math.ceil(maxPairs * method.judge.selfConsistencyShare);
     // The longest possible input: the longest judged query, a full passage, a 300-byte URL and a 200-byte title.
@@ -140,9 +139,10 @@ export function makePlan(o: {
       query: longest.query, url: `https://${"x".repeat(292)}`, title: "x".repeat(200),
       passage: selectPassage("\u{10FFFF}".repeat(method.judge.passageMaxBytes), longest.query, method.judge.passageMaxBytes),
     });
-    judge = { id: o.judge.info.id, maxPairs, maxRepeats, perCallMaxUsd: perCall, maxUsd: (maxPairs + maxRepeats) * perCall };
+    const covered = pricing === "covered-by-plan";
+    judge = { id: o.judge.info.id, pricing, maxPairs, maxRepeats, perCallMaxUsd: covered ? 0 : perCall, maxUsd: covered ? 0 : (maxPairs + maxRepeats) * perCall };
   }
-  const maxUsd = searchUsd + maxUrls * pageRes.usd + (judge?.maxUsd ?? 0);
+  const maxUsd = searchUsd + (judge?.maxUsd ?? 0);
   if (maxUsd > config.capUsd) warnings.push(`the worst case (${usd(maxUsd)}) exceeds the cap (${usd(config.capUsd)}); the run stops when the cap is reached`);
   if (config.capUsd > method.budget.monthlyCapUsd) warnings.push(`the run cap is above the monthly cap (${usd(method.budget.monthlyCapUsd)}); the monthly cap applies`);
   return {
@@ -153,7 +153,7 @@ export function makePlan(o: {
     judgeItemIds: judgeItems.map((i) => i.id),
     providers,
     search: { calls: searchCalls, maxUsd: searchUsd },
-    pages: { fetcher: method.pages.fetcher, maxUrls, reservation: pageRes, maxUsd: maxUrls * pageRes.usd, pace: pagePace },
+    pages: { fetcher: method.pages.fetcher, maxUrls, maxInFlight: method.pages.maxInFlight, perHostIntervalMs: method.pages.perHostIntervalMs },
     judge,
     maxUsd,
     capUsd: config.capUsd,
@@ -181,20 +181,26 @@ export function formatPlan(plan: Plan, extra: { mode: string; monthCashUsd?: num
   L.push(`run ${plan.runName}, method ${plan.method}, mode ${extra.mode}`);
   L.push(`${plan.items.length} items: ${Object.entries(counts).map(([c, n]) => `${c} ${n}`).join(", ")}`);
   L.push("");
-  L.push(`${pad("search", 26)}${lpad("calls", 7)}  ${pad("reserve per call", 30)}${lpad("max", 9)}`);
+  L.push(`${pad("search", 26)}${lpad("calls", 7)}  ${pad("reserve per call (SDK cost bound)", 36)}${lpad("max", 9)}`);
   for (const p of plan.providers) {
     for (const x of p.profiles) {
-      L.push(`${pad(`${p.id} (${x.profile})`, 26)}${lpad(String(x.calls), 7)}  ${pad(`${money(x.reservation.usd, 4)} = ${x.reservation.basis}`, 30)}${lpad(money(x.maxUsd), 9)}`);
+      L.push(`${pad(`${p.id} (${x.profile})`, 26)}${lpad(String(x.calls), 7)}  ${pad(`${money(x.reservation.usd, 4)} = ${x.reservation.basis}`, 36)}${lpad(money(x.maxUsd), 9)}`);
     }
   }
-  L.push(`${pad("search subtotal", 26)}${lpad(String(plan.search.calls), 7)}  ${pad("", 30)}${lpad(money(plan.search.maxUsd), 9)}`);
-  L.push("");
-  const pg = plan.pages;
-  L.push(`pages via ${pg.fetcher}: at most ${pg.maxUrls} URLs x ${money(pg.reservation.usd, 4)} (${pg.reservation.basis})${lpad(money(pg.maxUsd), 9)}`);
-  if (plan.judge) {
+  L.push(`${pad("search subtotal", 26)}${lpad(String(plan.search.calls), 7)}  ${pad("", 36)}${lpad(money(plan.search.maxUsd), 9)}`);
+  if (plan.judge?.pricing === "list-price") {
     const j = plan.judge;
+    L.push("");
     L.push(`judge ${j.id}: (${j.maxPairs} pairs + ${j.maxRepeats} repeats) x ${money(j.perCallMaxUsd, 4)} max per call${lpad(money(j.maxUsd), 9)}`);
-  } else L.push("judge: off");
+  }
+  L.push("");
+  L.push("not charged (outside the spend total):");
+  const pg = plan.pages;
+  L.push(pg.maxUrls ? `  pages: at most ${pg.maxUrls} URLs through the harness's own fetcher (${pg.fetcher}; no provider, ${pg.maxInFlight} in flight, ${pg.perHostIntervalMs} ms between calls to one host)` : "  pages: off");
+  if (plan.judge?.pricing === "covered-by-plan") {
+    const j = plan.judge;
+    L.push(`  judge ${j.id}: ${j.maxPairs} pairs + ${j.maxRepeats} repeats, covered by plan; any charge the judge reports halts the run`);
+  } else if (!plan.judge) L.push("  judge: off");
   L.push("");
   L.push(`maximum possible spend ${money(plan.maxUsd)}; run cap ${money(plan.capUsd)}; monthly cap ${money(extra.monthlyCapUsd)}${extra.monthCashUsd !== undefined ? ` (${money(extra.monthCashUsd)} already spent this month)` : ""}`);
   if (extra.credits && Object.keys(extra.credits).length) L.push(`declared credits: ${Object.entries(extra.credits).map(([k, v]) => `${k} ${money(v)}`).join(", ")}`);

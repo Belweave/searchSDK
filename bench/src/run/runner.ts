@@ -6,7 +6,9 @@ import { existsSync, readFileSync } from "node:fs";
 import { performance } from "node:perf_hooks";
 import type { Item } from "../dataset/items.ts";
 import { selectPassage, type Judge, type JudgeVerdict, JudgeError } from "../judge/judge.ts";
+import type { FetchedPage } from "../pages/fetcher.ts";
 import { SearchError, type Attempt, type Client, type ProviderSpec, type SearchResponse } from "../sdk.ts";
+import type { PageFetcher } from "../session.ts";
 import { appendJsonl, readJsonl, rng, seedOf, sha256, shuffle, writeJson } from "../util/core.ts";
 import type { Budget } from "./budget.ts";
 import type { Method, RunConfig } from "./config.ts";
@@ -24,7 +26,8 @@ export interface RunContext {
   plan: Plan;
   items: Item[];
   registry: Readonly<Record<string, ProviderSpec>>;
-  client: Client;
+  client: Client<string>;
+  pageFetcher: PageFetcher;
   judge: Judge | null;
   budget: Budget;
   timer?: Timer;
@@ -45,7 +48,7 @@ const OUTCOME_BY_CODE: Record<string, Outcome> = {
 };
 
 /** Sum of attempt costs that may be billed. Null when any of them has an unknown price. */
-export function attemptsCost(attempts: readonly Attempt[]): number | null {
+export function attemptsCost(attempts: readonly Attempt<string>[]): number | null {
   let total = 0;
   for (const a of attempts) {
     if (a.billed === "no") continue;
@@ -95,17 +98,17 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
         const release = await pacers.get(provider)!.acquire();
         const startedAt = new Date().toISOString();
         const t0 = performance.now();
-        let response: SearchResponse | null = null;
+        let response: SearchResponse<string> | null = null;
         let error: unknown = null;
         try {
           response = await client.search(item.query, {
-            provider: provider as never,
+            provider,
             fallback: [],
             maxResults: method.search.maxResults,
             timeoutMs: method.search.timeoutMs,
             maxRetries: method.search.maxRetries,
             ...(settings.depth ? { depth: settings.depth } : {}),
-            ...(settings.providerOptions ? { providerOptions: { [provider]: settings.providerOptions } as never } : {}),
+            ...(settings.providerOptions ? { providerOptions: { [provider]: settings.providerOptions } } : {}),
             ...(ctx.signal ? { signal: ctx.signal } : {}),
           });
         } catch (e) {
@@ -114,7 +117,7 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
           release();
         }
         const durationMs = performance.now() - t0;
-        const attempts: Attempt[] = response?.attempts ?? (error instanceof SearchError ? error.attempts : []);
+        const attempts: Attempt<string>[] = response?.attempts ?? (error instanceof SearchError ? error.attempts : []);
         const sent = attempts.filter((a) => a.outcome !== "skipped");
         const last = sent[sent.length - 1];
         let outcome: Outcome;
@@ -173,48 +176,71 @@ export function pageTargets(attempts: readonly AttemptRecord[], config: RunConfi
   return out;
 }
 
-/** Page phase: fetch each target once through the SDK's contents call on the fixed reference fetcher. */
+/** Spaces calls to one host: one at a time, at least `intervalMs` (or the host's Crawl-delay) apart. */
+export class HostPacer {
+  private readonly next = new Map<string, number>();
+  private readonly busy = new Map<string, Promise<void>>();
+  private readonly timer: Timer;
+  constructor(timer: Timer) {
+    this.timer = timer;
+  }
+  async acquire(host: string, intervalMs: number): Promise<() => void> {
+    while (this.busy.has(host)) await this.busy.get(host);
+    let done!: () => void;
+    this.busy.set(host, new Promise<void>((r) => (done = r)));
+    const wait = (this.next.get(host) ?? 0) - this.timer.now();
+    if (wait > 0) await this.timer.sleep(wait);
+    return () => {
+      this.next.set(host, this.timer.now() + intervalMs);
+      this.busy.delete(host);
+      done();
+    };
+  }
+}
+
+const hostOf = (url: string): string => {
+  try {
+    return new URL(url).host.toLowerCase();
+  } catch {
+    return url;
+  }
+};
+
+/**
+ * Page phase: the harness's own fetcher reads each target once. It is no
+ * ranked provider and costs nothing, so no spend is reserved. A page it
+ * cannot read counts as unreadable for every provider that returned it.
+ */
 export async function runPages(ctx: RunContext): Promise<StopReason> {
-  const { method, budget, client, registry, dir } = ctx;
+  const { method, dir } = ctx;
   if (!ctx.config.pagePasses.length) return "done";
   const paths = runPaths(dir);
-  const fetcher = method.pages.fetcher;
-  const spec = registry[fetcher]!;
-  const done = new Set(readJsonl<PageRecord>(paths.pages).filter((p) => p.code !== "aborted").map((p) => p.urlKey));
+  const done = new Set(readJsonl<PageRecord>(paths.pages).filter((p) => p.reason !== "aborted").map((p) => p.urlKey));
   const targets = [...pageTargets(readJsonl<AttemptRecord>(paths.attempts), ctx.config, method.pages.topK)].filter(([k]) => !done.has(k));
-  const pacer = new Pacer(ctx.plan.pages.pace, ctx.timer ?? realTimer);
+  const hosts = new HostPacer(ctx.timer ?? realTimer);
   let stop: StopReason | null = null;
-  await pool(targets, ctx.plan.pages.pace.maxInFlight, () => stop !== null || !!ctx.signal?.aborted, async ([key, url]) => {
-    const res = reservation(spec, "contents", 1, {}, method);
-    const hold = budget.reserve(fetcher, "contents", res.usd);
-    if (!hold) { stop ??= budget.halted ? "overrun" : "budget"; return; }
-    const release = await pacer.acquire();
+  await pool(targets, method.pages.maxInFlight, () => stop !== null || !!ctx.signal?.aborted, async ([key, url]) => {
+    const delay = Math.max(method.pages.perHostIntervalMs, await ctx.pageFetcher.crawlDelayMs(url));
+    const release = await hosts.acquire(hostOf(url), delay);
     const t0 = performance.now();
-    let rec: PageRecord;
-    let text: string | null = null;
-    let title: string | null = null;
+    let page: FetchedPage;
     try {
-      const r = await client.contents(url, { provider: fetcher as never, timeoutMs: method.pages.timeoutMs, maxRetries: 0, fallback: [], ...(ctx.signal ? { signal: ctx.signal } : {}) });
-      const page = r.pages[0];
-      text = page?.status === "ok" ? (page.content ?? "") : null;
-      title = page?.title ?? null;
-      const cost = attemptsCost(r.attempts.filter((a) => a.outcome !== "skipped"));
-      if (budget.commit(hold, cost)) stop ??= "overrun";
-      rec = {
-        urlKey: key, url, status: page?.status === "ok" ? "ok" : "failed", ...(page?.error?.code ? { code: page.error.code } : {}),
-        contentSha256: text === null ? null : sha256(text), contentChars: text?.length ?? 0, costUsd: cost, durationMs: Math.round(performance.now() - t0),
-      };
-    } catch (e) {
-      const sent = e instanceof SearchError ? e.attempts.filter((a) => a.outcome !== "skipped") : [];
-      const cost = sent.length ? attemptsCost(sent) : 0;
-      if (budget.commit(hold, cost)) stop ??= "overrun";
-      const code = e instanceof SearchError ? e.code : "harness_error";
-      rec = { urlKey: key, url, status: "error", code, contentSha256: null, contentChars: 0, costUsd: cost, durationMs: Math.round(performance.now() - t0) };
-      if (code === "aborted") stop ??= "aborted";
+      page = await ctx.pageFetcher.fetchPage(url, ctx.signal);
     } finally {
       release();
     }
-    if (text !== null) writeJson(paths.rawPage(key), { url, title, content: text.slice(0, method.pages.maxStoredChars) }, 0o600);
+    const durationMs = Math.round(performance.now() - t0);
+    let rec: PageRecord;
+    if (page.status === "ok") {
+      rec = {
+        urlKey: key, url, status: "ok", httpStatus: page.httpStatus, finalUrl: page.finalUrl, ...(page.truncated ? { truncated: true } : {}),
+        contentSha256: sha256(page.text), contentChars: page.text.length, durationMs,
+      };
+      writeJson(paths.rawPage(key), { url, finalUrl: page.finalUrl, title: page.title, content: page.text.slice(0, method.pages.maxStoredChars) }, 0o600);
+    } else {
+      rec = { urlKey: key, url, status: "unreadable", reason: page.reason, ...(page.httpStatus !== undefined ? { httpStatus: page.httpStatus } : {}), contentSha256: null, contentChars: 0, durationMs };
+      if (page.reason === "aborted") stop ??= "aborted";
+    }
     appendJsonl(paths.pages, rec);
   });
   return stop ?? "done";
@@ -279,6 +305,8 @@ export async function runJudge(ctx: RunContext): Promise<StopReason> {
   const done = new Set(readJsonl<JudgmentRecord>(paths.judgments).filter((j) => j.grade !== null).map((j) => `${j.pairId}|${j.repeat}`));
   const timer = ctx.timer ?? realTimer;
   const account = `judge:${judge.info.id}`;
+  // Covered by a plan: nothing is reserved, and any charge the judge reports halts the run.
+  const covered = (ctx.config.judgePricing ?? "list-price") === "covered-by-plan";
   let failures = 0;
   for (const { p, repeat } of tasks) {
     if (done.has(`${p.pairId}|${repeat}`)) continue;
@@ -286,7 +314,7 @@ export async function runJudge(ctx: RunContext): Promise<StopReason> {
     const item = items.get(p.itemId)!;
     const { passage, source } = passageFor(dir, p, item.query, method.judge.passageMaxBytes);
     const input = { query: item.query, url: p.url, title: p.title, passage };
-    const hold = budget.reserve(account, "judge", judge.maxCallCostUsd(input));
+    const hold = budget.reserve(account, "judge", covered ? 0 : judge.maxCallCostUsd(input));
     if (!hold) return budget.halted ? "overrun" : "budget";
     let verdict: JudgeVerdict | null = null;
     let err: string | undefined;
@@ -297,13 +325,22 @@ export async function runJudge(ctx: RunContext): Promise<StopReason> {
       err = e instanceof JudgeError ? e.message : e instanceof Error ? e.name : "error";
       if (e instanceof JudgeError && e.status === 429) wait = e.retryAfterMs ?? method.pacing.rateLimitPauseMs;
       failures++;
+      if (covered && e instanceof JudgeError && e.status === 402) {
+        budget.commit(hold, 0);
+        budget.halt(`judge ${judge.info.id} answered 402 (payment required) although the config says it is covered by plan`);
+        return "overrun";
+      }
     }
-    // A failed call may still have been billed; with no usage reported, the reservation stands.
-    if (budget.commit(hold, verdict ? verdict.costUsd : null)) return "overrun";
+    if (covered) {
+      // Any reported charge means the plan does not cover this key: stop before spending more.
+      if (budget.commit(hold, verdict?.chargedUsd ?? 0)) return "overrun";
+    } else if (budget.commit(hold, verdict ? (verdict.chargedUsd ?? verdict.costUsd) : null)) return "overrun";
+    // A failed list-price call may still have been billed; with no usage reported, the reservation stands.
     const rec: JudgmentRecord = {
       pairId: p.pairId, itemId: p.itemId, urlKey: p.urlKey, repeat, judge: judge.info.id, passageSource: source,
       grade: verdict?.grade ?? null, ...(err ? { error: err } : {}),
-      inputTokens: verdict?.inputTokens ?? null, outputTokens: verdict?.outputTokens ?? null, costUsd: verdict?.costUsd ?? null,
+      inputTokens: verdict?.inputTokens ?? null, outputTokens: verdict?.outputTokens ?? null,
+      costUsd: verdict ? (covered ? (verdict.chargedUsd ?? 0) : (verdict.chargedUsd ?? verdict.costUsd)) : null,
       rationaleSha256: verdict ? sha256(verdict.rationale) : null, at: new Date().toISOString(),
     };
     if (verdict) writeJson(paths.rawJudge(p.pairId, repeat), { rationale: verdict.rationale, model: verdict.model, raw: verdict.raw }, 0o600);

@@ -11,6 +11,7 @@ import { runPaths, type AttemptRecord, type PageRecord } from "../src/run/record
 import { runPages, runSearch } from "../src/run/runner.ts";
 import { createJudge } from "../src/judge/judge.ts";
 import { createClient, registry, type ProviderSpec } from "../src/sdk.ts";
+import { pageFetcherFor } from "../src/session.ts";
 import { BENCH_DIR, readJsonl } from "../src/util/core.ts";
 import { tempStore } from "./helpers.ts";
 
@@ -30,12 +31,15 @@ function synthFetch(calls: string[]): typeof fetch {
   return (async (input: unknown) => {
     const url = String(input);
     calls.push(url);
-    const id = Object.keys(reg).find((k) => url.startsWith(reg[k]!.search?.request.url ?? "\0") || url.startsWith(reg[k]!.contents?.request.url ?? "\0"))!;
+    const id = Object.keys(reg).find((k) => url.startsWith(reg[k]!.search?.request.url ?? "\0"));
+    // Anything else is the synthetic web the harness's own page fetcher reads.
+    if (!id) {
+      if (url.endsWith("/robots.txt")) return new Response("User-agent: *\nDisallow: /private/\n", { status: 200 });
+      return new Response(`<html><head><title>Synthetic</title></head><body><p>Synthetic page text for ${url}.</p></body></html>`, { status: 200, headers: { "content-type": "text/html" } });
+    }
     const spec = reg[id]!;
     const body: Record<string, unknown> = {};
-    if (spec.contents && url.startsWith(spec.contents.request.url) && id === "exa") {
-      body.results = [{ url: "https://example.org/a/0", title: "Synthetic", text: "Synthetic page text." }];
-    } else {
+    {
       const f = spec.search!.response.fields;
       const rows = Array.from({ length: 3 }, (_, i) => {
         const r: Record<string, unknown> = {};
@@ -59,13 +63,14 @@ test("every registry provider runs through the SDK with costs from the registry"
   const plan = makePlan({ config, method, items, registry: reg, judge: null, checkCommitted: false });
   // Real pacing would take minutes (Context allows 10 requests a minute); the arithmetic is tested elsewhere.
   for (const p of plan.providers) p.pace = { intervalMs: 0, maxInFlight: 2, perDay: null, basis: [] };
-  plan.pages.pace = { intervalMs: 0, maxInFlight: 2, perDay: null, basis: [] };
+  const quick = { ...method, pages: { ...method.pages, perHostIntervalMs: 0 } };
   const dir = join(process.env.BENCH_STORE!, "runs", "real-specs");
   const calls: string[] = [];
   const keys = Object.fromEntries(Object.keys(reg).map((k) => [k, "synthetic-key"]));
   const ctx = {
-    dir, config, method, plan, items, registry: reg, judge: null,
-    client: createClient({ keys: keys as never, fetch: synthFetch(calls) }),
+    dir, config, method: quick, plan, items, registry: reg, judge: null,
+    client: createClient<string>({ keys, fetch: synthFetch(calls) }),
+    pageFetcher: pageFetcherFor(quick, synthFetch(calls)),
     budget: new Budget({ ledgerPath: join(dir, "ledger.jsonl"), runId: "real-specs", runCapUsd: 5, monthlyCapUsd: 100 }),
   };
   assert.equal(await runSearch(ctx), "done");
@@ -75,18 +80,25 @@ test("every registry provider runs through the SDK with costs from the registry"
   const cost = (p: string) => attempts.find((a) => a.provider === p)!;
   assert.equal(cost("brave").costUsd, 0.005);
   assert.equal(cost("exa").costUsd, 0.007);
-  assert.equal(cost("tinyfish").costUsd, null);
-  assert.equal(cost("tinyfish").costSource, "unknown");
+  // TinyFish is a documented $0.00 inside its free allowance.
+  assert.equal(cost("tinyfish").costUsd, 0);
+  assert.equal(cost("tinyfish").costSource, "computed");
   // Three results: Context bills one 10-result block; Firecrawl 2 credits.
   assert.equal(cost("context").costUsd, 0.002);
   assert.equal(cost("firecrawl").costUsd, 0.0076);
   assert.equal(await runPages(ctx), "done");
   const pages = readJsonl<PageRecord>(runPaths(dir).pages);
   assert.ok(pages.length > 0);
-  assert.ok(calls.some((u) => u.startsWith("https://api.exa.ai/contents")));
+  assert.ok(pages.every((p) => p.status === "ok"), "every synthetic page is readable");
+  // Pages come from the harness's own fetcher: no provider's contents endpoint is called.
+  for (const id of Object.keys(reg)) {
+    const contentsUrl = reg[id]!.contents?.request.url;
+    if (contentsUrl) assert.ok(!calls.some((u) => u.startsWith(contentsUrl)), id);
+  }
+  assert.ok(calls.some((u) => u === "https://example.org/robots.txt"));
 });
 
-test("the pilot plan stays under $50 and its arithmetic adds up", () => {
+test("the pilot plan stays under $50, counts provider calls only, and its arithmetic adds up", () => {
   const config = loadRunConfig(join(BENCH_DIR, "config", "pilot.json"));
   const items = loadRunItems(config);
   const judge = createJudge(method.judge.id, method.judge.rubric, { fetch: (() => Promise.reject(new Error("no calls"))) as typeof fetch, env: {} });
@@ -96,6 +108,17 @@ test("the pilot plan stays under $50 and its arithmetic adds up", () => {
   const search = plan.providers.flatMap((p) => p.profiles).reduce((s, x) => s + x.calls * x.reservation.usd, 0);
   assert.ok(Math.abs(search - plan.search.maxUsd) < 1e-9);
   assert.equal(plan.pages.maxUrls, config.pagePasses.length * items.length * config.providers.length * method.pages.topK);
-  assert.ok(Math.abs(plan.maxUsd - (plan.search.maxUsd + plan.pages.maxUsd + plan.judge!.maxUsd)) < 1e-9);
-  assert.equal(plan.judge!.maxPairs, config.judgeItems * config.providers.length * method.judge.topK);
+  // The judge is covered by the owner's plan, and pages cost nothing: the spend is search calls alone.
+  assert.equal(config.judgePricing, "covered-by-plan");
+  assert.equal(plan.judge!.maxUsd, 0);
+  assert.ok(Math.abs(plan.maxUsd - plan.search.maxUsd) < 1e-9);
+  // Every item is judged.
+  assert.equal(plan.judgeItemIds.length, items.length);
+  assert.equal(plan.judge!.maxPairs, items.length * config.providers.length * method.judge.topK);
+  // No reservation guesses a margin: each equals the SDK's cost bound.
+  for (const p of plan.providers) for (const x of p.profiles) assert.equal(x.reservation.usd, x.reservation.boundUsd, p.id);
+  // Under list-price judging the judge's worst case counts against the cap again.
+  const listPriced = makePlan({ config: { ...config, judgePricing: "list-price" }, method, items, registry: reg, judge });
+  assert.ok(listPriced.judge!.maxUsd > 0);
+  assert.ok(Math.abs(listPriced.maxUsd - (listPriced.search.maxUsd + listPriced.judge!.maxUsd)) < 1e-9);
 });

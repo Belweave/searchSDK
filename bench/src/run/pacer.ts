@@ -2,7 +2,14 @@
 // stays at `shareOfLimit` of the most restrictive matching limit, so a 429 is
 // the provider's doing, not ours. Day quotas are checked by the planner.
 
-export interface RateLimit { plan: string; limit: number; per: string; scope?: string; note?: string }
+export interface RateLimit { plan: string; limit: number; unit?: string; per: string; scope?: string; source?: string; note?: string }
+
+/**
+ * How many of a limit's units one call uses: one request or query unit per call,
+ * `urls` URLs per contents call, `results` rows per search. Unknown units count as one.
+ */
+export interface UnitsPerCall { results?: number; urls?: number }
+const unitsOf = (l: RateLimit, per: UnitsPerCall) => (l.unit === "results" ? (per.results ?? 1) : l.unit === "urls" ? (per.urls ?? 1) : 1);
 
 export interface Timer {
   now(): number;
@@ -26,7 +33,7 @@ export interface Pace {
 }
 
 /** Picks the limits for a plan (matched by substring), or all of them, and returns the strictest pace at our share. */
-export function paceFor(limits: readonly RateLimit[], plan: string | undefined, share: number, maxInFlightCap: number): Pace {
+export function paceFor(limits: readonly RateLimit[], plan: string | undefined, share: number, maxInFlightCap: number, units: UnitsPerCall = {}): Pace {
   const chosen = plan ? limits.filter((l) => l.plan.toLowerCase().includes(plan.toLowerCase())) : [...limits];
   const use = chosen.length ? chosen : [...limits];
   let intervalMs = 0;
@@ -38,13 +45,14 @@ export function paceFor(limits: readonly RateLimit[], plan: string | undefined, 
       maxInFlight = Math.min(maxInFlight, Math.max(1, Math.floor(l.limit * share)));
       basis.push(`${l.limit} concurrent (${l.plan})`);
     } else if (PERIOD_MS[l.per]) {
-      const iv = PERIOD_MS[l.per]! / Math.max(l.limit * share, 1e-9);
+      const calls = (l.limit * share) / unitsOf(l, units);
+      const iv = PERIOD_MS[l.per]! / Math.max(calls, 1e-9);
       if (iv > intervalMs) intervalMs = iv;
-      basis.push(`${l.limit}/${l.per} (${l.plan})`);
+      basis.push(`${l.limit} ${l.unit ?? "requests"}/${l.per} (${l.plan})`);
     } else if (l.per === "day") {
-      const d = Math.floor(l.limit * share);
+      const d = Math.floor((l.limit * share) / unitsOf(l, units));
       perDay = perDay === null ? d : Math.min(perDay, d);
-      basis.push(`${l.limit}/day (${l.plan})`);
+      basis.push(`${l.limit} ${l.unit ?? "requests"}/day (${l.plan})`);
     }
   }
   return { intervalMs: Math.ceil(intervalMs), maxInFlight, perDay, basis };

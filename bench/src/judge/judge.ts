@@ -20,6 +20,8 @@ export interface JudgeVerdict {
   outputTokens: number | null;
   /** List-price cost of this call, or null when usage was not reported. */
   costUsd: number | null;
+  /** A charge the host itself reported for this call (usage.cost or usage.total_cost), or null when it reported none. */
+  chargedUsd: number | null;
   model: string | null;
   raw: unknown;
 }
@@ -209,13 +211,14 @@ export class ChatJudge implements Judge {
     const body = (await res.json()) as {
       model?: string;
       choices?: { message?: { content?: unknown } }[];
-      usage?: { prompt_tokens?: number; completion_tokens?: number };
+      usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: unknown; total_cost?: unknown };
     };
     const { grade, rationale } = parseVerdict(body.choices?.[0]?.message?.content);
     const inTok = typeof body.usage?.prompt_tokens === "number" ? body.usage.prompt_tokens : null;
     const outTok = typeof body.usage?.completion_tokens === "number" ? body.usage.completion_tokens : null;
     const costUsd = inTok === null || outTok === null ? null : (inTok * this.c.priceUsdPerMTok.input + outTok * this.c.priceUsdPerMTok.output) / 1e6;
-    return { grade, rationale, inputTokens: inTok, outputTokens: outTok, costUsd, model: typeof body.model === "string" ? body.model : null, raw: body };
+    const reported = [body.usage?.cost, body.usage?.total_cost].find((v): v is number => typeof v === "number" && Number.isFinite(v));
+    return { grade, rationale, inputTokens: inTok, outputTokens: outTok, costUsd, chargedUsd: reported ?? null, model: typeof body.model === "string" ? body.model : null, raw: body };
   }
 }
 

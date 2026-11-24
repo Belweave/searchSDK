@@ -1,5 +1,5 @@
 {
-  "$comment": "Judges are pluggable: add an entry with a type the harness implements. Prices are list prices per million tokens; the budget always reserves the worst case.",
+  "$comment": "Judges are pluggable: add an entry with a type the harness implements. Prices are list prices per million tokens. A run with judgePricing list-price reserves each call's worst case at these prices; covered-by-plan reserves nothing and halts on any charge the judge reports.",
   "morph-kimi-k3.1-pro": {
     "type": "openai-chat",
     "label": "Kimi K3.1 Pro via Morph",
@@ -20,7 +20,7 @@
       "Whether max_tokens bounds reasoning tokens for this model on Morph. The budget assumes it does and halts the run on any overrun.",
       "Whether response_format json_schema is honoured for this model. The parser also accepts a bare JSON object in the text.",
       "The usage field names (prompt_tokens, completion_tokens) are the OpenAI convention; Morph's pages do not show a Kimi response body.",
-      "Under the Ultra plan the marginal cost is $0; the budget still counts list price so the cap holds if a key is not on a seat."
+      "Under the Ultra plan the marginal cost is $0, so the owner's configs set judgePricing covered-by-plan. Morph's pages do not show how a charge would be reported; the judge reads usage.cost and usage.total_cost and treats a 402 as a charge, and either halts a covered run."
     ]
   }
 }

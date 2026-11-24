@@ -135,6 +135,11 @@ function report(scores: Scores): string {
     }
   }
   L.push("\n= tied group, ! unreliable (ranked below dependable providers), * some costs unknown");
+  const pg = scores.pages;
+  if (pg.urls) {
+    const why = Object.entries(pg.reasons).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(", ");
+    L.push(`pages: ${pg.read} of ${pg.urls} top URLs read by the harness's own fetcher; unreadable ${f(pg.unreadableRate ?? 0)}${why ? ` (${why})` : ""}, counted alike for every provider`);
+  }
   if (scores.agreement) {
     const a = scores.agreement;
     L.push(`judge: ${a.judged}/${a.pairs} pairs graded; self-consistency kappa ${a.self.kappa ? f(a.self.kappa.mean) : "n/a"} (n ${a.self.n}); judge-human kappa ${a.human.kappa ? f(a.human.kappa.mean) : "n/a"} (n ${a.human.n}); judged scores ${a.publishJudged ? "publishable" : `withheld: ${a.gateReason}`}`);

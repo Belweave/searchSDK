@@ -2,8 +2,15 @@
 // parsing, cost and its upper bound. No request leaves the process.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createJudge, loadJudgeConfig, parseVerdict, selectPassage, truncateBytes, JudgeError } from "../src/judge/judge.ts";
+import { createJudge, loadJudgeConfig, parseVerdict, selectPassage, truncateBytes, JudgeError, type Judge } from "../src/judge/judge.ts";
+import { fixtureJudge } from "../src/fixtures.ts";
 import { loadMethod } from "../src/run/config.ts";
+import { loadRunItems } from "../src/run/plan.ts";
+import { runPaths, type AttemptRecord, type JudgmentRecord } from "../src/run/records.ts";
+import { runJudge, runPages, runSearch } from "../src/run/runner.ts";
+import { openSession } from "../src/session.ts";
+import { readJsonl } from "../src/util/core.ts";
+import { fixtureConfig, tempStore } from "./helpers.ts";
 
 const method = loadMethod();
 
@@ -65,4 +72,62 @@ test("passages stay within the byte budget and prefer the part that matches the 
   assert.ok(Buffer.byteLength(p) <= 2000);
   assert.match(p, /Niklaus Wirth/);
   assert.equal(truncateBytes("ééé", 5), "éé");
+});
+
+test("a charge the host reports is read from usage, apart from the list-price estimate", async () => {
+  const judge = createJudge(method.judge.id, method.judge.rubric, { fetch: fakeChat({ content: '{"rationale":"x","grade":1}', usage: { prompt_tokens: 10, completion_tokens: 5, cost: 0.0123 } }, []), env: { MORPH_API_KEY: "k" } });
+  const v = await judge.grade(input);
+  assert.equal(v.chargedUsd, 0.0123);
+  const plain = createJudge(method.judge.id, method.judge.rubric, { fetch: fakeChat({ content: '{"rationale":"x","grade":1}', usage: { prompt_tokens: 10, completion_tokens: 5 } }, []), env: { MORPH_API_KEY: "k" } });
+  assert.equal((await plain.grade(input)).chargedUsd, null);
+});
+
+/** A fixture run up to judging, with a synthetic judge that can report charges or ask for payment. */
+async function judgedRun(pricing: "covered-by-plan" | "list-price", behave: (call: number) => { chargedUsd?: number; status?: number }) {
+  tempStore();
+  const items = loadRunItems(fixtureConfig());
+  const base = fixtureJudge(items, 0);
+  let calls = 0;
+  const judge: Judge = {
+    ...base,
+    maxCallCostUsd: () => 0.01,
+    async grade(i) {
+      const b = behave(++calls);
+      if (b.status) throw new JudgeError(`judge returned ${b.status}`, b.status);
+      return { ...(await base.grade(i)), chargedUsd: b.chargedUsd ?? null };
+    },
+  };
+  const s = openSession({ config: fixtureConfig({ judgePricing: pricing, judgeItems: 6 }), mode: "fixture", judge });
+  assert.equal(await runSearch(s), "done");
+  assert.equal(await runPages(s), "done");
+  return { s, result: await runJudge(s), calls: () => calls };
+}
+
+test("a judge covered by plan reserves nothing and judges every pair", async () => {
+  const { s, result } = await judgedRun("covered-by-plan", () => ({}));
+  assert.equal(result, "done");
+  // The run's spend is its search calls alone; judging added nothing.
+  const searchSpend = readJsonl<AttemptRecord>(runPaths(s.dir).attempts).reduce((a, x) => a + (x.costUsd ?? x.reservedUsd), 0);
+  assert.ok(Math.abs(s.budget.runGrossUsd() - searchSpend) < 1e-9);
+  assert.ok(readJsonl<JudgmentRecord>(runPaths(s.dir).judgments).every((j) => j.costUsd === 0));
+});
+
+test("a judge covered by plan halts the run on any reported charge", async () => {
+  const { s, result, calls } = await judgedRun("covered-by-plan", (n) => (n === 3 ? { chargedUsd: 0.0001 } : {}));
+  assert.equal(result, "overrun");
+  assert.equal(calls(), 3);
+  assert.match(s.budget.halted!, /judge:fixture-judge judge cost/);
+});
+
+test("a judge covered by plan halts the run when it asks for payment", async () => {
+  const { s, result } = await judgedRun("covered-by-plan", (n) => (n === 2 ? { status: 402 } : {}));
+  assert.equal(result, "overrun");
+  assert.match(s.budget.halted!, /402/);
+});
+
+test("list-price judging reserves each call's worst case and counts its cost", async () => {
+  const { s, result } = await judgedRun("list-price", () => ({}));
+  assert.equal(result, "done");
+  const judged = readJsonl<JudgmentRecord>(runPaths(s.dir).judgments);
+  assert.ok(judged.length > 0 && judged.every((j) => j.costUsd === 0.0005));
 });

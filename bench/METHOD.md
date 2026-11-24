@@ -1,4 +1,4 @@
-# searchSDK Benchmarks: method 0.1.0
+# searchSDK Benchmarks: method 0.2.0
 
 Values in this document come from `config/method.json`. Changing any of them,
 the rubric or the scoring code is a new method version.
@@ -128,21 +128,46 @@ Aliases must match on word boundaries. For Han, kana and Thai, a substring
 match is enough. Version patterns reject longer versions, so 1.6.11 matches
 neither 1.6.110 nor 1.6.11.2.
 
-Page text comes from one fixed reference fetcher (`pages.fetcher`, Exa
-contents), called through the SDK for every provider's top 3 URLs. Each URL
-is fetched once per run. A page that fails to fetch counts as not containing
-the answer. Each provider's page-fetch failure rate is published, so any
-bias from the fetcher shows.
+Page text comes from the harness's own plain fetcher (`src/pages/fetcher.ts`),
+never from a ranked provider. Each distinct top-3 URL (by the SDK's URL key)
+is fetched once per run:
 
-Reported: the score, plus its snippet part and its page part.
+- an HTTP GET with the user agent `BenchPageFetcher/1.0 (compatible; …;
+  obeys robots.txt)`, which names no person, project or contact;
+- robots.txt is read once per host and obeyed (RFC 9309): our own group if it
+  names `BenchPageFetcher`, else `*`; the longest rule wins and allow wins a
+  tie. No robots.txt (4xx) allows everything; an unreachable one (5xx, 429,
+  network failure, timeout) disallows everything. A Crawl-delay up to 30
+  seconds is honoured; a longer one makes the host unreadable;
+- one request per host at a time, at least one second apart, four in flight;
+- at most 5 redirects, each hop checked again (scheme, host, robots.txt);
+  local, private and link-local addresses are refused;
+- a 20-second deadline per page; the first 5 MiB of the body is read;
+- only `text/html`, `application/xhtml+xml` and `text/plain`; the charset
+  comes from the header, a byte order mark or a `<meta>` tag; scripts,
+  styles and markup are removed.
+
+A page it cannot read is **unreadable**, with a reason (robots, status,
+content type, redirects, timeout, network, empty, blocked URL). An unreadable
+page contains no answer for every provider alike, since all providers share
+the same fetch of a URL. Published: the overall unreadable rate with counts
+by reason, and each provider's unreadable share among its own top URLs. The
+fetcher costs nothing and is not in the spend plan.
+
+Reported: the score, plus its snippet part and its page part. Snippet credit
+depends on what a provider's excerpts are (registry `excerptKind`:
+description, content chunk or highlights), so that kind is published beside
+each provider's score.
 
 ## 6. Judged relevance
 
-- **Pool.** On a seeded sample of items (pass 1, default profile), each
-  provider's top 3 URLs are pooled, then de-duplicated by URL.
+- **Pool.** On the judged items (pass 1, default profile), each provider's
+  top 3 URLs are pooled, then de-duplicated by the SDK's URL key. When the
+  judge is covered by a plan, every item is judged; otherwise a seeded
+  sample within classes keeps the cost down.
 - **Passage.** The judge sees the query, URL, title and up to 4,000 bytes of
   the fetched page. The passage is the paragraph-aligned window holding the
-  most query terms. When the page could not be fetched, the judge sees the
+  most query terms. When the page was unreadable, the judge sees the
   result's own title and excerpts instead, and the published `pageShare`
   says how often the page was used.
 - **Blind.** The judge never learns which provider returned the page.
@@ -180,7 +205,7 @@ objective score alone decides rank (section 9), and why the gate exists.
   provider that times out cannot look fast. Other errors are excluded and
   reported as rates. Published as p50, p90 and p95.
 - **Cost:** the SDK's per-attempt cost: the provider's reported figure, else
-  the registry's list price. Every billed attempt counts, including
+  the registry's list price (the SDK's `listPrice`). Every billed attempt counts, including
   `possible` ones (timeouts, network failures). Published as cost per query
   and cost per correct answer, with counts by cost source and by billing
   certainty. An unknown price is shown as unknown, never as $0.
@@ -191,8 +216,8 @@ Cost and latency are columns. They never affect rank.
 
 `bench tune` runs a seeded sample of 30 public items. It runs each provider's
 default and every candidate in `config/tuning.json`. Candidates use only
-documented options. A candidate runs only if its list price per call is known
-and at most $0.02. For each provider, the candidate with the best
+documented options. A candidate runs only if the SDK can bound its cost per
+call (`costBound`) and the bound is at most $0.02. For each provider, the candidate with the best
 known-answer score wins. A tie goes to the cheaper option, then to default.
 Unreliable candidates cannot win.
 
@@ -201,6 +226,11 @@ that profile without the 30 tuning items, so the choice is not graded on the
 items it was chosen with. Tuning spend goes through the same ledger and caps.
 
 ## 9. Statistics and ranking
+
+The owner confirmed these rules on 2026-11-24: the known-answer score sets the
+rank and judged relevance is a gated column; a tie needs both statistical
+separation and at least 6 points; a provider is unreliable below a 95%
+usable-response floor.
 
 - **Pairing.** Every provider is scored on the same items. An item missing
   for any ranked provider is dropped from that profile's comparison, and the
@@ -226,10 +256,18 @@ items it was chosen with. Tuning spend goes through the same ledger and caps.
 
 ## 10. Spend control
 
-- **Ledger.** Every paid call (search, page fetch, judge) reserves its worst
-  case in a month-wide ledger before it is sent. The worst case is the
-  registry list price for the exact request, times 1.5. An unknown price
-  reserves $0.05. A judge call reserves its request's byte length as input
+- **Ledger.** Every paid call reserves its worst case in a month-wide ledger
+  before it is sent. For a search that is the SDK's cost bound for the exact
+  request (`costBound`, registry/steps.md): the highest documented rate
+  (overage, the dearest plan, the top of a published range) for the results
+  asked for. No margin is added. Only a call the SDK cannot bound reserves
+  $0.05, and the plan says so. Page fetches are free and reserve nothing.
+- **Judge pricing** is a run setting (`judgePricing`). `covered-by-plan`, the
+  default in the owner's configs because Morph Ultra covers Kimi K3.1 Pro,
+  reserves nothing: the cap counts provider calls only, and the judge can
+  score every item. Any charge the judge reports (`usage.cost` or
+  `usage.total_cost`), or a 402 from it, halts the run. `list-price`, the
+  default otherwise, reserves each call's request byte length as input
   tokens plus the full output cap, at list price.
 - **Caps.** A call is refused when it could take the run past its cap or the
   month past $100 in cash. Cash is spend beyond the declared free credit of
@@ -241,13 +279,13 @@ items it was chosen with. Tuning spend goes through the same ledger and caps.
 - **Crashes.** A reservation never committed (a crash mid-call) counts in
   full.
 - **The guarantee.** Spend stays under the cap as long as no provider bills
-  more than 1.5 times its registry list price. The first call that does
-  stops everything.
+  above its highest documented rate. The first call that does stops
+  everything. A bound for a free allowance (TinyFish) holds only while paid
+  use past the allowance is off on the account; the plan prints that
+  condition.
 - **Starting a live run.** `BENCH_ALLOW_LIVE=1`, every key present, no `CI`,
   the printed plan, and `--confirm-spend` equal to the cap.
-- **Morph Ultra.** Ultra covers the judge's tokens. Declare that only as a
-  credit for `judge:morph-kimi-k3.1-pro`, and only when the key is on an
-  Ultra seat.
+- **Credits.** Free credit per account (`creditsUsd`) is spent before cash.
 
 ## 11. Outputs
 
@@ -292,7 +330,12 @@ as provider measurements.
   openly licensed sources are not yet built.
 - There is no open-ended research class. Judged relevance runs only on
   known-answer queries.
-- The reference fetcher is itself a provider in the benchmark.
+- The page check reads only what a plain GET returns: pages that need
+  JavaScript, PDFs, paywalls and sites that refuse unknown crawlers are
+  unreadable for every provider. A provider whose results lean towards such
+  pages gets less page credit; the per-provider unreadable share shows it.
+- The fetcher refuses private addresses by name and IP literal; it does not
+  resolve hostnames first.
 - Freshness rests on software release data alone, and Wikidata can lag the
   real release.
 - Ties need both statistical separation and 6 points, so close providers

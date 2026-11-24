@@ -145,6 +145,11 @@ export class Budget {
     return overrun;
   }
 
+  /** Stops all further calls, for a reason other than a cost overrun (for example a covered judge asking for payment). */
+  halt(reason: string): void {
+    this.halted ??= reason;
+  }
+
   private line(t: "reserve" | "commit", h: Hold, usd: number): LedgerLine {
     return { t, id: h.id, runId: this.o.runId, month: this.month, account: h.account, kind: h.kind, usd, at: new Date(this.now()).toISOString() };
   }
