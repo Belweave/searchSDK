@@ -6,15 +6,15 @@ export type SiteRoute = { path: string; title: string; description: string };
 
 const pages: SiteRoute[] = [
   { path: "/", title: "Home", description: "One interface for AI apps and agents to many web search providers." },
-  { path: "/providers", title: "Providers", description: "What each supported provider can do, what it costs and its limits." },
+  { path: "/providers", title: "Providers", description: "What each provider supports through searchSDK, what it costs and its limits, from the registry." },
   { path: "/benchmarks", title: "Benchmarks", description: "The leaderboard: quality first, then reliability." },
 ];
 
 export function siteRoutes(): SiteRoute[] {
-  const providers = getRegistry().data.providers.map((p) => ({
+  const providers = getRegistry().providers.map((p) => ({
     path: `/providers/${p.id}`,
     title: p.name,
-    description: `${p.name}: capabilities, pricing, limits and sources.`,
+    description: `${p.name} in searchSDK: options, result fields, pricing, limits and sources.`,
   }));
   return [...pages, ...providers];
 }

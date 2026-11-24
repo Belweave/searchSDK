@@ -2,83 +2,139 @@
   "sample": true,
   "label": "Sample data",
   "query": "how do vector databases index embeddings",
-  "lanes": [
-    {
-      "provider": "exa",
+  "lanes": {
+    "exa": {
       "latencyMs": 820,
       "costUsd": 0.005,
       "quality": 74,
       "results": [
-        { "title": "Approximate nearest neighbour indexes explained", "url": "https://docs.example.com/ann-indexes" },
-        { "title": "HNSW graphs from first principles", "url": "https://example.org/hnsw" },
-        { "title": "Choosing an index for embeddings", "url": "https://example.net/choosing-an-index" }
+        {
+          "title": "Approximate nearest neighbour indexes explained",
+          "url": "https://docs.example.com/ann-indexes"
+        },
+        {
+          "title": "HNSW graphs from first principles",
+          "url": "https://example.org/hnsw"
+        },
+        {
+          "title": "Choosing an index for embeddings",
+          "url": "https://example.net/choosing-an-index"
+        }
       ]
     },
-    {
-      "provider": "tavily",
+    "tavily": {
       "latencyMs": 1140,
       "costUsd": 0.008,
       "quality": 72,
       "results": [
-        { "title": "Vector index types compared", "url": "https://example.com/vector-index-types" },
-        { "title": "Product quantization in practice", "url": "https://example.org/pq" },
-        { "title": "HNSW graphs from first principles", "url": "https://example.org/hnsw" }
+        {
+          "title": "Vector index types compared",
+          "url": "https://example.com/vector-index-types"
+        },
+        {
+          "title": "Product quantization in practice",
+          "url": "https://example.org/pq"
+        },
+        {
+          "title": "HNSW graphs from first principles",
+          "url": "https://example.org/hnsw"
+        }
       ]
     },
-    {
-      "provider": "context-dev",
+    "context": {
       "latencyMs": 950,
       "costUsd": 0.004,
       "quality": 66,
       "results": [
-        { "title": "Choosing an index for embeddings", "url": "https://example.net/choosing-an-index" },
-        { "title": "Inverted file indexes for vectors", "url": "https://docs.example.com/ivf" },
-        { "title": "Approximate nearest neighbour indexes explained", "url": "https://docs.example.com/ann-indexes" }
+        {
+          "title": "Choosing an index for embeddings",
+          "url": "https://example.net/choosing-an-index"
+        },
+        {
+          "title": "Inverted file indexes for vectors",
+          "url": "https://docs.example.com/ivf"
+        },
+        {
+          "title": "Approximate nearest neighbour indexes explained",
+          "url": "https://docs.example.com/ann-indexes"
+        }
       ]
     },
-    {
-      "provider": "tinyfish",
+    "tinyfish": {
       "latencyMs": 1320,
       "costUsd": 0.006,
       "quality": 63,
       "results": [
-        { "title": "Inverted file indexes for vectors", "url": "https://docs.example.com/ivf" },
-        { "title": "Vector index types compared", "url": "https://example.com/vector-index-types" },
-        { "title": "Recall versus latency trade-offs", "url": "https://example.net/recall-latency" }
+        {
+          "title": "Inverted file indexes for vectors",
+          "url": "https://docs.example.com/ivf"
+        },
+        {
+          "title": "Vector index types compared",
+          "url": "https://example.com/vector-index-types"
+        },
+        {
+          "title": "Recall versus latency trade-offs",
+          "url": "https://example.net/recall-latency"
+        }
       ]
     },
-    {
-      "provider": "brave",
+    "brave": {
       "latencyMs": 610,
       "costUsd": 0.005,
       "quality": 58,
       "results": [
-        { "title": "Vector index types compared", "url": "https://example.com/vector-index-types" },
-        { "title": "Recall versus latency trade-offs", "url": "https://example.net/recall-latency" },
-        { "title": "Choosing an index for embeddings", "url": "https://example.net/choosing-an-index" }
+        {
+          "title": "Vector index types compared",
+          "url": "https://example.com/vector-index-types"
+        },
+        {
+          "title": "Recall versus latency trade-offs",
+          "url": "https://example.net/recall-latency"
+        },
+        {
+          "title": "Choosing an index for embeddings",
+          "url": "https://example.net/choosing-an-index"
+        }
       ]
     },
-    {
-      "provider": "perplexity",
+    "perplexity": {
       "latencyMs": 1630,
       "costUsd": 0.005,
       "quality": 70,
       "results": [
-        { "title": "HNSW graphs from first principles", "url": "https://example.org/hnsw" },
-        { "title": "Approximate nearest neighbour indexes explained", "url": "https://docs.example.com/ann-indexes" },
-        { "title": "Product quantization in practice", "url": "https://example.org/pq" }
+        {
+          "title": "HNSW graphs from first principles",
+          "url": "https://example.org/hnsw"
+        },
+        {
+          "title": "Approximate nearest neighbour indexes explained",
+          "url": "https://docs.example.com/ann-indexes"
+        },
+        {
+          "title": "Product quantization in practice",
+          "url": "https://example.org/pq"
+        }
       ]
     },
-    {
-      "provider": "firecrawl",
+    "firecrawl": {
       "latencyMs": 1810,
       "costUsd": 0.007,
       "quality": 62,
       "results": [
-        { "title": "Recall versus latency trade-offs", "url": "https://example.net/recall-latency" },
-        { "title": "Inverted file indexes for vectors", "url": "https://docs.example.com/ivf" },
-        { "title": "Vector index types compared", "url": "https://example.com/vector-index-types" }
+        {
+          "title": "Recall versus latency trade-offs",
+          "url": "https://example.net/recall-latency"
+        },
+        {
+          "title": "Inverted file indexes for vectors",
+          "url": "https://docs.example.com/ivf"
+        },
+        {
+          "title": "Vector index types compared",
+          "url": "https://example.com/vector-index-types"
+        }
       ]
     }
-  ]
+  }
 }

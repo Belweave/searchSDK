@@ -1,5 +1,6 @@
 import file from "@/data/benchmarks.sample.json";
 import { type Dataset, toDataset } from "./dataset";
+import { getRegistry } from "./registry";
 
 /**
  * Leaderboard data and ranking. Rank is quality first, then reliability:
@@ -23,6 +24,8 @@ export type Leaderboard = {
   run: { id: string; date: string | null; queries: number | null };
   method: { tieBand: number; minReliability: number };
   rows: RankedRow[];
+  /** Registry providers with no row in this run, listed after the ranking. */
+  notRun: string[];
 };
 
 export function rankRows(rows: BenchmarkRow[], tieBand: number, minReliability: number): RankedRow[] {
@@ -51,11 +54,18 @@ export function rankRows(rows: BenchmarkRow[], tieBand: number, minReliability: 
   return ranked;
 }
 
+/** Rows for every registry provider that has one; the provider list comes from the registry. */
 function load(): Dataset<Leaderboard> {
   const { run, method } = file;
+  const scores: Record<string, Omit<BenchmarkRow, "provider">> = file.rows;
+  const ids = getRegistry().providers.map((p) => p.id);
+  for (const id of Object.keys(scores)) {
+    if (!ids.includes(id)) throw new Error(`data/benchmarks.sample.json has a row for "${id}", which is not in the registry.`);
+  }
+  const rows = ids.flatMap((id) => (scores[id] ? [{ provider: id, ...scores[id] }] : []));
   return toDataset(
     file,
-    { run, method, rows: rankRows(file.rows, method.tieBand, method.minReliability) },
+    { run, method, rows: rankRows(rows, method.tieBand, method.minReliability), notRun: ids.filter((id) => !scores[id]) },
     "data/benchmarks.sample.json",
   );
 }

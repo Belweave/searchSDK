@@ -56,6 +56,18 @@ export default function BenchmarksPage() {
                     <td className={`${td} figures text-right`}>${row.costUsdPer1k.toFixed(2)}</td>
                   </tr>
                 ))}
+                {board.notRun.map((id) => (
+                  <tr key={id} className="text-fg-muted">
+                    <td className={`${td} figures`}>–</td>
+                    <th scope="row" className={`${td} text-left font-medium`}>
+                      <Link href={`/providers/${id}`} className="inline-flex items-center gap-2 hover:text-accent">
+                        <span aria-hidden="true" className="size-2.5 rounded-sm" style={{ background: providerHue(id) }} />
+                        {providerName(id)}
+                      </Link>
+                    </th>
+                    <td colSpan={4} className={`${td} text-right`}>Not run</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

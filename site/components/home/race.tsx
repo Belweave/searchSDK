@@ -40,7 +40,7 @@ export function Race({ race }: { race: RaceData }) {
   const startedAt = useRef<number | null>(null);
   const offset = useRef(0);
 
-  const slowest = Math.max(...race.lanes.map((l) => l.latencyMs));
+  const slowest = Math.max(1, ...race.lanes.map((l) => l.run?.latencyMs ?? 0));
 
   // Reduced motion: stay on the still. Otherwise arm the race once hydrated.
   useEffect(() => {
@@ -106,15 +106,19 @@ export function Race({ race }: { race: RaceData }) {
 
       <ol className="race-lanes">
         {race.lanes.map((lane) => {
-          const done = clock >= lane.latencyMs;
-          const share = lane.latencyMs / slowest;
-          const progress = Math.min(clock / lane.latencyMs, 1);
-          const top = lane.results[0];
+          const run = lane.run;
+          const done = run !== null && clock >= run.latencyMs;
+          const share = run ? run.latencyMs / slowest : 0;
+          const progress = run ? Math.min(clock / run.latencyMs, 1) : 0;
+          const top = run?.results[0];
+          // A lane with no run shows its dashes from the start; a lane with one fades its figures in.
+          const metric = `race-metric figures${run ? " race-out" : ""}`;
           return (
             <li
               key={lane.provider}
               className="race-lane"
               data-done={done || undefined}
+              data-no-run={run ? undefined : ""}
               style={{ "--lane-hue": lane.hue } as CSSProperties}
             >
               <span className="race-name">
@@ -126,15 +130,17 @@ export function Race({ race }: { race: RaceData }) {
                   <span className="race-bar" style={{ transform: `scaleX(${progress})` }} />
                 </span>
               </span>
-              <span className="race-metric race-out figures">{lane.latencyMs} ms</span>
-              <span className="race-metric race-out figures">{usd(lane.costUsd)}</span>
-              <span className="race-metric race-out figures">{lane.quality}</span>
+              <span className={metric}>{run ? `${run.latencyMs} ms` : "–"}</span>
+              <span className={metric}>{run ? usd(run.costUsd) : "–"}</span>
+              <span className={metric}>{run ? run.quality : "–"}</span>
               {top ? (
                 <span className="race-result race-out">
                   <span className="truncate text-fg">{top.title}</span>
                   <span className="shrink-0 font-mono text-xs text-fg-subtle">{host(top.url)}</span>
                 </span>
-              ) : null}
+              ) : run ? null : (
+                <span className="race-result text-fg-subtle">No run</span>
+              )}
             </li>
           );
         })}
