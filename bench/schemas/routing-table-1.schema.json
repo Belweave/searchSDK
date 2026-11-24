@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bench/schemas/routing-table-1.schema.json",
+  "title": "searchSDK routing table, version 1",
+  "$comment": "Data for the in-SDK router: per provider, profile and query class. Every number has its n and interval. Past validUntil the router must fall back to a neutral policy.",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "interval": {
+      "type": "object",
+      "required": [
+        "mean",
+        "ci95"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "mean": {
+          "type": "number"
+        },
+        "ci95": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "snapshot",
+    "mode",
+    "liveVerified",
+    "method",
+    "generatedAt",
+    "validUntil",
+    "priceBasis",
+    "classes",
+    "cells"
+  ],
+  "properties": {
+    "snapshot": {
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "live",
+        "fixture"
+      ]
+    },
+    "liveVerified": {
+      "type": "boolean"
+    },
+    "method": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "generatedAt": {
+      "type": "string"
+    },
+    "schema": {
+      "const": "routing-table/1"
+    },
+    "validUntil": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "priceBasis": {
+      "type": "string"
+    },
+    "classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cells": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider",
+          "profile",
+          "settings",
+          "class",
+          "n",
+          "quality",
+          "latencyMs",
+          "reliability",
+          "cost",
+          "tierGroup",
+          "flags"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "profile": {
+            "type": "string"
+          },
+          "settings": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "depth": {
+                "enum": [
+                  "fast",
+                  "standard",
+                  "deep"
+                ]
+              },
+              "providerOptions": {
+                "type": "object"
+              }
+            }
+          },
+          "class": {
+            "type": "string"
+          },
+          "n": {
+            "type": "integer"
+          },
+          "quality": {
+            "type": "object",
+            "required": [
+              "knownAnswer",
+              "judged"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "knownAnswer": {
+                "$ref": "#/$defs/interval"
+              },
+              "judged": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/$defs/interval"
+                  }
+                ]
+              }
+            }
+          },
+          "latencyMs": {
+            "type": "object",
+            "required": [
+              "p50",
+              "p90",
+              "p95"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "p50": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "p90": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "p95": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          },
+          "reliability": {
+            "type": "object",
+            "required": [
+              "usableRate",
+              "ci"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "usableRate": {
+                "type": "number"
+              },
+              "ci": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "cost": {
+            "type": "object",
+            "required": [
+              "perQueryUsd",
+              "perCorrectUsd",
+              "known"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "perQueryUsd": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "perCorrectUsd": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "known": {
+                "type": "boolean"
+              }
+            }
+          },
+          "tierGroup": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "insufficient-n",
+                "unreliable",
+                "cost-unknown"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
