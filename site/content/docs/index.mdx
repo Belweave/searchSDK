@@ -1,0 +1,53 @@
+---
+title: Quickstart
+description: Install searchSDK, add a provider key and run your first web search from TypeScript in under a minute.
+---
+
+The API on these pages is provisional. It will change before 1.0.
+
+## Install
+
+```sh
+npm install searchsdk
+```
+
+## Add a key
+
+Each provider needs its own key. Pass keys in; searchSDK never stores them.
+
+```sh
+export EXA_API_KEY="your-key"
+```
+
+## Search
+
+```ts
+import { createSearch } from "searchsdk";
+
+const search = createSearch({
+  providers: ["exa"],
+  keys: { exa: process.env.EXA_API_KEY },
+});
+
+const { results } = await search("vector database indexing", { limit: 5 });
+for (const r of results) console.log(r.title, r.url);
+```
+
+## Fall back
+
+List more than one provider. If one fails or runs out of time, the next answers, and the response says which one did.
+
+```ts
+const search = createSearch({
+  providers: ["exa", "tavily"],
+  keys: { exa: process.env.EXA_API_KEY, tavily: process.env.TAVILY_API_KEY },
+});
+
+const { results, provider } = await search("vector database indexing");
+```
+
+## Next
+
+- [Providers](/docs/providers): pick providers and set their options.
+- [Search](/docs/search): options and the result shape.
+- [Contents](/docs/contents): fetch the text of a page.

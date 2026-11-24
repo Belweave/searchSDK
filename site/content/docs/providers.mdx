@@ -1,0 +1,38 @@
+---
+title: Providers
+description: How searchSDK names providers, passes their keys, exposes their own options and keeps their raw responses.
+---
+
+A provider is a search API that searchSDK calls for you. Each has an id, a key and its own options. The [provider list](/providers) shows what each one supports.
+
+## Ids and keys
+
+Use the id in `providers` and in `keys`. Calls go straight from your server to the provider.
+
+```ts
+const search = createSearch({
+  providers: ["brave", "firecrawl"],
+  keys: { brave: process.env.BRAVE_API_KEY, firecrawl: process.env.FIRECRAWL_API_KEY },
+});
+```
+
+Never ship a key to a browser or a mobile app. Call searchSDK from your server.
+
+## Provider options
+
+Options only one provider understands go under its id. They are typed per provider.
+
+```ts
+await search("rust async runtimes", {
+  options: { exa: { type: "neural" } },
+});
+```
+
+## Raw responses
+
+Every result keeps the provider's original response, so nothing is lost when a field has no common name.
+
+```ts
+const { results } = await search("rust async runtimes");
+console.log(results[0]?.raw);
+```

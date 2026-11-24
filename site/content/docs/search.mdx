@@ -1,0 +1,40 @@
+---
+title: Search
+description: Run a web search through one or more providers with a deadline, a result limit and a cancel signal.
+---
+
+`search(query, options)` sends the query to the first provider in order and returns its results.
+
+## Options
+
+| Option | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `limit` | `number` | `10` | Most results to return |
+| `timeoutMs` | `number` | `10000` | Deadline for the whole call, fallbacks included |
+| `signal` | `AbortSignal` | none | Cancels the call |
+| `options` | `object` | none | Per-provider options, keyed by id |
+
+```ts
+const controller = new AbortController();
+
+const { results } = await search("postgres full text search", {
+  limit: 5,
+  timeoutMs: 4000,
+  signal: controller.signal,
+});
+```
+
+## Results
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `title` | `string` | Page title |
+| `url` | `string` | Page address |
+| `snippet` | `string` | Text the provider matched |
+| `rank` | `number` | Position in the provider's list, from 1 |
+| `provider` | `string` | The provider that returned it |
+| `raw` | `unknown` | The provider's own record |
+
+## Errors
+
+A call that no provider can answer throws one error listing every attempt: provider, outcome and time taken. A cancelled call throws `AbortError`.

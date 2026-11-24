@@ -1,0 +1,36 @@
+---
+title: Contents
+description: Fetch the readable text of a web page through a provider that supports page contents, with a size limit.
+---
+
+`search.contents(url, options)` returns the readable text of one page.
+
+```ts
+const page = await search.contents("https://example.com/article", {
+  provider: "firecrawl",
+  maxBytes: 200_000,
+});
+
+console.log(page.title, page.text.length);
+```
+
+## Options
+
+| Option | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `provider` | `string` | first that supports contents | Which provider fetches the page |
+| `maxBytes` | `number` | `500000` | Longest text kept; the rest is cut |
+| `timeoutMs` | `number` | `15000` | Deadline for the call |
+| `signal` | `AbortSignal` | none | Cancels the call |
+
+## Result
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `url` | `string` | The address fetched, after redirects |
+| `title` | `string` | Page title |
+| `text` | `string` | Readable text |
+| `truncated` | `boolean` | True when `maxBytes` cut the text |
+| `provider` | `string` | The provider that fetched it |
+
+Not every provider fetches contents. The [provider list](/providers) says which do.
