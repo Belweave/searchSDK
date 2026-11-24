@@ -12,11 +12,11 @@ export function StatusLine({ children, className = "" }: { children: ReactNode; 
 }
 
 /** Marks a fact the spec lists as unverified; the reasons are in the page's Unverified section. */
-export function UnverifiedMark({ reasons }: { reasons: string[] }) {
+export function UnverifiedMark({ reasons, href = "#unverified" }: { reasons: string[]; href?: string }) {
   if (!reasons.length) return null;
   return (
     <a
-      href="#unverified"
+      href={href}
       title={reasons.join(" ")}
       className="ml-2 inline-block rounded-sm border border-warn px-1 font-mono text-xs leading-normal text-warn no-underline"
     >
@@ -26,12 +26,12 @@ export function UnverifiedMark({ reasons }: { reasons: string[] }) {
 }
 
 /** A value from a row, with its unverified mark. "No" and "Unknown" read quieter than facts. */
-export function RowValue({ row }: { row: Row }) {
+export function RowValue({ row, unverifiedHref }: { row: Row; unverifiedHref?: string }) {
   const quiet = row.value === "No" || row.value === "Unknown" || row.value.startsWith("Unknown");
   return (
     <>
       <span className={quiet ? "text-fg-subtle" : "figures"}>{row.value}</span>
-      <UnverifiedMark reasons={row.unverified} />
+      <UnverifiedMark reasons={row.unverified} href={unverifiedHref} />
     </>
   );
 }

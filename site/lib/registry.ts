@@ -120,9 +120,9 @@ function makeReader(file: string) {
 
 type Reader = ReturnType<typeof makeReader>;
 
-/** Pointers are related when one is the other or contains it. */
-function related(a: string, b: string): boolean {
-  return a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`);
+/** A displayed fact at `fact` is covered by an unverified entry at `entry` when the entry is it or contains it. */
+function covers(entry: string, fact: string): boolean {
+  return fact === entry || fact.startsWith(`${entry}/`);
 }
 
 const SEARCH_OPTIONS = ["maxResults", "includeDomains", "excludeDomains", "recency", "startDate", "endDate", "country", "language", "depth"] as const;
@@ -163,7 +163,7 @@ function endpoint(r: Reader, spec: Json, kind: "search" | "contents", mark: (poi
       if (name in params) options.push(row(name, "Yes", `${base}/request/params/${name}`));
       else if (composed.has(name)) options.push(row(name, "Yes", `${base}/request/compose/${composed.get(name)}`));
       else if (name === "maxResults") options.push(row(name, "Trimmed by searchSDK", `${base}/limits/maxResults`));
-      else options.push(row(name, "No", `${base}/request/params`));
+      else options.push(row(name, "No", `${base}/request/params/${name}`));
     }
   } else {
     if (!("urls" in params)) r.fail(`${kind}.request.params`, "must map urls");
@@ -331,7 +331,7 @@ function toProvider(file: string, spec: unknown, used: Set<HueSlot>): Provider {
     if (!pointer.startsWith("/")) r.fail(`unverified.${i}.pointer`, "must start with /");
     return { pointer, label: pointerLabel(pointer), reason: r.str(entry.reason, `unverified.${i}.reason`) };
   });
-  const mark = (pointer: string) => unverified.filter((u) => related(pointer, u.pointer)).map((u) => u.reason);
+  const mark = (pointer: string) => unverified.filter((u) => covers(u.pointer, pointer)).map((u) => u.reason);
 
   const caps = r.obj(s.capabilities, "capabilities");
   const has = (kind: "search" | "contents") => {

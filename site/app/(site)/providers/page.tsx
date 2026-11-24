@@ -55,7 +55,7 @@ export default function ProvidersPage() {
                 </th>
                 <td className={td}><YesNo value={p.search !== null} /></td>
                 <td className={td}><YesNo value={p.contents !== null} /></td>
-                <td className={td}>{p.search ? <RowValue row={p.search.priceSummary} /> : <span className="text-fg-subtle">–</span>}</td>
+                <td className={td}>{p.search ? <RowValue row={p.search.priceSummary} unverifiedHref={`/providers/${p.id}#unverified`} /> : <span className="text-fg-subtle">–</span>}</td>
                 <td className={td}>{p.search ? COST[p.search.cost.source] : <span className="text-fg-subtle">–</span>}</td>
                 <td className={`${td} figures whitespace-nowrap`}>{p.specVersion}</td>
                 <td className={`${td} figures text-right`}>
