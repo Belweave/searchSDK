@@ -1,0 +1,34 @@
+---
+title: Contents
+description: Fetch the readable text of web pages through a provider, one result per requested URL, with failures kept.
+---
+
+`contents(urls, options)` returns one page per requested URL, in order.
+
+```ts
+import { contents } from "searchsdk";
+
+const { pages, cost } = await contents(["https://example.com/a", "https://example.com/b"], { provider: "exa" });
+for (const page of pages) {
+  if (page.status === "ok") console.log(page.title, page.content?.length);
+  else console.log(page.url, page.error?.code);
+}
+console.log(cost.usd);
+```
+
+## Options
+
+The call options from [Search](/docs/search): `provider`, `fallback`, `providerOptions`, `timeoutMs`, `attemptTimeoutMs`, `maxRetries`, `maxResponseBytes` and `signal`. Each provider takes a limited number of URLs per call; [its page](/providers) says how many.
+
+## Pages
+
+| Field | Meaning |
+| --- | --- |
+| `url` | The URL as requested |
+| `status` | `ok` or `failed` |
+| `finalUrl` | Address after redirects, or `null` |
+| `title`, `author`, `publishedAt` | Or `null` |
+| `content` | Page text, Markdown or plain per provider |
+| `error` | Code and message for a failed page |
+
+A URL the provider did not return is `failed` with code `missing`. One failed page does not fail the call.

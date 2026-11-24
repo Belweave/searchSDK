@@ -1,0 +1,67 @@
+---
+title: Search
+description: Search the web through one provider or a fallback chain, with filters, deadlines, retries and a cancel signal.
+---
+
+`search(query, options)` uses keys from the environment. `createClient(config).search(query, options)` takes keys and defaults once.
+
+```ts
+import { search } from "searchsdk";
+
+const controller = new AbortController();
+const res = await search("postgres full text search", {
+  provider: "tavily",
+  maxResults: 5,
+  recency: "month",
+  country: "DE",
+  timeoutMs: 10_000,
+  signal: controller.signal,
+});
+```
+
+## Options
+
+| Option | Meaning |
+| --- | --- |
+| `provider` | Provider id; required unless the client sets one |
+| `fallback` | Providers to try next, in order |
+| `maxResults` | 1 to 100; default 10 |
+| `includeDomains`, `excludeDomains` | Domain filters |
+| `recency` | `day`, `week`, `month` or `year` |
+| `startDate`, `endDate` | Inclusive `YYYY-MM-DD`, by publication date |
+| `country`, `language` | ISO 3166-1 and ISO 639-1 codes |
+| `depth` | `fast`, `standard` or `deep` |
+| `providerOptions` | Options one provider understands, keyed by id |
+| `timeoutMs` | Deadline for the whole call; default 30 s |
+| `attemptTimeoutMs` | Deadline for each attempt |
+| `maxRetries` | Retries of transient failures; default 0 |
+| `maxResponseBytes` | Largest response read |
+| `signal` | Cancels the call |
+
+An option a provider cannot honour fails as `unsupported` before anything is sent. [Each provider's page](/providers) lists what it honours.
+
+## Results
+
+| Field | Meaning |
+| --- | --- |
+| `url` | Page address |
+| `title`, `author`, `publishedAt` | Or `null` when the provider has none |
+| `excerpts` | Text the provider matched |
+| `rank` | Position, from 1 |
+| `providerFields` | Provider-scoped values such as scores; not comparable across providers |
+
+The response also carries `provider`, `cost`, `requestId`, `latencyMs`, `warnings`, `attempts` and `raw`, the provider's own body.
+
+## Errors
+
+Failures throw `SearchError` with a fixed `code` and the `attempts` made.
+
+```ts
+import { search, SearchError } from "searchsdk";
+
+try {
+  await search("postgres full text search", { provider: "brave", includeDomains: ["postgresql.org"] });
+} catch (e) {
+  if (e instanceof SearchError) console.log(e.code, e.field, e.attempts);
+}
+```

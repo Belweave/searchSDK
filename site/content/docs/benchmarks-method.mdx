@@ -1,0 +1,31 @@
+---
+title: Benchmarks method
+description: How searchSDK benchmarks web search providers end to end, scores answer quality and ranks the leaderboard.
+---
+
+Every provider runs the same queries through searchSDK, end to end, with settings tuned to suit it. The harness is open, so anyone can rerun it with their own keys.
+
+## The run
+
+- About 400 queries, once a month.
+- Each query goes to every provider with the same deadline and result limit.
+- Every response, failure and timing is recorded.
+
+## Quality
+
+Two measures, combined into one score from 0 to 100:
+
+- **Known-answer tasks.** Queries with a checked answer. A provider scores when its results contain it.
+- **Judge panel.** Low-cost model judges grade relevance against a published rubric. People check a sample of their grades.
+
+## Ranking
+
+1. Providers that fail or return nothing too often are marked unreliable and ranked below every dependable one.
+2. Quality decides the rest.
+3. Providers within 6 points of each other are tied.
+
+Latency and cost are reported beside the rank. Cost never changes rank.
+
+## Funding
+
+Runs are paid for by provider credits, donations and a capped monthly budget from the maintainer. Every source is disclosed with the results.

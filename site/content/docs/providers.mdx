@@ -1,0 +1,50 @@
+---
+title: Providers
+description: How searchSDK names providers, finds their keys, passes provider-only options and keeps raw responses.
+---
+
+A provider is a search API that searchSDK calls from your server. [Each provider's page](/providers) shows what it supports, its prices and limits, read from the registry.
+
+## Ids and keys
+
+Ids are lowercase, such as `exa` or `brave`, and typed as `ProviderId`. Keys come from each provider's documented variable, or from `keys`:
+
+```ts
+import { createClient } from "searchsdk";
+
+const client = createClient({
+  provider: "brave",
+  fallback: ["firecrawl"],
+  keys: { brave: "your-brave-key", firecrawl: "your-firecrawl-key" },
+});
+```
+
+Pass `env` instead to read variables from elsewhere, such as Worker bindings. A fallback without a key is skipped with a warning. Never ship a key to a browser or mobile app.
+
+## Provider options
+
+Options only one provider understands go under its id, typed per provider and checked before sending.
+
+```ts
+import { search } from "searchsdk";
+
+const res = await search("rust async runtimes", {
+  provider: "exa",
+  providerOptions: { exa: { category: "news" } },
+});
+```
+
+## Raw responses
+
+`raw` is the provider's own parsed body, and `providerFields` keeps fields with no common name.
+
+```ts
+import { search } from "searchsdk";
+
+const res = await search("rust async runtimes", { provider: "tavily" });
+console.log(res.raw, res.results[0]?.providerFields);
+```
+
+## The registry
+
+Provider behaviour is data, one spec per provider. `registry` exports it; `createClient({ registry })` accepts edited copies and validates them.

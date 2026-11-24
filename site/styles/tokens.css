@@ -1,0 +1,205 @@
+/*
+ * searchSDK design tokens: the only place colour, type, spacing, radius, depth and motion values live.
+ *
+ * Direction, "signal and spectrum": many sources converge into one answer. The page is a deep
+ * night-ink field; every provider is a hue that reads as light on it; the brand is the blend of
+ * all of them (--spectrum) resolving into one warm white beam (--beam). The final brand (branch
+ * v2/brand) replaces values here and the two font files in assets/fonts/; nothing else in the site
+ * names a colour, a font family or a duration. app/globals.css only maps these variables.
+ *
+ * Dark is the default (:root). Light is :root[data-theme="light"].
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* ── Field: night ink, never neutral grey ─────────────────── */
+  --surface-0: oklch(0.155 0.034 268); /* page */
+  --surface-1: oklch(0.195 0.042 268); /* slab face */
+  --surface-2: oklch(0.24 0.05 268); /* key face, inset, hover */
+  --surface-3: oklch(0.29 0.055 268); /* lit key face */
+  --well: oklch(0.12 0.03 268); /* cut into the surface: code, tracks, screens */
+  --edge: oklch(0.095 0.026 268); /* the side wall under slabs and keys */
+  --edge-lit: oklch(0.36 0.06 268); /* the lit top line of a raised surface */
+  --line: oklch(0.275 0.045 268);
+  --line-strong: oklch(0.4 0.06 268);
+  --grid-dot: oklch(0.32 0.05 268);
+
+  /* ── Text ─────────────────────────────────────────────────── */
+  --fg: oklch(0.965 0.012 250);
+  --fg-muted: oklch(0.81 0.032 258);
+  --fg-subtle: oklch(0.68 0.045 262);
+
+  /* ── The beam: where every signal resolves. Primary actions and the converged answer ── */
+  --beam: oklch(0.965 0.035 95);
+  --on-beam: oklch(0.17 0.04 268);
+  --accent: var(--beam);
+  --accent-strong: oklch(1 0 0 / 1);
+  --on-accent: var(--on-beam);
+
+  /* ── State ────────────────────────────────────────────────── */
+  --ok: oklch(0.86 0.15 150);
+  --warn: oklch(0.86 0.15 85);
+  --danger: oklch(0.72 0.19 22);
+  --sample: oklch(0.88 0.14 92); /* the "sample data" tag */
+  --on-state: oklch(0.17 0.04 268);
+
+  /* ── Provider hues: each derived from the provider's own brand colour, lifted to read as light
+        on the night field and nudged only as far as telling neighbours apart requires
+        (public/providers/SOURCES.md). Always paired with the provider's logo and name. ── */
+  --hue-brave: oklch(0.72 0.19 34); /* from Brave #FB542B */
+  --hue-firecrawl: oklch(0.8 0.16 62); /* from Firecrawl Heat #FA5D19, kept yellower than Brave */
+  --hue-tinyfish: oklch(0.88 0.17 128); /* from TinyFish mint */
+  --hue-perplexity: oklch(0.83 0.12 196); /* from Perplexity teal */
+  --hue-context: oklch(0.74 0.16 246); /* from Context.dev Blue #2563EB, moved toward azure */
+  --hue-exa: oklch(0.72 0.17 280); /* from Exa blue #1840ED, moved toward periwinkle */
+  --hue-tavily: oklch(0.8 0.15 330); /* from Tavily Pink #F49EFF */
+  /* Slots for providers that have no hue of their own yet. */
+  --hue-1: oklch(0.86 0.11 100);
+  --hue-2: oklch(0.76 0.16 8);
+  --hue-3: oklch(0.8 0.13 165);
+  --hue-4: oklch(0.78 0.13 305);
+
+  /* The blend: every hue, in spectral order. Used where the brand itself is shown. */
+  --spectrum: linear-gradient(90deg, var(--hue-brave), var(--hue-firecrawl), var(--hue-tinyfish), var(--hue-perplexity), var(--hue-context), var(--hue-exa), var(--hue-tavily));
+  --spectrum-vertical: linear-gradient(180deg, var(--hue-brave), var(--hue-firecrawl), var(--hue-tinyfish), var(--hue-perplexity), var(--hue-context), var(--hue-exa), var(--hue-tavily));
+
+  /* How strongly light glows on this field (the backdrop canvas and beams). */
+  --glow-strength: 1;
+  --backdrop-opacity: 0.55;
+
+  /* ── Code ─────────────────────────────────────────────────── */
+  --code-bg: var(--well);
+  --code-fg: var(--fg);
+  --code-comment: var(--fg-subtle);
+  --code-keyword: oklch(0.78 0.15 330);
+  --code-string: oklch(0.88 0.14 128);
+  --code-number: oklch(0.84 0.14 62);
+  --code-function: oklch(0.82 0.12 210);
+  --code-type: oklch(0.8 0.13 280);
+  --code-punctuation: var(--fg-muted);
+
+  /* ── Focus ────────────────────────────────────────────────── */
+  --focus: var(--beam);
+  --focus-width: 2px;
+  --focus-offset: 3px;
+
+  /* ── Type ─────────────────────────────────────────────────── */
+  /* --font-prose-face and --font-mono-face are set by next/font (app/fonts.ts). */
+  --type-prose: var(--font-prose-face), ui-sans-serif, system-ui, sans-serif;
+  --type-mono: var(--font-mono-face), ui-monospace, monospace;
+
+  --type-xs: 0.75rem;
+  --type-sm: 0.875rem;
+  --type-base: 1rem;
+  --type-lg: 1.125rem;
+  --type-xl: 1.375rem;
+  --type-2xl: 1.75rem;
+  --type-3xl: clamp(2.25rem, 4.6vw, 3.5rem);
+  --type-display: clamp(3.1rem, 8.6vw, 7.5rem);
+  --type-h2: clamp(2.25rem, 5.2vw, 4.5rem);
+  --type-lead: clamp(1.125rem, 1.55vw, 1.4rem);
+  --type-label: 0.6875rem;
+  --type-readout: clamp(2rem, 4vw, 3.25rem);
+
+  --type-leading-display: 0.9;
+  --type-leading-tight: 1.02;
+  --type-leading-snug: 1.3;
+  --type-leading-normal: 1.6;
+
+  --type-weight-regular: 400;
+  --type-weight-medium: 540;
+  --type-weight-semibold: 640;
+  --type-weight-display: 760;
+
+  --type-tracking-display: -0.048em;
+  --type-tracking-tight: -0.028em;
+  --type-tracking-normal: 0;
+  --type-tracking-wide: 0.04em;
+  --type-tracking-label: 0.09em;
+  --type-mono-stretch: 87.5%; /* Martian Mono's narrower cut for labels and readouts */
+
+  /* ── Space ────────────────────────────────────────────────── */
+  --space-unit: 0.25rem; /* Tailwind's spacing step: p-4 = 4 × unit */
+  --space-gutter: clamp(1rem, 4vw, 2.5rem);
+  --space-section: clamp(4.5rem, 10vw, 8.5rem);
+  --layout-page-max: 76rem;
+  --layout-measure: 38rem;
+
+  /* ── Radius: hard, small, physical ───────────────────────── */
+  --corner-sm: 0.1875rem; /* keys and tags */
+  --corner-md: 0.375rem; /* panels */
+  --corner-lg: 0.625rem; /* slabs and windows */
+
+  /* ── Depth: walls, not blur ──────────────────────────────── */
+  --key-wall: 0.25rem; /* height of a key's side wall */
+  --key-travel: 0.1875rem; /* how far a key face travels when pressed */
+  --slab-wall: 0.4375rem; /* the wall under a slab */
+  --stage-tilt: 4; /* degrees of pointer-following tilt on the stage */
+  --stage-perspective: 2200px;
+
+  /* ── Motion ───────────────────────────────────────────────── */
+  --motion-instant: 60ms;
+  --motion-fast: 140ms;
+  --motion-base: 220ms;
+  --motion-slow: 420ms;
+  --motion-reveal: 720ms;
+  --motion-settle: 1100ms; /* numbers and bars settling */
+  --motion-stagger: 70ms; /* between items entering together */
+  --motion-blink: 1s; /* the typing caret */
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-exit: cubic-bezier(0.3, 0, 1, 1);
+  --motion-reveal-distance: 18px;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* Paper lit by the same spectrum: warm, never stark white. */
+  --surface-0: oklch(0.968 0.012 95);
+  --surface-1: oklch(0.99 0.008 95);
+  --surface-2: oklch(0.935 0.016 95);
+  --surface-3: oklch(0.905 0.02 95);
+  --well: oklch(0.94 0.016 90);
+  --edge: oklch(0.79 0.035 268);
+  --edge-lit: oklch(1 0 0 / 1);
+  --line: oklch(0.86 0.025 268);
+  --line-strong: oklch(0.72 0.04 268);
+  --grid-dot: oklch(0.8 0.03 268);
+
+  --fg: oklch(0.2 0.045 268);
+  --fg-muted: oklch(0.38 0.05 268);
+  --fg-subtle: oklch(0.48 0.05 268);
+
+  --beam: oklch(0.2 0.045 268);
+  --on-beam: oklch(0.975 0.02 95);
+  --accent-strong: oklch(0.1 0.03 268);
+
+  --ok: oklch(0.5 0.14 150);
+  --warn: oklch(0.55 0.13 75);
+  --danger: oklch(0.52 0.19 25);
+  --sample: oklch(0.55 0.13 80);
+  --on-state: oklch(0.985 0.01 95);
+
+  --hue-brave: oklch(0.58 0.2 34);
+  --hue-firecrawl: oklch(0.64 0.17 58);
+  --hue-tinyfish: oklch(0.6 0.17 132);
+  --hue-perplexity: oklch(0.56 0.1 200);
+  --hue-context: oklch(0.54 0.18 252);
+  --hue-exa: oklch(0.52 0.2 280);
+  --hue-tavily: oklch(0.58 0.2 330);
+  --hue-1: oklch(0.6 0.12 100);
+  --hue-2: oklch(0.55 0.18 8);
+  --hue-3: oklch(0.55 0.12 165);
+  --hue-4: oklch(0.55 0.16 305);
+
+  --glow-strength: 0.55;
+  --backdrop-opacity: 0.4;
+
+  --code-keyword: oklch(0.5 0.2 330);
+  --code-string: oklch(0.47 0.14 140);
+  --code-number: oklch(0.55 0.15 55);
+  --code-function: oklch(0.47 0.13 230);
+  --code-type: oklch(0.47 0.17 280);
+}
