@@ -1,5 +1,6 @@
-/* The docs in the site's look: night-ink field, display headings, code in wells, the active page
-   marked by its spectrum edge. Fumadocs supplies behaviour and layout; values come from tokens. */
+/* The docs in the brand: ink or paper, Instrument Sans headings, code in wells, the active page
+   marked in violet (the brand's selection colour). Fumadocs supplies behaviour and layout; values
+   come from tokens. */
 
 #nd-docs-layout {
   --fd-sidebar-width: 17rem;
@@ -12,7 +13,7 @@
   color: var(--fg);
   border-radius: var(--corner-sm);
   box-shadow:
-    inset 2px 0 0 var(--hue-perplexity),
+    inset 2px 0 0 var(--selection),
     inset 0 1px 0 var(--edge-lit);
 }
 #nd-sidebar a {
@@ -20,14 +21,20 @@
 }
 #nd-page h1 {
   font-size: var(--type-3xl);
-  font-weight: var(--type-weight-display);
-  letter-spacing: var(--type-tracking-display);
+  font-weight: var(--type-weight-semibold);
+  letter-spacing: var(--type-tracking-tight);
   line-height: var(--type-leading-tight);
 }
 #nd-page .prose h2,
 #nd-page .prose h3 {
-  font-weight: var(--type-weight-display);
+  font-weight: var(--type-weight-semibold);
   letter-spacing: var(--type-tracking-tight);
+}
+/* Instrument Sans sets narrower than the old face: hold reading lines to the brand's measure. */
+#nd-page .prose > p,
+#nd-page .prose > ul,
+#nd-page .prose > ol {
+  max-width: var(--layout-measure);
 }
 #nd-page .prose h2 {
   padding-top: 1.25rem;
@@ -50,11 +57,58 @@
   text-underline-offset: 0.22em;
 }
 #nd-page .prose a:not([data-card]):hover {
-  text-decoration-color: var(--hue-perplexity);
+  text-decoration-color: var(--fg);
 }
 #nd-page .prose table {
   font-size: var(--type-sm);
 }
 #nd-toc a[data-active="true"] {
   color: var(--fg);
+}
+
+/* The provider table (components/docs/provider-table.tsx): each provider's own mark and name. */
+.docs-providers {
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--corner-md);
+  background: var(--surface-1);
+}
+.docs-providers table {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  font-size: var(--type-sm);
+}
+.docs-providers th,
+.docs-providers td {
+  padding: 0.6rem 0.9rem;
+  border-top: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+.docs-providers thead th {
+  border-top: 0;
+  color: var(--fg-subtle);
+  font-family: var(--type-mono);
+  font-stretch: var(--type-mono-stretch);
+  font-size: var(--type-label);
+  font-weight: var(--type-weight-medium);
+  letter-spacing: var(--type-tracking-label);
+}
+.docs-providers tbody th {
+  font-weight: var(--type-weight-medium);
+  box-shadow: inset 2px 0 0 var(--lane);
+}
+.docs-providers code {
+  font-size: var(--type-xs);
+}
+.docs-provider-link {
+  color: var(--fg);
+  text-decoration: none;
+}
+.docs-provider-link:hover span:last-child {
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 0.22em;
 }

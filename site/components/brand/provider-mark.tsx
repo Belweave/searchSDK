@@ -24,6 +24,7 @@ function Pair({ v, height, alt, className }: { v: Variant; height: number; alt: 
       width={Math.round((a.width / a.height) * h)}
       height={h}
       data-on={theme}
+      data-size={height}
       decoding="async"
       draggable={false}
       className="brand-img"
@@ -44,6 +45,7 @@ export function ProviderMark({ brand, size = 20, labelled = false, className }: 
   return (
     <span
       className={`brand-monogram ${className ?? ""}`}
+      data-size={size}
       style={{ "--mono-size": `${size}px`, "--mono-hue": brand.hue } as CSSProperties}
       role={labelled ? "img" : undefined}
       aria-label={labelled ? brand.name : undefined}

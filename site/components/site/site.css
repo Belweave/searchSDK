@@ -24,26 +24,6 @@
   mask-image: linear-gradient(180deg, var(--fg), transparent 85%);
 }
 
-.wordmark {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  font-weight: var(--type-weight-display);
-  font-size: 1.0625rem;
-  letter-spacing: var(--type-tracking-tight);
-  color: var(--fg);
-}
-.wordmark-bars {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  height: 1.05rem;
-}
-.wordmark-bars > span {
-  width: 3px;
-  border-radius: 1px;
-}
-
 .site-header {
   position: sticky;
   top: 0;
@@ -121,10 +101,39 @@
   font-size: var(--type-sm);
   color: var(--fg-subtle);
 }
+.site-footer-own {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 @media (min-width: 640px) {
   .site-footer-row {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
   }
+}
+
+/* ── 404 ── */
+.not-found {
+  padding-top: clamp(4rem, 12vw, 9rem);
+  padding-bottom: clamp(2rem, 6vw, 4rem);
+}
+.not-found-code {
+  margin-bottom: 1rem;
+  color: var(--fg-subtle);
+}
+.not-found .type-display {
+  max-width: 9ch;
+}
+.not-found-line {
+  max-width: 30rem;
+  margin-top: 1.5rem;
+  color: var(--fg-muted);
+}
+.not-found-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
 }

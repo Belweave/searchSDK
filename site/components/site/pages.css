@@ -32,9 +32,8 @@
   color: var(--warn);
   font-family: var(--type-mono);
   font-stretch: var(--type-mono-stretch);
-  font-size: 0.625rem;
+  font-size: var(--type-label);
   letter-spacing: var(--type-tracking-label);
-  text-transform: uppercase;
   text-decoration: none;
   line-height: 1.5;
   vertical-align: middle;
@@ -162,7 +161,8 @@
 .provider-hero {
   position: relative;
   display: grid;
-  gap: 1.25rem;
+  gap: 1rem;
+  justify-items: start;
   margin-top: clamp(1.75rem, 4vw, 3rem);
   padding-bottom: clamp(1.75rem, 4vw, 2.5rem);
 }
@@ -172,20 +172,15 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--lane), transparent 70%);
+  height: 1px;
+  background: var(--line);
+  box-shadow: inset 6rem 0 0 var(--lane);
 }
 .provider-h1 {
   margin: 0;
 }
 .provider-hero-logo {
   display: inline-flex;
-  padding: 0.5rem 0;
-}
-.provider-h1-text {
-  display: inline-flex;
-  align-items: center;
-  gap: 1rem;
 }
 .provider-facts {
   display: flex;
@@ -210,9 +205,9 @@
   gap: 0.5rem 1rem;
   margin: 0 0 1.25rem;
   font-size: var(--type-2xl);
-  font-weight: var(--type-weight-display);
+  font-weight: var(--type-weight-semibold);
   letter-spacing: var(--type-tracking-tight);
-  line-height: var(--type-leading-tight);
+  line-height: var(--type-leading-snug);
   scroll-margin-top: 5rem;
 }
 .provider-h2-wire {

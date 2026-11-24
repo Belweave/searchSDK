@@ -27,9 +27,10 @@ type Props = {
   /** The typechecked example (content/examples/stage.ts) with %%QUERY%% for the query and %%PROVIDERS%% for the provider list. */
   template: string;
   sampleTag: ReactNode;
+  /** searchSDK's loader study (components/brand/searchsdk.tsx), shown while the answer is loading. */
+  loader?: ReactNode;
 };
 
-const TILT_MAX = 4;
 
 function host(url: string) {
   try {
@@ -43,7 +44,7 @@ function host(url: string) {
 const usd = (v: number) => (v === 0 ? "$0" : v < 0.01 ? `$${v.toFixed(4)}` : `$${v.toFixed(3)}`);
 const secs = (ms: number) => `${(ms / 1000).toFixed(2)} s`;
 
-export function Stage({ stage, template, sampleTag }: Props) {
+export function Stage({ stage, template, sampleTag, loader }: Props) {
   const reduced = usePrefersReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<HTMLDivElement>(null);
@@ -167,14 +168,14 @@ export function Stage({ stage, template, sampleTag }: Props) {
       return;
     }
     const vr = view.getBoundingClientRect();
-    if (vr.width < 720) {
-      el.dataset.visible = "false";
-      return;
-    }
+    // Phones and narrow stages get a fingertip instead of an arrow; the story is the same.
+    el.dataset.touch = String(vr.width < 720 || !matchMedia("(hover: hover) and (pointer: fine)").matches);
+    const rest = { x: vr.width * 0.62, y: vr.height * 0.96 };
     const at = (name: string | null) => {
-      if (!name) return { x: vr.width * 0.62, y: vr.height * 0.96 };
-      const target = view.querySelector(`[data-target="${name}"]`);
-      if (!target) return { x: vr.width * 0.62, y: vr.height * 0.96 };
+      if (!name) return rest;
+      // The first copy of the target that is laid out (narrow stages hide the title-bar queries).
+      const target = [...view.querySelectorAll(`[data-target="${name}"]`)].find((n) => n.getClientRects().length > 0);
+      if (!target) return rest;
       const r = target.getBoundingClientRect();
       const ax = r.width > 140 ? 0.3 : 0.5;
       return { x: r.left - vr.left + r.width * ax, y: r.top - vr.top + r.height * 0.58 };
@@ -213,6 +214,8 @@ export function Stage({ stage, template, sampleTag }: Props) {
     const scene = sceneRef.current;
     if (!view || !scene || reduced) return;
     if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    // Degrees of tilt at the stage's edge: the --stage-tilt token (styles/tokens.css).
+    const TILT_MAX = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--stage-tilt")) || 3;
     let tx = 0;
     let ty = 0;
     let x = 0;
@@ -342,7 +345,7 @@ export function Stage({ stage, template, sampleTag }: Props) {
               </span>
               <button
                 type="button"
-                className="key key-sm key-beam stage-run"
+                className="key key-sm stage-run"
                 data-target="run"
                 data-pressed={frame.runPressed ? "" : undefined}
                 onClick={replay}
@@ -571,6 +574,12 @@ export function Stage({ stage, template, sampleTag }: Props) {
               </div>
               <span className="stage-pour" aria-hidden="true" style={{ "--pour": frame.converge } as CSSProperties} />
               <div className="stage-answer" data-target="answer" data-on={frame.converge > 0 ? "" : undefined}>
+                {/* Loading: from the moment the call fans out until the lanes pour into one shape. */}
+                {loader ? (
+                  <span className="stage-loader" data-on={frame.fan > 0 && frame.converge === 0 ? "" : undefined}>
+                    {loader}
+                  </span>
+                ) : null}
                 <div className="stage-panel-head">
                   <span className="type-label">One shape</span>
                   <span className="stage-tabs" role="tablist" aria-label="Normalized result by provider">

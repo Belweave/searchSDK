@@ -23,12 +23,15 @@ export function UnverifiedMark({ reasons, href = "#unverified" }: { reasons: str
   );
 }
 
-/** A value from a row, with its unverified mark. "No" and "Unknown" read quieter than facts. */
+/**
+ * A value from a row, with its unverified mark. "No" and "Unknown" read quieter than facts; values
+ * with figures set in mono (the brand's rule for numbers), words stay in the reading face.
+ */
 export function RowValue({ row, unverifiedHref }: { row: Row; unverifiedHref?: string }) {
   const quiet = row.value === "No" || row.value === "Unknown" || row.value.startsWith("Unknown");
   return (
     <>
-      <span className={quiet ? "text-fg-subtle" : "figures"}>{row.value}</span>
+      <span className={quiet ? "text-fg-subtle" : /\d/.test(row.value) ? "figures" : undefined}>{row.value}</span>
       <UnverifiedMark reasons={row.unverified} href={unverifiedHref} />
     </>
   );

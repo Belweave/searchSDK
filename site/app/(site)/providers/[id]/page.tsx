@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
 import { ProviderLogo, ProviderMark } from "@/components/brand/provider-mark";
+import { HEADER_MARK_PX } from "@/components/brand/searchsdk";
 import { NameList, RowList, StatusLine } from "@/components/data/spec";
 import { providerBrand } from "@/lib/provider-assets";
 import { type Endpoint, getProvider, getRegistry, statusLine } from "@/lib/registry";
@@ -85,22 +86,12 @@ export default async function ProviderPage({ params }: Props) {
         </span>
       </nav>
       <div className="provider-hero">
-        {/* The provider's own logo is its name here; without one, the name in type beside its mark. */}
-        <h1 className="type-h2 provider-h1">
-          {brand.logo ? (
-            <>
-              <span className="provider-hero-logo" aria-hidden="true">
-                <ProviderLogo brand={brand} height={56} />
-              </span>
-              <span className="sr-only">{p.name}</span>
-            </>
-          ) : (
-            <span className="provider-h1-text">
-              <ProviderMark brand={brand} size={48} />
-              {p.name}
-            </span>
-          )}
-        </h1>
+        {/* The provider's own logo identifies it, no taller than searchSDK's own mark in the header
+            (brand/GUIDELINES.md); the heading is the name in the site's type. */}
+        <span className="provider-hero-logo" aria-hidden="true">
+          <ProviderLogo brand={brand} height={HEADER_MARK_PX} />
+        </span>
+        <h1 className="type-h2 provider-h1">{p.name}</h1>
         <StatusLine verified={p.liveVerified}>{statusLine(p)}</StatusLine>
       </div>
 

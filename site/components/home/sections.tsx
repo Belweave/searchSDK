@@ -111,7 +111,7 @@ export function HomeSections() {
 
   return (
     <>
-      <Section id="switch" title="Change one word" line="Same call, same result shape. Only the request on the wire changes.">
+      <Section id="switch" layout="wide" title="Change one word" line="Same call, same result shape. Only the request on the wire changes.">
         <ProviderSwitch providers={searchers.map((p) => ({ brand: providerBrand(p.id), wire: p.search!.wire }))} template={template} query={query} maxResults={10} />
       </Section>
 

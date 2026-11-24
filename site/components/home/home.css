@@ -8,30 +8,6 @@
   max-width: 11ch;
   color: var(--fg);
 }
-/* "One call." gathers the spectrum beneath it: seven hues drawn in from the left into one line. */
-.hero-beam {
-  position: relative;
-  display: inline-block;
-}
-.hero-beam::after {
-  content: "";
-  position: absolute;
-  left: 0.04em;
-  right: 0.12em;
-  bottom: -0.02em;
-  height: 0.075em;
-  border-radius: 0.05em;
-  background: var(--spectrum);
-  transform-origin: 0 50%;
-  animation: hero-beam var(--motion-settle) var(--motion-ease-enter) both;
-  animation-delay: var(--motion-base);
-}
-@keyframes hero-beam {
-  from {
-    transform: scaleX(0);
-    opacity: 0;
-  }
-}
 .hero-side {
   display: grid;
   gap: 1.75rem;
@@ -64,7 +40,7 @@
 /* ── Sections: hairline between, heading and one line, then the instrument ── */
 .home-section {
   margin-top: var(--space-section);
-  padding-top: calc(var(--space-section) * 0.8);
+  padding-top: calc(var(--space-section) * 0.7);
   border-top: 1px solid var(--line);
 }
 .home-section-grid {
@@ -106,7 +82,7 @@
     gap: 2rem;
   }
   .home-wide .home-h2 {
-    max-width: 16ch;
+    max-width: 18ch;
   }
 }
 
@@ -114,6 +90,7 @@
 .switch {
   display: grid;
   gap: 1rem;
+  container: switch / inline-size;
 }
 .switch-code {
   margin: 0;
@@ -208,7 +185,9 @@
   display: grid;
   gap: 0.75rem;
 }
-@media (min-width: 700px) {
+/* Side by side only when each column can show a full path; otherwise stacked. Paths wrap, never
+   truncate: the request on the wire is the point of this section. */
+@container switch (min-width: 54rem) {
   .switch-cols {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
@@ -241,7 +220,7 @@
 }
 .switch-map-row dd {
   padding-left: 0.6rem;
-  box-shadow: inset 2px 0 0 var(--beam);
+  box-shadow: inset 2px 0 0 var(--line-strong);
 }
 .switch-col-title {
   display: flex;
@@ -271,11 +250,10 @@
   margin: 0;
   font-size: 0.75rem;
   color: var(--fg);
-  white-space: nowrap;
 }
 .switch-endpoint > .figures {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .switch-endpoint > .tag {
   --tag-fill: var(--lane);
@@ -297,16 +275,12 @@
 }
 .switch-row dt {
   color: var(--lane);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .switch-row dd {
   margin: 0;
   color: var(--fg);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .switch-row[data-kind="fixed"] dt,
 .switch-row[data-kind="fixed"] dd {
@@ -410,7 +384,7 @@
   inset: 0;
   border-radius: 999px;
   background: linear-gradient(90deg, color-mix(in oklch, var(--lane) 55%, transparent), var(--lane));
-  box-shadow: inset -3px 0 0 var(--beam);
+  box-shadow: inset -2px 0 0 var(--fg);
   transform-origin: 0 50%;
   transform: scaleX(0);
   transition: transform var(--motion-settle) var(--motion-ease-enter);
@@ -578,7 +552,11 @@
 }
 .receipt-billed,
 .receipt-source {
+  font-size: var(--type-sm);
   color: var(--fg-muted);
+}
+.receipt-total-label {
+  font-weight: var(--type-weight-semibold);
 }
 .receipt-row[data-billed="possible"] .receipt-billed {
   color: var(--warn);
@@ -587,6 +565,9 @@
   justify-self: end;
   text-align: right;
   font-size: var(--type-sm);
+}
+.receipt-head .receipt-num {
+  font-size: inherit;
 }
 .receipt-total {
   display: grid;
@@ -598,9 +579,9 @@
 .receipt-total-figure {
   justify-self: end;
   font-size: var(--type-readout);
-  font-weight: var(--type-weight-semibold);
-  letter-spacing: -0.02em;
-  line-height: 1;
+  font-weight: var(--type-weight-regular);
+  letter-spacing: var(--type-tracking-normal);
+  line-height: var(--type-leading-tight);
 }
 .receipt-notes {
   grid-column: 1 / -1;

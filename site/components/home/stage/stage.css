@@ -59,7 +59,7 @@
     0 calc(var(--slab-wall) + 1px) 0 0 var(--line);
 }
 .stage-slab::before {
-  /* The spectrum along the top edge: the brand, where the signal enters. */
+  /* The mark's three bands along the top edge, flat and hard-edged: where the signal enters. */
   content: "";
   position: absolute;
   left: 1.25rem;
@@ -68,7 +68,6 @@
   height: 2px;
   border-radius: 2px;
   background: var(--spectrum);
-  opacity: 0.9;
 }
 
 .stage-bar {
@@ -82,8 +81,9 @@
 .stage-file {
   color: var(--fg-muted);
 }
+/* Run is a key, not the page's primary action: that is "Read the docs", the one apricot key. */
 .stage-run {
-  --key-face: var(--beam);
+  --key-face: var(--surface-3);
 }
 .stage-bar-presets {
   display: flex;
@@ -119,8 +119,8 @@
 }
 .stage-chip.is-on {
   color: var(--fg);
-  border-color: var(--beam);
-  background: color-mix(in oklch, var(--beam) 10%, var(--well));
+  border-color: var(--selection);
+  background: color-mix(in oklch, var(--selection) 16%, var(--well));
 }
 .stage-chip[data-pressed] {
   transform: translateY(1px) scale(0.97);
@@ -204,8 +204,8 @@
     border-color var(--motion-base) var(--motion-ease-standard);
 }
 .code-line[data-active] {
-  background: color-mix(in oklch, var(--beam) 7%, transparent);
-  border-left-color: var(--beam);
+  background: color-mix(in oklch, var(--selection) 12%, transparent);
+  border-left-color: var(--selection);
 }
 .c-kw {
   color: var(--code-keyword);
@@ -226,7 +226,7 @@
   color: var(--fg-muted);
 }
 .c-mark {
-  color: var(--lane, var(--beam));
+  color: var(--lane, var(--fg));
   font-weight: var(--type-weight-semibold);
 }
 .stage-caret-anchor {
@@ -241,7 +241,7 @@
   width: 0.55em;
   height: 1.15em;
   margin: 0.2em 0 0;
-  background: var(--beam);
+  background: var(--fg);
   animation: stage-caret var(--motion-blink) steps(1) infinite;
 }
 @keyframes stage-caret {
@@ -487,7 +487,7 @@
   height: 0.5rem;
   margin: -0.25rem 0 0 -0.25rem;
   border-radius: 999px;
-  background: var(--beam);
+  background: var(--fg);
   opacity: 0;
 }
 .stage-head[data-live] {
@@ -535,7 +535,7 @@
 }
 .stage-result[data-pressed] .stage-result-title,
 .stage-result[data-opened] .stage-result-title {
-  background: color-mix(in oklch, var(--beam) 14%, transparent);
+  background: color-mix(in oklch, var(--selection) 22%, transparent);
   color: var(--fg);
 }
 .stage-fail {
@@ -635,10 +635,9 @@
   width: 3px;
   height: 0.9rem;
   border-radius: 2px;
-  background: var(--beam);
+  background: var(--fg);
   transform-origin: 50% 0;
   transform: scaleY(var(--pour));
-  box-shadow: 0 0 0.8rem color-mix(in oklch, var(--beam) calc(60% * var(--glow-strength)), transparent);
 }
 .stage-answer {
   position: relative;
@@ -653,6 +652,21 @@
   grid-template-rows: auto 1fr auto;
   overflow: hidden;
   transition: box-shadow var(--motion-slow) var(--motion-ease-standard);
+}
+.stage-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: none;
+  place-items: center;
+  pointer-events: none;
+}
+.stage-loader[data-on] {
+  display: grid;
+}
+/* The mark sits on the plain panel, never over text. */
+.stage-answer:has(.stage-loader[data-on]) .stage-json {
+  visibility: hidden;
 }
 .stage-answer::before {
   content: "";
@@ -756,6 +770,28 @@
 .stage-pointer[data-down="true"] svg {
   transform: scale(0.84);
 }
+/* A fingertip on touch screens and narrow stages: a ring that presses in. */
+.stage-pointer[data-touch="true"] svg {
+  display: none;
+}
+.stage-pointer[data-touch="true"]::before {
+  content: "";
+  position: absolute;
+  left: -0.875rem;
+  top: -0.875rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--fg);
+  background: color-mix(in oklch, var(--fg) 16%, transparent);
+  transition:
+    transform var(--motion-instant) var(--motion-ease-standard),
+    background-color var(--motion-instant) var(--motion-ease-standard);
+}
+.stage-pointer[data-touch="true"][data-down="true"]::before {
+  transform: scale(0.8);
+  background: color-mix(in oklch, var(--fg) 34%, transparent);
+}
 
 /* ── Rail ── */
 .stage-rail {
@@ -826,7 +862,7 @@
   position: absolute;
   inset: 0;
   border-radius: 999px;
-  background: var(--spectrum);
+  background: var(--fg-muted);
   transform-origin: 0 50%;
   transform: scaleX(var(--p));
 }

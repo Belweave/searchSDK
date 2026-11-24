@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { MarkLoader } from "@/components/brand/searchsdk";
 import { DataRegion } from "@/components/data/data-region";
 import { getStage } from "@/lib/race";
 import { Stage } from "./stage";
@@ -27,7 +28,7 @@ function template(): string {
 export function HomeStage() {
   return (
     <DataRegion dataset={getStage()} placeLabel>
-      {(stage, label) => <Stage stage={stage} template={template()} sampleTag={label} />}
+      {(stage, label) => <Stage stage={stage} template={template()} sampleTag={label} loader={<MarkLoader px={32} />} />}
     </DataRegion>
   );
 }

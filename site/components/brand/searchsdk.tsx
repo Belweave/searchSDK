@@ -83,9 +83,12 @@ export function Mark({ px, label }: { px: number; label?: string }) {
   return <span className="ssdk-markbox" data-mark-px={px} role={label ? "img" : undefined} aria-label={label} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-/** The loader study (brand/src/motion/mark-loader-*.svg): only while something is loading. */
+/**
+ * The loader study (brand/src/motion/mark-loader-*.svg): only while something is loading. It is
+ * drawn on the main master, so never below 32 px (the small master takes smaller sizes).
+ */
 export function MarkLoader({ px }: { px: number }) {
-  if (px < MIN_MARK_PX.mark) throw new Error(`The mark is at least ${MIN_MARK_PX.mark}px (brand/GUIDELINES.md); got ${px}px.`);
+  if (px < 32) throw new Error(`The loader uses the mark's main master, which is for 32px and up (brand/GUIDELINES.md); got ${px}px.`);
   const html = (["dark", "light"] as const).map((t) => quiet(source(`mark-loader-${t}.svg`), `class="ssdk-svg" data-on="${t}" width="${px}" height="${px}"`)).join("");
   return <span className="ssdk-markbox ssdk-loader" data-mark-px={px} aria-hidden="true" dangerouslySetInnerHTML={{ __html: html }} />;
 }

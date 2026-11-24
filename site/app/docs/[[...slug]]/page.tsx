@@ -3,6 +3,7 @@ import { createRelativeLink } from "fumadocs-ui/mdx";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ProviderTable } from "@/components/docs/provider-table";
 import { pageMetadata } from "@/lib/seo";
 import { source } from "@/lib/source";
 
@@ -18,7 +19,7 @@ export default async function Page({ params }: Props) {
       <DocsTitle>{page.data.title}</DocsTitle>
       {page.data.description ? <DocsDescription className="mb-0">{page.data.description}</DocsDescription> : null}
       <DocsBody>
-        <MDX components={{ ...defaultMdxComponents, a: createRelativeLink(source, page) }} />
+        <MDX components={{ ...defaultMdxComponents, a: createRelativeLink(source, page), ProviderTable }} />
       </DocsBody>
     </DocsPage>
   );

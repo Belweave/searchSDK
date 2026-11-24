@@ -92,13 +92,13 @@ export function Receipt({ lines, retrievedOn }: { lines: ReceiptLine[]; retrieve
                 {r.outcome}
               </span>
             </span>
-            <span className="receipt-billed type-label">{r.billed === "possible" ? "possibly" : r.billed}</span>
-            <span className="receipt-source type-label">{r.counted === null ? "unknown" : SOURCE[r.source]}</span>
+            <span className="receipt-billed">{r.billed === "possible" ? "possibly" : r.billed}</span>
+            <span className="receipt-source">{r.counted === null ? "unknown" : SOURCE[r.source]}</span>
             <span className="receipt-num figures">{r.counted === null ? "?" : money(r.counted)}</span>
           </div>
         ))}
         <div className="receipt-total">
-          <span className="type-label">Total</span>
+          <span className="receipt-total-label">Total</span>
           <span className="receipt-total-figure figures">
             <Total value={total} start={seen} />
           </span>
