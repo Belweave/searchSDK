@@ -2,7 +2,7 @@
 /* Fumadocs layout and typography. Its palettes (neutral.css and friends) are not imported: its
    colour variables are mapped onto our tokens below. */
 @import "fumadocs-ui/css/preset.css";
-/* Every value lives here. This file only maps them. */
+/* Every value lives here. This file only maps them and draws the shared physical primitives. */
 @import "../styles/tokens.css";
 
 @source not "../checks";
@@ -16,11 +16,16 @@
   --color-surface-0: var(--surface-0);
   --color-surface-1: var(--surface-1);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-well: var(--well);
+  --color-edge: var(--edge);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
   --color-fg: var(--fg);
   --color-fg-muted: var(--fg-muted);
   --color-fg-subtle: var(--fg-subtle);
+  --color-beam: var(--beam);
+  --color-on-beam: var(--on-beam);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --color-on-accent: var(--on-accent);
@@ -28,16 +33,6 @@
   --color-warn: var(--warn);
   --color-danger: var(--danger);
   --color-sample: var(--sample);
-  --color-hue-1: var(--hue-1);
-  --color-hue-2: var(--hue-2);
-  --color-hue-3: var(--hue-3);
-  --color-hue-4: var(--hue-4);
-  --color-hue-5: var(--hue-5);
-  --color-hue-6: var(--hue-6);
-  --color-hue-7: var(--hue-7);
-  --color-hue-8: var(--hue-8);
-  --color-hue-9: var(--hue-9);
-  --color-hue-10: var(--hue-10);
 
   --font-sans: var(--type-prose);
   --font-mono: var(--type-mono);
@@ -50,6 +45,8 @@
   --text-2xl: var(--type-2xl);
   --text-3xl: var(--type-3xl);
   --text-display: var(--type-display);
+  --text-h2: var(--type-h2);
+  --text-lead: var(--type-lead);
   --leading-tight: var(--type-leading-tight);
   --leading-snug: var(--type-leading-snug);
   --leading-normal: var(--type-leading-normal);
@@ -86,19 +83,19 @@
   --color-fd-card: var(--surface-1);
   --color-fd-card-foreground: var(--fg);
   --color-fd-border: var(--line);
-  --color-fd-primary: var(--accent);
-  --color-fd-primary-foreground: var(--on-accent);
+  --color-fd-primary: var(--beam);
+  --color-fd-primary-foreground: var(--on-beam);
   --color-fd-secondary: var(--surface-2);
   --color-fd-secondary-foreground: var(--fg);
   --color-fd-accent: var(--surface-2);
   --color-fd-accent-foreground: var(--fg);
   --color-fd-ring: var(--focus);
   --color-fd-overlay: color-mix(in oklch, var(--surface-0) 80%, transparent);
-  --color-fd-info: var(--accent);
+  --color-fd-info: var(--hue-context);
   --color-fd-warning: var(--warn);
   --color-fd-error: var(--danger);
   --color-fd-success: var(--ok);
-  --color-fd-idea: var(--accent);
+  --color-fd-idea: var(--hue-tavily);
   --color-fd-diff-remove: color-mix(in oklch, var(--danger) 14%, transparent);
   --color-fd-diff-remove-symbol: var(--danger);
   --color-fd-diff-add: color-mix(in oklch, var(--ok) 14%, transparent);
@@ -111,12 +108,15 @@
     background: var(--surface-0);
     color: var(--fg);
     font-family: var(--type-prose);
+    font-optical-sizing: auto;
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
   body {
     min-height: 100dvh;
-    background: var(--surface-0);
+    /* The html element carries the page colour, so the fixed backdrop (z-index below 0) shows through. */
+    background: transparent;
     line-height: var(--type-leading-normal);
   }
   code,
@@ -124,9 +124,18 @@
   pre,
   samp {
     font-family: var(--type-mono);
+    font-stretch: var(--type-mono-stretch);
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
   }
   ::selection {
-    background: color-mix(in oklch, var(--accent) 35%, transparent);
+    background: color-mix(in oklch, var(--hue-exa) 45%, transparent);
   }
   :focus-visible {
     outline: var(--focus-width) solid var(--focus);
@@ -134,10 +143,179 @@
   }
 }
 
+/* ── Type roles ── */
+@utility type-display {
+  font-size: var(--type-display);
+  line-height: var(--type-leading-display);
+  letter-spacing: var(--type-tracking-display);
+  font-weight: var(--type-weight-display);
+}
+@utility type-h2 {
+  font-size: var(--type-h2);
+  line-height: var(--type-leading-display);
+  letter-spacing: var(--type-tracking-display);
+  font-weight: var(--type-weight-display);
+}
+@utility type-lead {
+  font-size: var(--type-lead);
+  line-height: var(--type-leading-snug);
+  letter-spacing: -0.006em;
+}
+/* A label names a control or a value. Never an eyebrow over a heading. */
+@utility type-label {
+  font-family: var(--type-mono);
+  font-stretch: var(--type-mono-stretch);
+  font-size: var(--type-label);
+  font-weight: var(--type-weight-medium);
+  letter-spacing: var(--type-tracking-label);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
 /* Numbers in tables and benchmark figures line up. */
 @utility figures {
   font-family: var(--type-mono);
+  font-stretch: var(--type-mono-stretch);
   font-variant-numeric: tabular-nums;
+}
+
+/* ── Physical primitives ── */
+
+/* A key: a face on a side wall. Hover lifts the face, press travels it down onto the wall.
+   Markup: <a class="key"><span class="key-face">Label</span></a>. Variants: key-beam (the one
+   primary action, on a spectrum wall), key-quiet (a smaller neutral key). */
+@utility key {
+  --key-face: var(--surface-2);
+  --key-ink: var(--fg);
+  --key-wall-fill: var(--edge);
+  position: relative;
+  display: inline-flex;
+  vertical-align: top;
+  padding-bottom: var(--key-wall);
+  border-radius: var(--corner-sm);
+  color: var(--key-ink);
+  font-weight: var(--type-weight-semibold);
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: var(--key-wall) 0 0;
+    border-radius: var(--corner-sm);
+    background: var(--key-wall-fill);
+  }
+  & > .key-face {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55em;
+    min-height: 2.75rem;
+    padding: 0 1.15rem;
+    border-radius: var(--corner-sm);
+    background: var(--key-face);
+    box-shadow: inset 0 1px 0 var(--edge-lit);
+    white-space: nowrap;
+    transition:
+      transform var(--motion-instant) var(--motion-ease-standard),
+      background-color var(--motion-fast) var(--motion-ease-standard);
+  }
+  &:hover > .key-face {
+    transform: translateY(-1px);
+  }
+  &:active > .key-face,
+  &[data-pressed] > .key-face,
+  &[aria-pressed="true"] > .key-face,
+  &[aria-checked="true"] > .key-face,
+  &[aria-current] > .key-face {
+    transform: translateY(var(--key-travel));
+  }
+  &:focus-visible {
+    outline: none;
+  }
+  &:focus-visible > .key-face {
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: var(--focus-offset);
+  }
+}
+@utility key-beam {
+  --key-face: var(--beam);
+  --key-ink: var(--on-beam);
+  --key-wall-fill: var(--spectrum);
+  & > .key-face {
+    box-shadow: none;
+  }
+}
+/* Held down and lit: the selected position of a set of keys (a tab, a toggle that is on). */
+@utility key-lit {
+  --key-face: var(--fg);
+  --key-ink: var(--surface-0);
+}
+@utility key-sm {
+  --key-wall: 0.1875rem;
+  --key-travel: 0.125rem;
+  font-size: var(--type-sm);
+  & > .key-face {
+    min-height: 2.125rem;
+    padding: 0 0.75rem;
+  }
+}
+
+/* A slab: a raised panel with a hard wall below. No blur, no soft shadow. */
+@utility slab {
+  position: relative;
+  border-radius: var(--corner-lg);
+  background: var(--surface-1);
+  box-shadow:
+    inset 0 1px 0 var(--edge-lit),
+    0 var(--slab-wall) 0 0 var(--edge);
+  border: 1px solid var(--line);
+}
+/* A well: cut into the surface (code, tracks, readouts). */
+@utility well {
+  border-radius: var(--corner-md);
+  background: var(--well);
+  box-shadow:
+    inset 0 2px 0 var(--edge),
+    0 1px 0 var(--edge-lit);
+}
+/* A state tag: a filled rectangle with a word. Never a dot. */
+@utility tag {
+  display: inline-flex;
+  align-items: center;
+  height: 1.25rem;
+  padding: 0 0.4rem;
+  border-radius: var(--corner-sm);
+  background: var(--tag-fill, var(--surface-3));
+  color: var(--tag-ink, var(--fg));
+  font-family: var(--type-mono);
+  font-stretch: var(--type-mono-stretch);
+  font-size: 0.625rem;
+  font-weight: var(--type-weight-semibold);
+  letter-spacing: var(--type-tracking-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* The page's own hairline grid of points, under everything. */
+@utility field-grid {
+  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+
+/* Text links in prose: underlined in the line colour; on hover the underline takes the spectrum. */
+@utility prose-link {
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-color var(--motion-fast) var(--motion-ease-standard);
+  &:hover {
+    text-decoration-color: var(--hue-perplexity);
+  }
 }
 
 /* Skip link: off-screen until focused, then the first thing on the page. */
@@ -147,9 +325,9 @@
   top: calc(var(--space-unit) * 2);
   z-index: 100;
   padding: calc(var(--space-unit) * 2) calc(var(--space-unit) * 3);
-  border-radius: var(--corner-md);
-  background: var(--accent);
-  color: var(--on-accent);
+  border-radius: var(--corner-sm);
+  background: var(--beam);
+  color: var(--on-beam);
   font-weight: var(--type-weight-medium);
   transform: translateY(-200%);
   &:focus-visible {
@@ -157,19 +335,61 @@
   }
 }
 
-/* Scroll reveal for later motion work: components add data-reveal and lib/motion's useInView sets data-inview. */
+/* ── Provider marks (components/brand/provider-mark.tsx) ── */
+.brand-pair {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  line-height: 0;
+}
+.brand-img {
+  display: block;
+  max-width: none;
+}
+.brand-img[data-on="light"] {
+  display: none;
+}
+:root[data-theme="light"] .brand-img[data-on="dark"] {
+  display: none;
+}
+:root[data-theme="light"] .brand-img[data-on="light"] {
+  display: block;
+}
+.brand-name {
+  display: inline-flex;
+  align-items: center;
+  /* Clear space: at least a third of the mark beside the name. */
+  gap: max(0.5em, calc(var(--mark-size, 18px) * 0.45));
+  min-width: 0;
+}
+.brand-monogram {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--mono-size);
+  height: var(--mono-size);
+  border-radius: var(--corner-sm);
+  background: color-mix(in oklch, var(--mono-hue) 28%, var(--surface-2));
+  box-shadow: inset 0 0 0 1px var(--mono-hue);
+  color: var(--fg);
+  font-family: var(--type-mono);
+  font-size: calc(var(--mono-size) * 0.42);
+  font-weight: var(--type-weight-semibold);
+  line-height: 1;
+}
+
+/* ── Reveal on scroll: components add data-reveal; lib/motion's useReveal sets data-inview.
+   Never on the headline (the largest contentful element renders at once). ── */
 [data-reveal] {
   transition:
     opacity var(--motion-reveal) var(--motion-ease-enter),
     transform var(--motion-reveal) var(--motion-ease-enter);
+  transition-delay: calc(var(--reveal-index, 0) * var(--motion-stagger));
 }
-[data-reveal]:not([data-inview]) {
+:root[data-js] [data-reveal]:not([data-inview]) {
   opacity: 0;
   transform: translateY(var(--motion-reveal-distance));
-}
-:root:not([data-js]) [data-reveal] {
-  opacity: 1;
-  transform: none;
 }
 
 /* Theme switch: no colour transitions while the theme flips. */
@@ -188,9 +408,10 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
-  [data-reveal] {
+  :root[data-js] [data-reveal]:not([data-inview]) {
     opacity: 1 !important;
     transform: none !important;
   }

@@ -6,7 +6,7 @@ import localFont from "next/font/local";
  */
 export const proseFace = localFont({
   src: "../assets/fonts/prose.woff2",
-  weight: "100 900",
+  weight: "200 800",
   display: "swap",
   variable: "--font-prose-face",
 });
@@ -14,6 +14,8 @@ export const proseFace = localFont({
 export const monoFace = localFont({
   src: "../assets/fonts/mono.woff2",
   weight: "100 800",
+  style: "normal",
   display: "swap",
   variable: "--font-mono-face",
+  declarations: [{ prop: "font-stretch", value: "75% 112.5%" }],
 });

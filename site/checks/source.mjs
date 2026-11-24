@@ -27,6 +27,8 @@ const RULES = [
 const ALLOW = [
   // The global reduced-motion rule sets near-zero durations on purpose.
   { file: "app/globals.css", rule: "hard-coded duration in a style", text: "0.01ms" },
+  // The same rule removes stagger delays so reduced-motion content appears at once.
+  { file: "app/globals.css", rule: "hard-coded duration in a style", text: "transition-delay: 0s !important" },
 ];
 
 async function files(entry) {
