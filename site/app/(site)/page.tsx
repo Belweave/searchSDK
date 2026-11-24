@@ -36,13 +36,13 @@ export default function Home() {
       </section>
 
       <section aria-labelledby="install" className="mt-section grid gap-10 md:grid-cols-2">
-        <div>
+        <div className="min-w-0">
           <h2 id="install" className="text-xl font-semibold tracking-tight">Install</h2>
           <div className="mt-4">
             <CopyCommand command={site.install} />
           </div>
         </div>
-        <div>
+        <div className="min-w-0">
           <h2 className="text-xl font-semibold tracking-tight">Search</h2>
           <pre className="mt-4 overflow-x-auto rounded-md border border-line bg-surface-1 p-4 font-mono text-sm leading-normal text-fg">
             <code>{EXAMPLE}</code>
