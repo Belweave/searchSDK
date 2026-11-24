@@ -1,0 +1,5 @@
+{
+  "$comment": "Perplexity's files include their own clear space. fill = the drawn content's height over the file's height (viewBox units: wordmark y 78-175 of 253, symbol y 61-266 of 327). The site renders the file larger by 1/fill so the visible glyphs match other providers, and never crops the file.",
+  "logo": { "fill": 0.383 },
+  "mark": { "fill": 0.627 }
+}

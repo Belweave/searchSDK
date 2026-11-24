@@ -74,3 +74,10 @@ trademarks of their owners and that searchSDK is not affiliated with them.
 - Files: `mark-on-dark.svg` and `mark-on-light.svg` = `firecrawl-logo.svg` (eaae76b7227c4b6a); `logo-on-dark.svg` = `firecrawl-colored-light-wordmark.svg` (e0aaaeda85bac4b9); `logo-on-light.svg` = `firecrawl-wordmark.svg` (7edcff63dfe51f31).
 - Guidelines: the wordmark is the primary logo in most situations; avoid stretching, recolouring or modifying it. The flame symbol is for square or minimal uses.
 - Brand colour: Heat #FA5D19, with Graphite and Paper. Site hue: Heat as a warm orange, kept more yellow than Brave's red-orange.
+
+## Display notes
+
+`perplexity/display.json` records that Perplexity's own files carry their clear space inside the
+file (the wordmark's letters fill 38% of its height, the symbol 63%). The site draws those files
+larger by that ratio so the letters match other providers' size, and lets the built-in space overlap
+the surrounding line instead of cropping it. The files themselves are unchanged.

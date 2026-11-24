@@ -281,7 +281,7 @@ export function Stage({ stage, template, sampleTag }: Props) {
   const unknown = attempts.filter((a) => a.usd === null).length;
   const possible = attempts.filter((a) => a.possible).length;
 
-  const tabIds = activeLanes.map((l) => l.brand.id).filter((id) => preset.runs[id]);
+  const tabIds = enabled.filter((id) => preset.runs[id]);
   const autoTab = tabIds.length ? tabIds[Math.floor(Math.max(0, t - story.times.converge - 900) / 900) % tabIds.length] : null;
   const tab = userTab && tabIds.includes(userTab) ? userTab : (frame.converge >= 1 ? autoTab : frame.lead) ?? tabIds[0] ?? null;
   const tabRun = tab ? preset.runs[tab] : null;
@@ -325,6 +325,21 @@ export function Stage({ stage, template, sampleTag }: Props) {
             {/* Title bar */}
             <div className="stage-bar">
               <span className="stage-file type-label">agent.ts</span>
+              <span className="stage-bar-presets" role="group" aria-label="Query">
+                {stage.presets.map((p, i) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className={`stage-chip ${i === presetIndex ? "is-on" : ""}`}
+                    aria-pressed={i === presetIndex}
+                    data-target={`preset-${p.id}`}
+                    data-pressed={i === presetIndex && t >= story.times.pressPreset && t < story.times.pressPreset + 180 ? "" : undefined}
+                    onClick={() => choosePreset(i)}
+                  >
+                    {p.query}
+                  </button>
+                ))}
+              </span>
               <button
                 type="button"
                 className="key key-sm key-beam stage-run"
@@ -487,7 +502,7 @@ export function Stage({ stage, template, sampleTag }: Props) {
                           {isFail && lf && lf.failAtMs != null ? (
                             <span className="stage-fail">
                               <span className="tag" style={{ "--tag-fill": "var(--warn)", "--tag-ink": "var(--on-state)" } as CSSProperties}>
-                                {failing!.code.replace("_", " ")}
+                                {failing!.code === "attempt_timeout" ? "timeout" : failing!.code === "rate_limit" ? "429" : failing!.code}
                               </span>
                               <span className="type-label">{failing!.billed === "possible" ? "possibly billed" : "not billed"}</span>
                               {lf.fallbackEndMs != null ? (
@@ -611,8 +626,6 @@ export function Stage({ stage, template, sampleTag }: Props) {
                 type="button"
                 className={`key key-sm stage-preset ${i === presetIndex ? "key-lit" : ""}`}
                 aria-pressed={i === presetIndex}
-                data-target={`preset-${p.id}`}
-                data-pressed={i === presetIndex && t >= story.times.pressPreset && t < story.times.pressPreset + 180 ? "" : undefined}
                 onClick={() => choosePreset(i)}
               >
                 <span className="key-face">{p.query}</span>

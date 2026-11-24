@@ -161,7 +161,7 @@
   --surface-1: oklch(0.99 0.008 95);
   --surface-2: oklch(0.935 0.016 95);
   --surface-3: oklch(0.905 0.02 95);
-  --well: oklch(0.925 0.018 268);
+  --well: oklch(0.94 0.016 90);
   --edge: oklch(0.79 0.035 268);
   --edge-lit: oklch(1 0 0 / 1);
   --line: oklch(0.86 0.025 268);

@@ -48,6 +48,8 @@
 /* ── The slab ── */
 .stage-slab {
   position: relative;
+  overflow: clip;
+  overflow-clip-margin: 2px;
   border-radius: var(--corner-lg);
   background: var(--surface-1);
   border: 1px solid var(--line);
@@ -82,6 +84,63 @@
 }
 .stage-run {
   --key-face: var(--beam);
+}
+.stage-bar-presets {
+  display: flex;
+  gap: 0.35rem;
+  min-width: 0;
+  overflow: hidden;
+}
+.stage-chip {
+  flex: none;
+  height: 1.875rem;
+  padding: 0 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--corner-sm);
+  background: var(--well);
+  color: var(--fg-muted);
+  font-family: var(--type-mono);
+  font-stretch: var(--type-mono-stretch);
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--motion-ease-standard),
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-instant) var(--motion-ease-standard);
+}
+.stage-chip:hover {
+  color: var(--fg);
+  border-color: var(--line-strong);
+}
+.stage-chip.is-on {
+  color: var(--fg);
+  border-color: var(--beam);
+  background: color-mix(in oklch, var(--beam) 10%, var(--well));
+}
+.stage-chip[data-pressed] {
+  transform: translateY(1px) scale(0.97);
+}
+.stage-chip:focus-visible {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: 2px;
+}
+/* Wide: the queries live in the title bar, where the pointer reaches them. Narrow: in the rail. */
+.stage-presets {
+  display: none;
+}
+@container stage (max-width: 1040px) {
+  .stage-bar-presets .stage-chip:not(.is-on) {
+    display: none;
+  }
+}
+@container stage (max-width: 760px) {
+  .stage-bar-presets {
+    display: none;
+  }
+  .stage-presets {
+    display: flex;
+  }
 }
 .stage-run > .key-face {
   min-height: 1.875rem;
@@ -239,7 +298,7 @@
 .stage-axis {
   position: relative;
   height: 1.25rem;
-  margin-left: calc(2.75rem + 9rem);
+  margin-left: calc(4.5rem + 9rem);
   margin-right: 5rem;
   font-size: 0.625rem;
   color: var(--fg-subtle);
@@ -257,16 +316,16 @@
   flex: 1;
   display: grid;
   grid-template-rows: repeat(var(--n), minmax(0, 1fr));
-  padding-left: 2.75rem;
+  padding-left: 4.5rem;
   /* The bar heads ride on full-width rails; clip them here, with room for the glow and the bus. */
   overflow: clip;
   overflow-clip-margin: 1.25rem;
 }
 .stage-fan {
   position: absolute;
-  left: 0;
+  left: -0.75rem;
   top: 0;
-  width: 2.75rem;
+  width: 5rem;
   height: 100%;
   overflow: visible;
 }
@@ -281,9 +340,13 @@
 .stage-fan-pulse {
   fill: none;
   stroke: var(--lane);
-  stroke-width: 2.5;
+  stroke-width: 3;
   stroke-linecap: round;
-  stroke-dasharray: 18 140;
+  stroke-dasharray: 26 140;
+  filter: drop-shadow(0 0 4px var(--lane));
+}
+.stage-fan g[data-on] .stage-fan-line {
+  stroke-width: 1.25;
 }
 
 .stage-lane {
@@ -399,6 +462,7 @@
   color: var(--fg-subtle);
 }
 .stage-lane-foot {
+  overflow: hidden;
   grid-column: 2 / 4;
   display: flex;
   align-items: center;
@@ -659,9 +723,12 @@
 .stage-presets,
 .stage-toggles,
 .stage-ctl {
-  display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+.stage-toggles,
+.stage-ctl {
+  display: flex;
 }
 .stage-preset > .key-face {
   font-family: var(--type-mono);
@@ -730,6 +797,10 @@
 }
 .stage-chapter[data-on] {
   background: var(--fg);
+}
+.stage-chapter:last-child > span {
+  left: auto;
+  right: 0;
 }
 .stage-chapter[data-on] > span {
   color: var(--fg);
@@ -815,7 +886,8 @@
     height: 14rem;
     margin: 0.6rem;
   }
-  .stage-toggle-name {
+  .stage-toggle-name,
+  .stage-fb .type-label {
     display: none;
   }
   .stage-chapter > span {

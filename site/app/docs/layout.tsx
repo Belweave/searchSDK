@@ -6,6 +6,8 @@ import { ThemeToggle } from "@/components/site/theme-toggle";
 import { Wordmark } from "@/components/site/wordmark";
 import { primaryNav } from "@/lib/site";
 import { source } from "@/lib/source";
+import "@/components/docs/docs.css";
+import "@/components/site/site.css";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (

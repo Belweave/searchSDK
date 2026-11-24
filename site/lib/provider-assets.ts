@@ -13,7 +13,8 @@ import { getRegistry, hueVar, type Provider } from "./registry";
 
 export const ASSETS_DIR = path.join(process.cwd(), "public", "providers");
 
-export type Art = { src: string; width: number; height: number };
+/** fill: the share of the file's height its drawing occupies (1 unless display.json says the file carries its own clear space). */
+export type Art = { src: string; width: number; height: number; fill: number };
 /** One asset in the two variants the provider supplies for dark and light surfaces. */
 export type Variant = { dark: Art; light: Art };
 
@@ -31,7 +32,20 @@ export type ProviderBrand = {
   monogram: string;
 };
 
-function art(id: string, file: string): Art | null {
+/** Optional public/providers/<id>/display.json: how much of each file is drawing rather than built-in clear space. */
+function fillOf(id: string, kind: "mark" | "logo"): number {
+  const full = path.join(ASSETS_DIR, id, "display.json");
+  if (!existsSync(full)) return 1;
+  try {
+    const json = JSON.parse(readFileSync(full, "utf8")) as Record<string, { fill?: unknown } | undefined>;
+    const fill = json[kind]?.fill;
+    return typeof fill === "number" && fill > 0.1 && fill <= 1 ? fill : 1;
+  } catch {
+    return 1;
+  }
+}
+
+function art(id: string, file: string, fill = 1): Art | null {
   const full = path.join(ASSETS_DIR, id, file);
   if (!existsSync(full)) return null;
   const svg = readFileSync(full, "utf8");
@@ -40,12 +54,13 @@ function art(id: string, file: string): Art | null {
   const width = Number(box[1]);
   const height = Number(box[2]);
   if (!(width > 0 && height > 0)) return null;
-  return { src: `/providers/${id}/${file}`, width, height };
+  return { src: `/providers/${id}/${file}`, width, height, fill };
 }
 
 function variant(id: string, kind: "mark" | "logo"): Variant | null {
-  const dark = art(id, `${kind}-on-dark.svg`);
-  const light = art(id, `${kind}-on-light.svg`);
+  const fill = fillOf(id, kind);
+  const dark = art(id, `${kind}-on-dark.svg`, fill);
+  const light = art(id, `${kind}-on-light.svg`, fill);
   if (!dark && !light) return null;
   return { dark: (dark ?? light)!, light: (light ?? dark)! };
 }

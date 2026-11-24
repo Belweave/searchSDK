@@ -1,11 +1,13 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Row } from "@/lib/registry";
 
-/** The verification status of registry data: one line, said once per page. */
-export function StatusLine({ children, className = "" }: { children: ReactNode; className?: string }) {
+/** The verification status of registry data: one line, said once per page, led by a state tag. */
+export function StatusLine({ children, verified = false, className = "" }: { children: ReactNode; verified?: boolean; className?: string }) {
   return (
-    <p data-status="" className={`inline-flex items-start gap-2 text-sm text-fg-muted ${className}`}>
-      <span aria-hidden="true" className="mt-1.5 inline-block size-2 shrink-0 rounded-full bg-warn" />
+    <p data-status="" className={`status-line ${className}`}>
+      <span className="tag" style={{ "--tag-fill": verified ? "var(--ok)" : "var(--warn)", "--tag-ink": "var(--on-state)" } as CSSProperties}>
+        {verified ? "live verified" : "from docs"}
+      </span>
       <span>{children}</span>
     </p>
   );
@@ -15,11 +17,7 @@ export function StatusLine({ children, className = "" }: { children: ReactNode; 
 export function UnverifiedMark({ reasons, href = "#unverified" }: { reasons: string[]; href?: string }) {
   if (!reasons.length) return null;
   return (
-    <a
-      href={href}
-      title={reasons.join(" ")}
-      className="ml-2 inline-block rounded-sm border border-warn px-1 font-mono text-xs leading-normal text-warn no-underline"
-    >
+    <a href={href} title={reasons.join(" ")} className="unverified-mark">
       unverified
     </a>
   );
@@ -36,16 +34,16 @@ export function RowValue({ row, unverifiedHref }: { row: Row; unverifiedHref?: s
   );
 }
 
-/** A titled list of rows. Option and field names render as code. */
+/** A titled list of rows in a slab. Option and field names render as code. */
 export function RowList({ title, rows, code = false, children }: { title: string; rows: Row[]; code?: boolean; children?: ReactNode }) {
   return (
-    <section className="min-w-0">
-      <h3 className="text-base font-semibold tracking-tight">{title}</h3>
-      <dl className="mt-3 divide-y divide-line border-y border-line">
+    <section className="row-list slab">
+      <h3 className="type-label row-list-title">{title}</h3>
+      <dl className="row-list-rows">
         {rows.map((row) => (
-          <div key={`${row.label}-${row.pointer}`} className="flex items-baseline justify-between gap-4 py-2.5 text-sm">
-            <dt className="min-w-0 text-fg-muted">{code ? <code className="font-mono text-fg">{row.label}</code> : row.label}</dt>
-            <dd className="text-right text-fg">
+          <div key={`${row.label}-${row.pointer}`} className="row-list-row">
+            <dt>{code ? <code className="row-list-code">{row.label}</code> : row.label}</dt>
+            <dd>
               <RowValue row={row} />
             </dd>
           </div>
@@ -59,18 +57,18 @@ export function RowList({ title, rows, code = false, children }: { title: string
 /** Names as an inline list of code, or a dash when there are none. */
 export function NameList({ title, names }: { title: string; names: string[] }) {
   return (
-    <div className="mt-4 text-sm">
-      <p className="text-fg-muted">{title}</p>
+    <div className="name-list">
+      <p className="type-label">{title}</p>
       {names.length ? (
-        <ul className="mt-2 flex flex-wrap gap-1.5">
+        <ul>
           {names.map((n) => (
             <li key={n}>
-              <code className="rounded-sm bg-surface-2 px-1.5 py-0.5 font-mono text-xs text-fg">{n}</code>
+              <code>{n}</code>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="mt-1 text-fg-subtle">None</p>
+        <p className="text-fg-subtle">None</p>
       )}
     </div>
   );
