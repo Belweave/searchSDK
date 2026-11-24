@@ -1,8 +1,10 @@
 // Shared policy: input validation, status mapping, retry timing and fallback
 // eligibility. Every constant comes from registry/policy.json.
 import { SearchError } from "./errors.ts";
-import { policy, providers } from "./generated/registry.ts";
-import { isBlank } from "./steps.ts";
+import { policy } from "./generated/registry.ts";
+import { getPath, jsonEqual } from "./json.ts";
+import type { Registry } from "./registry.ts";
+import { calendarDate, isBlank } from "./steps.ts";
 import type { ErrorCode, ProviderId } from "./types.ts";
 
 const ranges = (list: readonly (readonly string[])[]) => list.map(([a, b]) => [parseInt(a!, 16), parseInt(b!, 16)] as const);
@@ -13,8 +15,8 @@ const isSurrogate = (cp: number) => cp >= 0xd800 && cp <= 0xdfff;
 const invalid = (field: string): never => { throw new SearchError("invalid_request", { field }); };
 const configuration = (field: string): never => { throw new SearchError("configuration", { field }); };
 
-export const isProviderId = (id: unknown): id is ProviderId =>
-  typeof id === "string" && Object.prototype.hasOwnProperty.call(providers, id);
+export const isProviderId = (registry: Registry, id: unknown): id is ProviderId =>
+  typeof id === "string" && Object.prototype.hasOwnProperty.call(registry, id);
 
 /** Trims blank code points from both ends; rejects blank, forbidden, unpaired-surrogate and overlong queries. */
 export function normalizeQuery(query: unknown): string {
@@ -52,11 +54,7 @@ function normalizeDomains(value: unknown, field: string): string[] | undefined {
 
 function validDate(value: unknown, field: string): string | undefined {
   if (value === undefined) return undefined;
-  const m = typeof value === "string" ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(value) : null;
-  if (!m) return invalid(field);
-  const y = +m![1]!, mo = +m![2]!, d = +m![3]!;
-  const dim = [31, y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][mo - 1];
-  if (y < 1 || dim === undefined || d < 1 || d > dim) return invalid(field);
+  if (!calendarDate(value)) return invalid(field);
   return value as string;
 }
 
@@ -118,15 +116,100 @@ export function normalizeSearch(query: unknown, o: Record<string, unknown>): Nor
   return n;
 }
 
-/** Comparison key for URLs: lowercase scheme and host, drop default port, empty path becomes "/". */
+const hex = (b: number) => "%" + b.toString(16).toUpperCase().padStart(2, "0");
+const isUnreserved = (b: number) => (b >= 0x41 && b <= 0x5a) || (b >= 0x61 && b <= 0x7a) || (b >= 0x30 && b <= 0x39) || b === 0x2d || b === 0x2e || b === 0x5f || b === 0x7e;
+
+/** Percent-encoding normal form: unreserved escapes decoded, other escapes upper-case, non-ASCII as UTF-8 escapes. */
+function normalizeEscapes(s: string): string {
+  let out = "";
+  for (let i = 0; i < s.length;) {
+    const m = /^%([0-9A-Fa-f]{2})/.exec(s.slice(i, i + 3));
+    if (m) {
+      const b = parseInt(m[1]!, 16);
+      out += isUnreserved(b) ? String.fromCharCode(b) : hex(b);
+      i += 3;
+      continue;
+    }
+    const cp = s.codePointAt(i)!;
+    const ch = String.fromCodePoint(cp);
+    if (cp < 0x80) out += ch;
+    else for (const b of new TextEncoder().encode(ch)) out += hex(b); // a lone surrogate encodes as U+FFFD
+    i += ch.length;
+  }
+  return out;
+}
+
+/** RFC 3492 Punycode for one label (without the xn-- prefix). */
+function punycode(label: string): string {
+  const cps = Array.from(label, (c) => c.codePointAt(0)!);
+  const base = 36, tMin = 1, tMax = 26, skew = 38, damp = 700;
+  const digit = (d: number) => String.fromCharCode(d < 26 ? 97 + d : 22 + d);
+  const adapt = (delta: number, points: number, first: boolean) => {
+    delta = first ? Math.floor(delta / damp) : delta >> 1;
+    delta += Math.floor(delta / points);
+    let k = 0;
+    for (; delta > ((base - tMin) * tMax) >> 1; k += base) delta = Math.floor(delta / (base - tMin));
+    return k + Math.floor(((base - tMin + 1) * delta) / (delta + skew));
+  };
+  let out = cps.filter((c) => c < 0x80).map((c) => String.fromCharCode(c)).join("");
+  const b = out.length;
+  let h = b;
+  if (b > 0) out += "-";
+  let n = 128, delta = 0, bias = 72;
+  while (h < cps.length) {
+    const m = Math.min(...cps.filter((c) => c >= n));
+    delta += (m - n) * (h + 1);
+    n = m;
+    for (const c of cps) {
+      if (c < n) delta++;
+      if (c === n) {
+        let q = delta;
+        for (let k = base; ; k += base) {
+          const t = k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias;
+          if (q < t) break;
+          out += digit(t + ((q - t) % (base - t)));
+          q = Math.floor((q - t) / (base - t));
+        }
+        out += digit(q);
+        bias = adapt(delta, h + 1, h === b);
+        delta = 0;
+        h++;
+      }
+    }
+    delta++;
+    n++;
+  }
+  return out;
+}
+
+/**
+ * Comparison key for URLs (registry/policy.md, URL key): lowercase scheme and
+ * host, punycode for non-ASCII host labels, no default port, percent-encoding
+ * in normal form, no fragment, an empty path as "/", and one trailing slash
+ * dropped from any longer path.
+ */
 export function urlKey(url: string): string {
-  const m = /^([A-Za-z][A-Za-z0-9+.-]*):\/\/([^/?#]*)(.*)$/s.exec(url);
+  const m = /^([A-Za-z][A-Za-z0-9+.-]*):\/\/([^/?#]*)([^#]*)/s.exec(url);
   if (!m) return url;
   const scheme = m[1]!.toLowerCase();
-  let host = m[2]!.toLowerCase();
-  if ((scheme === "http" && host.endsWith(":80")) || (scheme === "https" && host.endsWith(":443"))) host = host.slice(0, host.lastIndexOf(":"));
-  const rest = m[3]!;
-  return `${scheme}://${host}${rest === "" || rest[0] === "?" || rest[0] === "#" ? "/" + rest : rest}`;
+  let authority = m[2]!;
+  const port = /:(\d+)$/.exec(authority);
+  let portPart = "";
+  if (port) {
+    authority = authority.slice(0, port.index);
+    if (!((scheme === "http" && port[1] === "80") || (scheme === "https" && port[1] === "443"))) portPart = port[0];
+  }
+  const host = authority.split(".").map((label) => {
+    const lower = label.replace(/[A-Z]+/g, (x) => x.toLowerCase());
+    return /[^\x00-\x7f]/.test(lower) ? "xn--" + punycode(lower.toLowerCase()) : lower;
+  }).join(".");
+  const rest = normalizeEscapes(m[3]!);
+  const q = rest.indexOf("?");
+  let path = q < 0 ? rest : rest.slice(0, q);
+  const query = q < 0 ? "" : rest.slice(q);
+  if (path === "") path = "/";
+  else if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
+  return `${scheme}://${host}${portPart}${path}${query}`;
 }
 
 export function normalizeUrls(urls: unknown): string[] {
@@ -148,7 +231,14 @@ export function normalizeUrls(urls: unknown): string[] {
   return [...(list as string[])];
 }
 
-export interface CallSettings { timeoutMs: number; attemptTimeoutMs: number; maxRetries: number; maxResponseBytes: number }
+export interface CallSettings { timeoutMs: number; attemptTimeoutMs: number; maxRetries: number; maxResponseBytes: number; signal: AbortSignal | undefined }
+
+/** An AbortSignal, or anything shaped like one (other realms, polyfills). */
+function isSignal(s: unknown): boolean {
+  if (s === null || typeof s !== "object") return false;
+  const o = s as Record<string, unknown>;
+  return typeof o.aborted === "boolean" && typeof o.addEventListener === "function" && typeof o.removeEventListener === "function";
+}
 
 export function callSettings(kind: "search" | "contents", o: Record<string, unknown>, c: Record<string, unknown>): CallSettings {
   const pick = (k: string) => (o[k] !== undefined ? o[k] : c[k]);
@@ -157,23 +247,27 @@ export function callSettings(kind: "search" | "contents", o: Record<string, unkn
   const attemptTimeoutMs = pick("attemptTimeoutMs") === undefined ? timeoutMs : integerIn(pick("attemptTimeoutMs"), "attemptTimeoutMs", t.minMs, t.maxMs);
   const maxRetries = pick("maxRetries") === undefined ? policy.retry.defaultMaxRetries : integerIn(pick("maxRetries"), "maxRetries", 0, policy.retry.maxRetries);
   const maxResponseBytes = pick("maxResponseBytes") === undefined ? b[kind] : integerIn(pick("maxResponseBytes"), "maxResponseBytes", b.min, b.max);
-  return { timeoutMs, attemptTimeoutMs, maxRetries, maxResponseBytes };
+  const signal = o.signal;
+  if (signal !== undefined && !isSignal(signal)) invalid("signal");
+  return { timeoutMs, attemptTimeoutMs, maxRetries, maxResponseBytes, signal: signal as AbortSignal | undefined };
 }
 
-export function providerChain(o: Record<string, unknown>, c: Record<string, unknown>): ProviderId[] {
+export function providerChain(registry: Registry, o: Record<string, unknown>, c: Record<string, unknown>): ProviderId[] {
   const primary = o.provider ?? c.provider;
   if (primary === undefined) return configuration("provider");
-  if (!isProviderId(primary)) return configuration("provider");
+  if (!isProviderId(registry, primary)) return configuration("provider");
   const fallback = o.fallback ?? c.fallback ?? [];
-  if (!Array.isArray(fallback) || !fallback.every(isProviderId)) return configuration("fallback");
+  if (!Array.isArray(fallback) || !fallback.every((id) => isProviderId(registry, id))) return configuration("fallback");
   return [...new Set([primary as ProviderId, ...(fallback as ProviderId[])])]; // a provider is tried once
 }
 
-/** Maps an HTTP status to an error code, provider rules first. */
-export function statusCode(provider: ProviderId, status: number, body: unknown): ErrorCode {
-  const getPath = (v: unknown, path: string) => path.split(".").reduce<unknown>((o, k) => (o !== null && typeof o === "object" ? (o as Record<string, unknown>)[k] : undefined), v);
-  for (const r of providers[provider].errors) {
-    if (r.status === status && (r.bodyPath === undefined || getPath(body, r.bodyPath) === r.equals)) return r.code as ErrorCode;
+/** Maps an HTTP status to an error code, provider rules first. bodyPath rules compare with JSON equality. */
+export function statusCode(registry: Registry, provider: ProviderId, status: number, body: unknown): ErrorCode {
+  for (const r of registry[provider]!.errors) {
+    if (r.status !== status) continue;
+    if (r.bodyPath === undefined) return r.code as ErrorCode;
+    const v = getPath(body, r.bodyPath);
+    if (v !== undefined && jsonEqual(v, r.equals)) return r.code as ErrorCode;
   }
   for (const r of policy.status) {
     if ("status" in r ? r.status === status : status >= r.range[0] && status <= r.range[1]) return r.code as ErrorCode;
@@ -198,6 +292,14 @@ export function backoffMs(retryIndex: number, random: number, retryAfter: number
   const exp = Math.min(policy.retry.maxDelayMs, policy.retry.baseDelayMs * 2 ** retryIndex);
   const delay = Math.floor(exp / 2 + random * (exp / 2));
   return Math.max(delay, retryAfter ?? 0);
+}
+
+/** Strings with an unpaired surrogate cannot be sent as UTF-8; arrays and objects are checked deeply, keys included. */
+export function wellFormed(v: unknown): boolean {
+  if (typeof v === "string") return !/[\uD800-\uDFFF]/u.test(v);
+  if (Array.isArray(v)) return v.every(wellFormed);
+  if (v !== null && typeof v === "object") return Object.entries(v).every(([k, x]) => wellFormed(k) && wellFormed(x));
+  return true;
 }
 
 export const isTransient = (code: ErrorCode) => (policy.transient as readonly string[]).includes(code);

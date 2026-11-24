@@ -1,122 +1,156 @@
 // The single code path that executes any provider spec: request building,
 // response mapping and cost. No provider-specific code lives here.
 import { SearchError } from "./errors.ts";
-import { providers } from "./generated/registry.ts";
+import { allHold, getPath, jsonEqual } from "./json.ts";
 import type { NormalizedSearch } from "./policy.ts";
-import { urlKey } from "./policy.ts";
+import { urlKey, wellFormed } from "./policy.ts";
 import { validate } from "./schema.ts";
 import { creditsToUsd, requestPrice, runSteps, StepUnsupported, toList, type StepContext } from "./steps.ts";
 import type {
-  ContentsEndpoint, Cost, EndpointBase, Field, Page, ProviderId, RequestIdRule,
-  SearchEndpoint, SearchResult, Warning, WarningRule,
+  ContentsEndpoint, Cost, EndpointBase, Field, Page, ProviderId, ProviderSpec, RequestIdRule,
+  SearchEndpoint, SearchResult, Tier, Warning, WarningRule,
 } from "./types.ts";
 
 export type Kind = "search" | "contents";
 
 export interface HttpRequest { method: "GET" | "POST"; url: string; headers: Record<string, string>; body?: string }
 
-export function getPath(value: unknown, path: string): unknown {
-  if (path === "$") return value;
-  let v = value;
-  for (const key of path.split(".")) {
-    if (v === null || typeof v !== "object") return undefined;
-    v = (v as Record<string, unknown>)[key];
-  }
-  return v;
-}
+const own = (o: object, k: string) => Object.prototype.hasOwnProperty.call(o, k);
+const isPlainObject = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
 
+/** Writes a value at a dotted path, creating objects on the way; anything that is not an object on the way is replaced by {}. */
 function setPath(target: Record<string, unknown>, path: string, value: unknown): void {
   const keys = path.split(".");
   let o = target;
   for (const k of keys.slice(0, -1)) {
-    if (o[k] === null || typeof o[k] !== "object" || Array.isArray(o[k])) o[k] = {};
+    if (!own(o, k) || !isPlainObject(o[k])) Object.defineProperty(o, k, { value: {}, enumerable: true, writable: true, configurable: true });
     o = o[k] as Record<string, unknown>;
   }
-  o[keys[keys.length - 1]!] = value;
+  Object.defineProperty(o, keys[keys.length - 1]!, { value, enumerable: true, writable: true, configurable: true });
 }
 
 const unsupported = (provider: ProviderId, field: string): never => {
   throw new SearchError("unsupported", { provider, field });
 };
 
-export function endpoint<K extends Kind>(provider: ProviderId, kind: K): K extends "search" ? SearchEndpoint : ContentsEndpoint {
-  const ep = providers[provider][kind];
-  if (!ep) unsupported(provider, kind);
+export function endpoint<K extends Kind>(spec: ProviderSpec, kind: K): K extends "search" ? SearchEndpoint : ContentsEndpoint {
+  const ep = spec[kind];
+  if (!ep) unsupported(spec.id as ProviderId, kind);
   return ep as never;
 }
 
 /** Percent-encodes everything except RFC 3986 unreserved characters. */
 const encode = (s: string) => encodeURIComponent(s).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
 
+/** A scalar's query-string form: true/false, and ECMAScript Number-to-String for numbers. Anything else is null. */
+function scalarText(v: unknown): string | null {
+  if (typeof v === "string") return v;
+  if (typeof v === "boolean") return v ? "true" : "false";
+  if (typeof v === "number" && Number.isFinite(v)) return String(v);
+  return null;
+}
+
 /** Checks provider limits for a normalized request; failures are `unsupported` so fallback can skip the provider. */
-export function checkLimits(provider: ProviderId, kind: Kind, input: Record<string, unknown>): void {
+export function checkLimits(spec: ProviderSpec, kind: Kind, input: Record<string, unknown>): void {
+  const provider = spec.id as ProviderId;
   if (kind === "search") {
-    const ep = endpoint(provider, "search");
+    const { limits } = endpoint(spec, "search");
     const n = input as unknown as NormalizedSearch;
-    if (n.maxResults > ep.limits.maxResults) unsupported(provider, "maxResults");
-    if (ep.limits.maxQueryLength !== null && [...n.query].length > ep.limits.maxQueryLength) unsupported(provider, "query");
-    if ((n.includeDomains?.length ?? 0) > ep.limits.maxIncludeDomains) unsupported(provider, "includeDomains");
-    if ((n.excludeDomains?.length ?? 0) > ep.limits.maxExcludeDomains) unsupported(provider, "excludeDomains");
+    const inc = n.includeDomains?.length ?? 0, exc = n.excludeDomains?.length ?? 0;
+    if (n.maxResults > limits.maxResults) unsupported(provider, "maxResults");
+    if (limits.maxQueryLength !== null && [...n.query].length > limits.maxQueryLength) unsupported(provider, "query");
+    if (inc > limits.maxIncludeDomains) unsupported(provider, "includeDomains");
+    if (exc > limits.maxExcludeDomains) unsupported(provider, "excludeDomains");
+    if (limits.includeExcludeExclusive && inc > 0 && exc > 0) unsupported(provider, "excludeDomains");
+    if (limits.maxTotalDomains !== undefined && inc + exc > limits.maxTotalDomains) unsupported(provider, "excludeDomains");
   } else {
-    const ep = endpoint(provider, "contents");
-    if ((input.urls as string[]).length > ep.limits.maxUrls) unsupported(provider, "urls");
+    if ((input.urls as string[]).length > endpoint(spec, "contents").limits.maxUrls) unsupported(provider, "urls");
   }
 }
 
 export function buildRequest(
-  provider: ProviderId, kind: Kind, input: Record<string, unknown>, options: unknown, key: string, ctx: StepContext,
+  spec: ProviderSpec, kind: Kind, input: Record<string, unknown>, options: unknown, key: string, ctx: StepContext,
 ): HttpRequest {
-  const spec = providers[provider];
-  const ep: EndpointBase = endpoint(provider, kind);
-  checkLimits(provider, kind, input);
+  const provider = spec.id as ProviderId;
+  const ep: EndpointBase = endpoint(spec, kind);
+  checkLimits(spec, kind, input);
   const out: Record<string, unknown> = structuredClone(ep.request.fixed ?? {});
   const mappedRoots = new Set<string>();
+  const composed = new Set((ep.request.compose ?? []).flatMap((c) => c.parts.flatMap((p) => ("input" in p ? [p.input] : []))));
   for (const name of Object.keys(input)) {
-    if (input[name] === undefined) continue;
-    if (!(name in ep.request.params)) {
-      if (name === "maxResults") continue; // the runtime truncates instead
-      unsupported(provider, name);
-    }
+    if (input[name] === undefined || own(ep.request.params, name) || composed.has(name)) continue;
+    if (name === "maxResults") continue; // the runtime truncates instead
+    unsupported(provider, name);
   }
-  for (const [name, param] of Object.entries(ep.request.params)) {
-    if (input[name] === undefined) continue;
-    let value: unknown;
+  const step = (name: string, value: unknown, steps: Parameters<typeof runSteps>[1]) => {
     try {
-      value = runSteps(input[name], param.steps, "request", ctx);
+      return runSteps(value, steps, "request", ctx);
     } catch (e) {
       if (e instanceof StepUnsupported) unsupported(provider, name);
       throw e;
     }
+  };
+  for (const [name, param] of Object.entries(ep.request.params)) {
+    if (input[name] === undefined) continue;
+    const value = step(name, input[name], param.steps);
     if (value === null || value === undefined) continue;
-    setPath(out, param.to, value);
+    if (param.append) {
+      const prev = getPath(out, param.to);
+      setPath(out, param.to, [...(Array.isArray(prev) ? prev : []), ...(Array.isArray(value) ? value : [value])]);
+    } else setPath(out, param.to, value);
     mappedRoots.add(param.to.split(".")[0]!);
   }
+  for (const c of ep.request.compose ?? []) {
+    if (!c.parts.some((p) => "input" in p && input[p.input] !== undefined)) continue;
+    let text = "";
+    for (const part of c.parts) {
+      if (!("input" in part)) { text += part.text; continue; }
+      if (input[part.input] === undefined) {
+        if (part.required) unsupported(provider, part.input);
+        continue;
+      }
+      const s = scalarText(step(part.input, input[part.input], part.steps));
+      if (s === null) unsupported(provider, part.input);
+      text += (part.text ?? "") + s;
+    }
+    setPath(out, c.to, text);
+    mappedRoots.add(c.to.split(".")[0]!);
+  }
   if (options !== undefined) {
-    if (options === null || typeof options !== "object" || Array.isArray(options)) throw new SearchError("invalid_request", { provider, field: "providerOptions" });
-    for (const [name, value] of Object.entries(options as Record<string, unknown>)) {
-      const schema = ep.providerOptions[name];
+    if (!isPlainObject(options)) throw new SearchError("invalid_request", { provider, field: "providerOptions" });
+    for (const [name, value] of Object.entries(options)) {
       const field = `providerOptions.${provider}.${name}`;
       if (value === undefined) continue;
-      if (!schema || mappedRoots.has(name) || validate(value, schema).length) throw new SearchError("invalid_request", { provider, field });
-      out[name] = value;
+      const schema = own(ep.providerOptions, name) ? ep.providerOptions[name] : undefined;
+      const scalarOnly = ep.request.encoding === "query" && scalarText(value) === null;
+      if (!schema || mappedRoots.has(name) || !wellFormed(value) || scalarOnly || validate(value, schema).length) {
+        throw new SearchError("invalid_request", { provider, field });
+      }
+      Object.defineProperty(out, name, { value, enumerable: true, writable: true, configurable: true }); // keeps a replaced key's place
+    }
+    for (const path of ep.request.locked ?? []) {
+      if (!jsonEqual(getPath(out, path), getPath(ep.request.fixed ?? {}, path))) {
+        throw new SearchError("invalid_request", { provider, field: `providerOptions.${provider}.${path.split(".")[0]}` });
+      }
     }
   }
   const headers: Record<string, string> = { accept: "application/json" };
   let url = ep.request.url;
   let body: string | undefined;
+  const pairs: string[] = [];
   if (spec.auth.in === "header") headers[spec.auth.name] = (spec.auth.prefix ?? "") + key;
   if (ep.request.encoding === "json") {
     headers["content-type"] = "application/json";
     body = JSON.stringify(out);
   } else {
-    const pairs: string[] = [];
     for (const [k, v] of Object.entries(out)) {
-      if (typeof v !== "string" && typeof v !== "number" && typeof v !== "boolean") throw new SearchError("invalid_request", { provider, field: k });
-      pairs.push(`${encode(k)}=${encode(String(v))}`);
+      const s = scalarText(v);
+      if (s === null) throw new SearchError("invalid_request", { provider, field: k });
+      pairs.push(`${encode(k)}=${encode(s)}`);
     }
-    if (spec.auth.in === "query") pairs.push(`${encode(spec.auth.name)}=${encode(key)}`);
-    if (pairs.length) url += (url.includes("?") ? "&" : "?") + pairs.join("&");
   }
+  if (spec.auth.in === "query") pairs.push(`${encode(spec.auth.name)}=${encode(key)}`);
+  if (pairs.length) url += (url.includes("?") ? "&" : "?") + pairs.join("&");
   const req: HttpRequest = { method: ep.request.method, url, headers };
   if (body !== undefined && ep.request.method !== "GET") req.body = body;
   return req;
@@ -143,43 +177,77 @@ function requestId(rules: RequestIdRule[] | undefined, body: unknown, headers: H
 
 function warnings(provider: ProviderId, rules: WarningRule[] | undefined, body: unknown): Warning[] {
   const out: Warning[] = [];
+  const add = (code: string, from: unknown, messageField: string | undefined) => {
+    const w: Warning = { code, provider };
+    const message = messageField ? text(getPath(from, messageField)) : null;
+    if (message !== null) w.message = message;
+    out.push(w);
+  };
   for (const rule of rules ?? []) {
-    if ("ifPath" in rule) {
-      if (getPath(body, rule.ifPath) === rule.equals) out.push({ code: rule.code, provider });
+    if ("where" in rule) {
+      if (allHold(body, rule.where)) add(rule.code, body, rule.messageField);
     } else {
       const list = getPath(body, rule.listPath);
-      if (!Array.isArray(list)) continue;
-      for (const item of list) {
-        const w: Warning = { code: rule.code, provider };
-        const message = rule.messageField ? str(getPath(item, rule.messageField)) : null;
-        if (message !== null) w.message = message;
-        out.push(w);
-      }
+      if (Array.isArray(list)) for (const item of list) add(rule.code, item, rule.messageField);
     }
   }
   return out;
 }
 
-function cost(ep: EndpointBase, body: unknown, count: number, tier: string | null): Cost {
-  const reported = ep.cost?.reported;
-  if (reported) {
-    const v = getPath(body, reported.path);
-    if (typeof v === "number" && Number.isFinite(v) && v >= 0) {
-      if (reported.unit === "usd") return { usd: v, estimated: reported.isEstimate ?? false, source: "reported" };
-      const usd = creditsToUsd(v, ep.pricing.creditUsd);
-      if (usd !== null) return { usd, estimated: true, source: "reported-credits", credits: v };
-    }
+const UNKNOWN: Cost = { usd: null, estimated: true, source: "unknown" };
+
+/**
+ * The tier a request is priced at: the normalized depth, unless a provider
+ * option listed in pricing.costOptions decides it. Returns null when an
+ * option makes the price unknown.
+ */
+function pricedTier(ep: EndpointBase, depth: string | undefined, options: unknown): string | null {
+  let tier: string = depth ?? "standard";
+  const costOptions = ep.pricing.costOptions ?? {};
+  if (!isPlainObject(options)) return tier;
+  for (const [name, value] of Object.entries(options)) {
+    if (value === undefined || !own(costOptions, name)) continue;
+    const effect = costOptions[name]!;
+    if (effect === "unknown") return null;
+    const t = typeof value === "string" && own(effect, value) ? effect[value] : null;
+    if (t === null || t === undefined) return null;
+    tier = t;
   }
-  const usd = requestPrice(count, ep.pricing, tier);
-  return usd === null ? { usd: null, estimated: true, source: "unknown" } : { usd, estimated: true, source: "computed" };
+  return tier;
 }
+
+/** The cost the computed price gives for `count` items. */
+export function computedCost(ep: EndpointBase, count: number, depth: string | undefined, options: unknown): Cost {
+  const tier = pricedTier(ep, depth, options);
+  const usd = tier === null ? null : requestPrice(count, ep.pricing, tier as Tier);
+  return usd === null ? UNKNOWN : { usd, estimated: true, source: "computed" };
+}
+
+/** A reported cost from the body, or null when the body reports none that is usable. */
+export function reportedCost(ep: EndpointBase, body: unknown): Cost | null {
+  const reported = ep.cost?.reported;
+  if (!reported) return null;
+  const v = getPath(body, reported.path);
+  if (typeof v !== "number" || !Number.isFinite(v) || v < 0) return null;
+  if (reported.unit === "usd") return { usd: v, estimated: reported.isEstimate ?? false, source: "reported" };
+  const usd = creditsToUsd(v, ep.pricing.creditUsd);
+  return usd === null ? null : { usd, estimated: true, source: "reported-credits", credits: v };
+}
+
+/** Request context the mapping needs beyond the body. */
+export interface MapContext extends StepContext { options: unknown }
 
 export interface Mapped<T> { items: T; cost: Cost; requestId: string | null; warnings: Warning[] }
 
-export function mapSearch(provider: ProviderId, input: NormalizedSearch, body: unknown, headers: Headers, ctx: StepContext): Mapped<SearchResult[]> {
-  const ep = endpoint(provider, "search");
-  const rows = getPath(body, ep.response.results);
-  if (!Array.isArray(rows)) throw new SearchError("invalid_response", { provider, raw: body });
+const invalid = (provider: ProviderId, body: unknown): never => { throw new SearchError("invalid_response", { provider, raw: body }); };
+
+export function mapSearch(spec: ProviderSpec, input: NormalizedSearch, body: unknown, headers: Headers, ctx: MapContext): Mapped<SearchResult[]> {
+  const provider = spec.id as ProviderId;
+  const ep = endpoint(spec, "search");
+  if (!isPlainObject(body)) invalid(provider, body);
+  const found = getPath(body, ep.response.results);
+  const rows = (found === undefined || found === null) && ep.response.resultsOptional ? [] : found;
+  if (!Array.isArray(rows)) return invalid(provider, body);
   const f = ep.response.fields;
   const results: SearchResult[] = [];
   let dropped = 0;
@@ -205,24 +273,28 @@ export function mapSearch(provider: ProviderId, input: NormalizedSearch, body: u
   }
   const warns = warnings(provider, ep.response.warnings, body);
   if (dropped) warns.push({ code: "invalid_rows_dropped", provider, count: dropped });
-  return { items: results, cost: cost(ep, body, rows.length, input.depth ?? null), requestId: requestId(ep.response.requestId, body, headers), warnings: warns };
+  const cost = reportedCost(ep, body) ?? computedCost(ep, rows.length, input.depth, ctx.options);
+  return { items: results, cost, requestId: requestId(ep.response.requestId, body, headers), warnings: warns };
 }
 
-export function mapContents(provider: ProviderId, urls: string[], body: unknown, headers: Headers, ctx: StepContext): Mapped<Page[]> {
-  const ep = endpoint(provider, "contents");
-  const candidates: { key: string; page: Page }[] = [];
+export function mapContents(spec: ProviderSpec, urls: string[], body: unknown, headers: Headers, ctx: MapContext): Mapped<Page[]> {
+  const provider = spec.id as ProviderId;
+  const ep = endpoint(spec, "contents");
+  if (!isPlainObject(body)) invalid(provider, body);
+  const candidates: { key: string; page: Page; billable: boolean }[] = [];
   for (const source of ep.response.pages) {
-    const raw = getPath(body, source.from);
-    const list = source.from === "$" ? [raw] : raw === undefined || raw === null ? [] : raw;
-    if (!Array.isArray(list)) throw new SearchError("invalid_response", { provider, raw: body });
+    const raw = source.from === "$" ? body : getPath(body, source.from);
+    const list = source.from === "$" ? [raw] : (raw === undefined || raw === null) && source.optional ? [] : raw;
+    if (!Array.isArray(list)) return invalid(provider, body);
     for (const item of list) {
-      if (source.where && getPath(item, source.where.path) !== source.where.equals) continue;
+      if (!allHold(item, source.where)) continue;
       const url = field(item, source.fields.url, ctx);
       if (typeof url !== "string") continue;
       const f = source.fields;
       const ok = source.status === "ok";
       candidates.push({
         key: urlKey(url),
+        billable: ok || source.billable === true,
         page: {
           url,
           status: source.status,
@@ -236,6 +308,7 @@ export function mapContents(provider: ProviderId, urls: string[], body: unknown,
       });
     }
   }
+  const billableCount = candidates.filter((c) => c.billable).length;
   const pages: Page[] = urls.map((url) => {
     const i = candidates.findIndex((c) => c.key === urlKey(url));
     if (i < 0) return { url, status: "failed", finalUrl: null, title: null, content: null, publishedAt: null, author: null, error: { code: "missing", message: null } };
@@ -244,6 +317,19 @@ export function mapContents(provider: ProviderId, urls: string[], body: unknown,
   });
   const warns = warnings(provider, ep.response.warnings, body);
   if (candidates.length) warns.push({ code: "unmatched_pages", provider, count: candidates.length });
-  const okCount = pages.filter((p) => p.status === "ok").length;
-  return { items: pages, cost: cost(ep, body, okCount, null), requestId: requestId(ep.response.requestId, body, headers), warnings: warns };
+  const cost = reportedCost(ep, body) ?? computedCost(ep, billableCount, undefined, ctx.options);
+  return { items: pages, cost, requestId: requestId(ep.response.requestId, body, headers), warnings: warns };
+}
+
+/**
+ * The cost of an attempt that produced no mapped response: a reported cost
+ * from the body when there is one, otherwise the computed price for the
+ * requested count (results asked for, or URLs sent).
+ */
+export function attemptCost(spec: ProviderSpec, kind: Kind, input: Record<string, unknown>, body: unknown, options: unknown): Cost {
+  const ep: EndpointBase = endpoint(spec, kind);
+  const reported = body === undefined ? null : reportedCost(ep, body);
+  if (reported) return reported;
+  const count = kind === "search" ? (input.maxResults as number) : (input.urls as string[]).length;
+  return computedCost(ep, count, kind === "search" ? (input.depth as string | undefined) : undefined, options);
 }

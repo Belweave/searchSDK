@@ -1,14 +1,17 @@
 // Runs registry/conformance vectors against this runtime with a virtual clock
-// and a scripted fetch. Format: registry/conformance/README.md.
+// and a scripted fetch. Format and clock contract: registry/conformance/README.md.
+import "./guard.ts";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
-import { createClient } from "../src/index.ts";
+import { createClient, registry } from "../src/index.ts";
 import { SearchError } from "../src/errors.ts";
 import type { Clock } from "../src/types.ts";
 
 export const conformanceDir = new URL("../../../registry/conformance/", import.meta.url);
 export const DEFAULT_NOW = "2026-11-24T12:00:00.000Z";
-const DEFAULT_KEYS = { exa: "test-key-exa", tavily: "test-key-tavily", context: "test-key-context", tinyfish: "test-key-tinyfish" };
+
+/** Default keys are `test-key-<provider id>` for every provider the case can use. */
+const keysFor = (ids: string[]) => Object.fromEntries(ids.map((id) => [id, `test-key-${id}`]));
 
 export function loadVectors(sub: string): { file: string; data: any }[] {
   const dir = new URL(sub, conformanceDir);
@@ -16,6 +19,7 @@ export function loadVectors(sub: string): { file: string; data: any }[] {
     .map((file) => ({ file: `${sub}${file}`, data: JSON.parse(readFileSync(new URL(file, dir), "utf8")) }));
 }
 
+/** Timers fire in due-time order; equal due times fire in creation order. */
 export class VirtualClock implements Clock {
   private timers: { at: number; seq: number; fn: () => void; id: number }[] = [];
   private seq = 0;
@@ -38,6 +42,7 @@ export class VirtualClock implements Clock {
   }
 }
 
+/** Lets every pending promise reaction run before the clock moves. */
 const flush = async () => { for (let i = 0; i < 4; i++) await new Promise((r) => setImmediate(r)); };
 
 function expand(v: any): any {
@@ -55,15 +60,30 @@ function bodyBytes(r: any): Uint8Array | null {
   return null;
 }
 
-function makeResponse(r: any, clock: VirtualClock): Response {
+/**
+ * A body stream behaves like undici's: it errors as soon as the request is
+ * aborted (unless the case says the transport ignores abort). `bodyDelayMs`
+ * holds the whole body back; `bodyFailAtMs` sends the first half of the bytes,
+ * then fails the stream with a network error.
+ */
+function makeResponse(r: any, clock: VirtualClock, signal: AbortSignal): Response {
   const status = r.status ?? 200;
   const headers = new Headers(Array.isArray(r.headers) ? r.headers : Object.entries(r.headers ?? {}));
   let bytes = bodyBytes(r);
   if ([204, 205, 304].includes(status)) bytes = null;
-  if (!bytes || !r.bodyDelayMs) return new Response(bytes as BodyInit | null, { status, headers });
+  if (!bytes || (!r.bodyDelayMs && r.bodyFailAtMs === undefined)) return new Response(bytes as BodyInit | null, { status, headers });
   let handle: unknown;
   const stream = new ReadableStream<Uint8Array>({
-    start(controller) { handle = clock.setTimeout(() => { controller.enqueue(bytes!); controller.close(); }, r.bodyDelayMs); },
+    start(controller) {
+      const onAbort = () => { clock.clearTimeout(handle); controller.error(new DOMException("This operation was aborted", "AbortError")); };
+      if (!r.ignoreAbort) signal.addEventListener("abort", onAbort, { once: true });
+      if (r.bodyFailAtMs !== undefined) {
+        controller.enqueue(bytes!.slice(0, Math.floor(bytes!.length / 2)));
+        handle = clock.setTimeout(() => controller.error(new TypeError("terminated")), r.bodyFailAtMs);
+      } else {
+        handle = clock.setTimeout(() => { controller.enqueue(bytes!); controller.close(); }, r.bodyDelayMs);
+      }
+    },
     cancel() { clock.clearTimeout(handle); },
   });
   return new Response(stream, { status, headers });
@@ -77,24 +97,27 @@ function scripted(r: any, signal: AbortSignal, clock: VirtualClock): Promise<Res
       if (r.ignoreAbort || done) return;
       done = true;
       clock.clearTimeout(handle);
-      reject(new DOMException("The operation was aborted.", "AbortError"));
+      reject(new DOMException("This operation was aborted", "AbortError"));
     };
     handle = clock.setTimeout(() => {
       if (done) return;
       done = true;
       if (r.network) reject(new TypeError("fetch failed"));
-      else resolve(makeResponse(r, clock));
+      else resolve(makeResponse(r, clock, signal));
     }, r.delayMs ?? 0);
     if (signal.aborted) onAbort();
     else signal.addEventListener("abort", onAbort, { once: true });
   });
 }
 
+/** Overlays case options on file defaults; null removes a key. Keys are defined, never assigned, so "__proto__" stays data. */
 function mergeOptions(base: any, over: any): any {
-  const out = { ...(base ?? {}) };
-  for (const [k, v] of Object.entries(over ?? {})) {
-    if (v === null) delete out[k];
-    else out[k] = v;
+  const out: Record<string, unknown> = {};
+  for (const src of [base ?? {}, over ?? {}]) {
+    for (const [k, v] of Object.entries(src)) {
+      if (v === null) delete out[k];
+      else Object.defineProperty(out, k, { value: v, enumerable: true, writable: true, configurable: true });
+    }
   }
   return out;
 }
@@ -109,7 +132,9 @@ function checkRequest(actual: any, expected: any, where: string) {
   }
 }
 
-export async function runCase(c: any, defaults: any = {}): Promise<void> {
+/** Runs one case. `file` is the vector file's top level; its `providers`, if any, replace the built-in registry. */
+export async function runCase(c: any, file: any = {}): Promise<void> {
+  const defaults = file.defaults ?? {};
   const clock = new VirtualClock(Date.parse(c.now ?? DEFAULT_NOW));
   const responses: any[] = c.responses ?? defaults.responses ?? [];
   const requests: any[] = [];
@@ -123,7 +148,11 @@ export async function runCase(c: any, defaults: any = {}): Promise<void> {
   }) as typeof globalThis.fetch;
   const randoms: number[] = c.random ?? [0.5];
   let ri = 0;
-  const client = createClient({ keys: DEFAULT_KEYS, env: {}, ...expand(c.client ?? {}), fetch, clock, random: () => randoms[Math.min(ri++, randoms.length - 1)]! });
+  const ids = Object.keys(file.providers ?? registry);
+  const client = createClient({
+    keys: keysFor(ids), env: {}, ...(file.providers ? { registry: file.providers } : {}),
+    ...expand(c.client ?? {}), fetch, clock, random: () => randoms[Math.min(ri++, randoms.length - 1)]!,
+  });
   const options = mergeOptions(defaults.options, c.options);
   const controller = new AbortController();
   if (c.abortAt === "before") controller.abort();

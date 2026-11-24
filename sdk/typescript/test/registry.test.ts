@@ -1,18 +1,30 @@
+import "./guard.ts";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import { policy, providers } from "../src/generated/registry.ts";
+import { specProblems } from "../src/registry.ts";
 import { validate } from "../src/schema.ts";
+import { STEP_NAMES } from "../src/steps.ts";
 import { conformanceDir, loadVectors } from "./harness.ts";
 
-const registry = new URL("../../../registry/", import.meta.url);
-const read = (rel: string) => JSON.parse(readFileSync(new URL(rel, registry), "utf8"));
+const registryDir = new URL("../../../registry/", import.meta.url);
+const read = (rel: string) => JSON.parse(readFileSync(new URL(rel, registryDir), "utf8"));
 const schema = read("schema/provider.schema.json");
 const steps = read("steps.json");
-const files = readdirSync(new URL("providers/", registry)).filter((f) => f.endsWith(".json"));
+const files = readdirSync(new URL("providers/", registryDir)).filter((f) => f.endsWith(".json")).sort();
+/** Every spec the suite knows: the registry's, plus the synthetic ones inside format vectors. */
+const allSpecs = [
+  ...files.map((f) => ({ where: `providers/${f}`, spec: read(`providers/${f}`) })),
+  ...loadVectors("format/").flatMap(({ file, data }) => Object.values(data.providers ?? {}).map((spec) => ({ where: file, spec: spec as any }))),
+];
 
-test("every provider spec validates against the schema", () => {
-  for (const f of files) assert.deepEqual(validate(read(`providers/${f}`), schema), [], f);
+test("every provider spec, and every synthetic spec in the format vectors, validates against the schema", () => {
+  for (const { where, spec } of allSpecs) assert.deepEqual(validate(spec, schema), [], `${where} ${spec.id}`);
+});
+
+test("every spec passes the cross-field rules the schema cannot express", () => {
+  for (const { where, spec } of allSpecs) assert.deepEqual(specProblems(spec), [], `${where} ${spec.id}`);
 });
 
 test("the schema rejects a spec with an unknown step and an extra field", () => {
@@ -22,14 +34,42 @@ test("the schema rejects a spec with an unknown step and an extra field", () => 
   assert.ok(validate(spec, schema).length >= 2);
 });
 
-test("every referenced step is in the library, and the library matches the runtime", () => {
+test("the schema keeps steps on their side and requires their arguments", () => {
+  const responseStepInRequest = read("providers/exa.json");
+  responseStepInRequest.search.request.params.query.steps = [{ step: "parse-date" }];
+  assert.notDeepEqual(validate(responseStepInRequest, schema), []);
+  const requestStepInResponse = read("providers/exa.json");
+  requestStepInResponse.search.response.fields.title = { path: "title", steps: [{ step: "single" }] };
+  assert.notDeepEqual(validate(requestStepInResponse, schema), []);
+  const missingArg = read("providers/tinyfish.json");
+  delete missingArg.search.request.params.includeDomains.steps[0].separator;
+  assert.notDeepEqual(validate(missingArg, schema), []);
+  const strayArg = read("providers/exa.json");
+  strayArg.search.response.fields.excerpts.steps[0].separator = ",";
+  assert.notDeepEqual(validate(strayArg, schema), []);
+});
+
+test("the schema requires a reason for a key in the URL, and only then", () => {
+  const query = read("providers/exa.json");
+  query.auth = { in: "query", name: "api_key", env: ["EXA_API_KEY"] };
+  assert.notDeepEqual(validate(query, schema), []);
+  query.auth.keyInUrlReason = "The provider documents no header.";
+  assert.deepEqual(validate(query, schema), []);
+  const header = read("providers/exa.json");
+  header.auth.keyInUrlReason = "Not needed.";
+  assert.notDeepEqual(validate(header, schema), []);
+});
+
+test("the step library, the schema and the runtime name the same steps", () => {
+  const library = Object.keys(steps.steps).sort();
+  const sides = (side: string) => Object.entries(steps.steps).filter(([, s]: [string, any]) => s.side === side || s.side === "both").map(([n]) => n).sort();
+  const names = (def: any) => def.anyOf.map((b: any) => b.properties.step.const).sort();
+  assert.deepEqual(names(schema.$defs.requestStep), sides("request"));
+  assert.deepEqual(names(schema.$defs.responseStep), sides("response"));
+  assert.deepEqual([...STEP_NAMES].sort(), library);
   const used = new Set<string>();
-  JSON.stringify(Object.values(providers), (k, v) => { if (k === "step") used.add(v); return v; });
-  for (const s of used) assert.ok(s in steps.steps, s);
-  assert.deepEqual(Object.keys(steps.steps).sort(), [
-    "credits-to-usd", "date-to-datetime", "join", "lowercase", "map-value", "parse-date",
-    "recency-to-date", "request-price", "single", "to-list", "uppercase",
-  ]);
+  JSON.stringify(allSpecs.map((s) => s.spec), (k, v) => { if (k === "step") used.add(v); return v; });
+  for (const s of used) assert.ok(library.includes(s), s);
 });
 
 test("every unverified pointer resolves inside its spec", () => {
@@ -42,10 +82,8 @@ test("every unverified pointer resolves inside its spec", () => {
   }
 });
 
-test("no spec puts a key in the URL without a stated reason", () => {
-  for (const spec of Object.values(providers)) {
-    if (spec.auth.in === "query") assert.ok((spec.auth as { keyInUrlReason?: string }).keyInUrlReason, spec.id);
-  }
+test("the embedded registry holds exactly the spec files", () => {
+  assert.deepEqual(Object.keys(providers).sort(), files.map((f) => f.slice(0, -5)));
 });
 
 test("policy error messages cover exactly the error codes", () => {
@@ -53,7 +91,7 @@ test("policy error messages cover exactly the error codes", () => {
     "aborted", "attempt_timeout", "auth", "configuration", "forbidden", "invalid_request", "invalid_response",
     "network", "provider_error", "quota", "rate_limit", "response_too_large", "timeout", "unavailable", "unsupported",
   ]);
-  for (const code of [...policy.transient, ...policy.fallbackOn]) assert.ok(code in policy.errors, code);
+  for (const code of [...policy.transient, ...policy.fallbackOn, ...policy.billing.possible]) assert.ok(code in policy.errors, code);
 });
 
 test("every provider endpoint has conformance vectors marked synthetic", () => {
@@ -66,5 +104,14 @@ test("every provider endpoint has conformance vectors marked synthetic", () => {
       if (spec[kind]) assert.ok(v!.data.cases.some((c: any) => c.call === kind && c.expect.response), `${id} ${kind} needs a full response vector`);
     }
   }
+  for (const { file, data } of loadVectors("format/")) assert.match(data.synthetic, /synthetic/i, file);
   assert.ok(conformanceDir.href.endsWith("/registry/conformance/"));
+});
+
+test("every test file installs the network guard before anything else", () => {
+  const dir = new URL("./", import.meta.url);
+  for (const f of readdirSync(dir).filter((x) => x.endsWith(".ts") && x !== "guard.ts")) {
+    const first = readFileSync(new URL(f, dir), "utf8").split("\n").find((l) => l.startsWith("import "));
+    assert.match(first ?? "", /^import (\{[^}]*\} from )?"\.\/guard\.ts";$/, `${f} must import ./guard.ts first`);
+  }
 });

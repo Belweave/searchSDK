@@ -1,12 +1,13 @@
+import "./guard.ts";
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { creditsToUsd, requestPrice, runStep, StepUnsupported } from "../src/steps.ts";
 import { DEFAULT_NOW, loadVectors, runCase } from "./harness.ts";
 
-for (const sub of ["providers/", "policy/"]) {
+for (const sub of ["providers/", "policy/", "format/"]) {
   for (const { file, data } of loadVectors(sub)) {
     describe(file, () => {
-      for (const c of data.cases) test(c.name, () => runCase(c, data.defaults));
+      for (const c of data.cases) test(c.name, () => runCase(c, data));
     });
   }
 }
