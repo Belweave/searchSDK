@@ -1,0 +1,291 @@
+{
+  "description": "Exa: normalized request to HTTP request, and synthetic response to normalized response.",
+  "synthetic": "Response bodies are synthetic, shaped after the public OpenAPI schema read 2026-11-24. They were not recorded from the live API.",
+  "cases": [
+    {
+      "name": "search maps every supported option",
+      "call": "search",
+      "query": "  sqlite wal mode  ",
+      "options": {
+        "provider": "exa",
+        "maxResults": 5,
+        "includeDomains": ["SQLite.org", "sqlite.org"],
+        "excludeDomains": ["example.com"],
+        "startDate": "2026-01-01",
+        "endDate": "2026-06-30",
+        "country": "us",
+        "depth": "deep"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": { "x-request-id": "synthetic-header-id" },
+          "body": {
+            "requestId": "synthetic-exa-1",
+            "results": [
+              {
+                "title": "Write-Ahead Logging",
+                "url": "https://sqlite.org/wal.html",
+                "publishedDate": "2025-03-01T00:00:00.000Z",
+                "author": "SQLite team",
+                "id": "https://sqlite.org/wal.html",
+                "highlights": ["WAL lets readers and writers proceed concurrently.", "   "],
+                "favicon": "https://sqlite.org/favicon.ico"
+              },
+              { "title": "Pragma", "url": "https://sqlite.org/pragma.html", "author": null, "id": "synthetic-2", "highlights": [] }
+            ],
+            "costDollars": { "total": 0.012 },
+            "warnings": [{ "code": "IGNORED_FIELD", "path": "/startCrawlDate", "message": "Synthetic warning." }],
+            "searchTime": 812.5
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.exa.ai/search",
+            "headers": { "accept": "application/json", "content-type": "application/json", "x-api-key": "test-key-exa" },
+            "body": {
+              "type": "deep",
+              "contents": { "highlights": true },
+              "query": "sqlite wal mode",
+              "numResults": 5,
+              "includeDomains": ["sqlite.org"],
+              "excludeDomains": ["example.com"],
+              "startPublishedDate": "2026-01-01T00:00:00.000Z",
+              "endPublishedDate": "2026-06-30T23:59:59.999Z",
+              "userLocation": "US"
+            }
+          }
+        ],
+        "response": {
+          "provider": "exa",
+          "results": [
+            {
+              "url": "https://sqlite.org/wal.html",
+              "title": "Write-Ahead Logging",
+              "excerpts": ["WAL lets readers and writers proceed concurrently."],
+              "publishedAt": "2025-03-01T00:00:00.000Z",
+              "author": "SQLite team",
+              "rank": 1,
+              "providerFields": { "id": "https://sqlite.org/wal.html", "favicon": "https://sqlite.org/favicon.ico" }
+            },
+            {
+              "url": "https://sqlite.org/pragma.html",
+              "title": "Pragma",
+              "excerpts": [],
+              "publishedAt": null,
+              "author": null,
+              "rank": 2,
+              "providerFields": { "id": "synthetic-2" }
+            }
+          ],
+          "cost": { "usd": 0.012, "estimated": true, "source": "reported" },
+          "requestId": "synthetic-exa-1",
+          "latencyMs": 0,
+          "warnings": [{ "code": "provider_warning", "provider": "exa", "message": "Synthetic warning." }],
+          "attempts": [{ "provider": "exa", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.012, "estimated": true, "source": "reported" } }]
+        }
+      }
+    },
+    {
+      "name": "search recency becomes a start date; missing cost is computed; header request id",
+      "call": "search",
+      "query": "rust 2026 edition",
+      "options": { "provider": "exa", "recency": "week" },
+      "responses": [{ "status": 200, "headers": { "x-request-id": "synthetic-exa-2" }, "body": { "results": [] } }],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.exa.ai/search",
+            "headers": { "accept": "application/json", "content-type": "application/json", "x-api-key": "test-key-exa" },
+            "body": {
+              "type": "auto",
+              "contents": { "highlights": true },
+              "query": "rust 2026 edition",
+              "numResults": 10,
+              "startPublishedDate": "2026-11-17T12:00:00.000Z"
+            }
+          }
+        ],
+        "response": {
+          "provider": "exa",
+          "results": [],
+          "cost": { "usd": 0.007, "estimated": true, "source": "computed" },
+          "requestId": "synthetic-exa-2",
+          "latencyMs": 0,
+          "warnings": [],
+          "attempts": [{ "provider": "exa", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }]
+        }
+      }
+    },
+    {
+      "name": "search provider options are typed and replace fixed top-level keys whole; the locked highlights must stay",
+      "call": "search",
+      "query": "llm evals",
+      "options": { "provider": "exa", "providerOptions": { "exa": { "category": "news", "contents": { "highlights": true, "text": true } } } },
+      "responses": [{ "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "requests": [
+          {
+            "body": { "type": "auto", "contents": { "highlights": true, "text": true }, "query": "llm evals", "numResults": 10, "category": "news" }
+          }
+        ]
+      }
+    },
+    {
+      "name": "language is unsupported by Exa and nothing is sent",
+      "call": "search",
+      "query": "nachrichten",
+      "options": { "provider": "exa", "language": "de" },
+      "responses": [],
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "exa",
+          "field": "language",
+          "attempts": [{ "provider": "exa", "outcome": "skipped", "code": "unsupported", "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": false, "source": "none" } }]
+        }
+      }
+    },
+    {
+      "name": "402 maps to quota with the provider tag",
+      "call": "search",
+      "query": "anything",
+      "options": { "provider": "exa" },
+      "responses": [{ "status": 402, "body": { "requestId": "r", "error": "Synthetic.", "tag": "NO_MORE_CREDITS" } }],
+      "expect": {
+        "error": {
+          "code": "quota",
+          "provider": "exa",
+          "status": 402,
+          "providerCode": "NO_MORE_CREDITS",
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "quota", "status": 402, "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } }]
+        }
+      }
+    },
+    {
+      "name": "403 maps to forbidden",
+      "call": "search",
+      "query": "anything",
+      "options": { "provider": "exa" },
+      "responses": [{ "status": 403, "body": { "requestId": "r", "error": "Synthetic.", "tag": "PROHIBITED_CONTENT" } }],
+      "expect": { "error": { "code": "forbidden", "provider": "exa", "status": 403, "providerCode": "PROHIBITED_CONTENT" } }
+    },
+    {
+      "name": "contents maps results, per-URL statuses and missing URLs",
+      "call": "contents",
+      "urls": ["https://example.com", "https://example.com/missing", "https://example.com/gone"],
+      "options": { "provider": "exa" },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "requestId": "synthetic-exa-contents-1",
+            "results": [
+              {
+                "url": "https://example.com/",
+                "title": "Example Domain",
+                "text": "# Example Domain\n\nSynthetic body.",
+                "publishedDate": "2024-02-29",
+                "author": ""
+              }
+            ],
+            "statuses": [
+              { "id": "https://example.com", "status": "success", "source": "cached" },
+              { "id": "https://example.com/missing", "status": "error", "error": { "tag": "CRAWL_NOT_FOUND", "httpStatusCode": 404 } }
+            ],
+            "costDollars": { "total": 0.001 }
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.exa.ai/contents",
+            "headers": { "accept": "application/json", "content-type": "application/json", "x-api-key": "test-key-exa" },
+            "body": { "text": true, "urls": ["https://example.com", "https://example.com/missing", "https://example.com/gone"] }
+          }
+        ],
+        "response": {
+          "provider": "exa",
+          "pages": [
+            {
+              "url": "https://example.com",
+              "status": "ok",
+              "finalUrl": null,
+              "title": "Example Domain",
+              "content": "# Example Domain\n\nSynthetic body.",
+              "publishedAt": "2024-02-29T00:00:00.000Z",
+              "author": null,
+              "error": null
+            },
+            {
+              "url": "https://example.com/missing",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": { "code": "CRAWL_NOT_FOUND", "message": null }
+            },
+            {
+              "url": "https://example.com/gone",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": { "code": "missing", "message": null }
+            }
+          ],
+          "cost": { "usd": 0.001, "estimated": true, "source": "reported" },
+          "requestId": "synthetic-exa-contents-1",
+          "latencyMs": 0,
+          "warnings": [],
+          "attempts": [{ "provider": "exa", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.001, "estimated": true, "source": "reported" } }]
+        }
+      }
+    },
+    {
+      "name": "a provider option that selects the deep tier is priced as deep when no cost is reported",
+      "call": "search", "query": "q", "options": { "provider": "exa", "providerOptions": { "exa": { "type": "deep" } } },
+      "responses": [{ "status": 200, "body": { "results": [] } }],
+      "expect": { "requests": [{ "bodyIncludes": { "type": "deep" } }], "responseIncludes": { "cost": { "usd": 0.012, "estimated": true, "source": "computed" } } }
+    },
+    {
+      "name": "a provider option type the pricing does not know makes the computed cost unknown",
+      "call": "search", "query": "q", "options": { "provider": "exa", "providerOptions": { "exa": { "type": "deep-reasoning" } } },
+      "responses": [{ "status": 200, "body": { "results": [] } }],
+      "expect": { "responseIncludes": { "cost": { "usd": null, "estimated": true, "source": "unknown" } } }
+    },
+    {
+      "name": "extra content types make the computed cost unknown; a reported cost still wins",
+      "call": "search", "query": "q", "options": { "provider": "exa", "providerOptions": { "exa": { "contents": { "highlights": true, "text": true } } } },
+      "responses": [{ "status": 200, "body": { "results": [] } }],
+      "expect": { "requests": [{ "bodyIncludes": { "contents": { "highlights": true, "text": true } } }], "responseIncludes": { "cost": { "usd": null, "estimated": true, "source": "unknown" } } }
+    },
+    {
+      "name": "a reported cost wins over cost-affecting options",
+      "call": "search", "query": "q", "options": { "provider": "exa", "providerOptions": { "exa": { "contents": { "highlights": true, "text": true } } } },
+      "responses": [{ "status": 200, "body": { "results": [], "costDollars": { "total": 0.008 } } }],
+      "expect": { "responseIncludes": { "cost": { "usd": 0.008, "estimated": true, "source": "reported" } } }
+    },
+    {
+      "name": "a provider option may not drop the highlights the excerpts mapping needs",
+      "call": "search", "query": "q", "options": { "provider": "exa", "providerOptions": { "exa": { "contents": { "text": true } } } },
+      "expect": { "requestCount": 0, "error": { "code": "invalid_request", "provider": "exa", "field": "providerOptions.exa.contents" } }
+    },
+    {
+      "name": "contents may not switch off the text the content mapping needs",
+      "call": "contents", "urls": ["https://example.com/a"], "options": { "provider": "exa", "providerOptions": { "exa": { "text": false } } },
+      "expect": { "requestCount": 0, "error": { "code": "invalid_request", "provider": "exa", "field": "providerOptions.exa.text" } }
+    }
+  ]
+}

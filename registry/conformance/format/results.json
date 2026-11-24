@@ -1,0 +1,190 @@
+{
+  "description": "Optional result lists (schema: response.resultsOptional). When resultsOptional is true, an absent or null result list is an empty success. A present value that is not an array is still invalid_response.",
+  "synthetic": "Synthetic: format vectors use invented specs and bodies; no provider is described.",
+  "providers": {
+    "optional-results": {
+      "formatVersion": 1,
+      "id": "optional-results",
+      "name": "Synthetic optional-results",
+      "specVersion": "2026-11-24",
+      "sources": [
+        {
+          "url": "https://example.com/docs",
+          "retrievedOn": "2026-11-24",
+          "covers": "nothing; synthetic spec for format vectors"
+        }
+      ],
+      "auth": {
+        "in": "header",
+        "name": "x-api-key",
+        "env": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "capabilities": {
+        "search": true,
+        "contents": false
+      },
+      "index": {
+        "type": "unknown"
+      },
+      "terms": {
+        "url": "https://example.com/terms",
+        "readOn": "2026-11-24",
+        "benchmarkPublication": "not-addressed",
+        "rawResponseStorage": "not-addressed"
+      },
+      "errors": [],
+      "search": {
+        "request": {
+          "method": "POST",
+          "url": "https://api.example.com/search",
+          "encoding": "json",
+          "params": {
+            "query": {
+              "to": "query"
+            }
+          }
+        },
+        "limits": {
+          "maxResults": 20,
+          "maxQueryLength": null,
+          "maxIncludeDomains": 10,
+          "maxExcludeDomains": 10
+        },
+        "dateBasis": "published",
+        "response": {
+          "results": "data.web",
+          "resultsOptional": true,
+          "fields": {
+            "url": "url",
+            "title": "title"
+          }
+        },
+        "pricing": {
+          "plan": "Synthetic",
+          "source": "https://example.com/pricing",
+          "retrievedOn": "2026-11-24",
+          "perRequestUsd": 0.005
+        },
+        "rateLimits": [],
+        "providerOptions": {}
+      },
+      "unverified": []
+    }
+  },
+  "cases": [
+    {
+      "name": "an absent optional result list is an empty success",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "optional-results"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "type": "search"
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "results": [],
+          "warnings": [],
+          "cost": {
+            "usd": 0.005,
+            "estimated": true,
+            "source": "computed"
+          }
+        }
+      }
+    },
+    {
+      "name": "a null optional result list is an empty success",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "optional-results"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "data": {
+              "web": null
+            }
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "results": []
+        }
+      }
+    },
+    {
+      "name": "an optional result list that is not an array is invalid_response",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "optional-results"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "data": {
+              "web": {}
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid_response",
+          "status": 200
+        }
+      }
+    },
+    {
+      "name": "a present optional result list is mapped",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "optional-results"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "data": {
+              "web": [
+                {
+                  "url": "https://a.example/",
+                  "title": "A"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "results": [
+            {
+              "url": "https://a.example/",
+              "title": "A",
+              "excerpts": [],
+              "publishedAt": null,
+              "author": null,
+              "rank": 1,
+              "providerFields": {}
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

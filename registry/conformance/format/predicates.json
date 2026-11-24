@@ -1,0 +1,568 @@
+{
+  "description": "Predicates (schema: $defs/predicate) select page sources and warnings. A where list matches when every predicate holds. equals and in compare JSON values: same JSON type, numbers by value, booleans never equal numbers, arrays element by element, objects by the same keys. range holds for a number from min to max inclusive. present holds when the value exists and is not null. not negates the predicate. A page source may be optional (absent or null list counts as empty) and billable (its failed pages count toward the computed cost).",
+  "synthetic": "Synthetic: format vectors use invented specs and bodies; no provider is described.",
+  "providers": {
+    "predicates": {
+      "formatVersion": 1,
+      "id": "predicates",
+      "name": "Synthetic predicates",
+      "specVersion": "2026-11-24",
+      "sources": [
+        {
+          "url": "https://example.com/docs",
+          "retrievedOn": "2026-11-24",
+          "covers": "nothing; synthetic spec for format vectors"
+        }
+      ],
+      "auth": {
+        "in": "header",
+        "name": "x-api-key",
+        "env": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "capabilities": {
+        "search": false,
+        "contents": true
+      },
+      "index": {
+        "type": "unknown"
+      },
+      "terms": {
+        "url": "https://example.com/terms",
+        "readOn": "2026-11-24",
+        "benchmarkPublication": "not-addressed",
+        "rawResponseStorage": "not-addressed"
+      },
+      "errorCodePath": "error.type",
+      "errors": [
+        {
+          "status": 400,
+          "bodyPath": "error",
+          "equals": {
+            "type": "quota",
+            "retry": false
+          },
+          "code": "quota"
+        },
+        {
+          "status": 409,
+          "bodyPath": "error.n",
+          "equals": 1,
+          "code": "rate_limit"
+        }
+      ],
+      "contents": {
+        "request": {
+          "method": "POST",
+          "url": "https://api.example.com/contents",
+          "encoding": "json",
+          "params": {
+            "urls": {
+              "to": "urls"
+            }
+          }
+        },
+        "limits": {
+          "maxUrls": 10
+        },
+        "contentFormat": "text",
+        "response": {
+          "pages": [
+            {
+              "from": "results",
+              "where": [
+                {
+                  "path": "status",
+                  "equals": "ok"
+                },
+                {
+                  "path": "code",
+                  "range": [
+                    200,
+                    399
+                  ]
+                }
+              ],
+              "status": "ok",
+              "fields": {
+                "url": "url",
+                "content": "text"
+              }
+            },
+            {
+              "from": "results",
+              "where": [
+                {
+                  "path": "status",
+                  "equals": "ok"
+                },
+                {
+                  "path": "code",
+                  "range": [
+                    200,
+                    399
+                  ],
+                  "not": true
+                }
+              ],
+              "status": "failed",
+              "billable": true,
+              "fields": {
+                "url": "url",
+                "errorMessage": "message"
+              }
+            },
+            {
+              "from": "results",
+              "where": [
+                {
+                  "path": "status",
+                  "in": [
+                    "blocked",
+                    "timeout"
+                  ]
+                }
+              ],
+              "status": "failed",
+              "fields": {
+                "url": "url",
+                "errorCode": "status"
+              }
+            },
+            {
+              "from": "results",
+              "where": [
+                {
+                  "path": "status",
+                  "in": [
+                    "ok",
+                    "blocked",
+                    "timeout"
+                  ],
+                  "not": true
+                }
+              ],
+              "status": "failed",
+              "fields": {
+                "url": "url",
+                "errorCode": "status"
+              }
+            },
+            {
+              "from": "skipped",
+              "optional": true,
+              "status": "failed",
+              "fields": {
+                "url": "url",
+                "errorCode": "reason"
+              }
+            }
+          ],
+          "warnings": [
+            {
+              "where": [
+                {
+                  "path": "partial",
+                  "equals": true
+                }
+              ],
+              "code": "partial_results"
+            },
+            {
+              "where": [
+                {
+                  "path": "warning",
+                  "present": true
+                }
+              ],
+              "code": "provider_warning",
+              "messageField": "warning"
+            }
+          ]
+        },
+        "pricing": {
+          "plan": "Synthetic",
+          "source": "https://example.com/pricing",
+          "retrievedOn": "2026-11-24",
+          "perRequestUsd": 0,
+          "extraBlock": {
+            "items": 1,
+            "usd": 0.001
+          }
+        },
+        "rateLimits": [],
+        "providerOptions": {}
+      },
+      "unverified": []
+    }
+  },
+  "cases": [
+    {
+      "name": "range, in, not and present pick each page's source",
+      "call": "contents",
+      "urls": [
+        "https://example.com/ok",
+        "https://example.com/gone",
+        "https://example.com/blocked",
+        "https://example.com/odd",
+        "https://example.com/nocode",
+        "https://example.com/skipped"
+      ],
+      "options": {
+        "provider": "predicates"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": [
+              {
+                "url": "https://example.com/ok",
+                "status": "ok",
+                "code": 200,
+                "text": "A"
+              },
+              {
+                "url": "https://example.com/gone",
+                "status": "ok",
+                "code": 404,
+                "text": "Not found",
+                "message": "Target answered 404."
+              },
+              {
+                "url": "https://example.com/blocked",
+                "status": "blocked"
+              },
+              {
+                "url": "https://example.com/odd",
+                "status": "new_failure_type"
+              },
+              {
+                "url": "https://example.com/nocode",
+                "status": "ok",
+                "text": "B"
+              }
+            ],
+            "skipped": [
+              {
+                "url": "https://example.com/skipped",
+                "reason": "robots"
+              }
+            ],
+            "warning": "Some pages were served from cache."
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "pages": [
+            {
+              "url": "https://example.com/ok",
+              "status": "ok",
+              "finalUrl": null,
+              "title": null,
+              "content": "A",
+              "publishedAt": null,
+              "author": null,
+              "error": null
+            },
+            {
+              "url": "https://example.com/gone",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": {
+                "code": null,
+                "message": "Target answered 404."
+              }
+            },
+            {
+              "url": "https://example.com/blocked",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": {
+                "code": "blocked",
+                "message": null
+              }
+            },
+            {
+              "url": "https://example.com/odd",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": {
+                "code": "new_failure_type",
+                "message": null
+              }
+            },
+            {
+              "url": "https://example.com/nocode",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": {
+                "code": null,
+                "message": null
+              }
+            },
+            {
+              "url": "https://example.com/skipped",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": {
+                "code": "robots",
+                "message": null
+              }
+            }
+          ],
+          "warnings": [
+            {
+              "code": "provider_warning",
+              "provider": "predicates",
+              "message": "Some pages were served from cache."
+            }
+          ],
+          "cost": {
+            "usd": 0.003,
+            "estimated": true,
+            "source": "computed"
+          }
+        }
+      }
+    },
+    {
+      "name": "booleans never equal numbers",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a"
+      ],
+      "options": {
+        "provider": "predicates"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": [
+              {
+                "url": "https://example.com/a",
+                "status": "ok",
+                "code": 200,
+                "text": "A"
+              }
+            ],
+            "partial": 1
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "warnings": []
+        }
+      }
+    },
+    {
+      "name": "an equals predicate on true matches true",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a"
+      ],
+      "options": {
+        "provider": "predicates"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": [
+              {
+                "url": "https://example.com/a",
+                "status": "ok",
+                "code": 200,
+                "text": "A"
+              }
+            ],
+            "partial": true,
+            "warning": null
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "warnings": [
+            {
+              "code": "partial_results",
+              "provider": "predicates"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a status code outside a range of numbers is not in it when it is a string",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a"
+      ],
+      "options": {
+        "provider": "predicates"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": [
+              {
+                "url": "https://example.com/a",
+                "status": "ok",
+                "code": "200",
+                "text": "A"
+              }
+            ]
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "pages": [
+            {
+              "url": "https://example.com/a",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": {
+                "code": null,
+                "message": null
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "error rules compare objects by JSON value",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a"
+      ],
+      "options": {
+        "provider": "predicates"
+      },
+      "responses": [
+        {
+          "status": 400,
+          "body": {
+            "error": {
+              "retry": false,
+              "type": "quota"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "quota",
+          "status": 400,
+          "providerCode": "quota"
+        }
+      }
+    },
+    {
+      "name": "an object with an extra key is not equal",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a"
+      ],
+      "options": {
+        "provider": "predicates"
+      },
+      "responses": [
+        {
+          "status": 400,
+          "body": {
+            "error": {
+              "retry": false,
+              "type": "quota",
+              "x": 1
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "provider_error",
+          "status": 400
+        }
+      }
+    },
+    {
+      "name": "numbers compare by value (1.0 equals 1)",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a"
+      ],
+      "options": {
+        "provider": "predicates"
+      },
+      "responses": [
+        {
+          "status": 409,
+          "bodyText": "{\"error\": {\"n\": 1.0}}"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "rate_limit",
+          "status": 409
+        }
+      }
+    },
+    {
+      "name": "true does not equal 1 in an error rule",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a"
+      ],
+      "options": {
+        "provider": "predicates"
+      },
+      "responses": [
+        {
+          "status": 409,
+          "body": {
+            "error": {
+              "n": true
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "provider_error",
+          "status": 409
+        }
+      }
+    }
+  ]
+}

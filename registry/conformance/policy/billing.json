@@ -1,0 +1,162 @@
+{
+  "description": "Billing and cost per attempt (policy.md, Billing). Every attempt records whether it was billed (yes, possible, no) and its own cost. An attempt that may have reached the provider without an answer (network, attempt_timeout, timeout, aborted) is billed: possible, with the cost the request would have had. A 2xx is billed: yes even when its body is then unusable. An error status is billed: no. A skipped provider is billed: no and costs nothing. Retries and fallback stay off unless the caller configures them.",
+  "defaults": { "options": { "provider": "exa" } },
+  "cases": [
+    {
+      "name": "an attempt timeout before a fallback is recorded as possibly billed, with its possible cost",
+      "call": "search", "query": "q", "options": { "timeoutMs": 1000, "attemptTimeoutMs": 400, "fallback": ["tavily"] },
+      "responses": [
+        { "delayMs": 5000, "status": 200, "body": { "results": [] } },
+        { "delayMs": 100, "status": 200, "body": { "results": [], "usage": { "credits": 1 } } }
+      ],
+      "expect": {
+        "requestCount": 2,
+        "responseIncludes": {
+          "provider": "tavily",
+          "cost": { "usd": 0.008, "estimated": true, "source": "reported-credits", "credits": 1 },
+          "attempts": [
+            { "provider": "exa", "outcome": "error", "code": "attempt_timeout", "startMs": 0, "durationMs": 400, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } },
+            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 400, "durationMs": 100, "billed": "yes", "cost": { "usd": 0.008, "estimated": true, "source": "reported-credits", "credits": 1 } }
+          ]
+        }
+      }
+    },
+    {
+      "name": "without a configured fallback an attempt timeout ends the call",
+      "call": "search", "query": "q", "options": { "timeoutMs": 1000, "attemptTimeoutMs": 400 },
+      "responses": [{ "delayMs": 5000, "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "requestCount": 1,
+        "error": {
+          "code": "attempt_timeout", "provider": "exa",
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "attempt_timeout", "startMs": 0, "durationMs": 400, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }]
+        }
+      }
+    },
+    {
+      "name": "a network failure before any status is possibly billed and may fall back when configured",
+      "call": "search", "query": "q", "options": { "fallback": ["tavily"] },
+      "responses": [{ "network": true }, { "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "responseIncludes": {
+          "provider": "tavily",
+          "attempts": [
+            { "provider": "exa", "outcome": "error", "code": "network", "startMs": 0, "durationMs": 0, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } },
+            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.008, "estimated": true, "source": "computed" } }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a connection drop while reading a 2xx body is a network error, billed yes, and may be retried when configured",
+      "call": "search", "query": "q", "options": { "maxRetries": 1 }, "random": [0.5],
+      "responses": [
+        { "status": 200, "body": { "results": [], "costDollars": { "total": 0.007 } }, "bodyFailAtMs": 50 },
+        { "status": 200, "body": { "results": [], "costDollars": { "total": 0.007 } } }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "latencyMs": 237,
+          "attempts": [
+            { "provider": "exa", "outcome": "error", "code": "network", "status": 200, "startMs": 0, "durationMs": 50, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } },
+            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 237, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "reported" } }
+          ]
+        }
+      }
+    },
+    {
+      "name": "an error status is billed no",
+      "call": "search", "query": "q", "options": { "fallback": ["tavily"] },
+      "responses": [{ "status": 503 }, { "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "responseIncludes": {
+          "attempts": [
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.008, "estimated": true, "source": "computed" } }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a skipped provider is billed no and costs nothing",
+      "call": "search", "query": "q", "options": { "fallback": ["tavily"], "language": "fr" },
+      "responses": [{ "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "responseIncludes": {
+          "attempts": [
+            { "provider": "exa", "outcome": "skipped", "code": "unsupported", "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": false, "source": "none" } },
+            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.008, "estimated": true, "source": "computed" } }
+          ]
+        }
+      }
+    },
+    {
+      "name": "the call deadline during a request is possibly billed",
+      "call": "search", "query": "q", "options": { "timeoutMs": 1000 },
+      "responses": [{ "delayMs": 5000, "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "error": {
+          "code": "timeout",
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "timeout", "startMs": 0, "durationMs": 1000, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }]
+        }
+      }
+    },
+    {
+      "name": "cancellation during a request is possibly billed",
+      "call": "search", "query": "q", "abortAt": 100,
+      "responses": [{ "delayMs": 500, "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "error": {
+          "code": "aborted",
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "aborted", "startMs": 0, "durationMs": 100, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }]
+        }
+      }
+    },
+    {
+      "name": "an unusable 200 is billed yes, keeps the reported cost, and never falls back",
+      "call": "search", "query": "q", "options": { "fallback": ["tavily"], "maxRetries": 2 },
+      "responses": [{ "status": 200, "body": { "results": null, "costDollars": { "total": 0.009 } } }],
+      "expect": {
+        "requestCount": 1,
+        "error": {
+          "code": "invalid_response", "provider": "exa", "status": 200,
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "invalid_response", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.009, "estimated": true, "source": "reported" } }]
+        }
+      }
+    },
+    {
+      "name": "an oversized 200 is billed yes and never falls back",
+      "call": "search", "query": "q", "options": { "fallback": ["tavily"], "maxRetries": 2, "maxResponseBytes": 1024 },
+      "responses": [{ "status": 200, "headers": { "content-length": "4096" }, "body": { "results": [] } }],
+      "expect": {
+        "requestCount": 1,
+        "error": {
+          "code": "response_too_large",
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "response_too_large", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }]
+        }
+      }
+    },
+    {
+      "name": "a possible cost uses the requested result count",
+      "call": "search", "query": "q", "options": { "maxResults": 25, "timeoutMs": 100 },
+      "responses": [{ "delayMs": 5000, "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "error": {
+          "code": "timeout",
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "timeout", "startMs": 0, "durationMs": 100, "billed": "possible", "cost": { "usd": 0.022, "estimated": true, "source": "computed" } }]
+        }
+      }
+    },
+    {
+      "name": "a possible contents cost uses the requested URL count",
+      "call": "contents", "urls": ["https://example.com/a", "https://example.com/b"], "options": { "timeoutMs": 100 },
+      "responses": [{ "delayMs": 5000, "status": 200, "body": { "results": [], "statuses": [] } }],
+      "expect": {
+        "error": {
+          "code": "timeout",
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "timeout", "startMs": 0, "durationMs": 100, "billed": "possible", "cost": { "usd": 0.002, "estimated": true, "source": "computed" } }]
+        }
+      }
+    }
+  ]
+}

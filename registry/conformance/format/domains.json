@@ -1,0 +1,369 @@
+{
+  "description": "Domain filters (schema: limits.maxTotalDomains, limits.includeExcludeExclusive, param.append, step prefix). append adds the value, or each element of an array value, to the array at the target path, after any fixed elements. maxTotalDomains bounds include plus exclude together; includeExcludeExclusive refuses both at once. Both raise unsupported for excludeDomains before anything is sent.",
+  "synthetic": "Synthetic: format vectors use invented specs and bodies; no provider is described.",
+  "providers": {
+    "mixed-list": {
+      "formatVersion": 1,
+      "id": "mixed-list",
+      "name": "Synthetic mixed-list",
+      "specVersion": "2026-11-24",
+      "sources": [
+        {
+          "url": "https://example.com/docs",
+          "retrievedOn": "2026-11-24",
+          "covers": "nothing; synthetic spec for format vectors"
+        }
+      ],
+      "auth": {
+        "in": "header",
+        "name": "x-api-key",
+        "env": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "capabilities": {
+        "search": true,
+        "contents": false
+      },
+      "index": {
+        "type": "unknown"
+      },
+      "terms": {
+        "url": "https://example.com/terms",
+        "readOn": "2026-11-24",
+        "benchmarkPublication": "not-addressed",
+        "rawResponseStorage": "not-addressed"
+      },
+      "errors": [],
+      "search": {
+        "request": {
+          "method": "POST",
+          "url": "https://api.example.com/search",
+          "encoding": "json",
+          "fixed": {
+            "domain_filter": [
+              "-spam.example"
+            ]
+          },
+          "params": {
+            "query": {
+              "to": "query"
+            },
+            "includeDomains": {
+              "to": "domain_filter",
+              "append": true
+            },
+            "excludeDomains": {
+              "to": "domain_filter",
+              "append": true,
+              "steps": [
+                {
+                  "step": "prefix",
+                  "prefix": "-"
+                }
+              ]
+            }
+          }
+        },
+        "limits": {
+          "maxResults": 20,
+          "maxQueryLength": null,
+          "maxIncludeDomains": 3,
+          "maxExcludeDomains": 3,
+          "maxTotalDomains": 4
+        },
+        "dateBasis": "published",
+        "response": {
+          "results": "results",
+          "fields": {
+            "url": "url",
+            "title": "title"
+          }
+        },
+        "pricing": {
+          "plan": "Synthetic",
+          "source": "https://example.com/pricing",
+          "retrievedOn": "2026-11-24",
+          "perRequestUsd": 0.005
+        },
+        "rateLimits": [],
+        "providerOptions": {}
+      },
+      "unverified": []
+    },
+    "one-list-only": {
+      "formatVersion": 1,
+      "id": "one-list-only",
+      "name": "Synthetic one-list-only",
+      "specVersion": "2026-11-24",
+      "sources": [
+        {
+          "url": "https://example.com/docs",
+          "retrievedOn": "2026-11-24",
+          "covers": "nothing; synthetic spec for format vectors"
+        }
+      ],
+      "auth": {
+        "in": "header",
+        "name": "x-api-key",
+        "env": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "capabilities": {
+        "search": true,
+        "contents": false
+      },
+      "index": {
+        "type": "unknown"
+      },
+      "terms": {
+        "url": "https://example.com/terms",
+        "readOn": "2026-11-24",
+        "benchmarkPublication": "not-addressed",
+        "rawResponseStorage": "not-addressed"
+      },
+      "errors": [],
+      "search": {
+        "request": {
+          "method": "POST",
+          "url": "https://api.example.com/search",
+          "encoding": "json",
+          "params": {
+            "query": {
+              "to": "query"
+            },
+            "includeDomains": {
+              "to": "includeDomains"
+            },
+            "excludeDomains": {
+              "to": "excludeDomains"
+            }
+          }
+        },
+        "limits": {
+          "maxResults": 20,
+          "maxQueryLength": null,
+          "maxIncludeDomains": 5,
+          "maxExcludeDomains": 5,
+          "includeExcludeExclusive": true
+        },
+        "dateBasis": "published",
+        "response": {
+          "results": "results",
+          "fields": {
+            "url": "url",
+            "title": "title"
+          }
+        },
+        "pricing": {
+          "plan": "Synthetic",
+          "source": "https://example.com/pricing",
+          "retrievedOn": "2026-11-24",
+          "perRequestUsd": 0.005
+        },
+        "rateLimits": [],
+        "providerOptions": {}
+      },
+      "unverified": []
+    }
+  },
+  "cases": [
+    {
+      "name": "include and exclude share one list after the fixed entries",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "mixed-list",
+        "includeDomains": [
+          "a.example",
+          "b.example"
+        ],
+        "excludeDomains": [
+          "c.example"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "body": {
+              "domain_filter": [
+                "-spam.example",
+                "a.example",
+                "b.example",
+                "-c.example"
+              ],
+              "query": "q"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "the combined limit counts both lists",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "mixed-list",
+        "includeDomains": [
+          "a.example",
+          "b.example",
+          "c.example"
+        ],
+        "excludeDomains": [
+          "d.example",
+          "e.example"
+        ]
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "mixed-list",
+          "field": "excludeDomains"
+        }
+      }
+    },
+    {
+      "name": "a per-list limit still applies",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "mixed-list",
+        "includeDomains": [
+          "a.example",
+          "b.example",
+          "c.example",
+          "d.example"
+        ]
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "mixed-list",
+          "field": "includeDomains"
+        }
+      }
+    },
+    {
+      "name": "exclusive lists refuse both at once",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "one-list-only",
+        "includeDomains": [
+          "a.example"
+        ],
+        "excludeDomains": [
+          "c.example"
+        ]
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "one-list-only",
+          "field": "excludeDomains"
+        }
+      }
+    },
+    {
+      "name": "exclusive lists accept one at a time",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "one-list-only",
+        "excludeDomains": [
+          "c.example"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "body": {
+              "query": "q",
+              "excludeDomains": [
+                "c.example"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "an exclusive conflict falls back",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "one-list-only",
+        "fallback": [
+          "mixed-list"
+        ],
+        "includeDomains": [
+          "a.example"
+        ],
+        "excludeDomains": [
+          "c.example"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "provider": "mixed-list",
+          "attempts": [
+            {
+              "provider": "one-list-only",
+              "outcome": "skipped",
+              "code": "unsupported",
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "no",
+              "cost": {
+                "usd": 0,
+                "estimated": false,
+                "source": "none"
+              }
+            },
+            {
+              "provider": "mixed-list",
+              "outcome": "ok",
+              "status": 200,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "yes",
+              "cost": {
+                "usd": 0.005,
+                "estimated": true,
+                "source": "computed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

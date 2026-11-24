@@ -1,0 +1,102 @@
+{
+  "description": "Contents matching and unusable contents bodies (policy.md, URL key and Responses). Pages are matched to requested URLs by URL key, which normalizes scheme and host case, default ports, IDN hosts (punycode), percent-encoding, one trailing slash and the fragment. Every paid page counts toward the computed cost, matched or not. A list a source requires that is absent from a 2xx body makes the response invalid_response.",
+  "defaults": { "options": { "provider": "tinyfish" } },
+  "cases": [
+    {
+      "name": "a percent-encoded echo of a non-ASCII path matches",
+      "call": "contents", "urls": ["https://example.com/café"],
+      "responses": [{ "status": 200, "body": { "results": [{ "url": "https://example.com/caf%C3%A9", "text": "A" }], "errors": [] } }],
+      "expect": { "responseIncludes": { "warnings": [], "pages": [{ "url": "https://example.com/café", "status": "ok", "finalUrl": null, "title": null, "content": "A", "publishedAt": null, "author": null, "error": null }] } }
+    },
+    {
+      "name": "percent-encoding hex case does not matter",
+      "call": "contents", "urls": ["https://example.com/a%2fb"],
+      "responses": [{ "status": 200, "body": { "results": [{ "url": "https://example.com/a%2Fb", "text": "A" }], "errors": [] } }],
+      "expect": { "responseIncludes": { "warnings": [], "pages": [{ "url": "https://example.com/a%2fb", "status": "ok", "finalUrl": null, "title": null, "content": "A", "publishedAt": null, "author": null, "error": null }] } }
+    },
+    {
+      "name": "percent-encoded unreserved characters equal the characters",
+      "call": "contents", "urls": ["https://example.com/%7Euser/a%2Db"],
+      "responses": [{ "status": 200, "body": { "results": [{ "url": "https://example.com/~user/a-b", "text": "A" }], "errors": [] } }],
+      "expect": { "responseIncludes": { "warnings": [] } }
+    },
+    {
+      "name": "an IDN host matches its punycode echo",
+      "call": "contents", "urls": ["https://Bücher.example/x"],
+      "responses": [{ "status": 200, "body": { "results": [{ "url": "https://xn--bcher-kva.example/x", "text": "A" }], "errors": [] } }],
+      "expect": { "responseIncludes": { "warnings": [], "pages": [{ "url": "https://Bücher.example/x", "status": "ok", "finalUrl": null, "title": null, "content": "A", "publishedAt": null, "author": null, "error": null }] } }
+    },
+    {
+      "name": "one trailing slash does not matter",
+      "call": "contents", "urls": ["https://example.com/docs"],
+      "responses": [{ "status": 200, "body": { "results": [{ "url": "https://example.com/docs/", "text": "A" }], "errors": [] } }],
+      "expect": { "responseIncludes": { "warnings": [] } }
+    },
+    {
+      "name": "the fragment does not matter",
+      "call": "contents", "urls": ["https://example.com/a#top"],
+      "responses": [{ "status": 200, "body": { "results": [{ "url": "https://example.com/a", "text": "A" }], "errors": [] } }],
+      "expect": { "responseIncludes": { "warnings": [] } }
+    },
+    {
+      "name": "the query string still matters",
+      "call": "contents", "urls": ["https://example.com/a?x=1"],
+      "responses": [{ "status": 200, "body": { "results": [{ "url": "https://example.com/a?x=2", "text": "A" }], "errors": [] } }],
+      "expect": { "responseIncludes": {
+        "warnings": [{ "code": "unmatched_pages", "provider": "tinyfish", "count": 1 }],
+        "pages": [{ "url": "https://example.com/a?x=1", "status": "failed", "finalUrl": null, "title": null, "content": null, "publishedAt": null, "author": null, "error": { "code": "missing", "message": null } }]
+      } }
+    },
+    {
+      "name": "URLs equal after normalization are duplicates",
+      "call": "contents", "urls": ["https://example.com/a", "https://EXAMPLE.com/a/#x"],
+      "expect": { "requestCount": 0, "error": { "code": "invalid_request", "field": "urls" } }
+    },
+    {
+      "name": "an unmatched paid page still counts toward the computed cost",
+      "call": "contents", "urls": ["https://example.com/a"], "options": { "provider": "exa" },
+      "responses": [{ "status": 200, "body": { "results": [{ "url": "https://example.com/a", "text": "A" }, { "url": "https://example.com/z", "text": "Z" }], "statuses": [] } }],
+      "expect": { "responseIncludes": {
+        "warnings": [{ "code": "unmatched_pages", "provider": "exa", "count": 1 }],
+        "cost": { "usd": 0.002, "estimated": true, "source": "computed" }
+      } }
+    },
+    {
+      "name": "a 2xx contents body without the required list is invalid_response and keeps the paid body",
+      "call": "contents", "urls": ["https://example.com/a"], "options": { "provider": "exa", "fallback": ["tavily"] },
+      "responses": [{ "status": 200, "body": { "error": "upstream exploded" } }],
+      "expect": {
+        "requestCount": 1,
+        "error": {
+          "code": "invalid_response", "provider": "exa", "status": 200,
+          "raw": { "error": "upstream exploded" },
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "invalid_response", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.001, "estimated": true, "source": "computed" } }]
+        }
+      }
+    },
+    {
+      "name": "an optional failure list may be absent",
+      "call": "contents", "urls": ["https://example.com/a"],
+      "responses": [{ "status": 200, "body": { "results": [{ "url": "https://example.com/a", "text": "A" }] } }],
+      "expect": { "responseIncludes": { "warnings": [] } }
+    },
+    {
+      "name": "a required list that is not an array is invalid_response",
+      "call": "contents", "urls": ["https://example.com/a"],
+      "responses": [{ "status": 200, "body": { "results": {}, "errors": [] } }],
+      "expect": { "error": { "code": "invalid_response", "status": 200 } }
+    },
+    {
+      "name": "a 2xx body that is not a JSON object is invalid_response",
+      "call": "contents", "urls": ["https://example.com/a"],
+      "responses": [{ "status": 200, "body": [] }],
+      "expect": { "error": { "code": "invalid_response", "status": 200 } }
+    },
+    {
+      "name": "a 2xx search body that is not a JSON object is invalid_response",
+      "call": "search", "query": "q",
+      "responses": [{ "status": 200, "body": "results" }],
+      "expect": { "error": { "code": "invalid_response", "status": 200 } }
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "../schema/provider.schema.json",
+  "formatVersion": 1,
+  "id": "brave",
+  "name": "Brave Search",
+  "specVersion": "2026-11-24",
+  "sources": [
+    { "url": "https://api-dashboard.search.brave.com/api-reference/web/search/get", "retrievedOn": "2026-11-24", "covers": "web search parameters and enums, response model, error model" },
+    { "url": "https://api-dashboard.search.brave.com/app/documentation/web-search/query", "retrievedOn": "2026-11-24", "covers": "freshness values and custom date ranges" },
+    { "url": "https://api-dashboard.search.brave.com/documentation/pricing", "retrievedOn": "2026-11-24", "covers": "price per 1,000 requests, monthly credit, capacity" },
+    { "url": "https://api-dashboard.search.brave.com/documentation/guides/rate-limiting", "retrievedOn": "2026-11-24", "covers": "rate limit headers; only successful requests are billed" }
+  ],
+  "auth": { "in": "header", "name": "x-subscription-token", "env": ["BRAVE_API_KEY"] },
+  "capabilities": { "search": true, "contents": false, "answer": true, "research": false, "crawl": false },
+  "index": { "type": "own", "note": "Brave describes its own independent index." },
+  "terms": {
+    "url": "https://api-dashboard.search.brave.com/terms-of-service",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "restricted",
+    "rawResponseStorage": "restricted",
+    "note": "Terms (updated 1 Sep 2026) forbid storing results beyond transient use and using them to benchmark services. Reading from the 2026-11-24 recon; not legal advice."
+  },
+  "errorCodePath": "error.code",
+  "errors": [
+    { "status": 429, "bodyPath": "error.code", "equals": "QUOTA_LIMITED", "code": "quota" }
+  ],
+  "search": {
+    "request": {
+      "method": "GET",
+      "url": "https://api.search.brave.com/res/v1/web/search",
+      "encoding": "query",
+      "fixed": { "result_filter": "web", "text_decorations": false, "spellcheck": false },
+      "params": {
+        "query": { "to": "q" },
+        "maxResults": { "to": "count" },
+        "recency": { "to": "freshness", "steps": [{ "step": "map-value", "table": { "day": "pd", "week": "pw", "month": "pm", "year": "py" } }] },
+        "country": { "to": "country", "steps": [{ "step": "map-value", "table": {
+          "AR": "AR", "AU": "AU", "AT": "AT", "BE": "BE", "BR": "BR", "CA": "CA", "CL": "CL", "DK": "DK", "FI": "FI", "FR": "FR",
+          "DE": "DE", "GR": "GR", "HK": "HK", "IN": "IN", "ID": "ID", "IT": "IT", "JP": "JP", "KR": "KR", "MY": "MY", "MX": "MX",
+          "NL": "NL", "NZ": "NZ", "NO": "NO", "CN": "CN", "PL": "PL", "PT": "PT", "PH": "PH", "RU": "RU", "SA": "SA", "ZA": "ZA",
+          "ES": "ES", "SE": "SE", "CH": "CH", "TW": "TW", "TR": "TR", "GB": "GB", "US": "US"
+        } }] },
+        "language": { "to": "search_lang", "steps": [{ "step": "map-value", "table": {
+          "ar": "ar", "eu": "eu", "bn": "bn", "bg": "bg", "ca": "ca", "hr": "hr", "cs": "cs", "da": "da", "nl": "nl", "en": "en",
+          "et": "et", "fi": "fi", "fr": "fr", "gl": "gl", "de": "de", "el": "el", "gu": "gu", "he": "he", "hi": "hi", "hu": "hu",
+          "is": "is", "it": "it", "ja": "ja", "kn": "kn", "ko": "ko", "lv": "lv", "lt": "lt", "ms": "ms", "ml": "ml", "mr": "mr",
+          "nb": "nb", "pl": "pl", "pa": "pa", "ro": "ro", "ru": "ru", "sr": "sr", "sk": "sk", "sl": "sl", "es": "es", "sv": "sv",
+          "ta": "ta", "te": "te", "th": "th", "tr": "tr", "uk": "uk", "vi": "vi"
+        } }] }
+      },
+      "compose": [
+        { "to": "freshness", "parts": [{ "input": "startDate", "required": true }, { "text": "to" }, { "input": "endDate", "required": true }] }
+      ]
+    },
+    "limits": { "maxResults": 20, "maxQueryLength": 600, "maxIncludeDomains": 0, "maxExcludeDomains": 0 },
+    "dateBasis": "published-or-updated",
+    "response": {
+      "results": "web.results",
+      "resultsOptional": true,
+      "fields": {
+        "url": "url",
+        "title": "title",
+        "excerpts": { "path": "description", "steps": [{ "step": "to-list" }] },
+        "publishedAt": { "path": "page_age", "steps": [{ "step": "parse-date" }] }
+      },
+      "providerFields": { "age": "age", "language": "language", "siteName": "profile.name", "extraSnippets": "extra_snippets" }
+    },
+    "pricing": {
+      "plan": "Search (prepaid)",
+      "source": "https://api-dashboard.search.brave.com/documentation/pricing",
+      "retrievedOn": "2026-11-24",
+      "perRequestUsd": 0.005,
+      "note": "$5 per 1,000 requests, with $5 of credit included every month. Only successful requests are billed."
+    },
+    "rateLimits": [
+      { "plan": "Search", "limit": 50, "per": "second", "scope": "subscription" }
+    ],
+    "providerOptions": {
+      "safesearch": { "enum": ["off", "moderate", "strict"] },
+      "offset": { "type": "integer", "minimum": 0, "maximum": 9 },
+      "ui_lang": { "type": "string", "pattern": "^[a-z]{2}-[A-Z]{2}$" },
+      "extra_snippets": { "type": "boolean" },
+      "goggles": { "type": "string", "minLength": 1 },
+      "units": { "enum": ["metric", "imperial"] }
+    }
+  },
+  "unverified": [
+    { "pointer": "/search/request/params/language", "reason": "search_lang also takes zh-hans, zh-hant, pt-br, pt-pt, en-gb and jp, which ISO 639-1 cannot name; zh and pt are left out as ambiguous and are unsupported." },
+    { "pointer": "/search/request/params/recency", "reason": "pm means 31 days, not policy.search.recencyDays.month (30)." },
+    { "pointer": "/search/request/compose/0", "reason": "Docs do not say whether the custom range YYYY-MM-DDtoYYYY-MM-DD includes its end date; a range needs both dates." },
+    { "pointer": "/search/limits/maxQueryLength", "reason": "The limit is 600 characters and 75 words; the word limit cannot be expressed and gives a provider error." },
+    { "pointer": "/search/response/results", "reason": "web is nullable in the response model; a query with no web results may omit it." },
+    { "pointer": "/search/response/fields/publishedAt", "reason": "page_age is the published or last modified date; its string format is not documented." },
+    { "pointer": "/errors/0", "reason": "QUOTA_LIMITED is in the error code enum; the status that carries it is assumed to be 429." },
+    { "pointer": "/terms", "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec." }
+  ]
+}

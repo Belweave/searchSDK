@@ -1,0 +1,105 @@
+{
+  "description": "Deadlines on a virtual clock. timeoutMs bounds the whole call, including retries, backoff, fallback and body reading. attemptTimeoutMs bounds one attempt. When the call deadline fires the code is timeout (never retried or fallen back); when only the attempt deadline fires it is attempt_timeout (transient).",
+  "defaults": { "options": { "provider": "exa" } },
+  "cases": [
+    {
+      "name": "a slow provider hits the call deadline",
+      "call": "search", "query": "q", "options": { "timeoutMs": 1000 },
+      "responses": [{ "delayMs": 5000, "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "error": {
+          "code": "timeout", "provider": "exa",
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "timeout", "startMs": 0, "durationMs": 1000, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }]
+        }
+      }
+    },
+    {
+      "name": "the default call deadline is 30 s with no hidden shorter ceiling",
+      "call": "search", "query": "q",
+      "responses": [{ "delayMs": 29999, "status": 200, "body": { "results": [] } }],
+      "expect": { "responseIncludes": { "latencyMs": 29999 } }
+    },
+    {
+      "name": "a long timeout is honoured",
+      "call": "search", "query": "q", "options": { "timeoutMs": 120000 },
+      "responses": [{ "delayMs": 90000, "status": 200, "body": { "results": [] } }],
+      "expect": { "responseIncludes": { "latencyMs": 90000 } }
+    },
+    {
+      "name": "attempt deadline then a retry succeeds",
+      "call": "search", "query": "q", "options": { "timeoutMs": 1000, "attemptTimeoutMs": 300, "maxRetries": 1 }, "random": [0.5],
+      "responses": [
+        { "delayMs": 500, "status": 200, "body": { "results": [] } },
+        { "delayMs": 100, "status": 200, "body": { "results": [] } }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "latencyMs": 587,
+          "attempts": [
+            { "provider": "exa", "outcome": "error", "code": "attempt_timeout", "startMs": 0, "durationMs": 300, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } },
+            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 487, "durationMs": 100, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }
+          ]
+        }
+      }
+    },
+    {
+      "name": "attempt deadline falls back with the remaining budget",
+      "call": "search", "query": "q", "options": { "timeoutMs": 1000, "attemptTimeoutMs": 400, "fallback": ["tavily"] },
+      "responses": [
+        { "delayMs": 5000, "status": 200, "body": { "results": [] } },
+        { "delayMs": 100, "status": 200, "body": { "results": [] } }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "provider": "tavily",
+          "latencyMs": 500,
+          "warnings": [{ "code": "fallback_used", "provider": "tavily" }],
+          "attempts": [
+            { "provider": "exa", "outcome": "error", "code": "attempt_timeout", "startMs": 0, "durationMs": 400, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } },
+            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 400, "durationMs": 100, "billed": "yes", "cost": { "usd": 0.008, "estimated": true, "source": "computed" } }
+          ]
+        }
+      }
+    },
+    {
+      "name": "the call deadline also bounds the fallback attempt",
+      "call": "search", "query": "q", "options": { "timeoutMs": 500, "attemptTimeoutMs": 400, "fallback": ["tavily"] },
+      "responses": [
+        { "delayMs": 5000, "status": 200, "body": { "results": [] } },
+        { "delayMs": 5000, "status": 200, "body": { "results": [] } }
+      ],
+      "expect": {
+        "error": {
+          "code": "timeout", "provider": "tavily",
+          "attempts": [
+            { "provider": "exa", "outcome": "error", "code": "attempt_timeout", "startMs": 0, "durationMs": 400, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } },
+            { "provider": "tavily", "outcome": "error", "code": "timeout", "startMs": 400, "durationMs": 100, "billed": "possible", "cost": { "usd": 0.008, "estimated": true, "source": "computed" } }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a transport that ignores abort is still cut off at the deadline",
+      "call": "search", "query": "q", "options": { "timeoutMs": 1000 },
+      "responses": [{ "delayMs": 5000, "ignoreAbort": true, "status": 200, "body": { "results": [] } }],
+      "expect": { "error": { "code": "timeout" } }
+    },
+    {
+      "name": "the deadline covers reading the body; the 2xx status is kept and the attempt is billed",
+      "call": "search", "query": "q", "options": { "timeoutMs": 1000 },
+      "responses": [{ "delayMs": 100, "bodyDelayMs": 5000, "status": 200, "body": { "results": [] } }],
+      "expect": {
+        "error": {
+          "code": "timeout", "status": 200,
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "timeout", "status": 200, "startMs": 0, "durationMs": 1000, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }]
+        }
+      }
+    },
+    {
+      "name": "a slow paid response that arrives in time is kept, not discarded",
+      "call": "search", "query": "q", "options": { "timeoutMs": 1000, "attemptTimeoutMs": 900 },
+      "responses": [{ "delayMs": 899, "status": 200, "body": { "results": [], "costDollars": { "total": 0.007 } } }],
+      "expect": { "responseIncludes": { "latencyMs": 899, "cost": { "usd": 0.007, "estimated": true, "source": "reported" } } }
+    }
+  ]
+}

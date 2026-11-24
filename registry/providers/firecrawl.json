@@ -1,0 +1,163 @@
+{
+  "$schema": "../schema/provider.schema.json",
+  "formatVersion": 1,
+  "id": "firecrawl",
+  "name": "Firecrawl",
+  "specVersion": "2026-11-24",
+  "sources": [
+    { "url": "https://docs.firecrawl.dev/api-reference/endpoint/search.md", "retrievedOn": "2026-11-24", "covers": "search request, response, errors (OpenAPI 3.0, API v2)" },
+    { "url": "https://docs.firecrawl.dev/features/search.md", "retrievedOn": "2026-11-24", "covers": "tbs values and custom date ranges; 2 credits per 10 results" },
+    { "url": "https://docs.firecrawl.dev/api-reference/endpoint/scrape.md", "retrievedOn": "2026-11-24", "covers": "scrape request, response, errors" },
+    { "url": "https://docs.firecrawl.dev/billing.md", "retrievedOn": "2026-11-24", "covers": "credit costs; a returned document is charged even for a target 404" },
+    { "url": "https://www.firecrawl.dev/pricing", "retrievedOn": "2026-11-24", "covers": "plan prices, credits and concurrency" }
+  ],
+  "auth": { "in": "header", "name": "authorization", "prefix": "Bearer ", "env": ["FIRECRAWL_API_KEY"] },
+  "capabilities": { "search": true, "contents": true, "answer": false, "research": true, "crawl": true },
+  "index": { "type": "unknown", "note": "Search operators and tbs values mirror a Google-style results page; the source is not stated." },
+  "terms": {
+    "url": "https://www.firecrawl.dev/terms-of-service",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "not-addressed",
+    "rawResponseStorage": "not-addressed",
+    "note": "No benchmark or caching clause found. Reading from the 2026-11-24 recon; not legal advice."
+  },
+  "errorCodePath": "code",
+  "errors": [],
+  "search": {
+    "request": {
+      "method": "POST",
+      "url": "https://api.firecrawl.dev/v2/search",
+      "encoding": "json",
+      "fixed": { "sources": ["web"] },
+      "params": {
+        "query": { "to": "query" },
+        "maxResults": { "to": "limit" },
+        "includeDomains": { "to": "includeDomains" },
+        "excludeDomains": { "to": "excludeDomains" },
+        "recency": { "to": "tbs", "steps": [{ "step": "map-value", "table": { "day": "qdr:d", "week": "qdr:w", "month": "qdr:m", "year": "qdr:y" } }] },
+        "country": { "to": "country" }
+      },
+      "compose": [
+        {
+          "to": "tbs",
+          "parts": [
+            { "text": "cdr:1" },
+            { "input": "startDate", "text": ",cd_min:", "steps": [{ "step": "format-date", "format": "MM/DD/YYYY" }] },
+            { "input": "endDate", "text": ",cd_max:", "steps": [{ "step": "format-date", "format": "MM/DD/YYYY" }] }
+          ]
+        }
+      ]
+    },
+    "limits": { "maxResults": 100, "maxQueryLength": 500, "maxIncludeDomains": 100, "maxExcludeDomains": 100, "includeExcludeExclusive": true },
+    "dateBasis": "unknown",
+    "response": {
+      "results": "data.web",
+      "resultsOptional": true,
+      "fields": {
+        "url": "url",
+        "title": "title",
+        "excerpts": { "path": "description", "steps": [{ "step": "to-list" }] }
+      },
+      "requestId": [{ "path": "id" }],
+      "warnings": [{ "where": [{ "path": "warning", "present": true }], "code": "provider_warning", "messageField": "warning" }]
+    },
+    "cost": { "reported": { "path": "creditsUsed", "unit": "credit" } },
+    "pricing": {
+      "plan": "Hobby (monthly billing)",
+      "source": "https://www.firecrawl.dev/pricing",
+      "retrievedOn": "2026-11-24",
+      "creditUsd": 0.0038,
+      "perRequestUsd": 0,
+      "extraBlock": { "items": 10, "usd": 0.0076 },
+      "costOptions": { "scrapeOptions": "unknown", "categories": "unknown" },
+      "note": "2 credits per 10 results, rounded up. Hobby is $19 for 5,000 credits; Standard is about $0.001 per credit. Scraping results adds scrape credits; the gov category adds none."
+    },
+    "rateLimits": [
+      { "plan": "Free", "limit": 10, "per": "minute", "scope": "team" },
+      { "plan": "Free", "limit": 2, "per": "concurrent", "scope": "team" },
+      { "plan": "Hobby", "limit": 5, "per": "concurrent", "scope": "team" },
+      { "plan": "Standard", "limit": 25, "per": "concurrent", "scope": "team" },
+      { "plan": "Growth", "limit": 50, "per": "concurrent", "scope": "team" },
+      { "plan": "Scale", "limit": 100, "per": "concurrent", "scope": "team" }
+    ],
+    "providerOptions": {
+      "categories": { "type": "array", "items": { "enum": ["developer", "gov", "research", "pdf"] } },
+      "location": { "type": "string", "minLength": 1 },
+      "safe": { "type": "boolean" },
+      "ignoreInvalidURLs": { "type": "boolean" },
+      "highlights": { "type": "boolean" },
+      "scrapeOptions": { "type": "object" },
+      "timeout": { "type": "integer", "minimum": 1 }
+    }
+  },
+  "contents": {
+    "request": {
+      "method": "POST",
+      "url": "https://api.firecrawl.dev/v2/scrape",
+      "encoding": "json",
+      "fixed": { "formats": ["markdown"], "onlyMainContent": true },
+      "params": { "urls": { "to": "url", "steps": [{ "step": "single" }] } }
+    },
+    "limits": { "maxUrls": 1 },
+    "contentFormat": "markdown",
+    "response": {
+      "pages": [
+        {
+          "from": "$",
+          "where": [{ "path": "success", "equals": true }, { "path": "data.metadata.statusCode", "range": [200, 399] }],
+          "status": "ok",
+          "fields": {
+            "url": "data.metadata.sourceURL",
+            "finalUrl": "data.metadata.url",
+            "title": { "path": "data.metadata.title", "steps": [{ "step": "join", "separator": " " }] },
+            "content": "data.markdown"
+          }
+        },
+        {
+          "from": "$",
+          "where": [{ "path": "success", "equals": true }, { "path": "data.metadata.statusCode", "range": [200, 399], "not": true }],
+          "status": "failed",
+          "billable": true,
+          "fields": {
+            "url": "data.metadata.sourceURL",
+            "finalUrl": "data.metadata.url",
+            "errorMessage": "data.metadata.error"
+          }
+        }
+      ],
+      "warnings": [{ "where": [{ "path": "data.warning", "present": true }], "code": "provider_warning", "messageField": "data.warning" }]
+    },
+    "pricing": {
+      "plan": "Hobby (monthly billing)",
+      "source": "https://docs.firecrawl.dev/billing.md",
+      "retrievedOn": "2026-11-24",
+      "creditUsd": 0.0038,
+      "perRequestUsd": 0,
+      "extraBlock": { "items": 1, "usd": 0.0038 },
+      "note": "1 credit per returned document, including target 403 and 404 pages; a scrape that returns no document is free."
+    },
+    "rateLimits": [
+      { "plan": "Free", "limit": 10, "per": "minute", "scope": "team" },
+      { "plan": "Hobby", "limit": 5, "per": "concurrent", "scope": "team" }
+    ],
+    "providerOptions": {
+      "waitFor": { "type": "integer", "minimum": 0, "maximum": 60000 },
+      "mobile": { "type": "boolean" },
+      "maxAge": { "type": "integer", "minimum": 0 },
+      "timeout": { "type": "integer", "minimum": 1000, "maximum": 300000 },
+      "onlyMainContent": { "type": "boolean" }
+    }
+  },
+  "unverified": [
+    { "pointer": "/search/request/compose/0", "reason": "Docs show unpadded dates (12/1/2024) in cd_min and cd_max; zero-padded dates are sent. Whether the range is inclusive is not stated." },
+    { "pointer": "/search/request/params/country", "reason": "Docs say ISO country code; some examples use names in location instead." },
+    { "pointer": "/search/limits/maxIncludeDomains", "reason": "No domain-list limit is documented; 100 is SDK policy." },
+    { "pointer": "/search/limits/maxExcludeDomains", "reason": "No domain-list limit is documented; 100 is SDK policy." },
+    { "pointer": "/search/response/resultsOptional", "reason": "The arrays in data depend on the sources requested; whether web is present when it is empty is not stated." },
+    { "pointer": "/search/pricing/extraBlock", "reason": "Docs give 2 credits for 1 to 10 results; whether a search with no results is charged is not stated." },
+    { "pointer": "/search/pricing/creditUsd", "reason": "The credit price depends on the plan, by up to about 4x; the Hobby list price is used." },
+    { "pointer": "/contents/response/pages/1", "reason": "A target 403 or 404 comes back as a document with metadata.statusCode and is charged; it is reported failed and billable. A document without statusCode is treated the same way." },
+    { "pointer": "/contents/pricing/creditUsd", "reason": "The credit price depends on the plan; the Hobby list price is used." },
+    { "pointer": "/terms", "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec." }
+  ]
+}

@@ -1,0 +1,506 @@
+{
+  "description": "Honest cost (schema: pricing.perRequestUsd null, pricing.costOptions). A price of null is unknown, so a computed cost is null with source unknown, never $0. A provider option listed in costOptions either selects a pricing tier by its string value or, when it is listed as unknown or its value has no tier, makes the computed cost unknown. A reported cost always wins.",
+  "synthetic": "Synthetic: format vectors use invented specs and bodies; no provider is described.",
+  "providers": {
+    "unknown-price": {
+      "formatVersion": 1,
+      "id": "unknown-price",
+      "name": "Synthetic unknown-price",
+      "specVersion": "2026-11-24",
+      "sources": [
+        {
+          "url": "https://example.com/docs",
+          "retrievedOn": "2026-11-24",
+          "covers": "nothing; synthetic spec for format vectors"
+        }
+      ],
+      "auth": {
+        "in": "header",
+        "name": "x-api-key",
+        "env": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "capabilities": {
+        "search": true,
+        "contents": false
+      },
+      "index": {
+        "type": "unknown"
+      },
+      "terms": {
+        "url": "https://example.com/terms",
+        "readOn": "2026-11-24",
+        "benchmarkPublication": "not-addressed",
+        "rawResponseStorage": "not-addressed"
+      },
+      "errors": [],
+      "search": {
+        "request": {
+          "method": "POST",
+          "url": "https://api.example.com/search",
+          "encoding": "json",
+          "params": {
+            "query": {
+              "to": "query"
+            }
+          }
+        },
+        "limits": {
+          "maxResults": 20,
+          "maxQueryLength": null,
+          "maxIncludeDomains": 10,
+          "maxExcludeDomains": 10
+        },
+        "dateBasis": "published",
+        "response": {
+          "results": "results",
+          "fields": {
+            "url": "url",
+            "title": "title"
+          }
+        },
+        "cost": {
+          "reported": {
+            "path": "usage.usd",
+            "unit": "usd"
+          }
+        },
+        "pricing": {
+          "plan": "Synthetic",
+          "source": "https://example.com/pricing",
+          "retrievedOn": "2026-11-24",
+          "perRequestUsd": null,
+          "note": "Synthetic: no public price."
+        },
+        "rateLimits": [],
+        "providerOptions": {}
+      },
+      "unverified": []
+    },
+    "tiered": {
+      "formatVersion": 1,
+      "id": "tiered",
+      "name": "Synthetic tiered",
+      "specVersion": "2026-11-24",
+      "sources": [
+        {
+          "url": "https://example.com/docs",
+          "retrievedOn": "2026-11-24",
+          "covers": "nothing; synthetic spec for format vectors"
+        }
+      ],
+      "auth": {
+        "in": "header",
+        "name": "x-api-key",
+        "env": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "capabilities": {
+        "search": true,
+        "contents": false
+      },
+      "index": {
+        "type": "unknown"
+      },
+      "terms": {
+        "url": "https://example.com/terms",
+        "readOn": "2026-11-24",
+        "benchmarkPublication": "not-addressed",
+        "rawResponseStorage": "not-addressed"
+      },
+      "errors": [],
+      "search": {
+        "request": {
+          "method": "POST",
+          "url": "https://api.example.com/search",
+          "encoding": "json",
+          "params": {
+            "query": {
+              "to": "query"
+            },
+            "depth": {
+              "to": "mode",
+              "steps": [
+                {
+                  "step": "map-value",
+                  "table": {
+                    "fast": "cheap",
+                    "standard": "normal",
+                    "deep": "thorough"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "limits": {
+          "maxResults": 20,
+          "maxQueryLength": null,
+          "maxIncludeDomains": 10,
+          "maxExcludeDomains": 10
+        },
+        "dateBasis": "published",
+        "response": {
+          "results": "results",
+          "fields": {
+            "url": "url",
+            "title": "title"
+          }
+        },
+        "pricing": {
+          "plan": "Synthetic",
+          "source": "https://example.com/pricing",
+          "retrievedOn": "2026-11-24",
+          "perRequestUsd": {
+            "fast": 0.001,
+            "standard": 0.005,
+            "deep": null
+          },
+          "costOptions": {
+            "mode": {
+              "cheap": "fast",
+              "normal": "standard"
+            },
+            "extras": "unknown"
+          }
+        },
+        "rateLimits": [],
+        "providerOptions": {
+          "mode": {
+            "type": "string"
+          },
+          "extras": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      },
+      "unverified": []
+    }
+  },
+  "cases": [
+    {
+      "name": "an unknown price gives an unknown cost",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "unknown-price"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "cost": {
+            "usd": null,
+            "estimated": true,
+            "source": "unknown"
+          },
+          "attempts": [
+            {
+              "provider": "unknown-price",
+              "outcome": "ok",
+              "status": 200,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "yes",
+              "cost": {
+                "usd": null,
+                "estimated": true,
+                "source": "unknown"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a reported cost wins over an unknown price",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "unknown-price"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": [],
+            "usage": {
+              "usd": 0.003
+            }
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "cost": {
+            "usd": 0.003,
+            "estimated": false,
+            "source": "reported"
+          }
+        }
+      }
+    },
+    {
+      "name": "a possibly billed attempt at an unknown price has an unknown cost",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "unknown-price"
+      },
+      "responses": [
+        {
+          "network": true
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "network",
+          "attempts": [
+            {
+              "provider": "unknown-price",
+              "outcome": "error",
+              "code": "network",
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "possible",
+              "cost": {
+                "usd": null,
+                "estimated": true,
+                "source": "unknown"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a tier with a null price is unknown",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "tiered",
+        "depth": "deep"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "cost": {
+            "usd": null,
+            "estimated": true,
+            "source": "unknown"
+          }
+        }
+      }
+    },
+    {
+      "name": "a normalized depth selects its tier",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "tiered",
+        "depth": "fast"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "body": {
+              "query": "q",
+              "mode": "cheap"
+            }
+          }
+        ],
+        "responseIncludes": {
+          "cost": {
+            "usd": 0.001,
+            "estimated": true,
+            "source": "computed"
+          }
+        }
+      }
+    },
+    {
+      "name": "a provider option value selects a tier",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "tiered",
+        "providerOptions": {
+          "tiered": {
+            "mode": "cheap"
+          }
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "cost": {
+            "usd": 0.001,
+            "estimated": true,
+            "source": "computed"
+          }
+        }
+      }
+    },
+    {
+      "name": "a provider option value without a tier makes the cost unknown",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "tiered",
+        "providerOptions": {
+          "tiered": {
+            "mode": "turbo"
+          }
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "cost": {
+            "usd": null,
+            "estimated": true,
+            "source": "unknown"
+          }
+        }
+      }
+    },
+    {
+      "name": "an option listed as unknown makes the cost unknown whatever its value",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "tiered",
+        "providerOptions": {
+          "tiered": {
+            "extras": false
+          }
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "cost": {
+            "usd": null,
+            "estimated": true,
+            "source": "unknown"
+          }
+        }
+      }
+    },
+    {
+      "name": "an option not listed in costOptions keeps the price",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "tiered",
+        "providerOptions": {
+          "tiered": {
+            "label": "x"
+          }
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "cost": {
+            "usd": 0.005,
+            "estimated": true,
+            "source": "computed"
+          }
+        }
+      }
+    },
+    {
+      "name": "cost-affecting options also price a possibly billed attempt",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "tiered",
+        "providerOptions": {
+          "tiered": {
+            "extras": true
+          }
+        }
+      },
+      "responses": [
+        {
+          "network": true
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "network",
+          "attempts": [
+            {
+              "provider": "tiered",
+              "outcome": "error",
+              "code": "network",
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "possible",
+              "cost": {
+                "usd": null,
+                "estimated": true,
+                "source": "unknown"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

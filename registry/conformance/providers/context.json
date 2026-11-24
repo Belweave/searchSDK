@@ -1,0 +1,256 @@
+{
+  "description": "Context.dev: normalized request to HTTP request, and synthetic response to normalized response.",
+  "synthetic": "Response bodies are synthetic, shaped after the public OpenAPI schema and examples read 2026-11-24. They were not recorded from the live API.",
+  "cases": [
+    {
+      "name": "search maps every supported option; partial flag becomes a warning; cost computed per 10 results",
+      "call": "search",
+      "query": "Stripe API authentication",
+      "options": {
+        "provider": "context",
+        "maxResults": 20,
+        "excludeDomains": ["pinterest.com"],
+        "recency": "day",
+        "country": "DE",
+        "language": "de"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": { "x-request-id": "synthetic-header-id" },
+          "body": {
+            "partial": true,
+            "results": [
+              {
+                "url": "https://docs.stripe.com/keys",
+                "title": "API keys",
+                "description": "Synthetic snippet.",
+                "relevance": "high",
+                "markdown": { "markdown": null, "code": "NOT_REQUESTED" },
+                "highlights": { "highlights": null, "code": "NOT_REQUESTED" }
+              },
+              {
+                "url": "https://example.com/stripe",
+                "title": "Example",
+                "description": "",
+                "relevance": "low",
+                "markdown": { "markdown": null, "code": "NOT_REQUESTED" },
+                "highlights": { "highlights": null, "code": "NOT_REQUESTED" }
+              }
+            ],
+            "query": "Stripe API authentication",
+            "cache_metadata": { "status": "miss", "age_ms": 0 },
+            "request_id": "3f1c2a6e-8b4d-4c1e-9f0a-2d7b5e6c8a91"
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/web/search",
+            "headers": { "accept": "application/json", "content-type": "application/json", "authorization": "Bearer test-key-context" },
+            "body": {
+              "query": "Stripe API authentication",
+              "numResults": 20,
+              "excludeDomains": ["pinterest.com"],
+              "freshness": "last_24_hours",
+              "country": "de",
+              "languages": ["de"]
+            }
+          }
+        ],
+        "response": {
+          "provider": "context",
+          "results": [
+            {
+              "url": "https://docs.stripe.com/keys",
+              "title": "API keys",
+              "excerpts": ["Synthetic snippet."],
+              "publishedAt": null,
+              "author": null,
+              "rank": 1,
+              "providerFields": { "relevance": "high" }
+            },
+            {
+              "url": "https://example.com/stripe",
+              "title": "Example",
+              "excerpts": [],
+              "publishedAt": null,
+              "author": null,
+              "rank": 2,
+              "providerFields": { "relevance": "low" }
+            }
+          ],
+          "cost": { "usd": 0.002, "estimated": true, "source": "computed" },
+          "requestId": "3f1c2a6e-8b4d-4c1e-9f0a-2d7b5e6c8a91",
+          "latencyMs": 0,
+          "warnings": [{ "code": "partial_results", "provider": "context" }],
+          "attempts": [{ "provider": "context", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.002, "estimated": true, "source": "computed" } }]
+        }
+      }
+    },
+    {
+      "name": "search reports credits",
+      "call": "search",
+      "query": "x",
+      "options": { "provider": "context" },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": [],
+            "query": "x",
+            "cache_metadata": { "status": "hit", "age_ms": 10 },
+            "key_metadata": { "credits_consumed": 1, "credits_remaining": 999 },
+            "request_id": "synthetic-context-2"
+          }
+        }
+      ],
+      "expect": {
+        "requests": [{ "body": { "query": "x", "numResults": 10 } }],
+        "responseIncludes": { "cost": { "usd": 0.002, "estimated": true, "source": "reported-credits", "credits": 1 }, "requestId": "synthetic-context-2" }
+      }
+    },
+    {
+      "name": "date range is unsupported",
+      "call": "search",
+      "query": "x",
+      "options": { "provider": "context", "startDate": "2026-01-01" },
+      "responses": [],
+      "expect": { "requestCount": 0, "error": { "code": "unsupported", "provider": "context", "field": "startDate" } }
+    },
+    {
+      "name": "a query over the provider's 500 code points is unsupported",
+      "call": "search",
+      "query": { "$repeat": "a", "count": 501 },
+      "options": { "provider": "context" },
+      "responses": [],
+      "expect": { "requestCount": 0, "error": { "code": "unsupported", "provider": "context", "field": "query" } }
+    },
+    {
+      "name": "a 500 code point query of astral characters is allowed",
+      "call": "search",
+      "query": { "$repeat": "😀", "count": 500 },
+      "options": { "provider": "context" },
+      "responses": [{ "status": 200, "body": { "results": [], "query": "x", "cache_metadata": { "status": "miss", "age_ms": 0 }, "request_id": "r" } }],
+      "expect": { "requestCount": 1 }
+    },
+    {
+      "name": "scrape maps one URL",
+      "call": "contents",
+      "urls": "https://example.com",
+      "options": { "provider": "context" },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "url": "https://example.com/",
+            "html": { "requested": false, "success": null, "data": null },
+            "markdown": { "requested": true, "success": true, "data": "# Example Domain" },
+            "metadata": { "sourceUrl": "https://example.com", "finalUrl": "https://example.com/", "title": "Example Domain" },
+            "request_id": "d7aa1c3a-38d2-4fb5-92c8-0f0cac3efa37",
+            "cache_metadata": { "status": "miss", "age_ms": 0 },
+            "key_metadata": { "credits_consumed": 1, "credits_remaining": 999 }
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/web/scrape",
+            "headers": { "accept": "application/json", "content-type": "application/json", "authorization": "Bearer test-key-context" },
+            "body": { "formats": { "markdown": true }, "url": "https://example.com" }
+          }
+        ],
+        "response": {
+          "provider": "context",
+          "pages": [
+            {
+              "url": "https://example.com",
+              "status": "ok",
+              "finalUrl": "https://example.com/",
+              "title": "Example Domain",
+              "content": "# Example Domain",
+              "publishedAt": null,
+              "author": null,
+              "error": null
+            }
+          ],
+          "cost": { "usd": 0.002, "estimated": true, "source": "reported-credits", "credits": 1 },
+          "requestId": "d7aa1c3a-38d2-4fb5-92c8-0f0cac3efa37",
+          "latencyMs": 0,
+          "warnings": [],
+          "attempts": [{ "provider": "context", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.002, "estimated": true, "source": "reported-credits", "credits": 1 } }]
+        }
+      }
+    },
+    {
+      "name": "scrape output failure becomes a failed page",
+      "call": "contents",
+      "urls": ["https://example.org/blocked"],
+      "options": { "provider": "context" },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "url": "https://example.org/blocked",
+            "markdown": { "requested": true, "success": false, "data": null, "error_code": "WEBSITE_BLOCKED", "message": "Synthetic block." },
+            "metadata": { "sourceUrl": "https://example.org/blocked", "publishedTime": "2026-02-03T04:05:06+01:00", "author": "Someone" },
+            "isPartial": true,
+            "request_id": "synthetic-context-3"
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "pages": [
+            {
+              "url": "https://example.org/blocked",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": { "code": "WEBSITE_BLOCKED", "message": "Synthetic block." }
+            }
+          ],
+          "cost": { "usd": 0, "estimated": true, "source": "computed" },
+          "warnings": [{ "code": "partial_results", "provider": "context" }]
+        }
+      }
+    },
+    {
+      "name": "two URLs exceed the one-URL scrape and nothing is sent",
+      "call": "contents",
+      "urls": ["https://example.com/a", "https://example.com/b"],
+      "options": { "provider": "context" },
+      "responses": [],
+      "expect": { "requestCount": 0, "error": { "code": "unsupported", "provider": "context", "field": "urls" } }
+    },
+    {
+      "name": "402 USAGE_EXCEEDED maps to quota",
+      "call": "search",
+      "query": "x",
+      "options": { "provider": "context" },
+      "responses": [{ "status": 402, "body": { "message": "Synthetic.", "error_code": "USAGE_EXCEEDED" } }],
+      "expect": { "error": { "code": "quota", "provider": "context", "status": 402, "providerCode": "USAGE_EXCEEDED" } }
+    },
+    {
+      "name": "429 concurrency limit carries Retry-After",
+      "call": "search",
+      "query": "x",
+      "options": { "provider": "context" },
+      "responses": [
+        {
+          "status": 429,
+          "headers": { "retry-after": "1", "x-ratelimit-mode": "concurrency" },
+          "body": { "message": "Synthetic.", "error_code": "RATE_LIMITED" }
+        }
+      ],
+      "expect": { "error": { "code": "rate_limit", "provider": "context", "status": 429, "providerCode": "RATE_LIMITED", "retryAfterMs": 1000 } }
+    }
+  ]
+}

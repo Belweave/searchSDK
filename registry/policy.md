@@ -1,0 +1,147 @@
+# Runtime policy
+
+Values live in `policy.json`; this page states the rules that use them. Every
+rule has vectors in `conformance/policy/` or `conformance/format/`.
+
+## Validation (before anything is sent)
+- **Query:** a string. Code points in `query.blank` are trimmed from both ends;
+  nothing may remain. After trimming it may not contain `query.forbidden` code
+  points (controls, bidi embeddings, overrides and isolates, tag characters) or
+  unpaired surrogates, and may hold at most `query.maxCodePoints` code points
+  (not UTF-16 units, not bytes). `blank` covers whitespace, zero-width and
+  directional marks, the soft hyphen, Hangul fillers and the braille blank.
+- **Domains:** ASCII-lowercased, deduplicated in order; each needs
+  `domains.minLabels` labels matching `domains.labelPattern` and at most
+  `domains.maxLength` characters. Non-ASCII names must be punycode. An empty
+  list means no filter. A domain may not be both included and excluded.
+- **Dates:** `startDate` and `endDate` are real `YYYY-MM-DD` dates, inclusive,
+  start ≤ end. `recency` cannot be combined with them.
+- **Country / language:** two ASCII letters, normalized to `US` / `en`.
+- **URLs:** `http` or `https`, no credentials, no whitespace, blank or
+  forbidden code points, at most `contents.maxUrlLength` characters, unique by
+  URL key.
+- **signal:** an object with a boolean `aborted` and `addEventListener` /
+  `removeEventListener` functions.
+- Unknown option names fail. Provider limits (result count, query length,
+  per-list and combined domain counts, include-or-exclude exclusivity, URL
+  count) and options a provider cannot express raise `unsupported` for that
+  provider, which is then skipped. Combined and exclusive domain limits report
+  `excludeDomains`.
+
+## Keys
+A key is a string of 1 to 512 printable ASCII characters, taken from the
+client's keys, else the provider's `auth.env` variables in order (empty values
+skipped). The call's provider must have one (`configuration`). A fallback
+provider without one does not block the call: the response carries a
+`fallback_key_missing` warning for it, and if the chain reaches it, it is
+skipped with an attempt coded `configuration`.
+
+## Provider options
+Looked up among the spec's own `providerOptions` keys only (never inherited
+names such as `toString`); the `providerOptions` object itself may only name
+registry providers. Each value must match its schema and contain only
+well-formed strings (no unpaired surrogate, keys included); for a query-string
+request it must be a string, number or boolean.
+
+## Requests
+1. Start from a deep copy of `fixed`.
+2. Each param in spec order whose input is set: run its steps; a `null` result
+   sends nothing. Write the value at `to`, or with `append`, add it (or each
+   element of an array value) to the end of the array at `to`, which starts as
+   `[]` when missing or not an array. Writing creates objects along the path
+   and replaces anything on the path that is not an object.
+3. Each `compose` entry with at least one input set: concatenate its parts in
+   order. A text part emits its text. An input part emits its `text` and then
+   its value after steps (as in step 6) when the input is set; when it is not,
+   it emits nothing, unless `required`, which raises `unsupported` naming that
+   input. Write the string at `to`.
+4. Provider options, in the caller's order, replace a top-level key whole (a
+   replaced key keeps its place). A key that step 2 or 3 wrote is refused.
+5. Every `locked` path must still equal its `fixed` value (JSON equality),
+   else `invalid_request` for the provider option at that path's first segment.
+6. Query-string requests: every top-level value must be a string, number or
+   boolean. Booleans are `true` / `false`; numbers use ECMAScript
+   Number-to-String (`10`, `0.5`, `1e+21`, `1e-7`). Keys and values are
+   percent-encoded except RFC 3986 unreserved characters; spaces are `%20`.
+7. Headers: `accept`, `content-type` for JSON bodies, and a header key. A query
+   key is the last query parameter for every encoding. No other headers;
+   redirects are never followed.
+
+## Paths, equality, predicates, patterns
+- A path is `$` (the value) or dot-separated segments. Segments read own
+  properties only; on an array, a segment of digits is an index and anything
+  else is absent. Keys containing `.` cannot be addressed.
+- **JSON equality:** same JSON type; numbers by value (`1` equals `1.0`);
+  booleans never equal numbers; strings by code points; arrays element by
+  element; objects by the same keys with equal values. Absent equals nothing.
+- **Predicates:** `equals` and `in` use JSON equality; `range [min, max]` holds
+  for a finite number inside it; `present` compares "exists and is not null"
+  with its value; `not: true` negates. A `where` list holds when all do.
+- Patterns in the schema and `policy.json` are ECMAScript regular expressions
+  with the `u` flag, matched against the whole string with ASCII classes:
+  `$` does not match before a trailing newline and `\d` is `[0-9]`.
+
+## Responses
+- A 2xx body must be a UTF-8 JSON object; a leading byte order mark is ignored.
+  The size limit counts bytes as received; `Content-Length` triggers an early
+  reject only when it is a single integer.
+- Status codes map through provider `errors` rules (status, then JSON equality
+  at `bodyPath` when given), then `policy.status`, then `statusDefault`.
+- Search: the result list must be an array; with `resultsOptional`, absent or
+  `null` counts as `[]`. Rows without an `http(s)` URL are dropped with an
+  `invalid_rows_dropped` warning. Blank titles, authors and warning messages
+  become `null` or are left out.
+- Contents: each page source reads its list (`$` is the body as one item). An
+  absent or `null` list is `[]` when the source is `optional`, else
+  `invalid_response`. Items pass when the source's `where` holds. Pages match
+  requested URLs by URL key, first unused candidate wins; the rest are counted
+  in an `unmatched_pages` warning. Unmatched URLs are `failed` with code
+  `missing`.
+- **URL key:** lowercase scheme; lowercase ASCII host, and each host label with
+  non-ASCII is Unicode-lowercased and becomes `xn--` plus RFC 3492 punycode;
+  drop `:80` for http and `:443` for https; drop the fragment; in path and
+  query, decode `%XX` escapes of unreserved characters, uppercase the rest,
+  and encode non-ASCII as UTF-8 escapes (an unpaired surrogate as U+FFFD); an
+  empty path becomes `/` and a longer path loses one trailing `/`.
+- A header value containing a comma (duplicates joined) is ignored.
+- `Retry-After` is delta-seconds or an IMF-fixdate; anything else is ignored.
+
+## Billing
+Every attempt carries `billed` and its own `cost` (`policy.billing`):
+- not sent (skipped): `no`, `{usd: 0, estimated: false, source: "none"}`;
+- a 2xx arrived: `yes`, even when its body is then unusable, too large or
+  breaks off; its cost is the reported cost in the body if any, else the
+  computed price (steps.md, Cost);
+- any other status: `no`, `{usd: 0, estimated: true, source: "none"}`
+  (assumed: providers do not bill requests they reject);
+- no status, with a code in `billing.possible` (`network`, `attempt_timeout`,
+  `timeout`, `aborted`): `possible`, costed as the computed price for the
+  requested count (`maxResults`, or URLs sent).
+
+The response's `cost` is its successful attempt's; spend across a call is the
+sum over attempts billed `yes` or `possible`.
+
+## Retries, deadlines, fallback
+- Only `transient` codes are retried, up to `maxRetries` (default
+  `retry.defaultMaxRetries`, which is 0). Delay for retry *i*: `e =
+  min(maxDelayMs, baseDelayMs × 2^i)`, `floor(e/2 + r × e/2)`, at least
+  `Retry-After`. A `Retry-After` above `retry.maxRetryAfterMs`, or a wait that
+  would reach the call deadline, ends retrying.
+- `timeoutMs` bounds the whole call, including body reading. When it fires the
+  code is `timeout`; when only `attemptTimeoutMs` fires it is
+  `attempt_timeout`. There is no other ceiling.
+- The chain is the call's provider, then its fallback list (empty by default);
+  each provider is tried once. After retries, the next provider runs only for
+  codes in `fallbackOn`.
+- **Ambiguous failures** (`network`, `attempt_timeout`, `timeout`) may have
+  been billed. One rule covers all three: they are recorded as billed
+  `possible` (or `yes` when a 2xx arrived), and they proceed to another attempt
+  only when the caller configured retries or a fallback and budget remains.
+  `timeout` never proceeds because the call's budget is spent; `aborted` never
+  proceeds. A search is a read, so a configured resilient result is preferred
+  over avoiding a possible second charge, and the charge stays visible.
+- A 2xx that is unusable (`invalid_response`) or too large
+  (`response_too_large`) is never retried or sent to fallback.
+- The error thrown when the chain runs out is the last error from a provider
+  that was sent a request, or, when none was, the last skip reason.
+- A successful response is never discarded for being slow.

@@ -1,0 +1,46 @@
+name: v2 registry and TypeScript runtime
+
+on:
+  push:
+    paths:
+      - registry/**
+      - sdk/typescript/**
+      - .github/workflows/v2.yml
+  pull_request:
+    paths:
+      - registry/**
+      - sdk/typescript/**
+      - .github/workflows/v2.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typescript:
+    name: Registry vectors and TypeScript runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: sdk/typescript
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Use the repository Node version
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      # Synthetic vectors with an injected fetch only: no secrets, no provider calls.
+      - name: Registry sync check, typecheck and all tests
+        run: npm test
+      - name: Build the package
+        run: npm run build

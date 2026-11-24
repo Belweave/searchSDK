@@ -1,0 +1,362 @@
+{
+  "description": "Brave Search: normalized request to HTTP request, and synthetic response to normalized response.",
+  "synthetic": "Response bodies are synthetic, shaped after the public API reference read 2026-11-24. They were not recorded from the live API.",
+  "cases": [
+    {
+      "name": "search is a GET with header auth; country and language come from Brave's lists; cost is computed per request",
+      "call": "search",
+      "query": "rust async",
+      "options": {
+        "provider": "brave",
+        "maxResults": 2,
+        "recency": "week",
+        "country": "de",
+        "language": "DE"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "type": "search",
+            "query": {
+              "original": "rust async"
+            },
+            "web": {
+              "type": "search",
+              "results": [
+                {
+                  "title": "Async Rust",
+                  "url": "https://example.com/a",
+                  "description": "Synthetic one.",
+                  "page_age": "2026-11-20T08:00:00",
+                  "age": "4 days ago",
+                  "language": "en",
+                  "profile": {
+                    "name": "Example"
+                  },
+                  "extra_snippets": [
+                    "Extra one."
+                  ]
+                },
+                {
+                  "title": "Second",
+                  "url": "https://example.org/b",
+                  "description": "Synthetic two."
+                },
+                {
+                  "title": "Third",
+                  "url": "https://example.net/c",
+                  "description": "Cut by maxResults."
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "GET",
+            "url": "https://api.search.brave.com/res/v1/web/search?result_filter=web&text_decorations=false&spellcheck=false&q=rust%20async&count=2&freshness=pw&country=DE&search_lang=de",
+            "headers": {
+              "accept": "application/json",
+              "x-subscription-token": "test-key-brave"
+            },
+            "body": null
+          }
+        ],
+        "response": {
+          "provider": "brave",
+          "results": [
+            {
+              "url": "https://example.com/a",
+              "title": "Async Rust",
+              "excerpts": [
+                "Synthetic one."
+              ],
+              "publishedAt": "2026-11-20T08:00:00.000Z",
+              "author": null,
+              "rank": 1,
+              "providerFields": {
+                "age": "4 days ago",
+                "language": "en",
+                "siteName": "Example",
+                "extraSnippets": [
+                  "Extra one."
+                ]
+              }
+            },
+            {
+              "url": "https://example.org/b",
+              "title": "Second",
+              "excerpts": [
+                "Synthetic two."
+              ],
+              "publishedAt": null,
+              "author": null,
+              "rank": 2,
+              "providerFields": {}
+            }
+          ],
+          "cost": {
+            "usd": 0.005,
+            "estimated": true,
+            "source": "computed"
+          },
+          "requestId": null,
+          "latencyMs": 0,
+          "warnings": [],
+          "attempts": [
+            {
+              "provider": "brave",
+              "outcome": "ok",
+              "status": 200,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "yes",
+              "cost": {
+                "usd": 0.005,
+                "estimated": true,
+                "source": "computed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a response without web results is an empty success, still billed",
+      "call": "search",
+      "query": "zzqx",
+      "options": {
+        "provider": "brave"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "type": "search",
+            "query": {
+              "original": "zzqx"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "results": [],
+          "warnings": [],
+          "cost": {
+            "usd": 0.005,
+            "estimated": true,
+            "source": "computed"
+          }
+        }
+      }
+    },
+    {
+      "name": "a date range becomes one freshness value after the mapped options",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "brave",
+        "startDate": "2026-01-01",
+        "endDate": "2026-01-31"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "type": "search",
+            "web": {
+              "type": "search",
+              "results": []
+            }
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "url": "https://api.search.brave.com/res/v1/web/search?result_filter=web&text_decorations=false&spellcheck=false&q=q&count=10&freshness=2026-01-01to2026-01-31"
+          }
+        ]
+      }
+    },
+    {
+      "name": "a range needs both dates",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "brave",
+        "startDate": "2026-01-01"
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "brave",
+          "field": "endDate"
+        }
+      }
+    },
+    {
+      "name": "domain filters cannot be expressed",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "brave",
+        "includeDomains": [
+          "example.com"
+        ]
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "brave",
+          "field": "includeDomains"
+        }
+      }
+    },
+    {
+      "name": "an ambiguous language code is unsupported",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "brave",
+        "language": "zh"
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "brave",
+          "field": "language"
+        }
+      }
+    },
+    {
+      "name": "a country outside Brave's list is unsupported",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "brave",
+        "country": "XK"
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "brave",
+          "field": "country"
+        }
+      }
+    },
+    {
+      "name": "a query over 600 code points is unsupported",
+      "call": "search",
+      "query": {
+        "$repeat": "a",
+        "count": 601
+      },
+      "options": {
+        "provider": "brave"
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "brave",
+          "field": "query"
+        }
+      }
+    },
+    {
+      "name": "provider options follow the mapped options in the query string",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "brave",
+        "providerOptions": {
+          "brave": {
+            "safesearch": "strict",
+            "offset": 1,
+            "extra_snippets": true
+          }
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "type": "search"
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "url": "https://api.search.brave.com/res/v1/web/search?result_filter=web&text_decorations=false&spellcheck=false&q=q&count=10&safesearch=strict&offset=1&extra_snippets=true"
+          }
+        ]
+      }
+    },
+    {
+      "name": "429 QUOTA_LIMITED is quota",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "brave"
+      },
+      "responses": [
+        {
+          "status": 429,
+          "body": {
+            "type": "ErrorResponse",
+            "error": {
+              "id": "e",
+              "status": 429,
+              "code": "QUOTA_LIMITED"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "quota",
+          "status": 429,
+          "providerCode": "QUOTA_LIMITED"
+        }
+      }
+    },
+    {
+      "name": "429 RATE_LIMITED is rate_limit",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "brave"
+      },
+      "responses": [
+        {
+          "status": 429,
+          "body": {
+            "type": "ErrorResponse",
+            "error": {
+              "id": "e",
+              "status": 429,
+              "code": "RATE_LIMITED"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "rate_limit",
+          "status": 429,
+          "providerCode": "RATE_LIMITED"
+        }
+      }
+    }
+  ]
+}
