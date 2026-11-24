@@ -1,4 +1,4 @@
-name: v2 registry and runtimes
+name: v2 registry, runtimes, benchmark and site
 
 on:
   push:
@@ -6,12 +6,16 @@ on:
       - registry/**
       - sdk/typescript/**
       - sdk/python/**
+      - bench/**
+      - site/**
       - .github/workflows/v2.yml
   pull_request:
     paths:
       - registry/**
       - sdk/typescript/**
       - sdk/python/**
+      - bench/**
+      - site/**
       - .github/workflows/v2.yml
 
 permissions:
@@ -78,3 +82,52 @@ jobs:
           python -m venv "$RUNNER_TEMP/clean"
           "$RUNNER_TEMP/clean/bin/python" -m pip install --no-index "$RUNNER_TEMP"/dist/searchsdk-*.whl
           cd "$RUNNER_TEMP" && "$RUNNER_TEMP/clean/bin/python" -c "import searchsdk; assert sorted(searchsdk.registry) and searchsdk.Client"
+
+  bench:
+    name: Benchmark harness on fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: bench
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Use the repository Node version
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      # Synthetic providers, a synthetic judge and a local fixture web only: no
+      # secrets, no provider or judge calls. A guard fails any network use in
+      # tests, and the CLI refuses live runs whenever CI is set.
+      - name: Typecheck, tests, dataset validation and the pilot dry-run plan
+        run: npm run check
+
+  site:
+    name: Site build, examples and crawl
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Use the repository Node version
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      # Reads ../registry and typechecks examples against ../sdk/typescript;
+      # the crawl serves the built site on loopback. No secrets, no provider calls.
+      - name: Typecheck, examples, tokens, build and crawl
+        run: npm run check

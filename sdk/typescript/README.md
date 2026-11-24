@@ -7,6 +7,18 @@ runtime with standard `fetch`; tested on Node 24 only.
 **Not live-verified.** Providers are mapped from their public docs and tested
 against synthetic fixtures only.
 
+## Install from source
+
+Nothing is published to npm yet. Build a package from the repository:
+
+```sh
+git clone https://github.com/Belweave/searchSDK
+cd searchSDK/sdk/typescript && npm ci && npm pack --ignore-scripts=false
+cd your-app && npm install ../searchSDK/sdk/typescript/searchsdk-0.0.0.tgz
+```
+
+## Use
+
 ```ts
 import { search } from "searchsdk";
 
@@ -46,7 +58,9 @@ anything is sent, and a fallback chain skips that provider. Failures throw
 
 Provider behaviour lives in `../../registry`, not in this package. The
 exported `registry` is frozen; pass edited copies as
-`createClient({ registry })`, which validates them.
+`createClient({ registry })`, which validates them and takes their ids as
+provider ids, with no casts. `costBound` gives the most one request can cost,
+`listPrice` its computed price, and `urlKey` the URL matching rule.
 
 ## Development
 

@@ -6,6 +6,18 @@ calls: `search` and `contents`. Python 3.10 or newer, no dependencies.
 **Nothing here is live-verified.** Providers are mapped from their public
 docs and tested against synthetic fixtures only.
 
+## Install from source
+
+Nothing is published to PyPI yet. Install from the repository; pip fetches
+the `flit_core` build backend:
+
+```sh
+git clone https://github.com/Belweave/searchSDK
+python -m pip install ./searchSDK/sdk/python
+```
+
+## Use
+
 ```python
 import searchsdk
 
@@ -47,6 +59,9 @@ cancellation it is given; this one does, except that a DNS lookup cannot be
 interrupted. Pass your own with `transport=`.
 
 Provider behaviour lives in `../../registry`, embedded at build time.
+`Client(registry=...)` accepts edited specs and their ids without casts.
+`cost_bound` gives the most one request can cost, `list_price` its computed
+price, and `url_key` the URL matching rule.
 
 ## Development
 
