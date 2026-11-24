@@ -17,6 +17,7 @@
     "sync": "node scripts/sync-registry.mjs",
     "typecheck": "tsc -p tsconfig.json",
     "build": "node scripts/sync-registry.mjs --check && tsc -p tsconfig.build.json",
+    "prepack": "npm run build",
     "test": "node scripts/sync-registry.mjs --check && tsc -p tsconfig.json && tsc -p tsconfig.build.json --noEmit && node --test --test-concurrency=1 --import ./test/guard.ts \"test/**/*.test.ts\""
   },
   "devDependencies": {
