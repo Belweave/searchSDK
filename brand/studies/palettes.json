@@ -1,0 +1,602 @@
+[
+  {
+    "id": "P1",
+    "name": "Beam",
+    "idea": "Graphite. The accent is the beam itself: white on dark, ink on light. Only providers carry hue.",
+    "dark": {
+      "bg": "#0C0E12",
+      "raised": "#151820",
+      "line": "#2A2F3A",
+      "fg": "#EEF1F5",
+      "muted": "#A9B0BC",
+      "subtle": "#808896",
+      "accent": "#F4F6F9",
+      "onAccent": "#0C0E12",
+      "accentText": "#F4F6F9"
+    },
+    "light": {
+      "bg": "#F5F6F8",
+      "raised": "#FFFFFF",
+      "line": "#D8DCE3",
+      "fg": "#0E1116",
+      "muted": "#484F5B",
+      "subtle": "#5F6773",
+      "accent": "#0E1116",
+      "onAccent": "#F5F6F8",
+      "accentText": "#0E1116"
+    },
+    "hues": {
+      "dark": {
+        "L": [
+          0.72,
+          0.86
+        ],
+        "C": 0.19
+      },
+      "light": {
+        "L": [
+          0.47,
+          0.66
+        ],
+        "C": 0.2
+      },
+      "avoid": null
+    },
+    "providers": {
+      "hue": [
+        12.8,
+        49.7,
+        65.6,
+        100.2,
+        140.6,
+        154.7,
+        193.6,
+        225.5,
+        268.9,
+        297.2,
+        341.7,
+        355.4
+      ],
+      "dark": [
+        "#FF909E",
+        "#FF7806",
+        "#FFB972",
+        "#E3CA00",
+        "#57C043",
+        "#4AF497",
+        "#00C4C2",
+        "#7FDBFF",
+        "#9BB5FF",
+        "#B18BFF",
+        "#FFA6DE",
+        "#FC69AA"
+      ],
+      "light": [
+        "#B30040",
+        "#C05800",
+        "#824C00",
+        "#A28F00",
+        "#218600",
+        "#009554",
+        "#006968",
+        "#0095BD",
+        "#3C58D9",
+        "#9461EB",
+        "#C940A1",
+        "#E44A92"
+      ],
+      "sim": {
+        "protan": {
+          "dark": [
+            "#A5A39E",
+            "#A08C00",
+            "#D0BE6C",
+            "#DFC400",
+            "#C5AF33",
+            "#F3E191",
+            "#B6B9C2",
+            "#C7D7FF",
+            "#9CBCFF",
+            "#66A0FF",
+            "#AAB9E0",
+            "#808CAC"
+          ],
+          "light": [
+            "#444341",
+            "#776800",
+            "#5D5100",
+            "#9E8B00",
+            "#8A7800",
+            "#94884F",
+            "#616368",
+            "#7F92BF",
+            "#006CDD",
+            "#027EEF",
+            "#4B69A4",
+            "#657394"
+          ]
+        },
+        "deutan": {
+          "dark": [
+            "#C0B99C",
+            "#C0AB00",
+            "#E0CE73",
+            "#E6CD22",
+            "#B7A64E",
+            "#DED29D",
+            "#A0A9C3",
+            "#B5C9FF",
+            "#93B3FD",
+            "#6E9EFC",
+            "#C0C7DC",
+            "#A7A7A7"
+          ],
+          "light": [
+            "#6D643B",
+            "#907F00",
+            "#6A5E02",
+            "#A49215",
+            "#7F711A",
+            "#867D59",
+            "#555A69",
+            "#6983BD",
+            "#005ED6",
+            "#297CE8",
+            "#75809E",
+            "#90908E"
+          ]
+        },
+        "tritan": {
+          "dark": [
+            "#FF8495",
+            "#FF5867",
+            "#FFA9A8",
+            "#F6BAAC",
+            "#4ABAA6",
+            "#00F1DD",
+            "#00CAC3",
+            "#33E6E6",
+            "#7BC4CF",
+            "#A0A0B9",
+            "#FFA7BA",
+            "#FF5F82"
+          ],
+          "light": [
+            "#C50024",
+            "#D33F4B",
+            "#8F3F40",
+            "#B08379",
+            "#038171",
+            "#009385",
+            "#006D68",
+            "#00A1A2",
+            "#007990",
+            "#807F9D",
+            "#D5426B",
+            "#F63C68"
+          ]
+        }
+      },
+      "contrastDark": [
+        8.95,
+        7.3,
+        11.44,
+        11.69,
+        8.3,
+        13.5,
+        8.9,
+        12.4,
+        9.61,
+        7.36,
+        10.82,
+        7.12
+      ],
+      "contrastLight": [
+        6.49,
+        4.19,
+        6.51,
+        3,
+        4.34,
+        3.58,
+        6.03,
+        3.22,
+        5.41,
+        3.76,
+        4.1,
+        3.41
+      ],
+      "separation": {
+        "dark": {
+          "normal": {
+            "min": 12.1,
+            "closest": [
+              1,
+              12
+            ],
+            "under10": 0
+          },
+          "protan": {
+            "min": 6.8,
+            "closest": [
+              9,
+              11
+            ],
+            "under10": 9
+          },
+          "deutan": {
+            "min": 6.7,
+            "closest": [
+              9,
+              10
+            ],
+            "under10": 9
+          },
+          "tritan": {
+            "min": 6.6,
+            "closest": [
+              2,
+              12
+            ],
+            "under10": 11
+          }
+        },
+        "light": {
+          "normal": {
+            "min": 8.7,
+            "closest": [
+              11,
+              12
+            ],
+            "under10": 1
+          },
+          "protan": {
+            "min": 6.9,
+            "closest": [
+              2,
+              5
+            ],
+            "under10": 8
+          },
+          "deutan": {
+            "min": 6.6,
+            "closest": [
+              2,
+              4
+            ],
+            "under10": 8
+          },
+          "tritan": {
+            "min": 6.6,
+            "closest": [
+              5,
+              6
+            ],
+            "under10": 7
+          }
+        }
+      }
+    },
+    "contrast": {
+      "dark": {
+        "fg on bg": 17.05,
+        "fg on raised": 15.66,
+        "muted on bg": 8.85,
+        "muted on raised": 8.13,
+        "subtle on bg": 5.41,
+        "subtle on raised": 4.97,
+        "accent text on bg": 17.84,
+        "text on accent": 17.84
+      },
+      "light": {
+        "fg on bg": 17.49,
+        "fg on raised": 18.91,
+        "muted on bg": 7.63,
+        "muted on raised": 8.25,
+        "subtle on bg": 5.29,
+        "subtle on raised": 5.72,
+        "accent text on bg": 17.49,
+        "text on accent": 17.49
+      }
+    }
+  },
+  {
+    "id": "P2",
+    "name": "Volt",
+    "idea": "Warm carbon with one electric accent; provider hues sit softer. On light, volt is a fill behind ink, never a line.",
+    "dark": {
+      "bg": "#100F0C",
+      "raised": "#1A1915",
+      "line": "#302E28",
+      "fg": "#F2F0E8",
+      "muted": "#B4AFA2",
+      "subtle": "#8C877B",
+      "accent": "#D6F542",
+      "onAccent": "#100F0C",
+      "accentText": "#D6F542"
+    },
+    "light": {
+      "bg": "#F4F2EA",
+      "raised": "#FBFAF5",
+      "line": "#DAD6C9",
+      "fg": "#16150F",
+      "muted": "#4E4A3F",
+      "subtle": "#69655A",
+      "accent": "#D6F542",
+      "onAccent": "#16150F",
+      "accentText": "#4D6000"
+    },
+    "hues": {
+      "dark": {
+        "L": [
+          0.7,
+          0.85
+        ],
+        "C": 0.15
+      },
+      "light": {
+        "L": [
+          0.46,
+          0.64
+        ],
+        "C": 0.16
+      },
+      "avoid": "#D6F542"
+    },
+    "providers": {
+      "hue": [
+        8.7,
+        48.7,
+        84.7,
+        120,
+        144.4,
+        160.4,
+        199.6,
+        217.3,
+        260.2,
+        293.8,
+        336.5,
+        349
+      ],
+      "dark": [
+        "#EB728B",
+        "#FF9C65",
+        "#FBC547",
+        "#93AB2C",
+        "#8CE78E",
+        "#4ED99B",
+        "#00E9F2",
+        "#00B1D1",
+        "#98BFFF",
+        "#AE94FD",
+        "#E180CA",
+        "#FFAFD6"
+      ],
+      "light": [
+        "#D95A77",
+        "#8D3D00",
+        "#886500",
+        "#738800",
+        "#3C9F42",
+        "#008255",
+        "#00696D",
+        "#0086A0",
+        "#4F8AEC",
+        "#7F60CC",
+        "#C25DAB",
+        "#AC3D7C"
+      ],
+      "sim": {
+        "protan": {
+          "dark": [
+            "#898A8C",
+            "#B7A760",
+            "#DDC535",
+            "#B6A111",
+            "#EAD888",
+            "#D6C997",
+            "#D6DEF3",
+            "#9CABD3",
+            "#A8C3FF",
+            "#74A5FF",
+            "#8198CD",
+            "#B6BFD7"
+          ],
+          "light": [
+            "#747578",
+            "#544900",
+            "#746500",
+            "#917F00",
+            "#A29139",
+            "#807752",
+            "#60646D",
+            "#7582A1",
+            "#5C93F0",
+            "#3274D0",
+            "#5F78AE",
+            "#4B5B7E"
+          ]
+        },
+        "deutan": {
+          "dark": [
+            "#A8A188",
+            "#CFBD64",
+            "#EAD34D",
+            "#B3A137",
+            "#DDCF93",
+            "#C4BC9F",
+            "#BBCAF3",
+            "#859BD1",
+            "#9DB9FE",
+            "#78A3FA",
+            "#9BA7C7",
+            "#C9CBD4"
+          ],
+          "light": [
+            "#958E74",
+            "#685C00",
+            "#7C6E09",
+            "#8F7F17",
+            "#958949",
+            "#736E58",
+            "#535A6D",
+            "#6375A0",
+            "#4384EA",
+            "#3972CA",
+            "#7B87A8",
+            "#6B6E79"
+          ]
+        },
+        "tritan": {
+          "dark": [
+            "#FD657B",
+            "#FF898F",
+            "#FFB3AB",
+            "#9CA293",
+            "#81E2D1",
+            "#00D8C8",
+            "#00F2EB",
+            "#00BCBB",
+            "#74CDD5",
+            "#9CA7BC",
+            "#EA849C",
+            "#FFADBC"
+          ],
+          "light": [
+            "#EB4A65",
+            "#9C2933",
+            "#955A55",
+            "#7B8073",
+            "#279B8B",
+            "#008176",
+            "#006D6A",
+            "#008F8E",
+            "#00A1AF",
+            "#6C768D",
+            "#CB617C",
+            "#B83957"
+          ]
+        }
+      },
+      "contrastDark": [
+        6.67,
+        9.31,
+        12.03,
+        7.39,
+        12.72,
+        10.7,
+        12.72,
+        7.49,
+        10.25,
+        7.72,
+        7.43,
+        11.28
+      ],
+      "contrastLight": [
+        3.3,
+        6.69,
+        4.79,
+        3.57,
+        3.01,
+        4.33,
+        5.78,
+        3.81,
+        3.03,
+        4.21,
+        3.44,
+        5.05
+      ],
+      "separation": {
+        "dark": {
+          "normal": {
+            "min": 8.8,
+            "closest": [
+              5,
+              6
+            ],
+            "under10": 1
+          },
+          "protan": {
+            "min": 6.8,
+            "closest": [
+              8,
+              11
+            ],
+            "under10": 11
+          },
+          "deutan": {
+            "min": 6.7,
+            "closest": [
+              8,
+              10
+            ],
+            "under10": 12
+          },
+          "tritan": {
+            "min": 6.7,
+            "closest": [
+              6,
+              7
+            ],
+            "under10": 10
+          }
+        },
+        "light": {
+          "normal": {
+            "min": 11.9,
+            "closest": [
+              11,
+              12
+            ],
+            "under10": 0
+          },
+          "protan": {
+            "min": 7,
+            "closest": [
+              8,
+              11
+            ],
+            "under10": 4
+          },
+          "deutan": {
+            "min": 6.9,
+            "closest": [
+              3,
+              4
+            ],
+            "under10": 8
+          },
+          "tritan": {
+            "min": 6.8,
+            "closest": [
+              6,
+              8
+            ],
+            "under10": 7
+          }
+        }
+      }
+    },
+    "contrast": {
+      "dark": {
+        "fg on bg": 16.8,
+        "fg on raised": 15.42,
+        "muted on bg": 8.76,
+        "muted on raised": 8.04,
+        "subtle on bg": 5.35,
+        "subtle on raised": 4.91,
+        "accent text on bg": 15.51,
+        "text on accent": 15.51
+      },
+      "light": {
+        "fg on bg": 16.32,
+        "fg on raised": 17.5,
+        "muted on bg": 7.89,
+        "muted on raised": 8.46,
+        "subtle on bg": 5.19,
+        "subtle on raised": 5.57,
+        "accent text on bg": 6.27,
+        "text on accent": 14.8
+      }
+    }
+  }
+]
