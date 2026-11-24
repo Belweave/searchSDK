@@ -123,8 +123,8 @@
   box-shadow:
     inset 0 2px 0 var(--edge),
     0 1px 0 var(--edge-lit);
-  font-size: clamp(0.72rem, 1.3vw, 0.9rem);
-  line-height: 1.7;
+  font-size: clamp(0.75rem, 1.45vw, 1.02rem);
+  line-height: 1.75;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   color: var(--code-fg);
@@ -210,7 +210,7 @@
 }
 @media (min-width: 700px) {
   .switch-cols {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.1fr) minmax(0, 0.85fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
 .switch-col {
@@ -222,9 +222,26 @@
   box-shadow: inset 2px 0 0 var(--lane);
   transition: box-shadow var(--motion-base) var(--motion-ease-standard);
 }
-.switch-still {
+.switch-map-head {
+  justify-content: space-between;
+}
+.switch-map-head .tag {
+  margin-left: 0.35rem;
+}
+.switch-line.switch-row.switch-map-row,
+.switch-row.switch-map-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 0.75rem;
+  padding: 0.3rem 0;
+  border-top: 1px solid var(--line);
+}
+.switch-map-row dt.switch-line {
+  display: block;
+}
+.switch-map-row dd {
+  padding-left: 0.6rem;
   box-shadow: inset 2px 0 0 var(--beam);
-  background: var(--surface-2);
 }
 .switch-col-title {
   display: flex;
@@ -241,6 +258,62 @@
   word-break: break-all;
   color: var(--fg-muted);
   min-height: 6.6em;
+}
+.switch-req {
+  display: grid;
+  gap: 0.6rem;
+}
+.switch-line.switch-endpoint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--fg);
+  white-space: nowrap;
+}
+.switch-endpoint > .figures {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.switch-endpoint > .tag {
+  --tag-fill: var(--lane);
+  --tag-ink: var(--on-state);
+}
+.switch-rows {
+  display: grid;
+  margin: 0;
+  font-family: var(--type-mono);
+  font-stretch: var(--type-mono-stretch);
+  font-size: 0.72rem;
+}
+.switch-line.switch-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 0.75rem;
+  padding: 0.3rem 0;
+  border-top: 1px solid var(--line);
+}
+.switch-row dt {
+  color: var(--lane);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.switch-row dd {
+  margin: 0;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.switch-row[data-kind="fixed"] dt,
+.switch-row[data-kind="fixed"] dd {
+  color: var(--fg-subtle);
+}
+.switch-row[data-kind="auth"] dd {
+  color: var(--fg-muted);
 }
 .switch-line {
   display: block;

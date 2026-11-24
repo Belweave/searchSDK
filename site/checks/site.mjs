@@ -3,7 +3,8 @@
 // Fails (exit 1) on: broken internal links, missing or out-of-range titles and descriptions,
 // pages or regions over their word cap, sample data without its label or outside a labelled
 // region, banned words, misspelt product name, repeated disclaimers, missing trademark line,
-// third-party resources, credential-like strings, and stubs that answer anything but 501.
+// third-party resources, credential-like strings, provider logos without a reserved box, alt text,
+// SVG type or a recorded source, and stubs that answer anything but 501.
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -77,6 +78,8 @@ export async function checkSite(base, { log = console.log } = {}) {
 
   const report = [];
   const onceCounts = ONCE_ONLY.map(() => []);
+  const brandFiles = new Set();
+  const brandFolders = new Set();
 
   for (const [p, page] of pages) {
     if (page.status !== 200 || !page.type.includes("text/html")) continue;
@@ -152,6 +155,18 @@ export async function checkSite(base, { log = console.log } = {}) {
       if (src && /^(https?:)?\/\//.test(src) && !siteOrigins.has(new URL(src, origin).origin)) fail(p, `loads ${src} from another origin`);
     }
 
+    // Provider logos: the providers' own files from public/providers/, each with a reserved box
+    // (width and height) and an alt attribute, and its folder recorded in SOURCES.md.
+    for (const img of findAll(doc, byTag("img"))) {
+      const src = attr(img, "src") ?? "";
+      const m = src.match(/^\/providers\/([a-z0-9-]+)\/[^/]+\.svg$/);
+      if (!m) continue;
+      if (!attr(img, "width") || !attr(img, "height")) fail(p, `provider logo ${src} has no width and height (layout shift)`);
+      if (attr(img, "alt") === undefined) fail(p, `provider logo ${src} has no alt attribute`);
+      brandFiles.add(src);
+      brandFolders.add(m[1]);
+    }
+
     // Indexable HTML pages belong in the sitemap.
     const noindex = /noindex/i.test(attr(findFirst(head, (n) => n.tagName === "meta" && attr(n, "name") === "robots") ?? {}, "content") ?? "");
     if (!noindex && !sitemapPaths.has(p)) fail(p, "indexable page missing from the sitemap");
@@ -170,6 +185,20 @@ export async function checkSite(base, { log = console.log } = {}) {
       if (m) fail(p, `contains a ${name}: “${m[0].slice(0, 40)}”`);
     }
   }
+
+  // Every provider logo a page uses is served from this site as SVG, and its source is recorded.
+  const sources = await readFile(path.join(ROOT, "public", "providers", "SOURCES.md"), "utf8").catch(() => "");
+  if (brandFiles.size && !sources) fail("public/providers/SOURCES.md", "missing: provider logos need their sources recorded");
+  for (const id of brandFolders) {
+    if (!sources.includes(`(\`${id}\`)`)) fail("public/providers/SOURCES.md", `no section for provider folder "${id}" (a heading ending in (\`${id}\`))`);
+  }
+  for (const src of brandFiles) {
+    const res = await get(src);
+    if (res.status !== 200) fail(src, `provider logo returned ${res.status}`);
+    else if (!res.type.includes("image/svg+xml")) fail(src, `provider logo served as ${res.type}`);
+    else if (/<script|\son[a-z]+\s*=|javascript:/i.test(res.body)) fail(src, "provider logo contains script");
+  }
+  log(`provider logos ok (${brandFiles.size} files, ${brandFolders.size} providers)`);
 
   // Stubs answer 501, and the 404 page is a 404.
   for (const stub of STUBS) {

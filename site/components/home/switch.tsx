@@ -16,23 +16,21 @@ export type SwitchProvider = { brand: ProviderBrand; wire: Wire };
 
 const CYCLE_MS = 2800;
 
-function requestLines(w: Wire, query: string, maxResults: number): string[] {
-  // As the runtime builds it: the spec's fixed fields, then the mapped inputs (maxResults defaults to the policy's 10).
-  const values: Record<string, unknown> = { ...w.fixed };
-  if (w.params.query) values[w.params.query] = query;
-  if (w.params.maxResults) values[w.params.maxResults] = maxResults;
-  const key = w.auth.prefix ? `${w.auth.prefix}$${w.auth.env}` : `$${w.auth.env}`;
-  const auth = w.auth.in === "header" ? [`${w.auth.name}: ${key}`] : [];
-  if (w.encoding === "query") {
-    const u = new URL(w.url);
-    const qs = Object.entries(values)
-      .map(([k, v]) => `${k}=${encodeURIComponent(typeof v === "string" ? v : JSON.stringify(v)).replace(/%20/g, "+")}`)
-      .join("&");
-    return [`GET ${u.host}${u.pathname}`, `  ?${qs}`, ...auth];
-  }
+type ReqRow = { k: string; v: string; kind: "param" | "fixed" | "auth" };
+
+/**
+ * The request as the runtime builds it: method and endpoint, the key's header (its variable name,
+ * never a value), then the mapped inputs (maxResults defaults to the policy's 10) and the spec's
+ * fixed fields, sent as a JSON body or a query string.
+ */
+function request(w: Wire, query: string, maxResults: number): { method: string; endpoint: string; rows: ReqRow[] } {
   const u = new URL(w.url);
-  const body = JSON.stringify(values, null, 1).replace(/\n\s*/g, " ");
-  return [`${w.method} ${u.host}${u.pathname}`, ...auth, body];
+  const rows: ReqRow[] = [];
+  if (w.auth.in === "header") rows.push({ k: w.auth.name, v: `${w.auth.prefix ?? ""}$${w.auth.env}`, kind: "auth" });
+  if (w.params.query) rows.push({ k: w.params.query, v: JSON.stringify(query), kind: "param" });
+  if (w.params.maxResults) rows.push({ k: w.params.maxResults, v: String(maxResults), kind: "param" });
+  for (const [k, v] of Object.entries(w.fixed)) rows.push({ k, v: JSON.stringify(v), kind: "fixed" });
+  return { method: w.method, endpoint: `${u.host}${u.pathname}`, rows };
 }
 
 function responseLines(w: Wire): [string, string][] {
@@ -109,62 +107,48 @@ export function ProviderSwitch({ providers, template, query, maxResults }: { pro
             <ProviderMark brand={p.brand} size={14} />
             <span>{p.brand.name}</span>
           </p>
-          <pre className="switch-wire">
-            <code>
-              {requestLines(p.wire, query, maxResults).map((l, n) => (
-                <span key={`${p.brand.id}-${n}`} className="switch-line" style={{ "--i": n } as CSSProperties}>
-                  {l}
-                  {"\n"}
-                </span>
-              ))}
-            </code>
-          </pre>
+          {(() => {
+            const req = request(p.wire, query, maxResults);
+            return (
+              <div className="switch-req" key={p.brand.id}>
+                <p className="switch-line switch-endpoint" style={{ "--i": 0 } as CSSProperties}>
+                  <span className="tag">{req.method}</span>
+                  <span className="figures">{req.endpoint}</span>
+                </p>
+                <dl className="switch-rows">
+                  {req.rows.map((r, n) => (
+                    <div key={r.k} className="switch-line switch-row" data-kind={r.kind} style={{ "--i": n + 1 } as CSSProperties}>
+                      <dt>{r.k}</dt>
+                      <dd>{r.v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            );
+          })()}
         </div>
-        <div className="switch-col" data-moves="">
-          <p className="type-label switch-col-title">Read from its response</p>
-          <pre className="switch-wire">
-            <code>
-              {responseLines(p.wire).map(([from, to], n) => (
-                <span key={`${p.brand.id}-${n}`} className="switch-line switch-map" style={{ "--i": n + 2 } as CSSProperties}>
-                  <span className="switch-from">{from}</span>
-                  <span className="switch-arrow" aria-hidden="true"> → </span>
-                  <span className="switch-to">{to}</span>
-                  {"\n"}
-                </span>
-              ))}
-              {p.wire.cost ? (
-                <span key={`${p.brand.id}-cost`} className="switch-line switch-map" style={{ "--i": 5 } as CSSProperties}>
-                  <span className="switch-from">{p.wire.cost.path}</span>
-                  <span className="switch-arrow" aria-hidden="true"> → </span>
-                  <span className="switch-to">cost</span>
-                  {"\n"}
-                </span>
-              ) : (
-                <span key={`${p.brand.id}-cost`} className="switch-line switch-map" style={{ "--i": 5 } as CSSProperties}>
-                  <span className="switch-from">list price</span>
-                  <span className="switch-arrow" aria-hidden="true"> → </span>
-                  <span className="switch-to">cost</span>
-                  {"\n"}
-                </span>
-              )}
-            </code>
-          </pre>
-        </div>
-        <div className="switch-col switch-still">
-          <p className="type-label switch-col-title">
-            <span>You read</span>
-            <span className="tag">unchanged</span>
+        <div className="switch-col switch-map-col">
+          <p className="type-label switch-col-title switch-map-head">
+            <span>From its response</span>
+            <span>
+              You read <span className="tag">unchanged</span>
+            </span>
           </p>
-          <pre className="switch-wire">
-            <code>
-              {["results[0].url", "results[0].title", "results[0].excerpts", "cost.usd"].map((l) => (
-                <span key={l} className="switch-line-still">
-                  {l}
-                  {"\n"}
-                </span>
-              ))}
-            </code>
-          </pre>
+          <dl className="switch-rows">
+            {[...responseLines(p.wire).map(([from, to]) => [from, `result.${to}`] as const), [p.wire.cost ? p.wire.cost.path : "list price", "cost.usd"] as const].map(([from, to], n) => (
+              <div key={to} className="switch-row switch-map-row">
+                <dt key={`${p.brand.id}-${from}`} className="switch-line" style={{ "--i": n + 1 } as CSSProperties}>
+                  {from}
+                </dt>
+                <dd>
+                  <span aria-hidden="true" className="switch-arrow">
+                    →{" "}
+                  </span>
+                  {to}
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </div>
     </div>
