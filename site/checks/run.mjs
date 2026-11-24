@@ -1,10 +1,12 @@
-// npm run check: typecheck → examples against the SDK → token scan → production build → serve on a free port → crawl and
-// check every page → stop. Exit 1 on any failure. Makes no network request beyond localhost.
+// npm run check: brand copies current → typecheck → examples against the SDK → token and brand-rule scan → production
+// build → serve on a free port → crawl and check every page → stop. Exit 1 on any failure. Makes no network request
+// beyond localhost.
 //   node checks/run.mjs [--no-build]
 import { spawn } from "node:child_process";
 import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { syncBrand } from "./brand.mjs";
 import { checkExamples } from "./examples.mjs";
 import { checkSite } from "./site.mjs";
 import { checkSource } from "./source.mjs";
@@ -52,6 +54,16 @@ async function waitFor(url, timeoutMs = 30_000) {
 let server;
 const results = [];
 try {
+  // The site's identity is a copy of brand/: a stale copy fails here, before anything is built.
+  console.log("\n▸ brand");
+  const brand = await syncBrand();
+  if (brand.failures.length) {
+    for (const f of brand.failures) console.error(`  ✗ ${f}`);
+    throw new Error(`${brand.failures.length} brand copy failure(s); run \`npm run brand:sync\``);
+  }
+  console.log(`brand current (${brand.files} files match brand/)`);
+  results.push(`brand ok (${brand.files} tokens, fonts, marks and icons match brand/)`);
+
   await run(NEXT, ["typegen"], "typegen");
   await run(TSC, ["--noEmit"], "typecheck");
   results.push("typecheck ok");
@@ -72,7 +84,7 @@ try {
     throw new Error(`${source.failures.length} token failure(s)`);
   }
   console.log(`source ok (${source.scanned} files)`);
-  results.push(`tokens ok (${source.scanned} files)`);
+  results.push(`tokens and brand rules ok (${source.scanned} files)`);
 
   if (!skipBuild) {
     await run(NEXT, ["build"], "build");
@@ -92,7 +104,7 @@ try {
     for (const f of site.failures) console.error(`  ✗ ${f}`);
     throw new Error(`${site.failures.length} site failure(s)`);
   }
-  results.push(`crawl ok (${site.report.length} HTML pages, links, titles, descriptions, word caps, sample labels, policy)`);
+  results.push(`crawl ok (${site.report.length} HTML pages, links, titles, descriptions, word caps, sample labels, name, mark, logos, primary keys, icons, policy)`);
 
   console.log(`\n✓ check passed\n  ${results.join("\n  ")}`);
 } catch (error) {

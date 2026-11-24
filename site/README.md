@@ -16,20 +16,22 @@ npm run dev        # http://localhost:3210
 npm run check
 ```
 
-Typechecks, typechecks every TypeScript example (docs code blocks and `content/examples/*.ts`) against `../sdk/typescript/src` (`npm run check:examples` alone), scans for colours, fonts and durations outside the token file, builds, serves on a free local port and crawls every page. It fails on broken links, missing titles or descriptions, word caps (home 150, hero 30, docs page 300, outside code and navigation), sample data without its label, and provider logos that are not this site's SVGs with a reserved box, alt text and a recorded source. Rules: `checks/config.mjs`. No provider call, no network beyond localhost.
+Checks that the site's copies of `../brand` are current, typechecks, typechecks every TypeScript example (docs code blocks and `content/examples/*.ts`) against `../sdk/typescript/src` (`npm run check:examples` alone), scans for colours, fonts and durations outside the token files and for the brand's mechanical "never" rules (no redefined brand token, no blended brand colours, no effects on the mark, no provider hue as decoration, the name spelt `searchSDK`), builds, serves on a free local port and crawls every page. The crawl fails on broken links, missing titles or descriptions, word caps (home 150, hero 30, docs page 300, outside code and navigation), sample data without its label, provider logos that are not this site's SVGs with a reserved box, alt text and a recorded source or that stand taller than searchSDK's mark, the name written any other way, a missing or undersized lockup, a mark path or fill not in the brand files, more than one apricot primary key in a section, and missing icons, manifest or social images. Rules: `checks/config.mjs`. No provider call, no network beyond localhost.
 
 While the dev server runs, build the check elsewhere so it never touches `.next/`:
 `NEXT_DIST_DIR=.cache/next-check npm run check` (Next adds that directory to `tsconfig.json`; do not commit that line).
 
 ## Look
 
-"Signal and spectrum": a night-ink field, each provider a hue that reads as light, the brand as the blend of all of them (`--spectrum`) resolving into one warm white beam (`--beam`). Dark first, light supported. Keys have walls and travel when pressed; panels are slabs; code and tracks are wells.
+The identity is `../brand` (read `brand/GUIDELINES.md`; its rules bind the site). `checks/brand.mjs` copies the brand's own files into the site byte for byte: `styles/brand.css` (from `brand/tokens.site.css`), the two faces in `assets/fonts/`, the lockup, mark and loader SVGs in `assets/brand/`, and the favicon family, app icons and social cards in `app/` and `public/brand/`. `npm run dev` and `npm run build` refresh them (`npm run brand:sync` alone); `npm run check` fails on a stale, missing or stray copy. Change the brand in `brand/`, then rebuild; never edit a copy. `public/brand/github-social.png` is the repository's social preview, uploaded in the GitHub settings.
 
-Every colour, type, space, radius, depth and motion value: `styles/tokens.css`. Fonts: Bricolage Grotesque and Martian Mono in `assets/fonts/` (OFL, see its README). To change the identity, change those only. Script motion uses `lib/motion.ts`: loops run only while visible and the tab is shown, and every animated piece has a reduced-motion still.
+`styles/tokens.css` holds only what the brand leaves to the site: provider hues, the band strip (`--spectrum`, the mark's three colours at hard edges), glow, the backdrop and the depth of keys, slabs and the stage. It never redefines a brand token. Dark first, light supported. Apricot is the one primary action per section, violet is selection, focus is cyan on dark and violet on light. Keys have walls and travel when pressed; panels are slabs; code and tracks are wells.
+
+searchSDK's mark and lockup render only through `components/brand/searchsdk.tsx`, which inlines the brand's SVGs, enforces the minimum sizes and plays the header's one-time intro. Script motion uses `lib/motion.ts`: loops run only while visible and the tab is shown, and every animated piece has a reduced-motion still.
 
 ## Provider logos
 
-`public/providers/<id>/` holds each provider's own files, unmodified, named `mark-on-dark.svg`, `mark-on-light.svg`, `logo-on-dark.svg` and `logo-on-light.svg`; `SOURCES.md` records where each came from and the provider's usage rules. `lib/provider-assets.ts` reads them at build time; a provider with no files shows a monogram, so a new registry spec never breaks the build. Render logos only through `components/brand/provider-mark.tsx`. Provider hues are tokens named `--hue-<id>`, derived from each brand colour.
+`public/providers/<id>/` holds each provider's own files, unmodified, named `mark-on-dark.svg`, `mark-on-light.svg`, `logo-on-dark.svg` and `logo-on-light.svg`; `SOURCES.md` records where each came from and the provider's usage rules. `lib/provider-assets.ts` reads them at build time; a provider with no files shows a monogram, so a new registry spec never breaks the build. Render logos only through `components/brand/provider-mark.tsx`, never taller than searchSDK's header mark. Provider hues are tokens named `--hue-<id>`, derived from each brand colour; they identify a provider beside its logo and name and never decorate.
 
 ## Home page
 

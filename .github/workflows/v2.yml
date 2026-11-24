@@ -1,8 +1,9 @@
-name: v2 registry, runtimes, benchmark and site
+name: v2 brand, registry, runtimes, benchmark and site
 
 on:
   push:
     paths:
+      - brand/**
       - registry/**
       - sdk/typescript/**
       - sdk/python/**
@@ -11,6 +12,7 @@ on:
       - .github/workflows/v2.yml
   pull_request:
     paths:
+      - brand/**
       - registry/**
       - sdk/typescript/**
       - sdk/python/**
@@ -26,6 +28,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  brand:
+    name: Brand exports and rules
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: brand
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Use the repository Node version
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      # Regenerates every SVG, PNG, ICO, token file and the guidelines page in memory and fails if a
+      # committed file differs; checks colour, contrast, name, banned words and word caps. No network.
+      - name: Exports current, colours, contrast and copy rules
+        run: npm run check
+
   typescript:
     name: Registry vectors and TypeScript runtime
     runs-on: ubuntu-24.04
@@ -127,7 +153,9 @@ jobs:
           package-manager-cache: false
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
-      # Reads ../registry and typechecks examples against ../sdk/typescript;
-      # the crawl serves the built site on loopback. No secrets, no provider calls.
-      - name: Typecheck, examples, tokens, build and crawl
+      # Reads ../registry, typechecks examples against ../sdk/typescript and
+      # fails if the site's copies of ../brand (tokens, fonts, marks, icons)
+      # are stale; the crawl serves the built site on loopback and checks the
+      # brand rules. No secrets, no provider calls.
+      - name: Brand copies, typecheck, examples, tokens, build and crawl
         run: npm run check

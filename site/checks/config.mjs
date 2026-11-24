@@ -18,10 +18,30 @@ export const BANNED_WORDS = [
   "game-changing", "game changer", "world-class", "best-in-class", "next-generation", "next-gen", "supercharge",
   "unleash", "effortless", "effortlessly", "powerful", "magical", "simply", "basically", "hopefully", "perhaps",
   "arguably", "very", "really", "just",
+  // brand/GUIDELINES.md, Voice: the brand's own list, on top of the site's.
+  "unlock", "magic", "ultimate", "robust", "next-level",
 ];
 
-/** The product name has one spelling in visible copy. */
-export const NAME_MISSPELLINGS = /\b(SearchSDK|Search SDK|SEARCHSDK|searchSdk|Searchsdk)\b/;
+/**
+ * The product name has one spelling, searchSDK (brand/GUIDELINES.md, Voice). Any other match of
+ * this pattern in visible text outside code, in a title, description, social tag, alt text or
+ * accessible label fails. The package name `searchsdk` appears only as code.
+ */
+export const NAME_PATTERN = /search[\s_-]?sdk/gi;
+export const NAME = "searchSDK";
+
+/** brand/GUIDELINES.md minimum sizes, in CSS pixels of the mark's height. */
+export const MARK_MIN_PX = { mark: 16, lockup: 20 };
+
+/** Head tags every page carries, wired from brand/dist through Next's metadata files. */
+export const REQUIRED_HEAD = [
+  { name: "favicon", test: (n, attr) => n.tagName === "link" && /\bicon\b/.test(attr(n, "rel") ?? "") && /\.ico/.test(attr(n, "href") ?? "") },
+  { name: "SVG icon", test: (n, attr) => n.tagName === "link" && attr(n, "rel") === "icon" && attr(n, "type") === "image/svg+xml" },
+  { name: "apple touch icon", test: (n, attr) => n.tagName === "link" && attr(n, "rel") === "apple-touch-icon" },
+  { name: "web manifest", test: (n, attr) => n.tagName === "link" && attr(n, "rel") === "manifest" },
+  { name: "Open Graph image", test: (n, attr) => n.tagName === "meta" && attr(n, "property") === "og:image" },
+  { name: "Twitter card image", test: (n, attr) => n.tagName === "meta" && attr(n, "name") === "twitter:image" },
+];
 
 /** A disclaimer said once: at most this many pages may carry each phrase. */
 export const ONCE_ONLY = [{ phrase: /provisional/i, pages: 1 }];

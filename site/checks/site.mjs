@@ -4,7 +4,11 @@
 // pages or regions over their word cap, sample data without its label or outside a labelled
 // region, banned words, misspelt product name, repeated disclaimers, missing trademark line,
 // third-party resources, credential-like strings, provider logos without a reserved box, alt text,
-// SVG type or a recorded source, and stubs that answer anything but 501.
+// SVG type or a recorded source, and stubs that answer anything but 501. Brand rules
+// (brand/GUIDELINES.md): the name spelt searchSDK everywhere a reader or a crawler sees it; every
+// page carries the lockup at or above its minimum size, drawn only with the brand's own paths and
+// colours; no provider logo taller than searchSDK's mark; at most one apricot primary key per
+// section; the favicon, icons, manifest and social images present and served.
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,15 +16,18 @@ import {
   BANNED_PATTERNS,
   BANNED_WORDS,
   DESCRIPTION_RANGE,
-  NAME_MISSPELLINGS,
+  MARK_MIN_PX,
+  NAME,
+  NAME_PATTERN,
   ONCE_ONLY,
   PAGE_CAPS,
   REQUIRED_FILES,
+  REQUIRED_HEAD,
   REQUIRED_ON_EVERY_PAGE,
   STUBS,
   TITLE_RANGE,
 } from "./config.mjs";
-import { attr, byTag, contentRoot, countWords, findAll, findFirst, hasAttr, parseHtml, textNodes, textParts } from "./html.mjs";
+import { attr, byTag, contentRoot, countWords, findAll, findFirst, hasAttr, parseHtml, textNodes, textParts, walk } from "./html.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -76,6 +83,8 @@ export async function checkSite(base, { log = console.log } = {}) {
   // Strings from sample files that would identify sample data if they leaked outside a region.
   const sampleStrings = await sampleFingerprints();
 
+  const brandShapes = await brandSvgParts();
+  const headAssets = new Set();
   const report = [];
   const onceCounts = ONCE_ONLY.map(() => []);
   const brandFiles = new Set();
@@ -141,8 +150,65 @@ export async function checkSite(base, { log = console.log } = {}) {
     for (const word of BANNED_WORDS) {
       if (new RegExp(`\\b${word.replace(/[-\s]/g, "[-\\s]")}\\b`, "i").test(prose)) fail(p, `uses “${word}”`);
     }
-    const misspelt = prose.match(NAME_MISSPELLINGS) ?? `${title} ${description}`.match(NAME_MISSPELLINGS);
-    if (misspelt) fail(p, `writes the name as “${misspelt[0]}”; it is always searchSDK`);
+    // The name: visible text outside code (copy and data), head text, alt text and labels.
+    const metaText = findAll(head, (n) => n.tagName === "meta" && /^(og|twitter):(title|description|site_name|image:alt)$/.test(attr(n, "property") ?? attr(n, "name") ?? "")).map((n) => attr(n, "content") ?? "");
+    const labels = findAll(doc, (n) => n.tagName && (attr(n, "alt") !== undefined || attr(n, "aria-label") !== undefined || attr(n, "title") !== undefined)).flatMap((n) => [attr(n, "alt"), attr(n, "aria-label"), attr(n, "title")].filter(Boolean));
+    for (const text of [prose, parts.data, title, description, ...metaText, ...labels]) {
+      for (const m of text.matchAll(NAME_PATTERN)) {
+        // A domain, path or package specifier (searchsdk.dev, /searchsdk-0.0.0.tgz) is an address, not the name.
+        const before = text[m.index - 1] ?? "";
+        const after = text[m.index + m[0].length] ?? "";
+        if (/[./@-]/.test(before) || /[./-]/.test(after)) continue;
+        if (m[0] !== NAME) fail(p, `writes the name as “${m[0]}”; it is always ${NAME}`);
+      }
+    }
+
+    // searchSDK's mark: the lockup on every page at or above its minimum; every drawn mark at or
+    // above its own; only the brand files' own paths and colours (never redrawn or recoloured).
+    const lockups = findAll(doc, (n) => /\bssdk-lockup\b/.test(attr(n, "class") ?? ""));
+    if (!lockups.length) fail(p, "no searchSDK lockup (components/brand/searchsdk.tsx)");
+    const lockupPx = Math.max(0, ...lockups.map((n) => Number(attr(n, "data-mark-px"))));
+    for (const n of lockups) if (!(Number(attr(n, "data-mark-px")) >= MARK_MIN_PX.lockup)) fail(p, `lockup mark is ${attr(n, "data-mark-px")}px; the minimum is ${MARK_MIN_PX.lockup}px`);
+    for (const n of findAll(doc, (n) => /\bssdk-markbox\b/.test(attr(n, "class") ?? ""))) {
+      if (!(Number(attr(n, "data-mark-px")) >= MARK_MIN_PX.mark)) fail(p, `mark is ${attr(n, "data-mark-px")}px; the minimum is ${MARK_MIN_PX.mark}px`);
+    }
+    for (const svg of findAll(doc, (n) => n.tagName === "svg" && /\bssdk-svg\b/.test(attr(n, "class") ?? ""))) {
+      for (const path of findAll(svg, byTag("path"))) {
+        if (!brandShapes.paths.has(attr(path, "d"))) fail(p, "searchSDK's mark has a path that is not in the brand's files (redrawn)");
+        const fill = attr(path, "fill");
+        if (fill && !brandShapes.fills.has(fill.toUpperCase())) fail(p, `searchSDK's mark is filled ${fill}, not a brand colour (recoloured)`);
+      }
+    }
+
+    // Provider logos are never set taller than searchSDK's mark (nominal height, data-size).
+    if (lockupPx) {
+      for (const n of findAll(doc, (n) => attr(n, "data-size") !== undefined && /\b(brand-img|brand-monogram)\b/.test(attr(n, "class") ?? ""))) {
+        if (Number(attr(n, "data-size")) > lockupPx) fail(p, `a provider logo is ${attr(n, "data-size")}px tall, taller than searchSDK's ${lockupPx}px mark`);
+      }
+    }
+
+    // One apricot primary action per view: at most one key-beam in any section.
+    const beams = findAll(doc, (n) => /\bkey-beam\b/.test(attr(n, "class") ?? ""));
+    const sectionOf = (key) => {
+      let owner = null;
+      walk(doc, (n, ancestors) => {
+        if (n === key) owner = [...ancestors].reverse().find((a) => a.tagName === "section" || a.tagName === "main" || a.tagName === "header") ?? null;
+      });
+      return owner;
+    };
+    const perSection = new Map();
+    for (const b of beams) {
+      const owner = sectionOf(b);
+      perSection.set(owner, (perSection.get(owner) ?? 0) + 1);
+    }
+    for (const count of perSection.values()) if (count > 1) fail(p, `${count} apricot primary keys (key-beam) in one section; the brand allows one per view`);
+
+    // Icons, manifest and social images from brand/dist.
+    for (const req of REQUIRED_HEAD) {
+      const node = findFirst(head, (n) => req.test(n, attr));
+      if (!node) fail(p, `missing ${req.name} in <head>`);
+      else headAssets.add(attr(node, "href") ?? attr(node, "content"));
+    }
     ONCE_ONLY.forEach((rule, i) => {
       if (rule.phrase.test(prose)) onceCounts[i].push(p);
     });
@@ -200,6 +266,19 @@ export async function checkSite(base, { log = console.log } = {}) {
   }
   log(`provider logos checked (${brandFiles.size} files, ${brandFolders.size} providers)`);
 
+  // Every icon, manifest and social image the heads point at is served.
+  for (const href of headAssets) {
+    const local = toLocal(href, "/");
+    if (!local) {
+      fail(href, "brand asset is not served from this site");
+      continue;
+    }
+    // The canonical domain maps onto the server under test: only localhost is ever asked.
+    const res = await get(local + (new URL(href, origin).search ?? ""));
+    if (res.status !== 200) fail(local, `brand asset returned ${res.status}`);
+  }
+  log(`brand assets in <head> checked (${headAssets.size} URLs)`);
+
   // Stubs answer 501, and the 404 page is a 404.
   for (const stub of STUBS) {
     const res = await get(stub.path, { method: stub.method });
@@ -215,6 +294,20 @@ export async function checkSite(base, { log = console.log } = {}) {
     log(`${String(r.words).padStart(5)} ${String(r.cap).padStart(4)} ${String(r.dataWords).padStart(5)}  ${r.sample ? "yes   " : "      "}  ${r.path}${r.regions.length ? `  [${r.regions.join(", ")}]` : ""}`);
   }
   return { failures, report };
+}
+
+/** Every path outline and fill in the brand's SVG files the site draws from (assets/brand/). */
+async function brandSvgParts() {
+  const dir = path.join(ROOT, "assets", "brand");
+  const paths = new Set();
+  const fills = new Set();
+  for (const file of await readdir(dir)) {
+    if (!file.endsWith(".svg")) continue;
+    const svg = await readFile(path.join(dir, file), "utf8");
+    for (const m of svg.matchAll(/\sd="([^"]+)"/g)) paths.add(m[1]);
+    for (const m of svg.matchAll(/\sfill="(#[0-9A-Fa-f]{3,8})"/g)) fills.add(m[1].toUpperCase());
+  }
+  return { paths, fills };
 }
 
 /** Distinctive strings (three words or more, or URLs) from every data/*.sample.json file. */
