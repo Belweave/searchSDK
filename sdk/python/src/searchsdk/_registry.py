@@ -21,8 +21,8 @@ from ._schema import validate
 
 
 def _data(rel: str) -> Any:
-    """A file under _registry/ (an importlib.resources Traversable)."""
-    node = resources.files(__package__).joinpath("_registry")
+    """A file under _data/ (an importlib.resources Traversable)."""
+    node = resources.files(__package__).joinpath("_data")
     for part in rel.split("/"):
         node = node.joinpath(part)
     return node

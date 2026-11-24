@@ -1,0 +1,2 @@
+# Development only; the package itself has no dependencies.
+mypy==2.4.1

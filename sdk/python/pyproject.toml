@@ -20,7 +20,7 @@ classifiers = [
 Source = "https://github.com/Belweave/searchSDK/tree/main/sdk/python"
 
 [tool.flit.sdist]
-include = ["tests/", "scripts/"]
+include = ["tests/", "scripts/", "requirements-dev.txt"]
 
 [tool.mypy]
 strict = true

@@ -1,6 +1,6 @@
 """Embeds registry/ into the package.
 
-Copies the registry's JSON files byte for byte into src/searchsdk/_registry/
+Copies the registry's JSON files byte for byte into src/searchsdk/_data/
 and generates src/searchsdk/_generated.py (provider ids and typed provider
 options). With --check, changes nothing and exits 1 when either is out of date.
 """
@@ -15,12 +15,12 @@ from typing import Any
 HERE = Path(__file__).resolve().parent
 REGISTRY = HERE.parent.parent.parent / "registry"
 PACKAGE = HERE.parent / "src" / "searchsdk"
-EMBEDDED = PACKAGE / "_registry"
+EMBEDDED = PACKAGE / "_data"
 GENERATED = PACKAGE / "_generated.py"
 
 
 def wanted_files() -> dict[str, bytes]:
-    """Relative path inside _registry/ -> bytes, for every file the runtime reads."""
+    """Relative path inside _data/ -> bytes, for every file the runtime reads."""
     out = {
         "policy.json": (REGISTRY / "policy.json").read_bytes(),
         "steps.json": (REGISTRY / "steps.json").read_bytes(),

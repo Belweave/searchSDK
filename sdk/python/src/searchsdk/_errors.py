@@ -17,7 +17,7 @@ ErrorCode = Literal[
 
 # Fixed messages, read from registry/policy.json (embedded copy).
 _MESSAGES: dict[str, str] = json.loads(
-    resources.files(__package__).joinpath("_registry").joinpath("policy.json").read_bytes()
+    resources.files(__package__).joinpath("_data").joinpath("policy.json").read_bytes()
 )["errors"]
 
 
