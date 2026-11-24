@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+  <!-- GitHub social preview, 1280 × 640 (GitHub's recommended size). Template: edit the <text> lines,
+       then `npm run build` renders dist/social/github.png. Same rules as og.svg; margins 96. -->
+  <rect width="1280" height="640" fill="#0E0F15"/>
+  <image href="../wordmark/wordmark-dark.svg" x="96" y="96" height="40"/>
+  <text x="96" y="352" font-family="Instrument Sans" font-size="68" font-weight="650" letter-spacing="-0.03" fill="#F6F6F9">One interface to</text>
+  <text x="96" y="432" font-family="Instrument Sans" font-size="68" font-weight="650" letter-spacing="-0.03" fill="#F6F6F9">web search providers</text>
+  <text x="96" y="544" font-family="Martian Mono" font-size="20" font-weight="400" fill="#9697A2">Open source · MIT</text>
+  <image href="../mark/mark-dark.svg" x="848" y="96" width="336" height="336"/>
+</svg>

@@ -1,0 +1,15 @@
+{
+  "name": "searchsdk-brand",
+  "private": true,
+  "type": "module",
+  "description": "searchSDK brand sources and the scripted export.",
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --check"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "2.6.2",
+    "harfbuzzjs": "1.6.2"
+  }
+}
