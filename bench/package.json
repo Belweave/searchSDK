@@ -1,0 +1,21 @@
+{
+  "name": "searchsdk-bench",
+  "version": "0.1.0",
+  "private": true,
+  "description": "searchSDK Benchmarks: datasets, runner, scoring and publication for web search providers.",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=24.22.1" },
+  "scripts": {
+    "bench": "node src/cli.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --test --test-concurrency=1 --import ./test/guard.ts \"test/**/*.test.ts\"",
+    "check": "tsc -p tsconfig.json && npm test && node src/cli.ts dataset validate && node src/cli.ts plan --config config/pilot.json --quiet",
+    "pilot:plan": "node src/cli.ts plan --config config/pilot.json",
+    "pilot": "node src/cli.ts pilot --config config/pilot.json"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1",
+    "typescript": "7.0.2"
+  }
+}

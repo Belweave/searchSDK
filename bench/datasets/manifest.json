@@ -1,0 +1,36 @@
+{
+  "schema": "dataset-manifest/1",
+  "datasets": [
+    {
+      "name": "fresh",
+      "version": "2026-11",
+      "file": "datasets/fresh/fresh-2026-11.jsonl",
+      "sha256": "c5a49e6911f032ee59a68793ce5292bc943cb304554b96876e36f176bb3743f2",
+      "count": 10,
+      "classes": {
+        "fresh": 10
+      },
+      "licences": {
+        "CC0-1.0": 10
+      }
+    },
+    {
+      "name": "seed",
+      "version": "0.1.0",
+      "file": "datasets/public/seed-0.1.0.jsonl",
+      "sha256": "380dcf4c748665f3d4370454a1b9b45766853a7bb2785b4627f30415c608dd0f",
+      "count": 86,
+      "classes": {
+        "fact.head": 15,
+        "fact.tail": 16,
+        "multihop": 14,
+        "tech": 13,
+        "nav": 12,
+        "nonen": 16
+      },
+      "licences": {
+        "CC0-1.0": 86
+      }
+    }
+  ]
+}

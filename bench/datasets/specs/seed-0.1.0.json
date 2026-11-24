@@ -1,0 +1,23 @@
+{
+  "name": "seed",
+  "version": "0.1.0",
+  "split": "public",
+  "seed": 20261124,
+  "builtOn": "2026-11-24",
+  "templates": [
+    { "id": "capital-en-head", "count": 9 },
+    { "id": "nobel-work-author", "count": 8 },
+    { "id": "best-picture-director", "count": 7 },
+    { "id": "small-language-work-author", "count": 10 },
+    { "id": "small-industry-film-director", "count": 10 },
+    { "id": "best-picture-director-birthplace", "count": 9 },
+    { "id": "nobel-work-author-birthplace", "count": 9 },
+    { "id": "language-designer", "count": 10 },
+    { "id": "software-developer", "count": 9 },
+    { "id": "university-website", "count": 13 },
+    { "id": "capital-fr", "count": 5 },
+    { "id": "capital-de", "count": 5 },
+    { "id": "capital-es", "count": 5 },
+    { "id": "capital-ja", "count": 5 }
+  ]
+}

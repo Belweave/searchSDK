@@ -42,3 +42,8 @@ __pycache__/
 # Generated website catalogs and local design evidence
 apps/web/public/sdk-catalog.json
 .impeccable/
+
+# searchSDK Benchmarks: raw responses, page text, judge output, labels, the spend
+# ledger and private items stay local (default store: .local/bench/)
+bench/.local/
+*.private.jsonl
