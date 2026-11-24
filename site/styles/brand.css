@@ -1,0 +1,155 @@
+/* searchSDK tokens under the website's names (site/styles/tokens.css). Generated from brand/tokens.json by `npm run build`; do not edit. */
+
+/* Site-owned, not defined here: --hue-*, --spectrum*, --glow-strength, --backdrop-opacity,
+   --key-wall, --key-travel, --slab-wall, --stage-tilt, --stage-perspective. */
+
+:root {
+  color-scheme: dark;
+  --type-prose: var(--font-prose-face, "Instrument Sans"), ui-sans-serif, system-ui, sans-serif;
+  --type-mono: var(--font-mono-face, "Martian Mono"), ui-monospace, monospace;
+  --type-xs: 0.75rem;
+  --type-sm: 0.875rem;
+  --type-base: 1rem;
+  --type-lg: 1.125rem;
+  --type-xl: 1.375rem;
+  --type-2xl: 1.75rem;
+  --type-3xl: clamp(2rem, 4.2vw, 3.25rem);
+  --type-display: clamp(3rem, 8.4vw, 7rem);
+  --type-h2: clamp(2.25rem, 5vw, 4.25rem);
+  --type-lead: clamp(1.125rem, 1.5vw, 1.375rem);
+  --type-label: 0.6875rem;
+  --type-readout: clamp(2rem, 4vw, 3.25rem);
+  --type-leading-display: 0.94;
+  --type-leading-tight: 1.04;
+  --type-leading-snug: 1.3;
+  --type-leading-normal: 1.6;
+  --type-weight-regular: 400;
+  --type-weight-medium: 500;
+  --type-weight-semibold: 600;
+  --type-weight-display: 650;
+  --type-tracking-display: -0.035em;
+  --type-tracking-tight: -0.022em;
+  --type-tracking-normal: 0;
+  --type-tracking-wide: 0.04em;
+  --type-tracking-label: 0.06em;
+  --type-mono-stretch: 87.5%;
+  --space-unit: 0.25rem;
+  --space-gutter: clamp(1rem, 4vw, 2.5rem);
+  --space-section: clamp(4.5rem, 10vw, 8.5rem);
+  --layout-page-max: 76rem;
+  --layout-measure: 38rem;
+  --corner-sm: 0.125rem;
+  --corner-md: 0.25rem;
+  --corner-lg: 0.5rem;
+  --focus-width: 2px;
+  --focus-offset: 3px;
+  --motion-instant: 80ms;
+  --motion-fast: 140ms;
+  --motion-base: 220ms;
+  --motion-slow: 400ms;
+  --motion-reveal: 640ms;
+  --motion-settle: 1000ms;
+  --motion-stagger: 60ms;
+  --motion-blink: 1s;
+  --motion-mark-band: 480ms;
+  --motion-mark-loop: 2400ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-exit: cubic-bezier(0.7, 0, 0.84, 0);
+  --motion-reveal-distance: 16px;
+  --surface-0: #0E0F15;
+  --surface-1: #14151D;
+  --surface-2: #1C1D27;
+  --surface-3: #252732;
+  --well: #090A10;
+  --edge: #05050A;
+  --edge-lit: #333440;
+  --line: #252732;
+  --line-strong: #72747F;
+  --fg: #F6F6F9;
+  --fg-muted: #B9BAC2;
+  --fg-subtle: #9697A2;
+  --grid-dot: #252732;
+  --beam: #FF9C3F;
+  --on-beam: #0E0F15;
+  --accent: #FF9C3F;
+  --accent-strong: #FFBB74;
+  --accent-text: #FF9C3F;
+  --on-accent: #0E0F15;
+  --selection: #823BFA;
+  --ok: #6FE79F;
+  --warn: #FFB24F;
+  --danger: #FF716B;
+  --sample: #EFDD71;
+  --on-state: #0E0F15;
+  --code-bg: #090A10;
+  --code-fg: #F6F6F9;
+  --code-comment: #9697A2;
+  --code-keyword: #B5A0FF;
+  --code-string: #6DE8E7;
+  --code-number: #FFB573;
+  --code-function: #94D3FF;
+  --code-type: #E6A4E0;
+  --code-punctuation: #B9BAC2;
+  --focus: #00F4FE;
+  --brand-apricot: #FF9C3F;
+  --brand-violet: #823BFA;
+  --brand-cyan: #00F4FE;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --surface-0: #FAF9F6;
+  --surface-1: #FEFDFC;
+  --surface-2: #F4F2EE;
+  --surface-3: #ECE9E4;
+  --well: #F4F2EE;
+  --edge: #D1CDC5;
+  --edge-lit: #FEFDFC;
+  --line: #E1DED7;
+  --line-strong: #72747F;
+  --fg: #0E0F15;
+  --fg-muted: #333440;
+  --fg-subtle: #50525E;
+  --grid-dot: #E1DED7;
+  --beam: #F3821D;
+  --on-beam: #0E0F15;
+  --accent: #F3821D;
+  --accent-strong: #E06D00;
+  --accent-text: #A74900;
+  --on-accent: #0E0F15;
+  --selection: #823BFA;
+  --ok: #007440;
+  --warn: #955400;
+  --danger: #BE222A;
+  --sample: #716400;
+  --on-state: #FAF9F6;
+  --code-bg: #F4F2EE;
+  --code-fg: #0E0F15;
+  --code-comment: #50525E;
+  --code-keyword: #6E37D2;
+  --code-string: #006E77;
+  --code-number: #A34700;
+  --code-function: #1A609E;
+  --code-type: #9A3289;
+  --code-punctuation: #333440;
+  --focus: #823BFA;
+  --brand-apricot: #F3821D;
+  --brand-violet: #823BFA;
+  --brand-cyan: #00C0D7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-instant: 0.01ms;
+    --motion-fast: 0.01ms;
+    --motion-base: 0.01ms;
+    --motion-slow: 0.01ms;
+    --motion-reveal: 0.01ms;
+    --motion-settle: 0.01ms;
+    --motion-stagger: 0.01ms;
+    --motion-blink: 0.01ms;
+    --motion-mark-band: 0.01ms;
+    --motion-mark-loop: 0.01ms;
+  }
+}

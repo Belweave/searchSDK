@@ -8,12 +8,13 @@
     "node": "^24.22.1 || ^26.12.1"
   },
   "scripts": {
-    "dev": "next dev --port 3210",
-    "build": "next build",
+    "dev": "node checks/brand.mjs --write && next dev --port 3210",
+    "build": "node checks/brand.mjs --write && next build",
     "start": "next start --port 3210",
     "typecheck": "next typegen && tsc --noEmit",
     "check": "node checks/run.mjs",
-    "check:examples": "node checks/examples.mjs"
+    "check:examples": "node checks/examples.mjs",
+    "brand:sync": "node checks/brand.mjs --write"
   },
   "dependencies": {
     "fumadocs-core": "16.19.7",

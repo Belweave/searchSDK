@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { Lockup } from "@/components/brand/searchsdk";
 import { primaryNav } from "@/lib/site";
 import { ThemeToggle } from "./theme-toggle";
-import { Wordmark } from "./wordmark";
 
 /** Phone: name and theme on the first row, navigation on the second. Wider: one row. */
 export function SiteHeader() {
@@ -9,7 +9,7 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="site-header-row">
         <Link href="/" className="site-home" aria-label="searchSDK home">
-          <Wordmark />
+          <Lockup intro />
         </Link>
         <nav aria-label="Primary" className="site-nav">
           {primaryNav.map((item) => (

@@ -2,7 +2,9 @@
 /* Fumadocs layout and typography. Its palettes (neutral.css and friends) are not imported: its
    colour variables are mapped onto our tokens below. */
 @import "fumadocs-ui/css/preset.css";
-/* Every value lives here. This file only maps them and draws the shared physical primitives. */
+/* Every value lives in these two: the brand's (a synced copy of brand/tokens.site.css) and the few
+   the brand leaves to the site. This file only maps them and draws the shared physical primitives. */
+@import "../styles/brand.css";
 @import "../styles/tokens.css";
 
 @source not "../checks";
@@ -28,6 +30,7 @@
   --color-on-beam: var(--on-beam);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
+  --color-accent-text: var(--accent-text);
   --color-on-accent: var(--on-accent);
   --color-ok: var(--ok);
   --color-warn: var(--warn);
@@ -83,19 +86,19 @@
   --color-fd-card: var(--surface-1);
   --color-fd-card-foreground: var(--fg);
   --color-fd-border: var(--line);
-  --color-fd-primary: var(--beam);
-  --color-fd-primary-foreground: var(--on-beam);
+  --color-fd-primary: var(--accent-text);
+  --color-fd-primary-foreground: var(--on-accent);
   --color-fd-secondary: var(--surface-2);
   --color-fd-secondary-foreground: var(--fg);
   --color-fd-accent: var(--surface-2);
   --color-fd-accent-foreground: var(--fg);
   --color-fd-ring: var(--focus);
   --color-fd-overlay: color-mix(in oklch, var(--surface-0) 80%, transparent);
-  --color-fd-info: var(--hue-context);
+  --color-fd-info: var(--fg-muted);
   --color-fd-warning: var(--warn);
   --color-fd-error: var(--danger);
   --color-fd-success: var(--ok);
-  --color-fd-idea: var(--hue-tavily);
+  --color-fd-idea: var(--fg-muted);
   --color-fd-diff-remove: color-mix(in oklch, var(--danger) 14%, transparent);
   --color-fd-diff-remove-symbol: var(--danger);
   --color-fd-diff-add: color-mix(in oklch, var(--ok) 14%, transparent);
@@ -108,7 +111,6 @@
     background: var(--surface-0);
     color: var(--fg);
     font-family: var(--type-prose);
-    font-optical-sizing: auto;
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -135,7 +137,7 @@
     text-wrap: pretty;
   }
   ::selection {
-    background: color-mix(in oklch, var(--hue-exa) 45%, transparent);
+    background: color-mix(in oklch, var(--selection) 42%, transparent);
   }
   :focus-visible {
     outline: var(--focus-width) solid var(--focus);
@@ -152,24 +154,30 @@
 }
 @utility type-h2 {
   font-size: var(--type-h2);
-  line-height: var(--type-leading-display);
-  letter-spacing: var(--type-tracking-display);
+  line-height: var(--type-leading-tight);
+  letter-spacing: var(--type-tracking-tight);
   font-weight: var(--type-weight-display);
+}
+/* Section titles inside a page: 2xl, semibold, the brand's tight tracking. */
+@utility type-title {
+  font-size: var(--type-2xl);
+  line-height: var(--type-leading-snug);
+  letter-spacing: var(--type-tracking-tight);
+  font-weight: var(--type-weight-semibold);
 }
 @utility type-lead {
   font-size: var(--type-lead);
-  line-height: var(--type-leading-snug);
-  letter-spacing: -0.006em;
+  line-height: var(--type-leading-normal);
+  letter-spacing: var(--type-tracking-normal);
 }
-/* A label names a control or a value. Never an eyebrow over a heading. */
+/* A label names a control or a value, in sentence case. Never an eyebrow over a heading. */
 @utility type-label {
   font-family: var(--type-mono);
   font-stretch: var(--type-mono-stretch);
   font-size: var(--type-label);
   font-weight: var(--type-weight-medium);
   letter-spacing: var(--type-tracking-label);
-  text-transform: uppercase;
-  line-height: 1.2;
+  line-height: var(--type-leading-snug);
 }
 
 /* Numbers in tables and benchmark figures line up. */
@@ -183,7 +191,7 @@
 
 /* A key: a face on a side wall. Hover lifts the face, press travels it down onto the wall.
    Markup: <a class="key"><span class="key-face">Label</span></a>. Variants: key-beam (the one
-   primary action, on a spectrum wall), key-quiet (a smaller neutral key). */
+   apricot primary action in a view; the crawl allows one per page), key-sm (a smaller key). */
 @utility key {
   --key-face: var(--surface-2);
   --key-ink: var(--fg);
@@ -241,11 +249,14 @@
   }
 }
 @utility key-beam {
-  --key-face: var(--beam);
-  --key-ink: var(--on-beam);
-  --key-wall-fill: var(--spectrum);
+  --key-face: var(--accent);
+  --key-ink: var(--on-accent);
+  --key-wall-fill: color-mix(in oklch, var(--accent) 52%, var(--edge));
   & > .key-face {
-    box-shadow: none;
+    box-shadow: inset 0 1px 0 color-mix(in oklch, var(--accent-strong) 70%, var(--accent));
+  }
+  &:hover > .key-face {
+    --key-face: var(--accent-strong);
   }
 }
 /* Held down and lit: the selected position of a set of keys (a tab, a toggle that is on). */
@@ -292,10 +303,9 @@
   color: var(--tag-ink, var(--fg));
   font-family: var(--type-mono);
   font-stretch: var(--type-mono-stretch);
-  font-size: 0.625rem;
-  font-weight: var(--type-weight-semibold);
+  font-size: var(--type-label);
+  font-weight: var(--type-weight-medium);
   letter-spacing: var(--type-tracking-label);
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -305,7 +315,7 @@
   background-size: 24px 24px;
 }
 
-/* Text links in prose: underlined in the line colour; on hover the underline takes the spectrum. */
+/* Text links in prose: underlined in the line colour; on hover the underline darkens to the text. */
 @utility prose-link {
   color: var(--fg);
   text-decoration: underline;
@@ -314,7 +324,7 @@
   text-underline-offset: 0.22em;
   transition: text-decoration-color var(--motion-fast) var(--motion-ease-standard);
   &:hover {
-    text-decoration-color: var(--hue-perplexity);
+    text-decoration-color: var(--fg);
   }
 }
 
@@ -326,12 +336,51 @@
   z-index: 100;
   padding: calc(var(--space-unit) * 2) calc(var(--space-unit) * 3);
   border-radius: var(--corner-sm);
-  background: var(--beam);
-  color: var(--on-beam);
+  background: var(--fg);
+  color: var(--surface-0);
   font-weight: var(--type-weight-medium);
   transform: translateY(-200%);
   &:focus-visible {
     transform: none;
+  }
+}
+
+/* ── searchSDK's mark and lockup (components/brand/searchsdk.tsx). No effects, ever: no filter,
+   shadow, opacity or transform on the mark itself; the intro moves the bands, not the mark. ── */
+.ssdk-lockup,
+.ssdk-markbox {
+  display: inline-flex;
+  flex: none;
+  line-height: 0;
+}
+.ssdk-lockup > span:first-child {
+  display: contents;
+}
+.ssdk-svg {
+  display: block;
+}
+.ssdk-svg[data-on="light"],
+:root[data-theme="light"] .ssdk-svg[data-on="dark"] {
+  display: none;
+}
+:root[data-theme="light"] .ssdk-svg[data-on="light"] {
+  display: block;
+}
+/* The header intro, once per page load: apricot, then cyan, then violet through the beam
+   (brand/src/motion/mark-intro-*.svg), from the right, on the brand's band duration. */
+:root[data-js] .ssdk-lockup[data-intro] .ssdk-mark path {
+  animation: ssdk-band-in var(--motion-mark-band) var(--motion-ease-enter) both;
+  animation-delay: calc(var(--motion-base) + var(--band-order, 0) * var(--motion-stagger));
+}
+.ssdk-mark path:nth-child(1) {
+  --band-order: 2;
+}
+.ssdk-mark path:nth-child(3) {
+  --band-order: 1;
+}
+@keyframes ssdk-band-in {
+  from {
+    transform: translateX(64px);
   }
 }
 
