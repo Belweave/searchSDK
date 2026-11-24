@@ -1,0 +1,548 @@
+{
+  "description": "Perplexity Search and Context APIs: normalized request to HTTP request, and synthetic response to normalized response.",
+  "synthetic": "Response bodies are synthetic, shaped after the public API reference read 2026-11-24. They were not recorded from the live API.",
+  "cases": [
+    {
+      "name": "search maps every supported option; include and exclude share one list; dates become MM/DD/YYYY",
+      "call": "search",
+      "query": "llm evals",
+      "options": {
+        "provider": "perplexity",
+        "maxResults": 3,
+        "includeDomains": [
+          "arxiv.org",
+          "nature.com"
+        ],
+        "excludeDomains": [
+          "reddit.com"
+        ],
+        "startDate": "2026-01-05",
+        "endDate": "2026-11-20",
+        "country": "us",
+        "language": "EN",
+        "depth": "fast"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": "synthetic-pplx-1",
+            "results": [
+              {
+                "title": "Evaluating LLMs",
+                "url": "https://arxiv.org/abs/0000.00001",
+                "snippet": "Synthetic snippet one.",
+                "date": "2026-03-01",
+                "last_updated": "2026-11-19"
+              },
+              {
+                "title": "Undated",
+                "url": "https://www.nature.com/articles/x",
+                "snippet": "Synthetic snippet two.",
+                "last_updated": "2026-11-18"
+              }
+            ]
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.perplexity.ai/search",
+            "headers": {
+              "accept": "application/json",
+              "content-type": "application/json",
+              "authorization": "Bearer test-key-perplexity"
+            },
+            "body": {
+              "query": "llm evals",
+              "max_results": 3,
+              "search_domain_filter": [
+                "arxiv.org",
+                "nature.com",
+                "-reddit.com"
+              ],
+              "search_after_date_filter": "01/05/2026",
+              "search_before_date_filter": "11/20/2026",
+              "country": "US",
+              "search_language_filter": [
+                "en"
+              ],
+              "search_type": "fast"
+            }
+          }
+        ],
+        "response": {
+          "provider": "perplexity",
+          "results": [
+            {
+              "url": "https://arxiv.org/abs/0000.00001",
+              "title": "Evaluating LLMs",
+              "excerpts": [
+                "Synthetic snippet one."
+              ],
+              "publishedAt": "2026-03-01T00:00:00.000Z",
+              "author": null,
+              "rank": 1,
+              "providerFields": {
+                "lastUpdated": "2026-11-19"
+              }
+            },
+            {
+              "url": "https://www.nature.com/articles/x",
+              "title": "Undated",
+              "excerpts": [
+                "Synthetic snippet two."
+              ],
+              "publishedAt": null,
+              "author": null,
+              "rank": 2,
+              "providerFields": {
+                "lastUpdated": "2026-11-18"
+              }
+            }
+          ],
+          "cost": {
+            "usd": 0.001,
+            "estimated": true,
+            "source": "computed"
+          },
+          "requestId": "synthetic-pplx-1",
+          "latencyMs": 0,
+          "warnings": [],
+          "attempts": [
+            {
+              "provider": "perplexity",
+              "outcome": "ok",
+              "status": 200,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "yes",
+              "cost": {
+                "usd": 0.001,
+                "estimated": true,
+                "source": "computed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "standard depth is the default web search at the standard price",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "perplexity",
+        "recency": "day"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": "r",
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "body": {
+              "query": "q",
+              "max_results": 10,
+              "search_recency_filter": "day"
+            }
+          }
+        ],
+        "responseIncludes": {
+          "results": [],
+          "cost": {
+            "usd": 0.005,
+            "estimated": true,
+            "source": "computed"
+          }
+        }
+      }
+    },
+    {
+      "name": "exclusions alone are prefixed",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "perplexity",
+        "excludeDomains": [
+          "wikipedia.org",
+          "reddit.com"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": "r",
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "bodyIncludes": {
+              "search_domain_filter": [
+                "-wikipedia.org",
+                "-reddit.com"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "deep search is unsupported and nothing is sent",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "perplexity",
+        "depth": "deep"
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "perplexity",
+          "field": "depth"
+        }
+      }
+    },
+    {
+      "name": "401 insufficient_quota is quota",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "perplexity"
+      },
+      "responses": [
+        {
+          "status": 401,
+          "body": {
+            "error": {
+              "message": "No credit left.",
+              "type": "insufficient_quota",
+              "code": 401
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "quota",
+          "status": 401,
+          "providerCode": "insufficient_quota"
+        }
+      }
+    },
+    {
+      "name": "401 invalid_api_key is auth",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "perplexity"
+      },
+      "responses": [
+        {
+          "status": 401,
+          "body": {
+            "error": {
+              "message": "Invalid API key provided.",
+              "type": "invalid_api_key",
+              "code": 401
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "auth",
+          "status": 401,
+          "providerCode": "invalid_api_key"
+        }
+      }
+    },
+    {
+      "name": "400 invalid_country_code is a provider error, not retried",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "perplexity",
+        "country": "zz",
+        "maxRetries": 2
+      },
+      "responses": [
+        {
+          "status": 400,
+          "body": {
+            "error": {
+              "message": "Invalid country.",
+              "type": "invalid_country_code",
+              "code": 400
+            }
+          }
+        }
+      ],
+      "expect": {
+        "requestCount": 1,
+        "error": {
+          "code": "provider_error",
+          "status": 400,
+          "providerCode": "invalid_country_code"
+        }
+      }
+    },
+    {
+      "name": "context maps ok and failed results in request order; any unknown status type is a failure; cost is reported",
+      "call": "contents",
+      "urls": [
+        "https://example.com",
+        "https://example.com/missing-page",
+        "https://blocked.example/x"
+      ],
+      "options": {
+        "provider": "perplexity"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": {
+            "x-request-id": "header-id"
+          },
+          "body": {
+            "request_id": "synthetic-ctx-1",
+            "results": [
+              {
+                "url": "https://example.com",
+                "markdown": "Example Domain\n\nSynthetic text.",
+                "metadata": {
+                  "source_url": "https://example.com/",
+                  "title": "Example Domain",
+                  "published_date": "2026-01-02",
+                  "author": "Synthetic Author",
+                  "fetched_at": "2026-11-19T16:36:31Z"
+                },
+                "status": {
+                  "type": "ok",
+                  "status_code": 200
+                }
+              },
+              {
+                "url": "https://example.com/missing-page",
+                "status": {
+                  "type": "crawl_failed",
+                  "status_code": 404,
+                  "message": "The page could not be fetched."
+                }
+              },
+              {
+                "url": "https://blocked.example/x",
+                "status": {
+                  "type": "a_future_failure_type",
+                  "message": "Synthetic."
+                }
+              }
+            ],
+            "usage": {
+              "fetched_urls": 1,
+              "cost": {
+                "currency": "USD",
+                "total_cost": 0.001
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.perplexity.ai/v1/context",
+            "headers": {
+              "accept": "application/json",
+              "content-type": "application/json",
+              "authorization": "Bearer test-key-perplexity"
+            },
+            "body": {
+              "formats": [
+                "markdown"
+              ],
+              "urls": [
+                "https://example.com",
+                "https://example.com/missing-page",
+                "https://blocked.example/x"
+              ]
+            }
+          }
+        ],
+        "response": {
+          "provider": "perplexity",
+          "pages": [
+            {
+              "url": "https://example.com",
+              "status": "ok",
+              "finalUrl": "https://example.com/",
+              "title": "Example Domain",
+              "content": "Example Domain\n\nSynthetic text.",
+              "publishedAt": "2026-01-02T00:00:00.000Z",
+              "author": "Synthetic Author",
+              "error": null
+            },
+            {
+              "url": "https://example.com/missing-page",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": {
+                "code": "crawl_failed",
+                "message": "The page could not be fetched."
+              }
+            },
+            {
+              "url": "https://blocked.example/x",
+              "status": "failed",
+              "finalUrl": null,
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": {
+                "code": "a_future_failure_type",
+                "message": "Synthetic."
+              }
+            }
+          ],
+          "cost": {
+            "usd": 0.001,
+            "estimated": true,
+            "source": "reported"
+          },
+          "requestId": "synthetic-ctx-1",
+          "latencyMs": 0,
+          "warnings": [],
+          "attempts": [
+            {
+              "provider": "perplexity",
+              "outcome": "ok",
+              "status": 200,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "yes",
+              "cost": {
+                "usd": 0.001,
+                "estimated": true,
+                "source": "reported"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "context without a usage block computes cost from ok pages",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a",
+        "https://example.com/b"
+      ],
+      "options": {
+        "provider": "perplexity"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "request_id": "r",
+            "results": [
+              {
+                "url": "https://example.com/a",
+                "markdown": "A",
+                "status": {
+                  "type": "ok"
+                }
+              },
+              {
+                "url": "https://example.com/b",
+                "status": {
+                  "type": "blocked",
+                  "message": "Blocked."
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "cost": {
+            "usd": 0.001,
+            "estimated": true,
+            "source": "computed"
+          }
+        }
+      }
+    },
+    {
+      "name": "more URLs than the lowest tier allows are unsupported",
+      "call": "contents",
+      "urls": {
+        "$urls": 11
+      },
+      "options": {
+        "provider": "perplexity"
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "perplexity",
+          "field": "urls"
+        }
+      }
+    },
+    {
+      "name": "context 429 carries Retry-After",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a"
+      ],
+      "options": {
+        "provider": "perplexity"
+      },
+      "responses": [
+        {
+          "status": 429,
+          "headers": {
+            "retry-after": "2"
+          },
+          "body": {
+            "error": {
+              "message": "Rate limit exceeded.",
+              "type": "request_rate_limit_exceeded",
+              "code": 429
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "rate_limit",
+          "status": 429,
+          "retryAfterMs": 2000,
+          "providerCode": "request_rate_limit_exceeded"
+        }
+      }
+    }
+  ]
+}

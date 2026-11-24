@@ -2,7 +2,7 @@
 import { deepFreeze } from "../freeze.ts";
 import type { JsonSchema, ProviderSpec } from "../types.ts";
 
-export type ProviderId = "context" | "exa" | "tavily" | "tinyfish";
+export type ProviderId = "brave" | "context" | "exa" | "firecrawl" | "perplexity" | "tavily" | "tinyfish";
 
 export const policy = deepFreeze({
   "$comment": "Shared runtime policy. Every runtime reads these values; none may hard-code its own. Rules: registry/policy.md.",
@@ -1723,6 +1723,340 @@ export const schema = deepFreeze<JsonSchema>({
 });
 
 export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>({
+  "brave": {
+    "formatVersion": 1,
+    "id": "brave",
+    "name": "Brave Search",
+    "specVersion": "2026-11-24",
+    "sources": [
+      {
+        "url": "https://api-dashboard.search.brave.com/api-reference/web/search/get",
+        "retrievedOn": "2026-11-24",
+        "covers": "web search parameters and enums, response model, error model"
+      },
+      {
+        "url": "https://api-dashboard.search.brave.com/app/documentation/web-search/query",
+        "retrievedOn": "2026-11-24",
+        "covers": "freshness values and custom date ranges"
+      },
+      {
+        "url": "https://api-dashboard.search.brave.com/documentation/pricing",
+        "retrievedOn": "2026-11-24",
+        "covers": "price per 1,000 requests, monthly credit, capacity"
+      },
+      {
+        "url": "https://api-dashboard.search.brave.com/documentation/guides/rate-limiting",
+        "retrievedOn": "2026-11-24",
+        "covers": "rate limit headers; only successful requests are billed"
+      }
+    ],
+    "auth": {
+      "in": "header",
+      "name": "x-subscription-token",
+      "env": [
+        "BRAVE_API_KEY"
+      ]
+    },
+    "capabilities": {
+      "search": true,
+      "contents": false,
+      "answer": true,
+      "research": false,
+      "crawl": false
+    },
+    "index": {
+      "type": "own",
+      "note": "Brave describes its own independent index."
+    },
+    "terms": {
+      "url": "https://api-dashboard.search.brave.com/terms-of-service",
+      "readOn": "2026-11-24",
+      "benchmarkPublication": "restricted",
+      "rawResponseStorage": "restricted",
+      "note": "Terms (updated 1 Sep 2026) forbid storing results beyond transient use and using them to benchmark services. Reading from the 2026-11-24 recon; not legal advice."
+    },
+    "errorCodePath": "error.code",
+    "errors": [
+      {
+        "status": 429,
+        "bodyPath": "error.code",
+        "equals": "QUOTA_LIMITED",
+        "code": "quota"
+      }
+    ],
+    "search": {
+      "request": {
+        "method": "GET",
+        "url": "https://api.search.brave.com/res/v1/web/search",
+        "encoding": "query",
+        "fixed": {
+          "result_filter": "web",
+          "text_decorations": false,
+          "spellcheck": false
+        },
+        "params": {
+          "query": {
+            "to": "q"
+          },
+          "maxResults": {
+            "to": "count"
+          },
+          "recency": {
+            "to": "freshness",
+            "steps": [
+              {
+                "step": "map-value",
+                "table": {
+                  "day": "pd",
+                  "week": "pw",
+                  "month": "pm",
+                  "year": "py"
+                }
+              }
+            ]
+          },
+          "country": {
+            "to": "country",
+            "steps": [
+              {
+                "step": "map-value",
+                "table": {
+                  "AR": "AR",
+                  "AU": "AU",
+                  "AT": "AT",
+                  "BE": "BE",
+                  "BR": "BR",
+                  "CA": "CA",
+                  "CL": "CL",
+                  "DK": "DK",
+                  "FI": "FI",
+                  "FR": "FR",
+                  "DE": "DE",
+                  "GR": "GR",
+                  "HK": "HK",
+                  "IN": "IN",
+                  "ID": "ID",
+                  "IT": "IT",
+                  "JP": "JP",
+                  "KR": "KR",
+                  "MY": "MY",
+                  "MX": "MX",
+                  "NL": "NL",
+                  "NZ": "NZ",
+                  "NO": "NO",
+                  "CN": "CN",
+                  "PL": "PL",
+                  "PT": "PT",
+                  "PH": "PH",
+                  "RU": "RU",
+                  "SA": "SA",
+                  "ZA": "ZA",
+                  "ES": "ES",
+                  "SE": "SE",
+                  "CH": "CH",
+                  "TW": "TW",
+                  "TR": "TR",
+                  "GB": "GB",
+                  "US": "US"
+                }
+              }
+            ]
+          },
+          "language": {
+            "to": "search_lang",
+            "steps": [
+              {
+                "step": "map-value",
+                "table": {
+                  "ar": "ar",
+                  "eu": "eu",
+                  "bn": "bn",
+                  "bg": "bg",
+                  "ca": "ca",
+                  "hr": "hr",
+                  "cs": "cs",
+                  "da": "da",
+                  "nl": "nl",
+                  "en": "en",
+                  "et": "et",
+                  "fi": "fi",
+                  "fr": "fr",
+                  "gl": "gl",
+                  "de": "de",
+                  "el": "el",
+                  "gu": "gu",
+                  "he": "he",
+                  "hi": "hi",
+                  "hu": "hu",
+                  "is": "is",
+                  "it": "it",
+                  "ja": "ja",
+                  "kn": "kn",
+                  "ko": "ko",
+                  "lv": "lv",
+                  "lt": "lt",
+                  "ms": "ms",
+                  "ml": "ml",
+                  "mr": "mr",
+                  "nb": "nb",
+                  "pl": "pl",
+                  "pa": "pa",
+                  "ro": "ro",
+                  "ru": "ru",
+                  "sr": "sr",
+                  "sk": "sk",
+                  "sl": "sl",
+                  "es": "es",
+                  "sv": "sv",
+                  "ta": "ta",
+                  "te": "te",
+                  "th": "th",
+                  "tr": "tr",
+                  "uk": "uk",
+                  "vi": "vi"
+                }
+              }
+            ]
+          }
+        },
+        "compose": [
+          {
+            "to": "freshness",
+            "parts": [
+              {
+                "input": "startDate",
+                "required": true
+              },
+              {
+                "text": "to"
+              },
+              {
+                "input": "endDate",
+                "required": true
+              }
+            ]
+          }
+        ]
+      },
+      "limits": {
+        "maxResults": 20,
+        "maxQueryLength": 600,
+        "maxIncludeDomains": 0,
+        "maxExcludeDomains": 0
+      },
+      "dateBasis": "published-or-updated",
+      "response": {
+        "results": "web.results",
+        "resultsOptional": true,
+        "fields": {
+          "url": "url",
+          "title": "title",
+          "excerpts": {
+            "path": "description",
+            "steps": [
+              {
+                "step": "to-list"
+              }
+            ]
+          },
+          "publishedAt": {
+            "path": "page_age",
+            "steps": [
+              {
+                "step": "parse-date"
+              }
+            ]
+          }
+        },
+        "providerFields": {
+          "age": "age",
+          "language": "language",
+          "siteName": "profile.name",
+          "extraSnippets": "extra_snippets"
+        }
+      },
+      "pricing": {
+        "plan": "Search (prepaid)",
+        "source": "https://api-dashboard.search.brave.com/documentation/pricing",
+        "retrievedOn": "2026-11-24",
+        "perRequestUsd": 0.005,
+        "note": "$5 per 1,000 requests, with $5 of credit included every month. Only successful requests are billed."
+      },
+      "rateLimits": [
+        {
+          "plan": "Search",
+          "limit": 50,
+          "per": "second",
+          "scope": "subscription"
+        }
+      ],
+      "providerOptions": {
+        "safesearch": {
+          "enum": [
+            "off",
+            "moderate",
+            "strict"
+          ]
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        },
+        "ui_lang": {
+          "type": "string",
+          "pattern": "^[a-z]{2}-[A-Z]{2}$"
+        },
+        "extra_snippets": {
+          "type": "boolean"
+        },
+        "goggles": {
+          "type": "string",
+          "minLength": 1
+        },
+        "units": {
+          "enum": [
+            "metric",
+            "imperial"
+          ]
+        }
+      }
+    },
+    "unverified": [
+      {
+        "pointer": "/search/request/params/language",
+        "reason": "search_lang also takes zh-hans, zh-hant, pt-br, pt-pt, en-gb and jp, which ISO 639-1 cannot name; zh and pt are left out as ambiguous and are unsupported."
+      },
+      {
+        "pointer": "/search/request/params/recency",
+        "reason": "pm means 31 days, not policy.search.recencyDays.month (30)."
+      },
+      {
+        "pointer": "/search/request/compose/0",
+        "reason": "Docs do not say whether the custom range YYYY-MM-DDtoYYYY-MM-DD includes its end date; a range needs both dates."
+      },
+      {
+        "pointer": "/search/limits/maxQueryLength",
+        "reason": "The limit is 600 characters and 75 words; the word limit cannot be expressed and gives a provider error."
+      },
+      {
+        "pointer": "/search/response/results",
+        "reason": "web is nullable in the response model; a query with no web results may omit it."
+      },
+      {
+        "pointer": "/search/response/fields/publishedAt",
+        "reason": "page_age is the published or last modified date; its string format is not documented."
+      },
+      {
+        "pointer": "/errors/0",
+        "reason": "QUOTA_LIMITED is in the error code enum; the status that carries it is assumed to be 429."
+      },
+      {
+        "pointer": "/terms",
+        "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec."
+      }
+    ]
+  },
   "context": {
     "formatVersion": 1,
     "id": "context",
@@ -2615,6 +2949,854 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       {
         "pointer": "/contents/contentFormat",
         "reason": "text is described as markdown-style plain text, not strict Markdown."
+      },
+      {
+        "pointer": "/terms",
+        "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec."
+      }
+    ]
+  },
+  "firecrawl": {
+    "formatVersion": 1,
+    "id": "firecrawl",
+    "name": "Firecrawl",
+    "specVersion": "2026-11-24",
+    "sources": [
+      {
+        "url": "https://docs.firecrawl.dev/api-reference/endpoint/search.md",
+        "retrievedOn": "2026-11-24",
+        "covers": "search request, response, errors (OpenAPI 3.0, API v2)"
+      },
+      {
+        "url": "https://docs.firecrawl.dev/features/search.md",
+        "retrievedOn": "2026-11-24",
+        "covers": "tbs values and custom date ranges; 2 credits per 10 results"
+      },
+      {
+        "url": "https://docs.firecrawl.dev/api-reference/endpoint/scrape.md",
+        "retrievedOn": "2026-11-24",
+        "covers": "scrape request, response, errors"
+      },
+      {
+        "url": "https://docs.firecrawl.dev/billing.md",
+        "retrievedOn": "2026-11-24",
+        "covers": "credit costs; a returned document is charged even for a target 404"
+      },
+      {
+        "url": "https://www.firecrawl.dev/pricing",
+        "retrievedOn": "2026-11-24",
+        "covers": "plan prices, credits and concurrency"
+      }
+    ],
+    "auth": {
+      "in": "header",
+      "name": "authorization",
+      "prefix": "Bearer ",
+      "env": [
+        "FIRECRAWL_API_KEY"
+      ]
+    },
+    "capabilities": {
+      "search": true,
+      "contents": true,
+      "answer": false,
+      "research": true,
+      "crawl": true
+    },
+    "index": {
+      "type": "unknown",
+      "note": "Search operators and tbs values mirror a Google-style results page; the source is not stated."
+    },
+    "terms": {
+      "url": "https://www.firecrawl.dev/terms-of-service",
+      "readOn": "2026-11-24",
+      "benchmarkPublication": "not-addressed",
+      "rawResponseStorage": "not-addressed",
+      "note": "No benchmark or caching clause found. Reading from the 2026-11-24 recon; not legal advice."
+    },
+    "errorCodePath": "code",
+    "errors": [],
+    "search": {
+      "request": {
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v2/search",
+        "encoding": "json",
+        "fixed": {
+          "sources": [
+            "web"
+          ]
+        },
+        "params": {
+          "query": {
+            "to": "query"
+          },
+          "maxResults": {
+            "to": "limit"
+          },
+          "includeDomains": {
+            "to": "includeDomains"
+          },
+          "excludeDomains": {
+            "to": "excludeDomains"
+          },
+          "recency": {
+            "to": "tbs",
+            "steps": [
+              {
+                "step": "map-value",
+                "table": {
+                  "day": "qdr:d",
+                  "week": "qdr:w",
+                  "month": "qdr:m",
+                  "year": "qdr:y"
+                }
+              }
+            ]
+          },
+          "country": {
+            "to": "country"
+          }
+        },
+        "compose": [
+          {
+            "to": "tbs",
+            "parts": [
+              {
+                "text": "cdr:1"
+              },
+              {
+                "input": "startDate",
+                "text": ",cd_min:",
+                "steps": [
+                  {
+                    "step": "format-date",
+                    "format": "MM/DD/YYYY"
+                  }
+                ]
+              },
+              {
+                "input": "endDate",
+                "text": ",cd_max:",
+                "steps": [
+                  {
+                    "step": "format-date",
+                    "format": "MM/DD/YYYY"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "limits": {
+        "maxResults": 100,
+        "maxQueryLength": 500,
+        "maxIncludeDomains": 100,
+        "maxExcludeDomains": 100,
+        "includeExcludeExclusive": true
+      },
+      "dateBasis": "unknown",
+      "response": {
+        "results": "data.web",
+        "resultsOptional": true,
+        "fields": {
+          "url": "url",
+          "title": "title",
+          "excerpts": {
+            "path": "description",
+            "steps": [
+              {
+                "step": "to-list"
+              }
+            ]
+          }
+        },
+        "requestId": [
+          {
+            "path": "id"
+          }
+        ],
+        "warnings": [
+          {
+            "where": [
+              {
+                "path": "warning",
+                "present": true
+              }
+            ],
+            "code": "provider_warning",
+            "messageField": "warning"
+          }
+        ]
+      },
+      "cost": {
+        "reported": {
+          "path": "creditsUsed",
+          "unit": "credit"
+        }
+      },
+      "pricing": {
+        "plan": "Hobby (monthly billing)",
+        "source": "https://www.firecrawl.dev/pricing",
+        "retrievedOn": "2026-11-24",
+        "creditUsd": 0.0038,
+        "perRequestUsd": 0,
+        "extraBlock": {
+          "items": 10,
+          "usd": 0.0076
+        },
+        "costOptions": {
+          "scrapeOptions": "unknown",
+          "categories": "unknown"
+        },
+        "note": "2 credits per 10 results, rounded up. Hobby is $19 for 5,000 credits; Standard is about $0.001 per credit. Scraping results adds scrape credits; the gov category adds none."
+      },
+      "rateLimits": [
+        {
+          "plan": "Free",
+          "limit": 10,
+          "per": "minute",
+          "scope": "team"
+        },
+        {
+          "plan": "Free",
+          "limit": 2,
+          "per": "concurrent",
+          "scope": "team"
+        },
+        {
+          "plan": "Hobby",
+          "limit": 5,
+          "per": "concurrent",
+          "scope": "team"
+        },
+        {
+          "plan": "Standard",
+          "limit": 25,
+          "per": "concurrent",
+          "scope": "team"
+        },
+        {
+          "plan": "Growth",
+          "limit": 50,
+          "per": "concurrent",
+          "scope": "team"
+        },
+        {
+          "plan": "Scale",
+          "limit": 100,
+          "per": "concurrent",
+          "scope": "team"
+        }
+      ],
+      "providerOptions": {
+        "categories": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "developer",
+              "gov",
+              "research",
+              "pdf"
+            ]
+          }
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1
+        },
+        "safe": {
+          "type": "boolean"
+        },
+        "ignoreInvalidURLs": {
+          "type": "boolean"
+        },
+        "highlights": {
+          "type": "boolean"
+        },
+        "scrapeOptions": {
+          "type": "object"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "contents": {
+      "request": {
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v2/scrape",
+        "encoding": "json",
+        "fixed": {
+          "formats": [
+            "markdown"
+          ],
+          "onlyMainContent": true
+        },
+        "params": {
+          "urls": {
+            "to": "url",
+            "steps": [
+              {
+                "step": "single"
+              }
+            ]
+          }
+        }
+      },
+      "limits": {
+        "maxUrls": 1
+      },
+      "contentFormat": "markdown",
+      "response": {
+        "pages": [
+          {
+            "from": "$",
+            "where": [
+              {
+                "path": "success",
+                "equals": true
+              },
+              {
+                "path": "data.metadata.statusCode",
+                "range": [
+                  200,
+                  399
+                ]
+              }
+            ],
+            "status": "ok",
+            "fields": {
+              "url": "data.metadata.sourceURL",
+              "finalUrl": "data.metadata.url",
+              "title": {
+                "path": "data.metadata.title",
+                "steps": [
+                  {
+                    "step": "join",
+                    "separator": " "
+                  }
+                ]
+              },
+              "content": "data.markdown"
+            }
+          },
+          {
+            "from": "$",
+            "where": [
+              {
+                "path": "success",
+                "equals": true
+              },
+              {
+                "path": "data.metadata.statusCode",
+                "range": [
+                  200,
+                  399
+                ],
+                "not": true
+              }
+            ],
+            "status": "failed",
+            "billable": true,
+            "fields": {
+              "url": "data.metadata.sourceURL",
+              "finalUrl": "data.metadata.url",
+              "errorMessage": "data.metadata.error"
+            }
+          }
+        ],
+        "warnings": [
+          {
+            "where": [
+              {
+                "path": "data.warning",
+                "present": true
+              }
+            ],
+            "code": "provider_warning",
+            "messageField": "data.warning"
+          }
+        ]
+      },
+      "pricing": {
+        "plan": "Hobby (monthly billing)",
+        "source": "https://docs.firecrawl.dev/billing.md",
+        "retrievedOn": "2026-11-24",
+        "creditUsd": 0.0038,
+        "perRequestUsd": 0,
+        "extraBlock": {
+          "items": 1,
+          "usd": 0.0038
+        },
+        "note": "1 credit per returned document, including target 403 and 404 pages; a scrape that returns no document is free."
+      },
+      "rateLimits": [
+        {
+          "plan": "Free",
+          "limit": 10,
+          "per": "minute",
+          "scope": "team"
+        },
+        {
+          "plan": "Hobby",
+          "limit": 5,
+          "per": "concurrent",
+          "scope": "team"
+        }
+      ],
+      "providerOptions": {
+        "waitFor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 60000
+        },
+        "mobile": {
+          "type": "boolean"
+        },
+        "maxAge": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 300000
+        },
+        "onlyMainContent": {
+          "type": "boolean"
+        }
+      }
+    },
+    "unverified": [
+      {
+        "pointer": "/search/request/compose/0",
+        "reason": "Docs show unpadded dates (12/1/2024) in cd_min and cd_max; zero-padded dates are sent. Whether the range is inclusive is not stated."
+      },
+      {
+        "pointer": "/search/request/params/country",
+        "reason": "Docs say ISO country code; some examples use names in location instead."
+      },
+      {
+        "pointer": "/search/limits/maxIncludeDomains",
+        "reason": "No domain-list limit is documented; 100 is SDK policy."
+      },
+      {
+        "pointer": "/search/limits/maxExcludeDomains",
+        "reason": "No domain-list limit is documented; 100 is SDK policy."
+      },
+      {
+        "pointer": "/search/response/resultsOptional",
+        "reason": "The arrays in data depend on the sources requested; whether web is present when it is empty is not stated."
+      },
+      {
+        "pointer": "/search/pricing/extraBlock",
+        "reason": "Docs give 2 credits for 1 to 10 results; whether a search with no results is charged is not stated."
+      },
+      {
+        "pointer": "/search/pricing/creditUsd",
+        "reason": "The credit price depends on the plan, by up to about 4x; the Hobby list price is used."
+      },
+      {
+        "pointer": "/contents/response/pages/1",
+        "reason": "A target 403 or 404 comes back as a document with metadata.statusCode and is charged; it is reported failed and billable. A document without statusCode is treated the same way."
+      },
+      {
+        "pointer": "/contents/pricing/creditUsd",
+        "reason": "The credit price depends on the plan; the Hobby list price is used."
+      },
+      {
+        "pointer": "/terms",
+        "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec."
+      }
+    ]
+  },
+  "perplexity": {
+    "formatVersion": 1,
+    "id": "perplexity",
+    "name": "Perplexity",
+    "specVersion": "2026-11-24",
+    "sources": [
+      {
+        "url": "https://docs.perplexity.ai/api-reference/search-post.md",
+        "retrievedOn": "2026-11-24",
+        "covers": "search request, response, errors (OpenAPI 3.1)"
+      },
+      {
+        "url": "https://docs.perplexity.ai/docs/search/filters/date-time-filters.md",
+        "retrievedOn": "2026-11-24",
+        "covers": "MM/DD/YYYY date filters; an after date includes that day"
+      },
+      {
+        "url": "https://docs.perplexity.ai/docs/search/filters/domain-filter.md",
+        "retrievedOn": "2026-11-24",
+        "covers": "one list mixes include and '-' exclude entries, 200 entries in total"
+      },
+      {
+        "url": "https://docs.perplexity.ai/docs/getting-started/pricing.md",
+        "retrievedOn": "2026-11-24",
+        "covers": "Search $5 and Fast $1 per 1,000 requests; Context $1 per 1,000 ok URLs; billing units"
+      },
+      {
+        "url": "https://docs.perplexity.ai/api-reference/context-post.md",
+        "retrievedOn": "2026-11-24",
+        "covers": "context request, response in request order, per-URL status types, errors"
+      },
+      {
+        "url": "https://docs.perplexity.ai/docs/admin/rate-limits-usage-tiers.md",
+        "retrievedOn": "2026-11-24",
+        "covers": "search query units per second; context requests per second and URLs per request by tier"
+      }
+    ],
+    "auth": {
+      "in": "header",
+      "name": "authorization",
+      "prefix": "Bearer ",
+      "env": [
+        "PERPLEXITY_API_KEY"
+      ]
+    },
+    "capabilities": {
+      "search": true,
+      "contents": true,
+      "answer": true,
+      "research": true,
+      "crawl": false
+    },
+    "index": {
+      "type": "unknown",
+      "note": "Docs call the Search API first-party; they do not say where its index comes from."
+    },
+    "terms": {
+      "url": "https://www.perplexity.ai/hub/legal/perplexity-api-terms-of-service",
+      "readOn": "2026-11-24",
+      "benchmarkPublication": "not-addressed",
+      "rawResponseStorage": "not-addressed",
+      "note": "API terms (updated 23 Jan 2026): the customer owns Output; no benchmark or caching clause found. Reading from the 2026-11-24 recon; not legal advice."
+    },
+    "errorCodePath": "error.type",
+    "errors": [
+      {
+        "status": 401,
+        "bodyPath": "error.type",
+        "equals": "insufficient_quota",
+        "code": "quota"
+      }
+    ],
+    "search": {
+      "request": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/search",
+        "encoding": "json",
+        "params": {
+          "query": {
+            "to": "query"
+          },
+          "maxResults": {
+            "to": "max_results"
+          },
+          "includeDomains": {
+            "to": "search_domain_filter",
+            "append": true
+          },
+          "excludeDomains": {
+            "to": "search_domain_filter",
+            "append": true,
+            "steps": [
+              {
+                "step": "prefix",
+                "prefix": "-"
+              }
+            ]
+          },
+          "recency": {
+            "to": "search_recency_filter"
+          },
+          "startDate": {
+            "to": "search_after_date_filter",
+            "steps": [
+              {
+                "step": "format-date",
+                "format": "MM/DD/YYYY"
+              }
+            ]
+          },
+          "endDate": {
+            "to": "search_before_date_filter",
+            "steps": [
+              {
+                "step": "format-date",
+                "format": "MM/DD/YYYY"
+              }
+            ]
+          },
+          "country": {
+            "to": "country"
+          },
+          "language": {
+            "to": "search_language_filter",
+            "steps": [
+              {
+                "step": "to-list"
+              }
+            ]
+          },
+          "depth": {
+            "to": "search_type",
+            "steps": [
+              {
+                "step": "map-value",
+                "table": {
+                  "fast": "fast",
+                  "standard": "web"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "limits": {
+        "maxResults": 20,
+        "maxQueryLength": null,
+        "maxIncludeDomains": 200,
+        "maxExcludeDomains": 200,
+        "maxTotalDomains": 200
+      },
+      "dateBasis": "published",
+      "response": {
+        "results": "results",
+        "fields": {
+          "url": "url",
+          "title": "title",
+          "excerpts": {
+            "path": "snippet",
+            "steps": [
+              {
+                "step": "to-list"
+              }
+            ]
+          },
+          "publishedAt": {
+            "path": "date",
+            "steps": [
+              {
+                "step": "parse-date"
+              }
+            ]
+          }
+        },
+        "providerFields": {
+          "lastUpdated": "last_updated"
+        },
+        "requestId": [
+          {
+            "path": "id"
+          }
+        ]
+      },
+      "pricing": {
+        "plan": "Pay as you go",
+        "source": "https://docs.perplexity.ai/docs/getting-started/pricing.md",
+        "retrievedOn": "2026-11-24",
+        "perRequestUsd": {
+          "fast": 0.001,
+          "standard": 0.005
+        },
+        "note": "Billed per successful request, also when it returns no results. Invalid, rate-limited and upstream-failed requests are not billed."
+      },
+      "rateLimits": [
+        {
+          "plan": "all tiers",
+          "limit": 50,
+          "per": "second",
+          "scope": "query units"
+        }
+      ],
+      "providerOptions": {
+        "snapshot_as_of": {
+          "type": "string",
+          "minLength": 1
+        },
+        "last_updated_after_filter": {
+          "type": "string",
+          "pattern": "^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$"
+        },
+        "last_updated_before_filter": {
+          "type": "string",
+          "pattern": "^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$"
+        },
+        "display_server_time": {
+          "type": "boolean"
+        }
+      }
+    },
+    "contents": {
+      "request": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/v1/context",
+        "encoding": "json",
+        "fixed": {
+          "formats": [
+            "markdown"
+          ]
+        },
+        "params": {
+          "urls": {
+            "to": "urls"
+          }
+        }
+      },
+      "limits": {
+        "maxUrls": 10
+      },
+      "contentFormat": "markdown",
+      "response": {
+        "pages": [
+          {
+            "from": "results",
+            "where": [
+              {
+                "path": "status.type",
+                "equals": "ok"
+              }
+            ],
+            "status": "ok",
+            "fields": {
+              "url": "url",
+              "finalUrl": "metadata.source_url",
+              "title": "metadata.title",
+              "content": "markdown",
+              "publishedAt": {
+                "path": "metadata.published_date",
+                "steps": [
+                  {
+                    "step": "parse-date"
+                  }
+                ]
+              },
+              "author": "metadata.author"
+            }
+          },
+          {
+            "from": "results",
+            "where": [
+              {
+                "path": "status.type",
+                "in": [
+                  "ok",
+                  "not_modified"
+                ],
+                "not": true
+              }
+            ],
+            "status": "failed",
+            "fields": {
+              "url": "url",
+              "errorCode": "status.type",
+              "errorMessage": "status.message"
+            }
+          }
+        ],
+        "requestId": [
+          {
+            "path": "request_id"
+          },
+          {
+            "header": "x-request-id"
+          }
+        ]
+      },
+      "cost": {
+        "reported": {
+          "path": "usage.cost.total_cost",
+          "unit": "usd",
+          "isEstimate": true
+        }
+      },
+      "pricing": {
+        "plan": "Pay as you go",
+        "source": "https://docs.perplexity.ai/docs/getting-started/pricing.md",
+        "retrievedOn": "2026-11-24",
+        "perRequestUsd": 0,
+        "extraBlock": {
+          "items": 1,
+          "usd": 0.001
+        },
+        "note": "$1 per 1,000 URLs whose status is ok or not_modified; failed URLs are free. usage.cost is at list price."
+      },
+      "rateLimits": [
+        {
+          "plan": "Tier 0",
+          "limit": 1,
+          "per": "second",
+          "scope": "organization"
+        },
+        {
+          "plan": "Tiers 1-3",
+          "limit": 3,
+          "per": "second",
+          "scope": "organization"
+        },
+        {
+          "plan": "Tiers 4-5",
+          "limit": 5,
+          "per": "second",
+          "scope": "organization"
+        }
+      ],
+      "providerOptions": {
+        "max_age_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 63072000
+        },
+        "cache_only": {
+          "type": "boolean"
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 110000
+        },
+        "snapshot_as_of": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "unverified": [
+      {
+        "pointer": "/search/request/params/endDate",
+        "reason": "Docs say an after date includes its day; they do not say whether a before date does."
+      },
+      {
+        "pointer": "/search/request/params/country",
+        "reason": "Codes the provider does not accept give a 400 (invalid_country_code), which is a provider_error, not unsupported."
+      },
+      {
+        "pointer": "/search/request/params/language",
+        "reason": "Codes the provider does not accept give a 400 (invalid_language_code), which is a provider_error, not unsupported."
+      },
+      {
+        "pointer": "/search/request/params/depth",
+        "reason": "No deeper search type exists for web results, so depth deep is unsupported."
+      },
+      {
+        "pointer": "/contents/limits/maxUrls",
+        "reason": "Tier 0 allows 10 URLs per request, tiers 1-3 allow 15, tiers 4-5 allow 25, and no request may carry more than 50. The lowest tier's limit is used."
+      },
+      {
+        "pointer": "/contents/response/pages/0",
+        "reason": "status.status_code is the site's own status on ok results; whether ok can carry a site error page is not stated."
+      },
+      {
+        "pointer": "/contents/response/pages/1/where",
+        "reason": "not_modified needs if_modified_since, which this spec never sends; such a result would be reported missing."
+      },
+      {
+        "pointer": "/index",
+        "reason": "The index source is not documented."
       },
       {
         "pointer": "/terms",
@@ -3632,6 +4814,14 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
 });
 
 export interface SearchProviderOptions {
+  brave?: {
+    "safesearch"?: "off" | "moderate" | "strict";
+    "offset"?: number;
+    "ui_lang"?: string;
+    "extra_snippets"?: boolean;
+    "goggles"?: string;
+    "units"?: "metric" | "imperial";
+  };
   context?: {
     "markdownOptions"?: Record<string, unknown>;
     "highlightsOptions"?: Record<string, unknown>;
@@ -3651,6 +4841,21 @@ export interface SearchProviderOptions {
     "startCrawlDate"?: string;
     "endCrawlDate"?: string;
     "userIdentifier"?: string;
+  };
+  firecrawl?: {
+    "categories"?: Array<"developer" | "gov" | "research" | "pdf">;
+    "location"?: string;
+    "safe"?: boolean;
+    "ignoreInvalidURLs"?: boolean;
+    "highlights"?: boolean;
+    "scrapeOptions"?: Record<string, unknown>;
+    "timeout"?: number;
+  };
+  perplexity?: {
+    "snapshot_as_of"?: string;
+    "last_updated_after_filter"?: string;
+    "last_updated_before_filter"?: string;
+    "display_server_time"?: boolean;
   };
   tavily?: {
     "topic"?: "general" | "news" | "finance";
@@ -3693,6 +4898,19 @@ export interface ContentsProviderOptions {
     "livecrawlTimeout"?: number;
     "subpages"?: number;
     "userIdentifier"?: string;
+  };
+  firecrawl?: {
+    "waitFor"?: number;
+    "mobile"?: boolean;
+    "maxAge"?: number;
+    "timeout"?: number;
+    "onlyMainContent"?: boolean;
+  };
+  perplexity?: {
+    "max_age_seconds"?: number;
+    "cache_only"?: boolean;
+    "timeout_ms"?: number;
+    "snapshot_as_of"?: string;
   };
   tavily?: {
     "query"?: string;

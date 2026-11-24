@@ -1,0 +1,143 @@
+{
+  "$schema": "../schema/provider.schema.json",
+  "formatVersion": 1,
+  "id": "perplexity",
+  "name": "Perplexity",
+  "specVersion": "2026-11-24",
+  "sources": [
+    { "url": "https://docs.perplexity.ai/api-reference/search-post.md", "retrievedOn": "2026-11-24", "covers": "search request, response, errors (OpenAPI 3.1)" },
+    { "url": "https://docs.perplexity.ai/docs/search/filters/date-time-filters.md", "retrievedOn": "2026-11-24", "covers": "MM/DD/YYYY date filters; an after date includes that day" },
+    { "url": "https://docs.perplexity.ai/docs/search/filters/domain-filter.md", "retrievedOn": "2026-11-24", "covers": "one list mixes include and '-' exclude entries, 200 entries in total" },
+    { "url": "https://docs.perplexity.ai/docs/getting-started/pricing.md", "retrievedOn": "2026-11-24", "covers": "Search $5 and Fast $1 per 1,000 requests; Context $1 per 1,000 ok URLs; billing units" },
+    { "url": "https://docs.perplexity.ai/api-reference/context-post.md", "retrievedOn": "2026-11-24", "covers": "context request, response in request order, per-URL status types, errors" },
+    { "url": "https://docs.perplexity.ai/docs/admin/rate-limits-usage-tiers.md", "retrievedOn": "2026-11-24", "covers": "search query units per second; context requests per second and URLs per request by tier" }
+  ],
+  "auth": { "in": "header", "name": "authorization", "prefix": "Bearer ", "env": ["PERPLEXITY_API_KEY"] },
+  "capabilities": { "search": true, "contents": true, "answer": true, "research": true, "crawl": false },
+  "index": { "type": "unknown", "note": "Docs call the Search API first-party; they do not say where its index comes from." },
+  "terms": {
+    "url": "https://www.perplexity.ai/hub/legal/perplexity-api-terms-of-service",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "not-addressed",
+    "rawResponseStorage": "not-addressed",
+    "note": "API terms (updated 23 Jan 2026): the customer owns Output; no benchmark or caching clause found. Reading from the 2026-11-24 recon; not legal advice."
+  },
+  "errorCodePath": "error.type",
+  "errors": [
+    { "status": 401, "bodyPath": "error.type", "equals": "insufficient_quota", "code": "quota" }
+  ],
+  "search": {
+    "request": {
+      "method": "POST",
+      "url": "https://api.perplexity.ai/search",
+      "encoding": "json",
+      "params": {
+        "query": { "to": "query" },
+        "maxResults": { "to": "max_results" },
+        "includeDomains": { "to": "search_domain_filter", "append": true },
+        "excludeDomains": { "to": "search_domain_filter", "append": true, "steps": [{ "step": "prefix", "prefix": "-" }] },
+        "recency": { "to": "search_recency_filter" },
+        "startDate": { "to": "search_after_date_filter", "steps": [{ "step": "format-date", "format": "MM/DD/YYYY" }] },
+        "endDate": { "to": "search_before_date_filter", "steps": [{ "step": "format-date", "format": "MM/DD/YYYY" }] },
+        "country": { "to": "country" },
+        "language": { "to": "search_language_filter", "steps": [{ "step": "to-list" }] },
+        "depth": { "to": "search_type", "steps": [{ "step": "map-value", "table": { "fast": "fast", "standard": "web" } }] }
+      }
+    },
+    "limits": { "maxResults": 20, "maxQueryLength": null, "maxIncludeDomains": 200, "maxExcludeDomains": 200, "maxTotalDomains": 200 },
+    "dateBasis": "published",
+    "response": {
+      "results": "results",
+      "fields": {
+        "url": "url",
+        "title": "title",
+        "excerpts": { "path": "snippet", "steps": [{ "step": "to-list" }] },
+        "publishedAt": { "path": "date", "steps": [{ "step": "parse-date" }] }
+      },
+      "providerFields": { "lastUpdated": "last_updated" },
+      "requestId": [{ "path": "id" }]
+    },
+    "pricing": {
+      "plan": "Pay as you go",
+      "source": "https://docs.perplexity.ai/docs/getting-started/pricing.md",
+      "retrievedOn": "2026-11-24",
+      "perRequestUsd": { "fast": 0.001, "standard": 0.005 },
+      "note": "Billed per successful request, also when it returns no results. Invalid, rate-limited and upstream-failed requests are not billed."
+    },
+    "rateLimits": [
+      { "plan": "all tiers", "limit": 50, "per": "second", "scope": "query units" }
+    ],
+    "providerOptions": {
+      "snapshot_as_of": { "type": "string", "minLength": 1 },
+      "last_updated_after_filter": { "type": "string", "pattern": "^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$" },
+      "last_updated_before_filter": { "type": "string", "pattern": "^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$" },
+      "display_server_time": { "type": "boolean" }
+    }
+  },
+  "contents": {
+    "request": {
+      "method": "POST",
+      "url": "https://api.perplexity.ai/v1/context",
+      "encoding": "json",
+      "fixed": { "formats": ["markdown"] },
+      "params": { "urls": { "to": "urls" } }
+    },
+    "limits": { "maxUrls": 10 },
+    "contentFormat": "markdown",
+    "response": {
+      "pages": [
+        {
+          "from": "results",
+          "where": [{ "path": "status.type", "equals": "ok" }],
+          "status": "ok",
+          "fields": {
+            "url": "url",
+            "finalUrl": "metadata.source_url",
+            "title": "metadata.title",
+            "content": "markdown",
+            "publishedAt": { "path": "metadata.published_date", "steps": [{ "step": "parse-date" }] },
+            "author": "metadata.author"
+          }
+        },
+        {
+          "from": "results",
+          "where": [{ "path": "status.type", "in": ["ok", "not_modified"], "not": true }],
+          "status": "failed",
+          "fields": { "url": "url", "errorCode": "status.type", "errorMessage": "status.message" }
+        }
+      ],
+      "requestId": [{ "path": "request_id" }, { "header": "x-request-id" }]
+    },
+    "cost": { "reported": { "path": "usage.cost.total_cost", "unit": "usd", "isEstimate": true } },
+    "pricing": {
+      "plan": "Pay as you go",
+      "source": "https://docs.perplexity.ai/docs/getting-started/pricing.md",
+      "retrievedOn": "2026-11-24",
+      "perRequestUsd": 0,
+      "extraBlock": { "items": 1, "usd": 0.001 },
+      "note": "$1 per 1,000 URLs whose status is ok or not_modified; failed URLs are free. usage.cost is at list price."
+    },
+    "rateLimits": [
+      { "plan": "Tier 0", "limit": 1, "per": "second", "scope": "organization" },
+      { "plan": "Tiers 1-3", "limit": 3, "per": "second", "scope": "organization" },
+      { "plan": "Tiers 4-5", "limit": 5, "per": "second", "scope": "organization" }
+    ],
+    "providerOptions": {
+      "max_age_seconds": { "type": "integer", "minimum": 0, "maximum": 63072000 },
+      "cache_only": { "type": "boolean" },
+      "timeout_ms": { "type": "integer", "minimum": 1000, "maximum": 110000 },
+      "snapshot_as_of": { "type": "string", "minLength": 1 }
+    }
+  },
+  "unverified": [
+    { "pointer": "/search/request/params/endDate", "reason": "Docs say an after date includes its day; they do not say whether a before date does." },
+    { "pointer": "/search/request/params/country", "reason": "Codes the provider does not accept give a 400 (invalid_country_code), which is a provider_error, not unsupported." },
+    { "pointer": "/search/request/params/language", "reason": "Codes the provider does not accept give a 400 (invalid_language_code), which is a provider_error, not unsupported." },
+    { "pointer": "/search/request/params/depth", "reason": "No deeper search type exists for web results, so depth deep is unsupported." },
+    { "pointer": "/contents/limits/maxUrls", "reason": "Tier 0 allows 10 URLs per request, tiers 1-3 allow 15, tiers 4-5 allow 25, and no request may carry more than 50. The lowest tier's limit is used." },
+    { "pointer": "/contents/response/pages/0", "reason": "status.status_code is the site's own status on ok results; whether ok can carry a site error page is not stated." },
+    { "pointer": "/contents/response/pages/1/where", "reason": "not_modified needs if_modified_since, which this spec never sends; such a result would be reported missing." },
+    { "pointer": "/index", "reason": "The index source is not documented." },
+    { "pointer": "/terms", "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec." }
+  ]
+}

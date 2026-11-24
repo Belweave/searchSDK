@@ -1,0 +1,488 @@
+{
+  "description": "Firecrawl search and scrape: normalized request to HTTP request, and synthetic response to normalized response.",
+  "synthetic": "Response bodies are synthetic, shaped after the public API reference read 2026-11-24. They were not recorded from the live API.",
+  "cases": [
+    {
+      "name": "search maps every supported option; a date range becomes one tbs value; credits are reported",
+      "call": "search",
+      "query": "firecrawl docs",
+      "options": {
+        "provider": "firecrawl",
+        "maxResults": 2,
+        "includeDomains": [
+          "docs.firecrawl.dev"
+        ],
+        "startDate": "2024-12-01",
+        "endDate": "2024-12-31",
+        "country": "us"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "success": true,
+            "data": {
+              "web": [
+                {
+                  "title": "Search",
+                  "description": "Synthetic description.",
+                  "url": "https://docs.firecrawl.dev/features/search"
+                },
+                {
+                  "title": "Scrape",
+                  "description": "",
+                  "url": "https://docs.firecrawl.dev/features/scrape"
+                }
+              ]
+            },
+            "warning": "Some tool discovery results are unavailable.",
+            "id": "synthetic-fc-1",
+            "creditsUsed": 2
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.firecrawl.dev/v2/search",
+            "headers": {
+              "accept": "application/json",
+              "content-type": "application/json",
+              "authorization": "Bearer test-key-firecrawl"
+            },
+            "body": {
+              "sources": [
+                "web"
+              ],
+              "query": "firecrawl docs",
+              "limit": 2,
+              "includeDomains": [
+                "docs.firecrawl.dev"
+              ],
+              "country": "US",
+              "tbs": "cdr:1,cd_min:12/01/2024,cd_max:12/31/2024"
+            }
+          }
+        ],
+        "response": {
+          "provider": "firecrawl",
+          "results": [
+            {
+              "url": "https://docs.firecrawl.dev/features/search",
+              "title": "Search",
+              "excerpts": [
+                "Synthetic description."
+              ],
+              "publishedAt": null,
+              "author": null,
+              "rank": 1,
+              "providerFields": {}
+            },
+            {
+              "url": "https://docs.firecrawl.dev/features/scrape",
+              "title": "Scrape",
+              "excerpts": [],
+              "publishedAt": null,
+              "author": null,
+              "rank": 2,
+              "providerFields": {}
+            }
+          ],
+          "cost": {
+            "usd": 0.0076,
+            "estimated": true,
+            "source": "reported-credits",
+            "credits": 2
+          },
+          "requestId": "synthetic-fc-1",
+          "latencyMs": 0,
+          "warnings": [
+            {
+              "code": "provider_warning",
+              "provider": "firecrawl",
+              "message": "Some tool discovery results are unavailable."
+            }
+          ],
+          "attempts": [
+            {
+              "provider": "firecrawl",
+              "outcome": "ok",
+              "status": 200,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "yes",
+              "cost": {
+                "usd": 0.0076,
+                "estimated": true,
+                "source": "reported-credits",
+                "credits": 2
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "recency is a tbs range",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "firecrawl",
+        "recency": "week"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "success": true,
+            "data": {
+              "web": []
+            },
+            "creditsUsed": 2
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "bodyIncludes": {
+              "tbs": "qdr:w"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "include and exclude together are unsupported and nothing is sent",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "firecrawl",
+        "includeDomains": [
+          "a.example"
+        ],
+        "excludeDomains": [
+          "b.example"
+        ]
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "firecrawl",
+          "field": "excludeDomains"
+        }
+      }
+    },
+    {
+      "name": "a response without data.web is an empty success",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "firecrawl"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "success": true,
+            "data": {},
+            "creditsUsed": 0
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "results": [],
+          "warnings": [],
+          "cost": {
+            "usd": 0,
+            "estimated": true,
+            "source": "reported-credits",
+            "credits": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "scraping results makes an unreported cost unknown",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "firecrawl",
+        "providerOptions": {
+          "firecrawl": {
+            "scrapeOptions": {
+              "formats": [
+                "markdown"
+              ]
+            }
+          }
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "success": true,
+            "data": {
+              "web": []
+            }
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "bodyIncludes": {
+              "scrapeOptions": {
+                "formats": [
+                  "markdown"
+                ]
+              }
+            }
+          }
+        ],
+        "responseIncludes": {
+          "cost": {
+            "usd": null,
+            "estimated": true,
+            "source": "unknown"
+          }
+        }
+      }
+    },
+    {
+      "name": "a query over 500 code points is unsupported",
+      "call": "search",
+      "query": {
+        "$repeat": "a",
+        "count": 501
+      },
+      "options": {
+        "provider": "firecrawl"
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "firecrawl",
+          "field": "query"
+        }
+      }
+    },
+    {
+      "name": "scrape maps one URL; a title array is joined; one credit is computed",
+      "call": "contents",
+      "urls": [
+        "https://example.com/page"
+      ],
+      "options": {
+        "provider": "firecrawl"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "success": true,
+            "data": {
+              "markdown": "# Page\n\nSynthetic text.",
+              "metadata": {
+                "title": [
+                  "Page",
+                  "Alternate"
+                ],
+                "sourceURL": "https://example.com/page",
+                "url": "https://www.example.com/page",
+                "statusCode": 200,
+                "contentType": "text/html"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.firecrawl.dev/v2/scrape",
+            "headers": {
+              "accept": "application/json",
+              "content-type": "application/json",
+              "authorization": "Bearer test-key-firecrawl"
+            },
+            "body": {
+              "formats": [
+                "markdown"
+              ],
+              "onlyMainContent": true,
+              "url": "https://example.com/page"
+            }
+          }
+        ],
+        "response": {
+          "provider": "firecrawl",
+          "pages": [
+            {
+              "url": "https://example.com/page",
+              "status": "ok",
+              "finalUrl": "https://www.example.com/page",
+              "title": "Page Alternate",
+              "content": "# Page\n\nSynthetic text.",
+              "publishedAt": null,
+              "author": null,
+              "error": null
+            }
+          ],
+          "cost": {
+            "usd": 0.0038,
+            "estimated": true,
+            "source": "computed"
+          },
+          "requestId": null,
+          "latencyMs": 0,
+          "warnings": [],
+          "attempts": [
+            {
+              "provider": "firecrawl",
+              "outcome": "ok",
+              "status": 200,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "yes",
+              "cost": {
+                "usd": 0.0038,
+                "estimated": true,
+                "source": "computed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a target 404 is a failed page that is still billed",
+      "call": "contents",
+      "urls": [
+        "https://example.com/gone"
+      ],
+      "options": {
+        "provider": "firecrawl"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "success": true,
+            "data": {
+              "markdown": "Not found",
+              "metadata": {
+                "title": "404",
+                "sourceURL": "https://example.com/gone",
+                "url": "https://example.com/gone",
+                "statusCode": 404,
+                "error": "Not Found"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "pages": [
+            {
+              "url": "https://example.com/gone",
+              "status": "failed",
+              "finalUrl": "https://example.com/gone",
+              "title": null,
+              "content": null,
+              "publishedAt": null,
+              "author": null,
+              "error": {
+                "code": null,
+                "message": "Not Found"
+              }
+            }
+          ],
+          "cost": {
+            "usd": 0.0038,
+            "estimated": true,
+            "source": "computed"
+          }
+        }
+      }
+    },
+    {
+      "name": "two URLs exceed the one-URL scrape and nothing is sent",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a",
+        "https://example.com/b"
+      ],
+      "options": {
+        "provider": "firecrawl"
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "firecrawl",
+          "field": "urls"
+        }
+      }
+    },
+    {
+      "name": "402 is quota",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a"
+      ],
+      "options": {
+        "provider": "firecrawl"
+      },
+      "responses": [
+        {
+          "status": 402,
+          "body": {
+            "success": false,
+            "error": "Payment required to access this resource."
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "quota",
+          "status": 402
+        }
+      }
+    },
+    {
+      "name": "500 keeps the provider code",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a"
+      ],
+      "options": {
+        "provider": "firecrawl"
+      },
+      "responses": [
+        {
+          "status": 500,
+          "body": {
+            "success": false,
+            "code": "UNKNOWN_ERROR",
+            "error": "An unexpected error occurred on the server."
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "unavailable",
+          "status": 500,
+          "providerCode": "UNKNOWN_ERROR"
+        }
+      }
+    }
+  ]
+}
