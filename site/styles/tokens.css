@@ -1,0 +1,154 @@
+/*
+ * searchSDK design tokens: the only place colour, type, spacing, radius and motion values live.
+ *
+ * PLACEHOLDER IDENTITY. The brand is being designed separately (branch v2/brand). To swap the
+ * identity, replace the values below and the two font files in assets/fonts/. Nothing else in the
+ * site names a colour, a font family or a duration; app/globals.css only maps these variables into
+ * Tailwind and Fumadocs.
+ *
+ * Dark is the default (:root). Light is :root[data-theme="light"].
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* ── Surfaces ─────────────────────────────────────────────── */
+  --surface-0: oklch(0.165 0.006 260); /* page */
+  --surface-1: oklch(0.2 0.007 260); /* raised panel */
+  --surface-2: oklch(0.245 0.008 260); /* hover, inset, code */
+  --line: oklch(0.31 0.008 260);
+  --line-strong: oklch(0.42 0.01 260);
+
+  /* ── Text ─────────────────────────────────────────────────── */
+  --fg: oklch(0.94 0.004 260);
+  --fg-muted: oklch(0.77 0.006 260);
+  --fg-subtle: oklch(0.66 0.008 260);
+
+  /* ── Accent: one placeholder signal colour ─────────────────── */
+  --accent: oklch(0.8 0.11 210);
+  --accent-strong: oklch(0.86 0.12 210);
+  --on-accent: oklch(0.18 0.02 220);
+
+  /* ── State ────────────────────────────────────────────────── */
+  --ok: oklch(0.8 0.13 155);
+  --warn: oklch(0.83 0.13 85);
+  --danger: oklch(0.72 0.16 25);
+  --sample: oklch(0.83 0.13 85); /* the "sample data" label */
+
+  /* ── Provider hues: ten placeholder slots, assigned by registry `hue` ── */
+  --hue-1: oklch(0.76 0.13 25);
+  --hue-2: oklch(0.79 0.12 60);
+  --hue-3: oklch(0.83 0.12 95);
+  --hue-4: oklch(0.78 0.13 140);
+  --hue-5: oklch(0.78 0.11 180);
+  --hue-6: oklch(0.77 0.11 215);
+  --hue-7: oklch(0.72 0.13 255);
+  --hue-8: oklch(0.73 0.13 290);
+  --hue-9: oklch(0.75 0.13 325);
+  --hue-10: oklch(0.76 0.12 355);
+
+  /* ── Code ─────────────────────────────────────────────────── */
+  --code-bg: var(--surface-1);
+  --code-fg: var(--fg);
+  --code-comment: var(--fg-subtle);
+  --code-keyword: oklch(0.78 0.11 290);
+  --code-string: oklch(0.82 0.11 150);
+  --code-number: oklch(0.83 0.11 70);
+  --code-function: oklch(0.8 0.1 215);
+  --code-type: oklch(0.82 0.1 185);
+  --code-punctuation: var(--fg-muted);
+
+  /* ── Focus ────────────────────────────────────────────────── */
+  --focus: var(--accent-strong);
+  --focus-width: 2px;
+  --focus-offset: 3px;
+
+  /* ── Type ─────────────────────────────────────────────────── */
+  /* --font-prose-face and --font-mono-face are set by next/font (app/fonts.ts). */
+  --type-prose: var(--font-prose-face), ui-sans-serif, system-ui, sans-serif;
+  --type-mono: var(--font-mono-face), ui-monospace, monospace;
+
+  --type-xs: 0.75rem;
+  --type-sm: 0.875rem;
+  --type-base: 1rem;
+  --type-lg: 1.125rem;
+  --type-xl: 1.375rem;
+  --type-2xl: 1.75rem;
+  --type-3xl: 2.25rem;
+  --type-display: clamp(2.25rem, 5.5vw, 4rem);
+
+  --type-leading-tight: 1.1;
+  --type-leading-snug: 1.3;
+  --type-leading-normal: 1.55;
+
+  --type-weight-regular: 400;
+  --type-weight-medium: 520;
+  --type-weight-semibold: 620;
+
+  --type-tracking-tight: -0.02em;
+  --type-tracking-normal: 0;
+  --type-tracking-wide: 0.04em;
+
+  /* ── Space ────────────────────────────────────────────────── */
+  --space-unit: 0.25rem; /* Tailwind's spacing step: p-4 = 4 × unit */
+  --space-gutter: clamp(1rem, 4vw, 2rem);
+  --space-section: clamp(3rem, 8vw, 6rem);
+  --layout-page-max: 72rem;
+  --layout-measure: 38rem; /* longest comfortable line of prose */
+
+  /* ── Radius ───────────────────────────────────────────────── */
+  --corner-sm: 0.25rem;
+  --corner-md: 0.5rem;
+  --corner-lg: 0.75rem;
+
+  /* ── Motion ───────────────────────────────────────────────── */
+  --motion-instant: 60ms;
+  --motion-fast: 140ms;
+  --motion-base: 220ms;
+  --motion-slow: 360ms;
+  --motion-reveal: 600ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-enter: cubic-bezier(0, 0, 0, 1);
+  --motion-ease-exit: cubic-bezier(0.3, 0, 1, 1);
+  --motion-reveal-distance: 8px;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --surface-0: oklch(0.985 0.002 260);
+  --surface-1: oklch(0.962 0.003 260);
+  --surface-2: oklch(0.93 0.004 260);
+  --line: oklch(0.88 0.005 260);
+  --line-strong: oklch(0.76 0.008 260);
+
+  --fg: oklch(0.2 0.008 260);
+  --fg-muted: oklch(0.4 0.01 260);
+  --fg-subtle: oklch(0.5 0.01 260);
+
+  --accent: oklch(0.5 0.12 230);
+  --accent-strong: oklch(0.44 0.13 230);
+  --on-accent: oklch(0.98 0.005 230);
+
+  --ok: oklch(0.5 0.13 155);
+  --warn: oklch(0.52 0.12 70);
+  --danger: oklch(0.52 0.18 25);
+  --sample: oklch(0.5 0.12 65);
+
+  --hue-1: oklch(0.55 0.17 25);
+  --hue-2: oklch(0.58 0.14 55);
+  --hue-3: oklch(0.6 0.13 95);
+  --hue-4: oklch(0.55 0.14 140);
+  --hue-5: oklch(0.55 0.1 180);
+  --hue-6: oklch(0.53 0.12 220);
+  --hue-7: oklch(0.5 0.16 260);
+  --hue-8: oklch(0.52 0.16 295);
+  --hue-9: oklch(0.54 0.17 330);
+  --hue-10: oklch(0.55 0.17 0);
+
+  --code-keyword: oklch(0.48 0.16 295);
+  --code-string: oklch(0.48 0.12 150);
+  --code-number: oklch(0.52 0.13 60);
+  --code-function: oklch(0.47 0.12 230);
+  --code-type: oklch(0.47 0.1 190);
+}

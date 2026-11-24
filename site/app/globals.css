@@ -1,0 +1,197 @@
+@import "tailwindcss";
+/* Fumadocs layout and typography. Its palettes (neutral.css and friends) are not imported: its
+   colour variables are mapped onto our tokens below. */
+@import "fumadocs-ui/css/preset.css";
+/* Every value lives here. This file only maps them. */
+@import "../styles/tokens.css";
+
+@source not "../checks";
+@source not "../.cache";
+
+/* Dark is the default and carries the `dark` class, so Fumadocs' dark: variants follow the theme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Tokens into Tailwind (inline: utilities read the live variable, so themes switch at runtime) ── */
+@theme inline {
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-on-accent: var(--on-accent);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-sample: var(--sample);
+  --color-hue-1: var(--hue-1);
+  --color-hue-2: var(--hue-2);
+  --color-hue-3: var(--hue-3);
+  --color-hue-4: var(--hue-4);
+  --color-hue-5: var(--hue-5);
+  --color-hue-6: var(--hue-6);
+  --color-hue-7: var(--hue-7);
+  --color-hue-8: var(--hue-8);
+  --color-hue-9: var(--hue-9);
+  --color-hue-10: var(--hue-10);
+
+  --font-sans: var(--type-prose);
+  --font-mono: var(--type-mono);
+
+  --text-xs: var(--type-xs);
+  --text-sm: var(--type-sm);
+  --text-base: var(--type-base);
+  --text-lg: var(--type-lg);
+  --text-xl: var(--type-xl);
+  --text-2xl: var(--type-2xl);
+  --text-3xl: var(--type-3xl);
+  --text-display: var(--type-display);
+  --leading-tight: var(--type-leading-tight);
+  --leading-snug: var(--type-leading-snug);
+  --leading-normal: var(--type-leading-normal);
+  --font-weight-normal: var(--type-weight-regular);
+  --font-weight-medium: var(--type-weight-medium);
+  --font-weight-semibold: var(--type-weight-semibold);
+  --tracking-tight: var(--type-tracking-tight);
+  --tracking-normal: var(--type-tracking-normal);
+  --tracking-wide: var(--type-tracking-wide);
+
+  --spacing: var(--space-unit);
+  --spacing-gutter: var(--space-gutter);
+  --spacing-section: var(--space-section);
+  --container-page: var(--layout-page-max);
+  --container-measure: var(--layout-measure);
+
+  --radius-sm: var(--corner-sm);
+  --radius-md: var(--corner-md);
+  --radius-lg: var(--corner-lg);
+
+  --ease-standard: var(--motion-ease-standard);
+  --ease-enter: var(--motion-ease-enter);
+  --ease-exit: var(--motion-ease-exit);
+}
+
+/* ── Tokens onto Fumadocs' colour variables ── */
+@theme inline {
+  --color-fd-background: var(--surface-0);
+  --color-fd-foreground: var(--fg);
+  --color-fd-muted: var(--surface-1);
+  --color-fd-muted-foreground: var(--fg-muted);
+  --color-fd-popover: var(--surface-1);
+  --color-fd-popover-foreground: var(--fg);
+  --color-fd-card: var(--surface-1);
+  --color-fd-card-foreground: var(--fg);
+  --color-fd-border: var(--line);
+  --color-fd-primary: var(--accent);
+  --color-fd-primary-foreground: var(--on-accent);
+  --color-fd-secondary: var(--surface-2);
+  --color-fd-secondary-foreground: var(--fg);
+  --color-fd-accent: var(--surface-2);
+  --color-fd-accent-foreground: var(--fg);
+  --color-fd-ring: var(--focus);
+  --color-fd-overlay: color-mix(in oklch, var(--surface-0) 80%, transparent);
+  --color-fd-info: var(--accent);
+  --color-fd-warning: var(--warn);
+  --color-fd-error: var(--danger);
+  --color-fd-success: var(--ok);
+  --color-fd-idea: var(--accent);
+  --color-fd-diff-remove: color-mix(in oklch, var(--danger) 14%, transparent);
+  --color-fd-diff-remove-symbol: var(--danger);
+  --color-fd-diff-add: color-mix(in oklch, var(--ok) 14%, transparent);
+  --color-fd-diff-add-symbol: var(--ok);
+}
+
+/* ── Base ── */
+@layer base {
+  html {
+    background: var(--surface-0);
+    color: var(--fg);
+    font-family: var(--type-prose);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    min-height: 100dvh;
+    background: var(--surface-0);
+    line-height: var(--type-leading-normal);
+  }
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--type-mono);
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--accent) 35%, transparent);
+  }
+  :focus-visible {
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: var(--focus-offset);
+  }
+}
+
+/* Numbers in tables and benchmark figures line up. */
+@utility figures {
+  font-family: var(--type-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Skip link: off-screen until focused, then the first thing on the page. */
+@utility skip-link {
+  position: absolute;
+  left: var(--space-gutter);
+  top: calc(var(--space-unit) * 2);
+  z-index: 100;
+  padding: calc(var(--space-unit) * 2) calc(var(--space-unit) * 3);
+  border-radius: var(--corner-md);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: var(--type-weight-medium);
+  transform: translateY(-200%);
+  &:focus-visible {
+    transform: none;
+  }
+}
+
+/* Scroll reveal for later motion work: components add data-reveal and lib/motion's useInView sets data-inview. */
+[data-reveal] {
+  transition:
+    opacity var(--motion-reveal) var(--motion-ease-enter),
+    transform var(--motion-reveal) var(--motion-ease-enter);
+}
+[data-reveal]:not([data-inview]) {
+  opacity: 0;
+  transform: translateY(var(--motion-reveal-distance));
+}
+:root:not([data-js]) [data-reveal] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Theme switch: no colour transitions while the theme flips. */
+:root[data-theme-switching] *,
+:root[data-theme-switching] *::before,
+:root[data-theme-switching] *::after {
+  transition: none !important;
+}
+
+/* Reduced motion, globally: animations finish at once and nothing scrolls smoothly.
+   Components that animate from script must also use lib/motion.ts (usePrefersReducedMotion). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
