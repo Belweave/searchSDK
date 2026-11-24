@@ -376,7 +376,13 @@ export function Stage({ stage, template, sampleTag }: Props) {
                             part === "%%QUERY%%" ? (
                               <span key={k} className="stage-query">
                                 <span className="c-str">&quot;{query}</span>
-                                {typing || t < story.times.typeStart ? <span className="stage-caret" aria-hidden="true" /> : null}
+                                {/* The rest of the query holds its place unseen, so typing never re-wraps the code. */}
+                                <span className="stage-caret-anchor">
+                                  {typing || t < story.times.typeStart ? <span className="stage-caret" aria-hidden="true" /> : null}
+                                </span>
+                                <span className="c-str stage-query-rest" aria-hidden="true">
+                                  {preset.query.slice(query.length)}
+                                </span>
                                 <span className="c-str">&quot;</span>
                               </span>
                             ) : part === "%%PROVIDERS%%" ? (
@@ -545,7 +551,7 @@ export function Stage({ stage, template, sampleTag }: Props) {
                 <div className="stage-panel-head">
                   <span className="type-label">contents()</span>
                   <ProviderMark brand={stage.contents} size={14} />
-                  <span className="stage-page-url figures">{host(pageDoc.url)}</span>
+                  <span className="stage-page-url figures">{frame.contentsPressed ? host(pageDoc.url) : "–"}</span>
                 </div>
                 <div className="stage-page-text">
                   {(() => {
@@ -586,7 +592,7 @@ export function Stage({ stage, template, sampleTag }: Props) {
                     ))}
                   </span>
                 </div>
-                <pre className="stage-json stage-answer-json">
+                <pre className="stage-json stage-answer-json" data-waiting={frame.converge > 0 || userTab ? undefined : ""}>
                   <code>
                     {tabResult
                       ? jsonLines(

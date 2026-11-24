@@ -23,7 +23,9 @@ export default function Home() {
     <>
       <section data-cap="30" data-cap-name="hero" className="hero">
         <div className="page-wrap">
-          <h1 className="type-display hero-h1">Every search API. One call.</h1>
+          <h1 className="type-display hero-h1">
+            Every search API. <span className="hero-beam">One call.</span>
+          </h1>
           <div className="hero-side">
             <p className="type-lead hero-lead">
               searchSDK gives AI apps and agents one interface to {counted} web search providers, with fallback, honest cost and

@@ -8,6 +8,30 @@
   max-width: 11ch;
   color: var(--fg);
 }
+/* "One call." gathers the spectrum beneath it: seven hues drawn in from the left into one line. */
+.hero-beam {
+  position: relative;
+  display: inline-block;
+}
+.hero-beam::after {
+  content: "";
+  position: absolute;
+  left: 0.04em;
+  right: 0.12em;
+  bottom: -0.02em;
+  height: 0.075em;
+  border-radius: 0.05em;
+  background: var(--spectrum);
+  transform-origin: 0 50%;
+  animation: hero-beam var(--motion-settle) var(--motion-ease-enter) both;
+  animation-delay: var(--motion-base);
+}
+@keyframes hero-beam {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+}
 .hero-side {
   display: grid;
   gap: 1.75rem;
