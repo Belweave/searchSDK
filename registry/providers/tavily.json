@@ -1,0 +1,201 @@
+{
+  "$schema": "../schema/provider.schema.json",
+  "formatVersion": 1,
+  "id": "tavily",
+  "name": "Tavily",
+  "specVersion": "2026-11-24",
+  "sources": [
+    { "url": "https://docs.tavily.com/documentation/api-reference/endpoint/search.md", "retrievedOn": "2026-11-24", "covers": "search request, response, status codes (OpenAPI 3.0.3)" },
+    { "url": "https://docs.tavily.com/documentation/api-reference/endpoint/extract.md", "retrievedOn": "2026-11-24", "covers": "extract request, response, status codes" },
+    { "url": "https://docs.tavily.com/documentation/api-credits.md", "retrievedOn": "2026-11-24", "covers": "credit costs and credit prices" },
+    { "url": "https://docs.tavily.com/documentation/rate-limits.md", "retrievedOn": "2026-11-24", "covers": "rate limits, 429 and 434 behaviour" }
+  ],
+  "auth": { "in": "header", "name": "authorization", "prefix": "Bearer ", "env": ["TAVILY_API_KEY"] },
+  "capabilities": { "search": true, "contents": true, "answer": true, "research": true, "crawl": true },
+  "index": { "type": "unknown", "note": "Tavily does not state its index source. It serves cached copies and fetches live as needed." },
+  "terms": {
+    "url": "https://www.tavily.com/terms",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "not-addressed",
+    "rawResponseStorage": "not-addressed",
+    "note": "No benchmark or caching clause found. Tavily may retain and train on inputs and outputs. Reading from the 2026-11-24 recon; not legal advice."
+  },
+  "errors": [
+    { "status": 432, "code": "quota" },
+    { "status": 433, "code": "quota" },
+    { "status": 434, "code": "unavailable" }
+  ],
+  "search": {
+    "request": {
+      "method": "POST",
+      "url": "https://api.tavily.com/search",
+      "encoding": "json",
+      "fixed": {
+        "search_depth": "basic",
+        "include_usage": true,
+        "include_published_date": true,
+        "include_answer": false,
+        "include_raw_content": false,
+        "auto_parameters": false
+      },
+      "params": {
+        "query": { "to": "query" },
+        "maxResults": { "to": "max_results" },
+        "includeDomains": { "to": "include_domains" },
+        "excludeDomains": { "to": "exclude_domains" },
+        "recency": { "to": "time_range" },
+        "startDate": { "to": "start_date" },
+        "endDate": { "to": "end_date" },
+        "country": {
+          "to": "country",
+          "steps": [{
+            "step": "map-value",
+            "table": {
+              "AF": "afghanistan", "AL": "albania", "DZ": "algeria", "AD": "andorra", "AO": "angola",
+              "AR": "argentina", "AM": "armenia", "AU": "australia", "AT": "austria", "AZ": "azerbaijan",
+              "BS": "bahamas", "BH": "bahrain", "BD": "bangladesh", "BB": "barbados", "BY": "belarus",
+              "BE": "belgium", "BZ": "belize", "BJ": "benin", "BT": "bhutan", "BO": "bolivia",
+              "BA": "bosnia and herzegovina", "BW": "botswana", "BR": "brazil", "BN": "brunei", "BG": "bulgaria",
+              "BF": "burkina faso", "BI": "burundi", "KH": "cambodia", "CM": "cameroon", "CA": "canada",
+              "CV": "cape verde", "CF": "central african republic", "TD": "chad", "CL": "chile", "CN": "china",
+              "CO": "colombia", "KM": "comoros", "CG": "congo", "CR": "costa rica", "HR": "croatia",
+              "CU": "cuba", "CY": "cyprus", "CZ": "czech republic", "DK": "denmark", "DJ": "djibouti",
+              "DO": "dominican republic", "EC": "ecuador", "EG": "egypt", "SV": "el salvador", "GQ": "equatorial guinea",
+              "ER": "eritrea", "EE": "estonia", "ET": "ethiopia", "FJ": "fiji", "FI": "finland",
+              "FR": "france", "GA": "gabon", "GM": "gambia", "GE": "georgia", "DE": "germany",
+              "GH": "ghana", "GR": "greece", "GT": "guatemala", "GN": "guinea", "HT": "haiti",
+              "HN": "honduras", "HU": "hungary", "IS": "iceland", "IN": "india", "ID": "indonesia",
+              "IR": "iran", "IQ": "iraq", "IE": "ireland", "IL": "israel", "IT": "italy",
+              "JM": "jamaica", "JP": "japan", "JO": "jordan", "KZ": "kazakhstan", "KE": "kenya",
+              "KW": "kuwait", "KG": "kyrgyzstan", "LV": "latvia", "LB": "lebanon", "LS": "lesotho",
+              "LR": "liberia", "LY": "libya", "LI": "liechtenstein", "LT": "lithuania", "LU": "luxembourg",
+              "MG": "madagascar", "MW": "malawi", "MY": "malaysia", "MV": "maldives", "ML": "mali",
+              "MT": "malta", "MR": "mauritania", "MU": "mauritius", "MX": "mexico", "MD": "moldova",
+              "MC": "monaco", "MN": "mongolia", "ME": "montenegro", "MA": "morocco", "MZ": "mozambique",
+              "MM": "myanmar", "NA": "namibia", "NP": "nepal", "NL": "netherlands", "NZ": "new zealand",
+              "NI": "nicaragua", "NE": "niger", "NG": "nigeria", "KP": "north korea", "MK": "north macedonia",
+              "NO": "norway", "OM": "oman", "PK": "pakistan", "PA": "panama", "PG": "papua new guinea",
+              "PY": "paraguay", "PE": "peru", "PH": "philippines", "PL": "poland", "PT": "portugal",
+              "QA": "qatar", "RO": "romania", "RU": "russia", "RW": "rwanda", "SA": "saudi arabia",
+              "SN": "senegal", "RS": "serbia", "SG": "singapore", "SK": "slovakia", "SI": "slovenia",
+              "SO": "somalia", "ZA": "south africa", "KR": "south korea", "SS": "south sudan", "ES": "spain",
+              "LK": "sri lanka", "SD": "sudan", "SE": "sweden", "CH": "switzerland", "SY": "syria",
+              "TW": "taiwan", "TJ": "tajikistan", "TZ": "tanzania", "TH": "thailand", "TG": "togo",
+              "TT": "trinidad and tobago", "TN": "tunisia", "TR": "turkey", "TM": "turkmenistan", "UG": "uganda",
+              "UA": "ukraine", "AE": "united arab emirates", "GB": "united kingdom", "US": "united states", "UY": "uruguay",
+              "UZ": "uzbekistan", "VE": "venezuela", "VN": "vietnam", "YE": "yemen", "ZM": "zambia",
+              "ZW": "zimbabwe"
+            }
+          }]
+        },
+        "language": { "to": "language" },
+        "depth": { "to": "search_depth", "steps": [{ "step": "map-value", "table": { "fast": "fast", "standard": "basic", "deep": "advanced" } }] }
+      }
+    },
+    "limits": { "maxResults": 20, "maxQueryLength": null, "maxIncludeDomains": 300, "maxExcludeDomains": 150 },
+    "dateBasis": "published-or-updated",
+    "response": {
+      "results": "results",
+      "fields": {
+        "url": "url",
+        "title": "title",
+        "excerpts": { "path": "content", "steps": [{ "step": "to-list" }] },
+        "publishedAt": { "path": "published_date", "steps": [{ "step": "parse-date" }] }
+      },
+      "providerFields": { "score": "score", "favicon": "favicon" },
+      "requestId": [{ "path": "request_id" }]
+    },
+    "cost": { "reported": { "path": "usage.credits", "unit": "credit" } },
+    "pricing": {
+      "plan": "Pay as you go",
+      "source": "https://docs.tavily.com/documentation/api-credits.md",
+      "retrievedOn": "2026-11-24",
+      "creditUsd": 0.008,
+      "perRequestUsd": { "fast": 0.008, "standard": 0.008, "deep": 0.016 },
+      "note": "basic, fast and ultra-fast cost 1 credit; advanced costs 2. Monthly plans price a credit at $0.005 to $0.0075."
+    },
+    "rateLimits": [
+      { "plan": "Researcher (free)", "limit": 100, "per": "minute", "scope": "organization" },
+      { "plan": "Pay as you go, Project, Bootstrap, Startup", "limit": 1000, "per": "minute", "scope": "organization" },
+      { "plan": "Growth, Scale", "limit": 1500, "per": "minute", "scope": "organization" }
+    ],
+    "providerOptions": {
+      "topic": { "enum": ["general", "news", "finance"] },
+      "chunks_per_source": { "type": "integer", "minimum": 1, "maximum": 3 },
+      "max_age_hours": { "type": "integer", "minimum": -1, "maximum": 720 },
+      "include_answer": { "anyOf": [{ "type": "boolean" }, { "enum": ["basic", "advanced"] }] },
+      "include_raw_content": { "anyOf": [{ "type": "boolean" }, { "enum": ["markdown", "text"] }] },
+      "include_images": { "type": "boolean" },
+      "include_image_descriptions": { "type": "boolean" },
+      "include_favicon": { "type": "boolean" },
+      "include_domains_mode": { "enum": ["restrict", "prefer"] },
+      "filter_by_language": { "type": "boolean" },
+      "filter_by_published_date": { "type": "boolean" },
+      "exact_match": { "type": "boolean" },
+      "safe_search": { "type": "boolean" },
+      "auto_parameters": { "type": "boolean" }
+    }
+  },
+  "contents": {
+    "request": {
+      "method": "POST",
+      "url": "https://api.tavily.com/extract",
+      "encoding": "json",
+      "fixed": { "format": "markdown", "include_usage": true, "include_published_date": true },
+      "params": { "urls": { "to": "urls" } }
+    },
+    "limits": { "maxUrls": 20 },
+    "contentFormat": "markdown",
+    "response": {
+      "pages": [
+        {
+          "from": "results",
+          "status": "ok",
+          "fields": {
+            "url": "url",
+            "content": "raw_content",
+            "publishedAt": { "path": "published_date", "steps": [{ "step": "parse-date" }] }
+          }
+        },
+        {
+          "from": "failed_results",
+          "status": "failed",
+          "fields": { "url": "url", "errorMessage": "error" }
+        }
+      ],
+      "requestId": [{ "path": "request_id" }]
+    },
+    "cost": { "reported": { "path": "usage.credits", "unit": "credit" } },
+    "pricing": {
+      "plan": "Pay as you go",
+      "source": "https://docs.tavily.com/documentation/api-credits.md",
+      "retrievedOn": "2026-11-24",
+      "creditUsd": 0.008,
+      "perRequestUsd": 0,
+      "extraBlock": { "items": 5, "usd": 0.008 },
+      "note": "Basic extract costs 1 credit per 5 successful URLs; advanced costs 2. Failed URLs are not charged."
+    },
+    "rateLimits": [
+      { "plan": "Researcher (free)", "limit": 100, "per": "minute", "scope": "organization" },
+      { "plan": "Pay as you go, Project, Bootstrap, Startup", "limit": 1000, "per": "minute", "scope": "organization" },
+      { "plan": "Growth, Scale", "limit": 1500, "per": "minute", "scope": "organization" }
+    ],
+    "providerOptions": {
+      "query": { "type": "string", "minLength": 1 },
+      "chunks_per_source": { "type": "integer", "minimum": 1, "maximum": 5 },
+      "extract_depth": { "enum": ["basic", "advanced"] },
+      "include_images": { "type": "boolean" },
+      "include_favicon": { "type": "boolean" },
+      "timeout": { "type": "number", "minimum": 1, "maximum": 60 }
+    }
+  },
+  "unverified": [
+    { "pointer": "/search/response/fields/publishedAt", "reason": "published_date is a beta field: Tavily's estimate of publish or update time, in RFC 1123 form in examples." },
+    { "pointer": "/search/request/fixed/include_published_date", "reason": "Docs do not say whether include_published_date affects cost or latency." },
+    { "pointer": "/search/request/params/country", "reason": "country takes lowercase English names; the ISO code table is ours. 'congo' is assumed to mean CG, not CD." },
+    { "pointer": "/search/request/params/language", "reason": "Docs say ISO 639-1 codes or English names are accepted; behaviour for unknown codes is not documented." },
+    { "pointer": "/search/limits/maxQueryLength", "reason": "No query length limit is documented." },
+    { "pointer": "/contents/response/pages/0/fields/url", "reason": "Docs do not state that results[].url echoes the requested URL; matching relies on it." },
+    { "pointer": "/terms", "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec." }
+  ]
+}
