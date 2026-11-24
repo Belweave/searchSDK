@@ -185,6 +185,20 @@
           ]
         }
       }
+    },
+    {
+      "name": "results stop at maxResults; rows past it are not inspected, but the computed cost counts every row",
+      "call": "search", "query": "q", "options": { "provider": "optional-results", "maxResults": 2 },
+      "responses": [{ "status": 200, "body": { "data": { "web": [
+        { "url": "https://a.example/" }, { "title": "no url" }, { "url": "https://b.example/" }, { "title": "no url either" }, { "url": "https://c.example/" }
+      ] } } }],
+      "expect": { "responseIncludes": {
+        "results": [
+          { "url": "https://a.example/", "title": null, "excerpts": [], "publishedAt": null, "author": null, "rank": 1, "providerFields": {} },
+          { "url": "https://b.example/", "title": null, "excerpts": [], "publishedAt": null, "author": null, "rank": 2, "providerFields": {} }
+        ],
+        "warnings": [{ "code": "invalid_rows_dropped", "provider": "optional-results", "count": 1 }]
+      } }
     }
   ]
 }

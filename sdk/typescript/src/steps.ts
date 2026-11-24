@@ -12,6 +12,15 @@ export function isBlank(cp: number): boolean {
   for (const [a, b] of blankRanges) if (cp >= a && cp <= b) return true;
   return false;
 }
+/** Removes policy blank code points from both ends. */
+export function trimBlank(s: string): string {
+  const cps = Array.from(s);
+  let start = 0, end = cps.length;
+  while (start < end && isBlank(cps[start]!.codePointAt(0)!)) start++;
+  while (end > start && isBlank(cps[end - 1]!.codePointAt(0)!)) end--;
+  return cps.slice(start, end).join("");
+}
+
 function hasContent(s: string): boolean {
   for (const ch of s) if (!isBlank(ch.codePointAt(0)!)) return true;
   return false;

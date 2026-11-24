@@ -1,0 +1,458 @@
+{
+  "description": "Provider-option schemas (registry/README.md, JSON Schema subset and regular-expression dialect). A pattern is an ECMAScript regular expression with the u flag in the portable subset, tested as RegExp.prototype.test does: a match anywhere, ^ and $ at the ends of the whole string, \\d and \\w ASCII, \\s the ECMAScript white space and line terminators, . anything but a line terminator. Keywords see an object's own keys only. Lengths count code points.",
+  "synthetic": "Synthetic: format vectors use invented specs and bodies; no provider is described.",
+  "providers": {
+    "options": {
+      "formatVersion": 1,
+      "id": "options",
+      "name": "Synthetic options",
+      "specVersion": "2026-11-24",
+      "sources": [
+        {
+          "url": "https://example.com/docs",
+          "retrievedOn": "2026-11-24",
+          "covers": "nothing; synthetic spec for format vectors"
+        }
+      ],
+      "auth": {
+        "in": "header",
+        "name": "x-api-key",
+        "env": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "capabilities": {
+        "search": true,
+        "contents": false
+      },
+      "index": {
+        "type": "unknown"
+      },
+      "terms": {
+        "url": "https://example.com/terms",
+        "readOn": "2026-11-24",
+        "benchmarkPublication": "not-addressed",
+        "rawResponseStorage": "not-addressed"
+      },
+      "errors": [],
+      "search": {
+        "request": {
+          "method": "POST",
+          "url": "https://api.example.com/search",
+          "encoding": "json",
+          "params": {
+            "query": {
+              "to": "query"
+            }
+          }
+        },
+        "limits": {
+          "maxResults": 20,
+          "maxQueryLength": null,
+          "maxIncludeDomains": 10,
+          "maxExcludeDomains": 10
+        },
+        "dateBasis": "published",
+        "response": {
+          "results": "results",
+          "fields": {
+            "url": "url",
+            "title": "title"
+          }
+        },
+        "pricing": {
+          "plan": "Synthetic",
+          "source": "https://example.com/pricing",
+          "retrievedOn": "2026-11-24",
+          "perRequestUsd": 0.005
+        },
+        "rateLimits": [],
+        "providerOptions": {
+          "tag": {
+            "type": "string",
+            "pattern": "b"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{3}$"
+          },
+          "word": {
+            "type": "string",
+            "pattern": "^\\w+$"
+          },
+          "line": {
+            "type": "string",
+            "pattern": "^.+$"
+          },
+          "solid": {
+            "type": "string",
+            "pattern": "^\\S+$"
+          },
+          "pair": {
+            "type": "string",
+            "maxLength": 2
+          },
+          "count": {
+            "type": "integer"
+          },
+          "strict": {
+            "type": "object",
+            "properties": {
+              "a": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "needs": {
+            "type": "object",
+            "required": [
+              "constructor"
+            ]
+          }
+        }
+      },
+      "unverified": []
+    }
+  },
+  "cases": [
+    {
+      "name": "values inside the dialect are accepted: a pattern matches anywhere unless anchored, \\s leaves U+0085 alone, lengths count code points",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "tag": "abc",
+            "code": "123",
+            "word": "abc_1",
+            "line": "a b",
+            "solid": "a\u0085b",
+            "pair": "\ud83d\ude00\ud83d\ude00",
+            "count": 2,
+            "strict": {
+              "a": "x"
+            },
+            "needs": {
+              "constructor": 1
+            }
+          }
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "bodyIncludes": {
+              "tag": "abc",
+              "code": "123",
+              "word": "abc_1",
+              "line": "a b",
+              "solid": "a\u0085b",
+              "pair": "\ud83d\ude00\ud83d\ude00",
+              "count": 2,
+              "strict": {
+                "a": "x"
+              },
+              "needs": {
+                "constructor": 1
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "a pattern that matches nowhere",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "tag": "xyz"
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "options",
+          "field": "providerOptions.options.tag"
+        }
+      }
+    },
+    {
+      "name": "$ does not match before a trailing newline",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "code": "123\n"
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "options",
+          "field": "providerOptions.options.code"
+        }
+      }
+    },
+    {
+      "name": "\\d is [0-9], not Arabic-Indic digits",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "code": "\u0661\u0662\u0663"
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "options",
+          "field": "providerOptions.options.code"
+        }
+      }
+    },
+    {
+      "name": "\\w is ASCII",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "word": "\u00e9"
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "options",
+          "field": "providerOptions.options.word"
+        }
+      }
+    },
+    {
+      "name": ". does not match CR (Python's . does)",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "line": "a\rb"
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "options",
+          "field": "providerOptions.options.line"
+        }
+      }
+    },
+    {
+      "name": ". does not match U+2028",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "line": "a\u2028b"
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "options",
+          "field": "providerOptions.options.line"
+        }
+      }
+    },
+    {
+      "name": "\\s includes U+FEFF (Python's \\s does not)",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "solid": "a\ufeffb"
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "options",
+          "field": "providerOptions.options.solid"
+        }
+      }
+    },
+    {
+      "name": "\\s includes the no-break space",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "solid": "a\u00a0b"
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "options",
+          "field": "providerOptions.options.solid"
+        }
+      }
+    },
+    {
+      "name": "maxLength counts code points",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "pair": "\ud83d\ude00\ud83d\ude00\ud83d\ude00"
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "options",
+          "field": "providerOptions.options.pair"
+        }
+      }
+    },
+    {
+      "name": "integer means no fractional part",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "count": 2.5
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "options",
+          "field": "providerOptions.options.count"
+        }
+      }
+    },
+    {
+      "name": "additionalProperties sees own keys only (toString is not a declared property)",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "strict": {
+              "toString": "x"
+            }
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "options",
+          "field": "providerOptions.options.strict"
+        }
+      }
+    },
+    {
+      "name": "required sees own keys only (constructor is not present)",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "needs": {}
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "options",
+          "field": "providerOptions.options.needs"
+        }
+      }
+    },
+    {
+      "name": "a number with a zero fraction is an integer",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "options",
+        "providerOptions": {
+          "options": {
+            "count": 2.0
+          }
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "bodyIncludes": {
+              "count": 2
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

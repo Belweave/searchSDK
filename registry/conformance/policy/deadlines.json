@@ -100,6 +100,12 @@
       "call": "search", "query": "q", "options": { "timeoutMs": 1000, "attemptTimeoutMs": 900 },
       "responses": [{ "delayMs": 899, "status": 200, "body": { "results": [], "costDollars": { "total": 0.007 } } }],
       "expect": { "responseIncludes": { "latencyMs": 899, "cost": { "usd": 0.007, "estimated": true, "source": "reported" } } }
+    },
+    {
+      "name": "a response due at the same moment as the deadline is cut off (the stop wins a tie)",
+      "call": "search", "query": "q", "options": { "timeoutMs": 1000, "attemptTimeoutMs": 400 },
+      "responses": [{ "delayMs": 400, "status": 200, "body": { "results": [] } }],
+      "expect": { "error": { "code": "attempt_timeout", "attempts": [{ "provider": "exa", "outcome": "error", "code": "attempt_timeout", "startMs": 0, "durationMs": 400, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }] } }
     }
   ]
 }

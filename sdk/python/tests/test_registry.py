@@ -67,9 +67,23 @@ class Registry(unittest.TestCase):
         sources = [SCHEMA, read("policy.json"), *(spec for _, spec in ALL_SPECS)]
         for pattern in [p for s in sources for p in patterns(s)] + [policy["domains"]["labelPattern"]]:
             compile_pattern(pattern)
-        for bad in ["(?<=a)b", "(?<n>a)", "\\p{L}", "(a)\\1", "\\b", "a{", "\\uD83D"]:
+        for bad in ["(?<=a)b", "(?<n>a)", "\\p{L}", "(a)\\1", "\\b", "a{", "\\uD83D", "[\\d-z]", "[\\S]", "\\/\\-"]:
             with self.assertRaises(PatternError, msg=bad):
                 compile_pattern(bad)
+        for good in ["^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", "^\\u{1F600}+$", "[\\d-]", "a{2,}?", "\\/"]:
+            compile_pattern(good)
+
+    def test_specs_refuse_values_a_query_string_cannot_carry_in_one_fixed_order_and_malformed_strings(self) -> None:
+        spec = read("providers/brave.json")
+        spec["search"]["request"]["fixed"]["nested"] = {"a": 1}
+        spec["search"]["request"]["fixed"]["10"] = "x"
+        spec["search"]["providerOptions"]["2"] = {"type": "string"}
+        spec["name"] = "bad \ud800"
+        problems = "\n".join(spec_problems(spec))
+        self.assertIn("fixed/nested: query encoding", problems)
+        self.assertIn("10 is an integer-like", problems)
+        self.assertIn("2 is an integer-like", problems)
+        self.assertIn("well-formed", problems)
 
     def test_the_schema_rejects_an_unknown_step_and_an_extra_field(self) -> None:
         spec = read("providers/exa.json")

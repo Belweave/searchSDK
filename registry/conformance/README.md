@@ -11,6 +11,17 @@ clock. No vector touches the network. All provider bodies are synthetic.
 - `format/*.json`: one spec-format feature each, run against invented specs
   given in the file's `providers` (they replace the built-in registry for
   that file). A runtime must therefore accept a registry from its caller.
+
+## Names in other languages
+
+Vectors spell options, client settings, response keys and error attributes
+in camelCase, as the TypeScript API does. A runtime whose API uses another
+convention maps them mechanically (`maxResults` to `max_results`); in an
+error `field`, only the part before the first `.` is an input name, while
+provider ids and provider option names are wire names and never change.
+`signal` is the runtime's cancellation handle. Responses are compared in
+their shared JSON form (camelCase keys, optional keys left out), which every
+runtime should be able to produce.
 - `steps.json`: the named-step library.
 
 ## Case format
@@ -49,11 +60,16 @@ including `billed` and `cost`.
 
 ## The scripted transport and the virtual clock
 
-Times are virtual milliseconds and must match exactly.
+Times are virtual milliseconds (integers) and must match exactly.
 
 - The clock only moves when no work is pending: the harness lets every
-  promise reaction run, then jumps to the earliest timer. Timers due at the
-  same time fire in the order they were set.
+  ready task or promise reaction run, then jumps to the earliest timer.
+  Timers due at the same time fire in the order they were set; a runtime sets
+  an attempt's deadline before it calls the transport, so a stop wins a tie
+  with an arrival.
+- A blocking (synchronous) client can only see a stop when a transport that
+  ignores abort returns. Cases with `ignoreAbort` therefore pin codes and
+  statuses, not times.
 - A response is delivered by a timer set `delayMs` after the request: it
   rejects with a network error when `network` is true, otherwise resolves with
   the status and headers. Aborting the request before then rejects it at

@@ -198,8 +198,13 @@ def parse_json(data: bytes) -> Any:
 
 
 def dumps(value: Any) -> bytes:
-    """Compact UTF-8 JSON, the form ECMAScript JSON.stringify writes for these values."""
-    return json.dumps(thaw(value), ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    """Compact UTF-8 JSON, as ECMAScript JSON.stringify writes it. A lone surrogate (only possible in a
+    spec's fixed values) is written as a \\u escape, as JSON.stringify does, instead of failing to encode."""
+    plain = thaw(value)
+    try:
+        return json.dumps(plain, ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    except UnicodeEncodeError:
+        return json.dumps(plain, ensure_ascii=True, separators=(",", ":"), allow_nan=False).encode("ascii")
 
 
 def as_sequence(value: Any) -> Sequence[Any]:

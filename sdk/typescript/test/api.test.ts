@@ -96,6 +96,16 @@ test("a signal that is not an AbortSignal is rejected before anything is sent", 
   assert.equal(sent, 0);
 });
 
+test("provider options must be JSON that survives the trip: NaN and Infinity are refused, not sent as null", async () => {
+  let sent = 0;
+  const client = createClient({ keys: { exa: "k" }, fetch: (async () => { sent++; return new Response('{"results":[]}'); }) as typeof fetch });
+  for (const bad of [Number.NaN, Number.POSITIVE_INFINITY, { deep: [Number.NEGATIVE_INFINITY] }]) {
+    await assert.rejects(client.search("q", { provider: "exa", providerOptions: { exa: { contents: bad as never } } }),
+      (e: unknown) => e instanceof SearchError && e.code === "invalid_request" && e.field === "providerOptions.exa.contents");
+  }
+  assert.equal(sent, 0);
+});
+
 test("a fetch that throws synchronously is a network error", async () => {
   const client = createClient({ keys: { exa: "k" }, fetch: (() => { throw new TypeError("boom"); }) as typeof fetch });
   await assert.rejects(client.search("q", { provider: "exa" }), (e: unknown) => e instanceof SearchError && e.code === "network");

@@ -85,9 +85,6 @@ class _Keys:
     def get(self, provider: str) -> str | None:
         return self._keys.get(provider)
 
-    def has(self, provider: str) -> bool:
-        return provider in self._keys
-
     def __repr__(self) -> str:
         return f"<{len(self._keys)} keys>"
 
@@ -129,7 +126,7 @@ class _Base:
     def _key(self, provider: str) -> str | None:
         """The provider's key from the client, else its documented environment variables; None when unusable."""
         key = self._keys.get(provider)
-        if not self._keys.has(provider):
+        if key is None:  # absent or None: the environment decides
             env = os.environ if self._env is None else self._env
             for name in self._registry[provider]["auth"]["env"]:
                 key = env.get(name)

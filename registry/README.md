@@ -32,12 +32,24 @@ addition for every runtime.
 Runtimes refuse a spec unless: each `costOptions` key is a declared provider
 option; each `locked` path exists in `fixed`; each `compose` entry has an
 input part and its inputs are not also params; GET uses query encoding;
-`includedItems` comes with `extraBlock`; `ok` page sources stay billable.
+`includedItems` comes with `extraBlock`; `ok` page sources stay billable;
+every string is well-formed Unicode; every pattern is in the portable subset.
+With query encoding, `fixed` values are strings, numbers or booleans, and no
+`fixed` key or provider option is integer-like (`0`, `10`): ECMAScript lists
+such keys first, so the parameter order would differ by runtime.
 
 Specs and provider options use only these JSON Schema keywords: `type`,
 `enum`, `const`, `properties`, `required`, `additionalProperties`,
 `propertyNames`, `items`, `minItems`, `maxItems`, `minimum`, `maximum`,
 `minLength`, `maxLength`, `pattern`, `anyOf`, `oneOf`, `allOf`, local `$ref`.
+
+Patterns use a portable subset of ECMAScript (`u` flag) that every runtime
+can translate exactly: literals; `.`; `^` and `$`; classes `[...]` and
+`[^...]` with ranges; `\d \D \w \W \s \S` (negated ones outside classes);
+`\t \n \r \f \v`, `\xHH`, `\uHHHH` and `\u{H...}` (no surrogates); escaped
+syntax characters; `(...)`, `(?:...)` and `|`; quantifiers `* + ? {n}
+{n,} {n,m}`, optionally lazy. No lookaround, named groups, backreferences,
+`\b` or `\p{...}`. Semantics: policy.md.
 
 ## Versions
 

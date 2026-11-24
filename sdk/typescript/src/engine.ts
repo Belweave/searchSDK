@@ -5,7 +5,7 @@ import { allHold, getPath, jsonEqual } from "./json.ts";
 import type { NormalizedSearch } from "./policy.ts";
 import { urlKey, wellFormed } from "./policy.ts";
 import { validate } from "./schema.ts";
-import { creditsToUsd, requestPrice, runSteps, StepUnsupported, toList, type StepContext } from "./steps.ts";
+import { creditsToUsd, requestPrice, runSteps, StepUnsupported, toList, trimBlank, type StepContext } from "./steps.ts";
 import type {
   ContentsEndpoint, Cost, EndpointBase, Field, Page, ProviderId, ProviderSpec, RequestIdRule,
   SearchEndpoint, SearchResult, Tier, Warning, WarningRule,
@@ -75,7 +75,7 @@ export function buildRequest(
   const ep: EndpointBase = endpoint(spec, kind);
   checkLimits(spec, kind, input);
   const out: Record<string, unknown> = structuredClone(ep.request.fixed ?? {});
-  const mappedRoots = new Set<string>();
+  const mappedRoots = new Map<string, string>(); // top-level key -> the normalized input that wrote it
   const composed = new Set((ep.request.compose ?? []).flatMap((c) => c.parts.flatMap((p) => ("input" in p ? [p.input] : []))));
   for (const name of Object.keys(input)) {
     if (input[name] === undefined || own(ep.request.params, name) || composed.has(name)) continue;
@@ -98,7 +98,7 @@ export function buildRequest(
       const prev = getPath(out, param.to);
       setPath(out, param.to, [...(Array.isArray(prev) ? prev : []), ...(Array.isArray(value) ? value : [value])]);
     } else setPath(out, param.to, value);
-    mappedRoots.add(param.to.split(".")[0]!);
+    mappedRoots.set(param.to.split(".")[0]!, name);
   }
   for (const c of ep.request.compose ?? []) {
     if (!c.parts.some((p) => "input" in p && input[p.input] !== undefined)) continue;
@@ -114,10 +114,11 @@ export function buildRequest(
       text += (part.text ?? "") + s;
     }
     setPath(out, c.to, text);
-    mappedRoots.add(c.to.split(".")[0]!);
+    const firstSet = c.parts.find((p) => "input" in p && input[p.input] !== undefined) as { input: string };
+    mappedRoots.set(c.to.split(".")[0]!, firstSet.input);
   }
   if (options !== undefined) {
-    if (!isPlainObject(options)) throw new SearchError("invalid_request", { provider, field: "providerOptions" });
+    if (!isPlainObject(options)) throw new SearchError("invalid_request", { provider, field: `providerOptions.${provider}` });
     for (const [name, value] of Object.entries(options)) {
       const field = `providerOptions.${provider}.${name}`;
       if (value === undefined) continue;
@@ -145,7 +146,8 @@ export function buildRequest(
   } else {
     for (const [k, v] of Object.entries(out)) {
       const s = scalarText(v);
-      if (s === null) throw new SearchError("invalid_request", { provider, field: k });
+      // Fixed values and provider options are checked earlier, so only a param can write a list or object here.
+      if (s === null) throw new SearchError("unsupported", { provider, field: mappedRoots.get(k) ?? k });
       pairs.push(`${encode(k)}=${encode(s)}`);
     }
   }
@@ -170,7 +172,9 @@ const httpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\
 function requestId(rules: RequestIdRule[] | undefined, body: unknown, headers: Headers): string | null {
   for (const rule of rules ?? []) {
     const v = "path" in rule ? getPath(body, rule.path) : headers.get(rule.header);
-    if (typeof v === "string" && v.trim() !== "" && !("header" in rule && v.includes(","))) return v.trim();
+    if (typeof v !== "string" || ("header" in rule && v.includes(","))) continue;
+    const trimmed = trimBlank(v); // policy blank code points, not String.prototype.trim's set
+    if (trimmed !== "") return trimmed;
   }
   return null;
 }

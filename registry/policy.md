@@ -18,20 +18,34 @@ rule has vectors in `conformance/policy/` or `conformance/format/`.
   start ≤ end. `recency` cannot be combined with them.
 - **Country / language:** two ASCII letters, normalized to `US` / `en`.
 - **URLs:** `http` or `https`, no credentials, no whitespace, blank or
-  forbidden code points, at most `contents.maxUrlLength` characters, unique by
-  URL key.
+  forbidden code points, at most `contents.maxUrlLength` code points, unique
+  by URL key.
 - **signal:** an object with a boolean `aborted` and `addEventListener` /
   `removeEventListener` functions.
+- Integers are JSON numbers with no fractional part; booleans are never
+  numbers. A runtime whose language separates integer and float types may
+  require its integer type.
+- Checks run in this order and the first failure is reported: option names,
+  the query (or URLs), the search inputs in the order listed above, call
+  settings (`timeoutMs`, `attemptTimeoutMs`, `maxRetries`,
+  `maxResponseBytes`, `signal`), `provider`, `fallback`, the
+  `providerOptions` keys, then keys.
 - Unknown option names fail. Provider limits (result count, query length,
   per-list and combined domain counts, include-or-exclude exclusivity, URL
   count) and options a provider cannot express raise `unsupported` for that
   provider, which is then skipped. Combined and exclusive domain limits report
-  `excludeDomains`.
+  `excludeDomains`. An input the spec cannot express names the first such
+  input in the order above.
+- `field` names the failing input in the spelling above (runtimes in other
+  naming conventions spell it as their API does), `providerOptions.<id>` for a
+  provider's options that are not an object, and `providerOptions.<id>.<name>`
+  for one option.
 
 ## Keys
-A key is a string of 1 to 512 printable ASCII characters, taken from the
-client's keys, else the provider's `auth.env` variables in order (empty values
-skipped). The call's provider must have one (`configuration`). A fallback
+A key is a string of 1 to 512 visible ASCII characters (`!` to `~`, no
+space), taken from the client's keys, else the provider's `auth.env` variables
+in order (empty values skipped). A client key that is set but unusable is not
+replaced by the environment. The call's provider must have one (`configuration`). A fallback
 provider without one does not block the call: the response carries a
 `fallback_key_missing` warning for it, and if the chain reaches it, it is
 skipped with an attempt coded `configuration`.
@@ -39,9 +53,10 @@ skipped with an attempt coded `configuration`.
 ## Provider options
 Looked up among the spec's own `providerOptions` keys only (never inherited
 names such as `toString`); the `providerOptions` object itself may only name
-registry providers. Each value must match its schema and contain only
-well-formed strings (no unpaired surrogate, keys included); for a query-string
-request it must be a string, number or boolean.
+registry providers. Each value must match its schema and be JSON that
+survives the trip: well-formed strings (no unpaired surrogate, keys included)
+and finite numbers. For a query-string request it must be a string, number or
+boolean.
 
 ## Requests
 1. Start from a deep copy of `fixed`.
@@ -60,7 +75,8 @@ request it must be a string, number or boolean.
 5. Every `locked` path must still equal its `fixed` value (JSON equality),
    else `invalid_request` for the provider option at that path's first segment.
 6. Query-string requests: every top-level value must be a string, number or
-   boolean. Booleans are `true` / `false`; numbers use ECMAScript
+   boolean; a param whose value is a list or object makes the request
+   `unsupported` for that input. Booleans are `true` / `false`; numbers use ECMAScript
    Number-to-String (`10`, `0.5`, `1e+21`, `1e-7`). Keys and values are
    percent-encoded except RFC 3986 unreserved characters; spaces are `%20`.
 7. Headers: `accept`, `content-type` for JSON bodies, and a header key. A query
@@ -77,9 +93,13 @@ request it must be a string, number or boolean.
 - **Predicates:** `equals` and `in` use JSON equality; `range [min, max]` holds
   for a finite number inside it; `present` compares "exists and is not null"
   with its value; `not: true` negates. A `where` list holds when all do.
-- Patterns in the schema and `policy.json` are ECMAScript regular expressions
-  with the `u` flag, matched against the whole string with ASCII classes:
-  `$` does not match before a trailing newline and `\d` is `[0-9]`.
+- Patterns in the schema, specs and `policy.json` are ECMAScript regular
+  expressions with the `u` flag in the portable subset (registry/README.md),
+  tested as `RegExp.prototype.test` does: a match anywhere, as in JSON Schema.
+  `^` and `$` are the ends of the whole string (`$` never matches before a
+  trailing newline), `\d` and `\w` are ASCII, `\s` is ECMAScript white space
+  and line terminators, and `.` matches anything but a line terminator.
+- Schema keywords see an object's own keys only; lengths count code points.
 
 ## Responses
 - A 2xx body must be a UTF-8 JSON object; a leading byte order mark is ignored.
@@ -88,9 +108,16 @@ request it must be a string, number or boolean.
 - Status codes map through provider `errors` rules (status, then JSON equality
   at `bodyPath` when given), then `policy.status`, then `statusDefault`.
 - Search: the result list must be an array; with `resultsOptional`, absent or
-  `null` counts as `[]`. Rows without an `http(s)` URL are dropped with an
-  `invalid_rows_dropped` warning. Blank titles, authors and warning messages
-  become `null` or are left out.
+  `null` counts as `[]`. Rows are read in order until `maxResults` results are
+  kept; rows after that are not inspected. Rows without an `http(s)` URL are
+  dropped with an `invalid_rows_dropped` warning. Blank titles, authors and
+  warning messages become `null` or are left out.
+- Request ids: the first rule giving a string that is not blank wins, with
+  blank code points removed from both ends.
+- Warnings, in order: `fallback_used`, `fallback_key_missing`, the spec's
+  rules in order, then `invalid_rows_dropped` or `unmatched_pages`.
+- `latencyMs` and each attempt's `startMs` count from the call start;
+  `durationMs` is the attempt's own time (0 when skipped).
 - Contents: each page source reads its list (`$` is the body as one item). An
   absent or `null` list is `[]` when the source is `optional`, else
   `invalid_response`. Items pass when the source's `where` holds. Pages match
@@ -104,7 +131,9 @@ request it must be a string, number or boolean.
   and encode non-ASCII as UTF-8 escapes (an unpaired surrogate as U+FFFD); an
   empty path becomes `/` and a longer path loses one trailing `/`.
 - A header value containing a comma (duplicates joined) is ignored.
-- `Retry-After` is delta-seconds or an IMF-fixdate; anything else is ignored.
+- `Retry-After`, after removing spaces and tabs around it, is delta-seconds
+  or an IMF-fixdate naming a real date and time (no rollover); anything else is
+  ignored.
 
 ## Billing
 Every attempt carries `billed` and its own `cost` (`policy.billing`):
@@ -144,4 +173,5 @@ sum over attempts billed `yes` or `possible`.
   (`response_too_large`) is never retried or sent to fallback.
 - The error thrown when the chain runs out is the last error from a provider
   that was sent a request, or, when none was, the last skip reason.
-- A successful response is never discarded for being slow.
+- A successful response is never discarded for being slow. A stop (deadline
+  or cancellation) and an arrival at the same moment: the stop wins.

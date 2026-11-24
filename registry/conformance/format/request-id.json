@@ -1,0 +1,190 @@
+{
+  "description": "Request ids (schema: response.requestId). Rules are tried in order; the first string that is not blank wins, with policy blank code points removed from both ends. A header holding a comma (joined duplicates) is ignored.",
+  "synthetic": "Synthetic: format vectors use invented specs and bodies; no provider is described.",
+  "providers": {
+    "request-id": {
+      "formatVersion": 1,
+      "id": "request-id",
+      "name": "Synthetic request-id",
+      "specVersion": "2026-11-24",
+      "sources": [
+        {
+          "url": "https://example.com/docs",
+          "retrievedOn": "2026-11-24",
+          "covers": "nothing; synthetic spec for format vectors"
+        }
+      ],
+      "auth": {
+        "in": "header",
+        "name": "x-api-key",
+        "env": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "capabilities": {
+        "search": true,
+        "contents": false
+      },
+      "index": {
+        "type": "unknown"
+      },
+      "terms": {
+        "url": "https://example.com/terms",
+        "readOn": "2026-11-24",
+        "benchmarkPublication": "not-addressed",
+        "rawResponseStorage": "not-addressed"
+      },
+      "errors": [],
+      "search": {
+        "request": {
+          "method": "POST",
+          "url": "https://api.example.com/search",
+          "encoding": "json",
+          "params": {
+            "query": {
+              "to": "query"
+            }
+          }
+        },
+        "limits": {
+          "maxResults": 20,
+          "maxQueryLength": null,
+          "maxIncludeDomains": 10,
+          "maxExcludeDomains": 10
+        },
+        "dateBasis": "published",
+        "response": {
+          "results": "results",
+          "fields": {
+            "url": "url"
+          },
+          "requestId": [
+            {
+              "path": "meta.id"
+            },
+            {
+              "header": "x-request-id"
+            }
+          ]
+        },
+        "pricing": {
+          "plan": "Synthetic",
+          "source": "https://example.com/pricing",
+          "retrievedOn": "2026-11-24",
+          "perRequestUsd": 0.005
+        },
+        "rateLimits": [],
+        "providerOptions": {}
+      },
+      "unverified": []
+    }
+  },
+  "cases": [
+    {
+      "name": "a request id loses blank code points at both ends (U+FEFF and U+0085 included)",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "request-id"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": [],
+            "meta": {
+              "id": "\ufeff r1 \u0085"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "requestId": "r1"
+        }
+      }
+    },
+    {
+      "name": "a blank request id is skipped for the next rule",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "request-id"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": {
+            "x-request-id": "h1"
+          },
+          "body": {
+            "results": [],
+            "meta": {
+              "id": "\u3000\u200b"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "requestId": "h1"
+        }
+      }
+    },
+    {
+      "name": "a request id that is not a string is skipped",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "request-id"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": [],
+            "meta": {
+              "id": 7
+            }
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "requestId": null
+        }
+      }
+    },
+    {
+      "name": "a header holding joined duplicates is ignored",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "request-id"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": [
+            [
+              "x-request-id",
+              "a"
+            ],
+            [
+              "x-request-id",
+              "b"
+            ]
+          ],
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "requestId": null
+        }
+      }
+    }
+  ]
+}

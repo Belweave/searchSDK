@@ -131,6 +131,9 @@
     { "step": "date-to-datetime", "side": "response", "args": { "edge": "start" }, "input": "2024-02-29", "expect": null },
     { "step": "parse-date", "side": "request", "input": "2025-03-01", "expectError": "unsupported" },
     { "step": "parse-date", "input": "Mon, 11 Mar 2025 17:00:00 GMT", "expect": "2025-03-11T17:00:00.000Z" },
-    { "step": "parse-date", "input": "Tue,11 Mar 2025 17:00:00 GMT", "expect": null }
+    { "step": "parse-date", "input": "Tue,11 Mar 2025 17:00:00 GMT", "expect": null },
+    { "step": "map-value", "side": "request", "args": { "table": { "1440": "x" } }, "input": 1440.0, "expect": "x" },
+    { "step": "map-value", "side": "request", "args": { "table": { "0": "zero" } }, "input": -0.0, "expect": "zero" },
+    { "step": "map-value", "side": "request", "args": { "table": { "1e+21": "x", "1000000000000000000000": "y" } }, "input": 1e21, "expectError": "unsupported" }
   ]
 }

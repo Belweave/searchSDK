@@ -96,6 +96,12 @@
     { "name": "contents with duplicate URLs after normalization", "call": "contents", "urls": ["https://Example.com", "https://example.com:443/"], "expect": { "error": { "code": "invalid_request", "field": "urls" } } },
     { "name": "contents URL over 2048 characters", "call": "contents", "urls": [{ "$repeat": "a", "count": 2030, "prefix": "https://example.com/" }], "expect": { "error": { "code": "invalid_request", "field": "urls" } } },
     { "name": "contents with 101 URLs", "call": "contents", "urls": { "$urls": 101 }, "expect": { "error": { "code": "invalid_request", "field": "urls" } } },
-    { "name": "contents accepts one URL as a string", "call": "contents", "urls": "https://example.com/x", "responses": [{ "status": 200, "body": { "results": [], "statuses": [] } }], "expect": { "requests": [{ "bodyIncludes": { "urls": ["https://example.com/x"] } }] } }
+    { "name": "contents accepts one URL as a string", "call": "contents", "urls": "https://example.com/x", "responses": [{ "status": 200, "body": { "results": [], "statuses": [] } }], "expect": { "requests": [{ "bodyIncludes": { "urls": ["https://example.com/x"] } }] } },
+    { "name": "the first invalid input is reported: the query before maxResults", "call": "search", "query": "", "options": { "maxResults": 0 }, "expect": { "requestCount": 0, "error": { "code": "invalid_request", "field": "query" } } },
+    { "name": "search inputs are checked before call settings", "call": "search", "query": "q", "options": { "depth": "max", "timeoutMs": 0 }, "expect": { "requestCount": 0, "error": { "code": "invalid_request", "field": "depth" } } },
+    { "name": "call settings are checked before the provider", "call": "search", "query": "q", "options": { "provider": "bing", "timeoutMs": 0 }, "expect": { "requestCount": 0, "error": { "code": "invalid_request", "field": "timeoutMs" } } },
+    { "name": "a URL length counts code points, not UTF-16 units (2048 code points, 2049 units)", "call": "contents", "urls": [{ "$repeat": "a", "count": 2027, "prefix": "https://example.com/", "suffix": "😀" }], "responses": [{ "status": 200, "body": { "results": [], "statuses": [] } }], "expect": { "requestCount": 1 } },
+    { "name": "an unusable client key is not replaced by the environment", "call": "search", "query": "q", "client": { "keys": { "exa": "a b" }, "env": { "EXA_API_KEY": "env-key-exa" } }, "expect": { "requestCount": 0, "error": { "code": "configuration", "provider": "exa", "field": "keys" } } },
+    { "name": "provider options for a provider must be an object", "call": "search", "query": "q", "options": { "providerOptions": { "exa": 5 } }, "expect": { "requestCount": 0, "error": { "code": "invalid_request", "provider": "exa", "field": "providerOptions.exa" } } }
   ]
 }

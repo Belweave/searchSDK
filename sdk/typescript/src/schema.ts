@@ -60,11 +60,12 @@ export function validate(value: unknown, schema: JsonSchema, root: JsonSchema = 
   }
   if (t === "object") {
     const obj = value as Record<string, unknown>;
-    for (const k of s.required ?? []) if (!(k in obj)) fail(`missing ${k}`);
+    // Own keys only: `in` would also see Object.prototype members such as toString and constructor.
+    for (const k of s.required ?? []) if (!Object.hasOwn(obj, k)) fail(`missing ${k}`);
     for (const [k, v] of Object.entries(obj)) {
       const where = `${at}/${k}`;
       if (s.propertyNames) errors.push(...validate(k, s.propertyNames, root, where));
-      if (s.properties && k in s.properties) errors.push(...validate(v, s.properties[k], root, where));
+      if (s.properties && Object.hasOwn(s.properties, k)) errors.push(...validate(v, s.properties[k], root, where));
       else if (s.additionalProperties === false) errors.push(`${where}: not allowed`);
       else if (typeof s.additionalProperties === "object") errors.push(...validate(v, s.additionalProperties, root, where));
     }

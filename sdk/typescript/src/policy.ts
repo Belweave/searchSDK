@@ -217,7 +217,7 @@ export function normalizeUrls(urls: unknown): string[] {
   if (!Array.isArray(list) || list.length < 1 || list.length > policy.contents.maxUrls) return invalid("urls");
   const keys = new Set<string>();
   for (const u of list as unknown[]) {
-    if (typeof u !== "string" || u.length > policy.contents.maxUrlLength) return invalid("urls");
+    if (typeof u !== "string" || [...u].length > policy.contents.maxUrlLength) return invalid("urls"); // code points, not UTF-16 units
     for (const ch of u) {
       const cp = ch.codePointAt(0)!;
       if (cp <= 0x20 || cp === 0x7f || isBlank(cp) || inRanges(cp, forbiddenRanges) || isSurrogate(cp)) return invalid("urls");
@@ -276,15 +276,16 @@ export function statusCode(registry: Registry, provider: ProviderId, status: num
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-/** Retry-After as delta-seconds or IMF-fixdate. Duplicate or malformed values are ignored (null). */
+/** Retry-After as delta-seconds or an IMF-fixdate naming a real date and time. Duplicate or malformed values are ignored (null). */
 export function retryAfterMs(header: string | null, now: number): number | null {
   if (header === null) return null;
-  const v = header.trim();
+  const v = header.replace(/^[ \t]+|[ \t]+$/g, ""); // HTTP whitespace only; String.prototype.trim also removes U+00A0
   if (/^\d{1,9}$/.test(v)) return Number(v) * 1000;
   const m = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$/.exec(v);
   if (!m) return null;
-  const t = Date.UTC(+m[4]!, MONTHS.indexOf(m[3]!), +m[2]!, +m[5]!, +m[6]!, +m[7]!);
-  return Number.isNaN(t) ? null : Math.max(0, t - now);
+  const [y, mo, d, h, mi, s] = [+m[4]!, MONTHS.indexOf(m[3]!) + 1, +m[2]!, +m[5]!, +m[6]!, +m[7]!];
+  if (!calendarDate(`${m[4]}-${String(mo).padStart(2, "0")}-${m[2]}`) || h > 23 || mi > 59 || s > 59) return null; // Date.UTC would roll 31 Feb over to March
+  return Math.max(0, Date.UTC(y, mo - 1, d, h, mi, s) - now);
 }
 
 /** Equal-jitter exponential backoff; never shorter than Retry-After. */
@@ -294,8 +295,12 @@ export function backoffMs(retryIndex: number, random: number, retryAfter: number
   return Math.max(delay, retryAfter ?? 0);
 }
 
-/** Strings with an unpaired surrogate cannot be sent as UTF-8; arrays and objects are checked deeply, keys included. */
+/**
+ * JSON that survives the trip: no unpaired surrogate (it cannot be sent as UTF-8) and no NaN or
+ * Infinity (JSON.stringify would silently send null). Arrays and objects are checked deeply, keys included.
+ */
 export function wellFormed(v: unknown): boolean {
+  if (typeof v === "number") return Number.isFinite(v);
   if (typeof v === "string") return !/[\uD800-\uDFFF]/u.test(v);
   if (Array.isArray(v)) return v.every(wellFormed);
   if (v !== null && typeof v === "object") return Object.entries(v).every(([k, x]) => wellFormed(k) && wellFormed(x));

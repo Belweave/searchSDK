@@ -144,6 +144,21 @@
       "call": "search", "query": "q", "client": { "maxRetries": 1 }, "random": [0.5],
       "responses": [{ "status": 503 }, { "status": 200, "body": { "results": [] } }],
       "expect": { "requestCount": 2 }
+    },
+    {
+      "name": "Retry-After naming a date that does not exist is ignored (no rollover to 3 March)",
+      "call": "search", "query": "q", "options": { "maxRetries": 1 }, "random": [0.5],
+      "responses": [{ "status": 429, "headers": { "retry-after": "Tue, 31 Feb 2026 12:00:03 GMT" } }, { "status": 200, "body": { "results": [] } }],
+      "expect": { "responseIncludes": { "latencyMs": 187, "attempts": [
+        { "provider": "exa", "outcome": "error", "code": "rate_limit", "status": 429, "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+        { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 187, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }
+      ] } }
+    },
+    {
+      "name": "Retry-After loses only spaces and tabs around it; a no-break space makes it malformed",
+      "call": "search", "query": "q", "options": { "maxRetries": 1 }, "random": [0.5],
+      "responses": [{ "status": 429, "headers": { "retry-after": " 2" } }, { "status": 200, "body": { "results": [] } }],
+      "expect": { "responseIncludes": { "latencyMs": 187 } }
     }
   ]
 }

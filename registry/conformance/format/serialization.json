@@ -91,6 +91,150 @@
         }
       },
       "unverified": []
+    },
+    "query-list": {
+      "formatVersion": 1,
+      "id": "query-list",
+      "name": "Synthetic query-list",
+      "specVersion": "2026-11-24",
+      "sources": [
+        {
+          "url": "https://example.com/docs",
+          "retrievedOn": "2026-11-24",
+          "covers": "nothing; synthetic spec for format vectors"
+        }
+      ],
+      "auth": {
+        "in": "header",
+        "name": "x-api-key",
+        "env": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "capabilities": {
+        "search": true,
+        "contents": false
+      },
+      "index": {
+        "type": "unknown"
+      },
+      "terms": {
+        "url": "https://example.com/terms",
+        "readOn": "2026-11-24",
+        "benchmarkPublication": "not-addressed",
+        "rawResponseStorage": "not-addressed"
+      },
+      "errors": [],
+      "search": {
+        "request": {
+          "method": "GET",
+          "url": "https://api.example.com/list",
+          "encoding": "query",
+          "params": {
+            "query": {
+              "to": "q"
+            },
+            "includeDomains": {
+              "to": "site"
+            }
+          }
+        },
+        "limits": {
+          "maxResults": 20,
+          "maxQueryLength": null,
+          "maxIncludeDomains": 10,
+          "maxExcludeDomains": 10
+        },
+        "dateBasis": "published",
+        "response": {
+          "results": "results",
+          "fields": {
+            "url": "url",
+            "title": "title"
+          }
+        },
+        "pricing": {
+          "plan": "Synthetic",
+          "source": "https://example.com/pricing",
+          "retrievedOn": "2026-11-24",
+          "perRequestUsd": 0.005
+        },
+        "rateLimits": [],
+        "providerOptions": {}
+      },
+      "unverified": []
+    },
+    "json-list": {
+      "formatVersion": 1,
+      "id": "json-list",
+      "name": "Synthetic json-list",
+      "specVersion": "2026-11-24",
+      "sources": [
+        {
+          "url": "https://example.com/docs",
+          "retrievedOn": "2026-11-24",
+          "covers": "nothing; synthetic spec for format vectors"
+        }
+      ],
+      "auth": {
+        "in": "header",
+        "name": "x-api-key",
+        "env": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "capabilities": {
+        "search": true,
+        "contents": false
+      },
+      "index": {
+        "type": "unknown"
+      },
+      "terms": {
+        "url": "https://example.com/terms",
+        "readOn": "2026-11-24",
+        "benchmarkPublication": "not-addressed",
+        "rawResponseStorage": "not-addressed"
+      },
+      "errors": [],
+      "search": {
+        "request": {
+          "method": "POST",
+          "url": "https://api.example.com/list",
+          "encoding": "json",
+          "params": {
+            "query": {
+              "to": "q"
+            },
+            "includeDomains": {
+              "to": "site"
+            }
+          }
+        },
+        "limits": {
+          "maxResults": 20,
+          "maxQueryLength": null,
+          "maxIncludeDomains": 10,
+          "maxExcludeDomains": 10
+        },
+        "dateBasis": "published",
+        "response": {
+          "results": "results",
+          "fields": {
+            "url": "url",
+            "title": "title"
+          }
+        },
+        "pricing": {
+          "plan": "Synthetic",
+          "source": "https://example.com/pricing",
+          "retrievedOn": "2026-11-24",
+          "perRequestUsd": 0.005
+        },
+        "rateLimits": [],
+        "providerOptions": {}
+      },
+      "unverified": []
     }
   },
   "cases": [
@@ -165,6 +309,64 @@
           "code": "invalid_request",
           "provider": "query-string",
           "field": "providerOptions.query-string.list"
+        }
+      }
+    },
+    {
+      "name": "a param value a query string cannot carry makes the provider unsupported for that input",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "query-list",
+        "includeDomains": [
+          "a.example"
+        ]
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "unsupported",
+          "provider": "query-list",
+          "field": "includeDomains"
+        }
+      }
+    },
+    {
+      "name": "so a fallback that can carry it is used",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "query-list",
+        "fallback": [
+          "json-list"
+        ],
+        "includeDomains": [
+          "a.example"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.example.com/list",
+            "body": {
+              "q": "q",
+              "site": [
+                "a.example"
+              ]
+            }
+          }
+        ],
+        "responseIncludes": {
+          "provider": "json-list"
         }
       }
     }

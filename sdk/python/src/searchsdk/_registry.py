@@ -9,13 +9,14 @@ code have no effect.
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Mapping
 from importlib import resources
 from typing import Any
 
 from . import _regex
 from ._errors import SearchError
-from ._json import MISSING, freeze, get_path, is_array, is_json_value, is_number, thaw
+from ._json import MISSING, freeze, get_path, is_array, is_json_value, is_number, thaw, well_formed
 from ._schema import validate
 
 
@@ -49,6 +50,7 @@ BUILT_IN: Mapping[str, Mapping[str, Any]] = freeze(_load_providers())
 
 Registry = Mapping[str, Mapping[str, Any]]
 
+_INTEGER_LIKE = re.compile("0|[1-9][0-9]*")
 NORMALIZED_INPUTS = ("query", "maxResults", "includeDomains", "excludeDomains", "recency", "startDate", "endDate", "country", "language", "depth")
 
 
@@ -100,6 +102,10 @@ def spec_problems(spec: Mapping[str, Any]) -> list[str]:
             for key, value in fixed.items():
                 if not (isinstance(value, (str, bool)) or is_number(value)):
                     out.append(f"{at}/request/fixed/{key}: query encoding takes strings, numbers and booleans")
+            # ECMAScript objects list integer-like keys first, so their place in a query string would differ by runtime.
+            for key in [*fixed, *options]:
+                if _INTEGER_LIKE.fullmatch(key):
+                    out.append(f"{at}: {key} is an integer-like top-level key in a query encoding")
         if "extraBlock" not in ep["pricing"] and "includedItems" in ep["pricing"]:
             out.append(f"{at}/pricing/includedItems: needs extraBlock")
         for pattern in _patterns(options):
@@ -107,6 +113,8 @@ def spec_problems(spec: Mapping[str, Any]) -> list[str]:
                 _regex.compile_pattern(pattern)
             except _regex.PatternError:
                 out.append(f"{at}/providerOptions: pattern {pattern!r} is outside the portable subset")
+    if not is_json_value(spec) or not well_formed(spec):
+        out.append("/: strings must be well-formed Unicode and numbers finite")
     contents = spec.get("contents")
     if contents is not None:
         for i, source in enumerate(contents["response"]["pages"]):

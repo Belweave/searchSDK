@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import { policy, providers } from "../src/generated/registry.ts";
-import { specProblems } from "../src/registry.ts";
+import { portablePattern, specProblems } from "../src/registry.ts";
 import { validate } from "../src/schema.ts";
 import { STEP_NAMES } from "../src/steps.ts";
 import { conformanceDir, loadVectors } from "./harness.ts";
@@ -70,6 +70,27 @@ test("the step library, the schema and the runtime name the same steps", () => {
   const used = new Set<string>();
   JSON.stringify(allSpecs.map((s) => s.spec), (k, v) => { if (k === "step") used.add(v); return v; });
   for (const s of used) assert.ok(library.includes(s), s);
+});
+
+test("specs refuse values a query string cannot carry in one fixed order, and malformed strings", () => {
+  const spec = read("providers/brave.json");
+  spec.search.request.fixed.nested = { a: 1 };
+  spec.search.request.fixed["10"] = "x";
+  spec.search.providerOptions["2"] = { type: "string" };
+  spec.name = "bad \uD800";
+  const problems = specProblems(spec).join("\n");
+  assert.match(problems, /fixed\/nested: query encoding/);
+  assert.match(problems, /10 is an integer-like/);
+  assert.match(problems, /2 is an integer-like/);
+  assert.match(problems, /well-formed/);
+});
+
+test("every pattern is in the portable subset, and the subset refuses what other runtimes cannot translate", () => {
+  const patterns = (v: unknown): string[] => Array.isArray(v) ? v.flatMap(patterns)
+    : v !== null && typeof v === "object" ? Object.entries(v).flatMap(([k, x]) => (k === "pattern" && typeof x === "string" ? [x] : patterns(x))) : [];
+  for (const p of [...patterns([schema, read("policy.json"), ...allSpecs.map((s) => s.spec)]), policy.domains.labelPattern]) assert.ok(portablePattern(p), p);
+  for (const bad of ["(?<=a)b", "(?<n>a)", "\\p{L}", "(a)\\1", "\\b", "a{", "\\uD83D", "[\\d-z]", "[\\S]"]) assert.ok(!portablePattern(bad), bad);
+  for (const good of ["^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", "^\\u{1F600}+$", "[\\d-]", "a{2,}?", "\\/\\-"]) assert.equal(portablePattern(good), good !== "\\/\\-", good);
 });
 
 test("every unverified pointer resolves inside its spec", () => {
