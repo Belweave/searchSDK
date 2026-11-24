@@ -1,0 +1,77 @@
+{
+  "sample": true,
+  "label": "Sample registry. Placeholder values, not verified.",
+  "version": "0.0.0-sample",
+  "note": "Placeholder for the real registry (branch v2/registry). `null` means unknown. Search support and endpoints are taken from the v1 adapters in packages/sdk; nothing else is filled in.",
+  "providers": [
+    {
+      "id": "exa",
+      "name": "Exa",
+      "hue": 1,
+      "capabilities": { "search": true, "contents": null, "answer": null },
+      "pricing": { "model": null, "searchUsdPer1k": null, "contentsUsdPer1k": null, "freeTier": null },
+      "limits": { "maxResultsPerQuery": null, "requestsPerSecond": null, "timeoutMs": null },
+      "sources": [{ "label": "Search endpoint (v1 adapter)", "url": "https://api.exa.ai/search" }]
+    },
+    {
+      "id": "tavily",
+      "name": "Tavily",
+      "hue": 2,
+      "capabilities": { "search": true, "contents": null, "answer": null },
+      "pricing": { "model": null, "searchUsdPer1k": null, "contentsUsdPer1k": null, "freeTier": null },
+      "limits": { "maxResultsPerQuery": null, "requestsPerSecond": null, "timeoutMs": null },
+      "sources": [
+        { "label": "Search API reference", "url": "https://docs.tavily.com/documentation/api-reference/endpoint/search.md" }
+      ]
+    },
+    {
+      "id": "context-dev",
+      "name": "Context.dev",
+      "hue": 4,
+      "capabilities": { "search": true, "contents": null, "answer": null },
+      "pricing": { "model": null, "searchUsdPer1k": null, "contentsUsdPer1k": null, "freeTier": null },
+      "limits": { "maxResultsPerQuery": null, "requestsPerSecond": null, "timeoutMs": null },
+      "sources": [
+        { "label": "Search API reference", "url": "https://docs.context.dev/api-reference/web-scraping/search" }
+      ]
+    },
+    {
+      "id": "tinyfish",
+      "name": "TinyFish",
+      "hue": 5,
+      "capabilities": { "search": true, "contents": null, "answer": null },
+      "pricing": { "model": null, "searchUsdPer1k": null, "contentsUsdPer1k": null, "freeTier": null },
+      "limits": { "maxResultsPerQuery": null, "requestsPerSecond": null, "timeoutMs": null },
+      "sources": [{ "label": "Search API reference", "url": "https://docs.tinyfish.ai/search-api/reference" }]
+    },
+    {
+      "id": "brave",
+      "name": "Brave",
+      "hue": 6,
+      "capabilities": { "search": true, "contents": null, "answer": null },
+      "pricing": { "model": null, "searchUsdPer1k": null, "contentsUsdPer1k": null, "freeTier": null },
+      "limits": { "maxResultsPerQuery": null, "requestsPerSecond": null, "timeoutMs": null },
+      "sources": [
+        { "label": "Web search API reference", "url": "https://api-dashboard.search.brave.com/api-reference/web/search/get" }
+      ]
+    },
+    {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "hue": 8,
+      "capabilities": { "search": true, "contents": null, "answer": null },
+      "pricing": { "model": null, "searchUsdPer1k": null, "contentsUsdPer1k": null, "freeTier": null },
+      "limits": { "maxResultsPerQuery": null, "requestsPerSecond": null, "timeoutMs": null },
+      "sources": [{ "label": "Search endpoint (v1 adapter)", "url": "https://api.perplexity.ai/search" }]
+    },
+    {
+      "id": "firecrawl",
+      "name": "Firecrawl",
+      "hue": 9,
+      "capabilities": { "search": true, "contents": null, "answer": null },
+      "pricing": { "model": null, "searchUsdPer1k": null, "contentsUsdPer1k": null, "freeTier": null },
+      "limits": { "maxResultsPerQuery": null, "requestsPerSecond": null, "timeoutMs": null },
+      "sources": [{ "label": "Search endpoint (v1 adapter)", "url": "https://api.firecrawl.dev/v2/search" }]
+    }
+  ]
+}

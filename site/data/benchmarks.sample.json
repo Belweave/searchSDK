@@ -1,0 +1,20 @@
+{
+  "sample": true,
+  "label": "Sample data, not measured.",
+  "run": { "id": "sample", "date": null, "queries": null },
+  "method": {
+    "tieBand": 6,
+    "minReliability": 0.95,
+    "qualityScale": "0–100",
+    "note": "Placeholder scores for layout only. The first measured run replaces this file."
+  },
+  "rows": [
+    { "provider": "exa", "quality": 74.0, "reliability": 0.99, "latencyP50Ms": 820, "costUsdPer1k": 5.0 },
+    { "provider": "tavily", "quality": 71.5, "reliability": 0.98, "latencyP50Ms": 1140, "costUsdPer1k": 8.0 },
+    { "provider": "perplexity", "quality": 70.4, "reliability": 0.91, "latencyP50Ms": 1630, "costUsdPer1k": 5.0 },
+    { "provider": "context-dev", "quality": 66.2, "reliability": 0.97, "latencyP50Ms": 950, "costUsdPer1k": 4.0 },
+    { "provider": "tinyfish", "quality": 63.0, "reliability": 0.99, "latencyP50Ms": 1320, "costUsdPer1k": 6.0 },
+    { "provider": "firecrawl", "quality": 61.7, "reliability": 0.96, "latencyP50Ms": 1810, "costUsdPer1k": 7.0 },
+    { "provider": "brave", "quality": 58.1, "reliability": 0.995, "latencyP50Ms": 610, "costUsdPer1k": 5.0 }
+  ]
+}
