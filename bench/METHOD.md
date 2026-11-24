@@ -1,0 +1,300 @@
+# searchSDK Benchmarks: method 0.1.0
+
+Values in this document come from `config/method.json`. Changing any of them,
+the rubric or the scoring code is a new method version.
+
+## 1. What is measured
+
+One normalized `search` call per item, provider and profile, made through the
+searchSDK TypeScript runtime exactly as a user would make it: `maxResults` 10,
+a 10-second deadline, no retries, no fallback, and no options beyond the
+profile's settings. The benchmark measures the provider and its registry spec
+together, as users get them.
+
+Two profiles:
+
+- **default**: nothing set. This is the headline.
+- **tuned**: the best settings found by tuning (section 8), within a list-price
+  cap per call. Published beside the headline with its exact settings.
+
+## 2. Items
+
+An item is one query with a verifiable answer (`schemas/item-1.schema.json`):
+query, class, language, aliases or a pattern or official URLs, source and
+statement, licence, the date the answer was true, and review status.
+
+| Class | Question | Source (all Wikidata, CC0-1.0) |
+| --- | --- | --- |
+| `fact.head` | capital of a well-linked country; author of a Nobel laureate's notable work; director of a Best Picture winner | P36, P50, P57 |
+| `fact.tail` | author of a work in a smaller language; director of a film from a smaller industry; 2 to 6 sitelinks | P50, P57 |
+| `multihop` | birthplace of the director or author of a named work | P57 or P50, then P19 |
+| `tech` | designer of a programming language; developer of a piece of software | P287, P178 |
+| `nav` | official website of a university | P856 |
+| `nonen` | capital of a country, asked in French, German, Spanish or Japanese, answered in that language | P36 |
+| `fresh` | latest stable version of a piece of software released in the last 45 days | P348 with P577 and P548 |
+
+Rules:
+
+- A subject is used only when it has exactly one current value for the asked
+  property, so each item has one answer. The statement ID is recorded.
+- The answer may not appear in the query.
+- Latin aliases shorter than four letters, or all lowercase, are dropped:
+  they match unrelated text.
+- Candidates are drawn at random by seed within each template, never by how
+  providers do on them.
+- A committed review file (`datasets/review/`) lists every dropped candidate
+  with its reason and every pruned alias list. Reviewed items say who
+  reviewed them (`agent-reviewed` or `human-verified`); items nobody could
+  check stay `builder-checked`.
+- Every committed set is listed in `datasets/manifest.json` with its SHA-256.
+  Changing a file without a new version fails validation.
+
+### Splits
+
+- **Public** (about 250): committed, with full text.
+- **Private** (about 100): built the same way, turned private by
+  `dataset private`, which gives each item a new opaque ID and a random
+  128-bit nonce. Items live only in the local store. The repository holds
+  the SHA-256 of each item's canonical JSON, nonce included
+  (`datasets/private-manifest.json`). Published results name private items
+  by that hash and publish no result URLs for them. A retired item is
+  published with its nonce, so anyone can check it against the old hash.
+  Every run sends private queries to every provider, so a quarter of them
+  are replaced each quarter.
+- **Fresh** (about 50 a month): built just before the run from the last 45
+  days of data. They expire 30 days after building. The superseded versions
+  are kept to measure stale answers.
+
+### The full set of 400
+
+The seed set holds 86 public and 10 fresh items. To reach the monthly 400:
+
+1. Raise the template counts in a new public spec to about 250 items, keeping
+   the class shares (roughly 15% for each class). Build, review, commit.
+2. Build about 100 more with a different seed into the local store and run
+   `dataset private`; commit only the manifest.
+3. Each month, build the fresh set with a new spec version (`fresh-YYYY-MM`)
+   and review it. Software versions alone yield about 10 usable items a
+   month after review, so 50 needs more freshness templates first (section
+   13).
+
+## 3. Conditions
+
+- **Order.** Items run in a seeded random order. Each item goes to every
+  provider within the same few seconds, in a seeded random provider order.
+  At most 4 items are in flight.
+- **Pacing.** Each provider is held to half of its strictest documented rate
+  limit for the chosen plan (the most restrictive one when no plan is
+  named). A 429 under that pacing is the provider's failure. After one, the
+  provider pauses for `Retry-After` or 30 seconds.
+- **Passes.** The pilot runs every item twice to measure run-to-run change.
+  Monthly runs use one pass.
+- **Where.** Runs are started by hand, never by CI, on the owner's machine
+  or a VM. `BENCH_REGION` is recorded.
+
+## 4. Outcomes
+
+Each call has exactly one outcome.
+
+| Outcome | Meaning | Quality | Counts against reliability |
+| --- | --- | --- | --- |
+| `ok_nonempty` | at least one result | scored | no |
+| `ok_empty` | a valid, empty list | 0 | yes |
+| `rate_limited` | 429 or quota | 0 | yes |
+| `timeout` | deadline passed | 0 | yes |
+| `server_error` | 5xx or a provider error | 0 | yes |
+| `network_error` | connection failed | 0 | yes |
+| `invalid_response` | a 2xx the spec cannot read, or too large | 0 | yes |
+| `setup_error` | our key, request or option was wrong | not scored; the provider stops until fixed | no |
+| `aborted`, `harness_error` | we interrupted it, or our bug | not scored; rerun on resume | no |
+
+Empty results, errors, timeouts and rate limits all score zero. The old
+benchmark counted empty responses as successes. Here an always-empty
+provider scores zero and ranks last.
+
+## 5. Known-answer score (objective)
+
+For each attempt:
+
+- **Non-nav items** score 1 when an alias or pattern matches in the title and
+  excerpts of any of the top 10 results, or in the text of any of the top 3
+  result pages. Otherwise they score 0.
+- **Nav items** score 1 when one of the top 3 result URLs is on the official
+  host or one of its subdomains.
+
+Matching first normalizes both texts: NFKC, lowercase, Latin, Greek and
+Cyrillic diacritics removed, punctuation and symbols turned into spaces.
+Aliases must match on word boundaries. For Han, kana and Thai, a substring
+match is enough. Version patterns reject longer versions, so 1.6.11 matches
+neither 1.6.110 nor 1.6.11.2.
+
+Page text comes from one fixed reference fetcher (`pages.fetcher`, Exa
+contents), called through the SDK for every provider's top 3 URLs. Each URL
+is fetched once per run. A page that fails to fetch counts as not containing
+the answer. Each provider's page-fetch failure rate is published, so any
+bias from the fetcher shows.
+
+Reported: the score, plus its snippet part and its page part.
+
+## 6. Judged relevance
+
+- **Pool.** On a seeded sample of items (pass 1, default profile), each
+  provider's top 3 URLs are pooled, then de-duplicated by URL.
+- **Passage.** The judge sees the query, URL, title and up to 4,000 bytes of
+  the fetched page. The passage is the paragraph-aligned window holding the
+  most query terms. When the page could not be fetched, the judge sees the
+  result's own title and excerpts instead, and the published `pageShare`
+  says how often the page was used.
+- **Blind.** The judge never learns which provider returned the page.
+- **Grades.** Grades follow `rubric/relevance-1.0.0.md` (0 to 3). The
+  rationale comes before the grade.
+- **Score.** nDCG@3 with gain 2^g − 1. The ideal is the best 3 distinct
+  pairs anyone returned for the item. Items where nobody returned anything
+  relevant are dropped. A failed or empty response scores 0. Items with any
+  unresolved pair are left out, and the count is published.
+- **Judge.** Kimi K3.1 Pro (`morph-kimik31`) through Morph's
+  OpenAI-compatible endpoint, with `reasoning_effort` low, at most 600 output
+  tokens, and JSON-schema output. Temperature and top_p are not sent: the
+  host fixes them. Judges are pluggable (`config/judges.json`).
+- **Self-consistency.** 15% of pairs, chosen by seed, are judged twice. The
+  quadratic-weighted kappa between the two passes is published.
+- **Human check.** `bench label` shows a seeded sample of judged pairs, one at
+  a time. It shows the same passage the judge saw, with no provider and no
+  judge grade, and records 0 to 3. Judge-human agreement is the quadratic
+  weighted kappa with a bootstrap interval, plus the exact-agreement rate.
+- **Gate.** Judged scores are published only with at least 100 human labels,
+  judge-human kappa ≥ 0.60 and self-consistency kappa ≥ 0.80. Otherwise the
+  judged columns are withheld with the reason. The known-answer score,
+  reliability, latency and cost are published either way.
+
+One judge model means there is no cross-vendor check. That is why the
+objective score alone decides rank (section 9), and why the gate exists.
+
+## 7. Reliability, latency, cost
+
+- **Usable-response rate:** `ok_nonempty` ÷ scored attempts, over all
+  passes, with a 95% Wilson interval. Every outcome's rate is published.
+- **Latency:** wall-clock time around the SDK call, measured with a
+  monotonic clock. Pacing waits are excluded. Successful and empty calls
+  count as measured. A timeout counts as the deadline (censored), so a
+  provider that times out cannot look fast. Other errors are excluded and
+  reported as rates. Published as p50, p90 and p95.
+- **Cost:** the SDK's per-attempt cost: the provider's reported figure, else
+  the registry's list price. Every billed attempt counts, including
+  `possible` ones (timeouts, network failures). Published as cost per query
+  and cost per correct answer, with counts by cost source and by billing
+  certainty. An unknown price is shown as unknown, never as $0.
+
+Cost and latency are columns. They never affect rank.
+
+## 8. Tuning
+
+`bench tune` runs a seeded sample of 30 public items. It runs each provider's
+default and every candidate in `config/tuning.json`. Candidates use only
+documented options. A candidate runs only if its list price per call is known
+and at most $0.02. For each provider, the candidate with the best
+known-answer score wins. A tie goes to the cheaper option, then to default.
+Unreliable candidates cannot win.
+
+The monthly run adds the `tuned` profile from the selection file. It scores
+that profile without the 30 tuning items, so the choice is not graded on the
+items it was chosen with. Tuning spend goes through the same ledger and caps.
+
+## 9. Statistics and ranking
+
+- **Pairing.** Every provider is scored on the same items. An item missing
+  for any ranked provider is dropped from that profile's comparison, and the
+  count is published. A provider scored on fewer than 90% of items is marked
+  `incomplete` and not ranked.
+- **Intervals.** 95% percentile intervals come from a paired bootstrap over
+  items: 2,000 replicates, seed 20261124. Each replicate draws the same
+  items for every provider, so a difference keeps the item-level
+  correlation.
+- **Reliability bands.** A provider is unreliable when the upper end of its
+  usable-rate Wilson interval is below 0.95. Unreliable providers are marked
+  and ranked below every dependable provider, whatever their quality.
+- **Ties.** Within each band, providers are sorted by known-answer score. A
+  provider joins the current group unless it is separable from the group's
+  leader. Separable means two things hold: the interval of the paired
+  difference excludes zero, and the difference is at least 6 points. Tied
+  providers share a group number and are shown as tied, with intervals.
+- **Per class.** The same rule runs within each query class for the routing
+  table.
+- **Run-to-run change** (two passes): the share of items whose score changed
+  between passes, and the mean Jaccard overlap of the two passes' result
+  URLs.
+
+## 10. Spend control
+
+- **Ledger.** Every paid call (search, page fetch, judge) reserves its worst
+  case in a month-wide ledger before it is sent. The worst case is the
+  registry list price for the exact request, times 1.5. An unknown price
+  reserves $0.05. A judge call reserves its request's byte length as input
+  tokens plus the full output cap, at list price.
+- **Caps.** A call is refused when it could take the run past its cap or the
+  month past $100 in cash. Cash is spend beyond the declared free credit of
+  each account.
+- **Commits.** After the call, the actual cost replaces the reservation. An
+  unknown actual cost keeps the reservation.
+- **Overruns.** An actual cost above its reservation halts the run: the price
+  data is wrong.
+- **Crashes.** A reservation never committed (a crash mid-call) counts in
+  full.
+- **The guarantee.** Spend stays under the cap as long as no provider bills
+  more than 1.5 times its registry list price. The first call that does
+  stops everything.
+- **Starting a live run.** `BENCH_ALLOW_LIVE=1`, every key present, no `CI`,
+  the printed plan, and `--confirm-spend` equal to the cap.
+- **Morph Ultra.** Ultra covers the judge's tokens. Declare that only as a
+  credit for `judge:morph-kimi-k3.1-pro`, and only when the key is on an
+  Ultra seat.
+
+## 11. Outputs
+
+`bench publish` writes four files:
+
+- `results.json` (`schemas/results-1.schema.json`)
+- `attempts.jsonl`
+- `leaderboard.json` (`schemas/leaderboard-1.schema.json`), read by the site
+- `routing-table.json` (`schemas/routing-table-1.schema.json`): per provider,
+  profile and class, with n, intervals, latency, reliability, cost, tie group
+  and flags (`insufficient-n` below 30 items, `unreliable`, `cost-unknown`).
+  It is valid for 45 days.
+
+They contain scores, URLs, hashes of result text, timings, costs, settings,
+dataset hashes, registry spec versions, the judge's prompt hash and the
+harness commit. They never contain titles, snippets, page text or judge
+rationales. Before writing, publish scans the output for every stored
+result text, page text, rationale and private item, and refuses on any
+match.
+
+Raw responses, pages, judgments, labels and the ledger stay in the
+git-ignored store (`.local/bench/`, or `BENCH_STORE`).
+
+Fixture runs use synthetic providers and a synthetic judge. Their outputs
+say `"mode": "fixture"` and `"liveVerified": false`, and must never be shown
+as provider measurements.
+
+## 12. Versions
+
+- **Method:** semver in `config/method.json`. Major means scores are not
+  comparable across versions; minor adds metrics, classes or providers;
+  patch fixes bugs.
+- **Datasets:** `name-version`, with a SHA-256 in the manifest.
+- **Rubric:** a versioned file, recorded with its hash.
+- **Judge:** model ID, parameters and prompt hash, recorded in every result.
+- **Schemas:** a version in every file name and `schema` field.
+
+## 13. Known limits
+
+- Every item comes from Wikidata. Search providers index Wikipedia heavily,
+  so the head and multi-hop classes favour encyclopedic coverage. Other
+  openly licensed sources are not yet built.
+- There is no open-ended research class. Judged relevance runs only on
+  known-answer queries.
+- The reference fetcher is itself a provider in the benchmark.
+- Freshness rests on software release data alone, and Wikidata can lag the
+  real release.
+- Ties need both statistical separation and 6 points, so close providers
+  stay tied even with significant differences. This follows the owner's
+  decision.

@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bench/schemas/leaderboard-1.schema.json",
+  "title": "searchSDK Benchmarks leaderboard summary, version 1",
+  "$comment": "Read by the website's leaderboard and home page. A fixture snapshot must never be shown as live.",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "interval": {
+      "type": "object",
+      "required": [
+        "mean",
+        "ci95"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "mean": {
+          "type": "number"
+        },
+        "ci95": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "snapshot",
+    "mode",
+    "liveVerified",
+    "method",
+    "generatedAt",
+    "items",
+    "judgedPublished",
+    "rule",
+    "providers",
+    "notRanked"
+  ],
+  "properties": {
+    "snapshot": {
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "live",
+        "fixture"
+      ]
+    },
+    "liveVerified": {
+      "type": "boolean"
+    },
+    "method": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "generatedAt": {
+      "type": "string"
+    },
+    "schema": {
+      "const": "bench-leaderboard/1"
+    },
+    "items": {
+      "type": "integer"
+    },
+    "judgedPublished": {
+      "type": "boolean"
+    },
+    "rule": {
+      "type": "string"
+    },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "group",
+          "tied",
+          "reliable",
+          "knownAnswer",
+          "judged",
+          "usableRate",
+          "latencyP50Ms",
+          "costPerQueryUsd",
+          "costKnown",
+          "tuned"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "group": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "tied": {
+            "type": "boolean"
+          },
+          "reliable": {
+            "type": "boolean"
+          },
+          "knownAnswer": {
+            "$ref": "#/$defs/interval"
+          },
+          "judged": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/$defs/interval"
+              }
+            ]
+          },
+          "usableRate": {
+            "type": "number"
+          },
+          "latencyP50Ms": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "costPerQueryUsd": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "costKnown": {
+            "type": "boolean"
+          },
+          "tuned": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "knownAnswer",
+                  "settings"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "knownAnswer": {
+                    "$ref": "#/$defs/interval"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "depth": {
+                        "enum": [
+                          "fast",
+                          "standard",
+                          "deep"
+                        ]
+                      },
+                      "providerOptions": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "notRanked": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "reason"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

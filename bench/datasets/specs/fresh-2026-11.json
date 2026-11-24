@@ -1,0 +1,8 @@
+{
+  "name": "fresh",
+  "version": "2026-11",
+  "split": "fresh",
+  "seed": 20261124,
+  "builtOn": "2026-11-24",
+  "templates": [{ "id": "software-latest-version", "count": 16 }]
+}

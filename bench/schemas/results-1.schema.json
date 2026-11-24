@@ -1,0 +1,667 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bench/schemas/results-1.schema.json",
+  "title": "searchSDK Benchmarks results, version 1",
+  "$comment": "Scores, URLs, hashes, timings, costs and settings only. Never response or page text.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "snapshot",
+    "mode",
+    "liveVerified",
+    "method",
+    "generatedAt",
+    "run",
+    "datasets",
+    "privateSet",
+    "registry",
+    "judge",
+    "conditions",
+    "agreement",
+    "ranking",
+    "providers",
+    "items"
+  ],
+  "$defs": {
+    "interval": {
+      "type": "object",
+      "required": [
+        "mean",
+        "ci95"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "mean": {
+          "type": "number"
+        },
+        "ci95": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "snapshot": {
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "live",
+        "fixture"
+      ]
+    },
+    "liveVerified": {
+      "type": "boolean"
+    },
+    "method": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "generatedAt": {
+      "type": "string"
+    },
+    "schema": {
+      "const": "bench-results/1"
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "id",
+        "startedAt",
+        "finishedAt",
+        "harnessGit",
+        "region",
+        "host"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "startedAt": {
+          "type": "string"
+        },
+        "finishedAt": {
+          "type": "string"
+        },
+        "harnessGit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "region": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "host": {
+          "type": "object"
+        }
+      }
+    },
+    "datasets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "version",
+          "sha256",
+          "count"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "privateSet": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "version",
+            "count"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "version": {
+              "type": "string"
+            },
+            "count": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "registry": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "provider",
+          "specVersion"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "specVersion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "judge": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "model",
+            "rubric",
+            "rubricSha256",
+            "promptSha256",
+            "params"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            },
+            "rubric": {
+              "type": "string"
+            },
+            "rubricSha256": {
+              "type": "string"
+            },
+            "promptSha256": {
+              "type": "string"
+            },
+            "params": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "conditions": {
+      "type": "object"
+    },
+    "agreement": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "pairs",
+            "judged",
+            "unresolved",
+            "selfKappa",
+            "humanKappa",
+            "humanExact",
+            "judgedPublished",
+            "gate"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "pairs": {
+              "type": "integer"
+            },
+            "judged": {
+              "type": "integer"
+            },
+            "unresolved": {
+              "type": "integer"
+            },
+            "selfKappa": {
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "humanKappa": {
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "humanExact": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "judgedPublished": {
+              "type": "boolean"
+            },
+            "gate": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "ranking": {
+      "type": "object",
+      "required": [
+        "rule",
+        "floor",
+        "minSeparation",
+        "pairedItems",
+        "droppedItems"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "rule": {
+          "type": "string"
+        },
+        "floor": {
+          "type": "number"
+        },
+        "minSeparation": {
+          "type": "number"
+        },
+        "pairedItems": {
+          "type": "object"
+        },
+        "droppedItems": {
+          "type": "object"
+        }
+      }
+    },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider",
+          "name",
+          "profile",
+          "settings",
+          "status",
+          "n",
+          "knownAnswer",
+          "components",
+          "judged",
+          "reliability",
+          "latencyMs",
+          "cost",
+          "pageFetchFailRate",
+          "stale",
+          "retest",
+          "rank"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "profile": {
+            "type": "string"
+          },
+          "settings": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "depth": {
+                "enum": [
+                  "fast",
+                  "standard",
+                  "deep"
+                ]
+              },
+              "providerOptions": {
+                "type": "object"
+              }
+            }
+          },
+          "status": {
+            "enum": [
+              "scored",
+              "incomplete"
+            ]
+          },
+          "n": {
+            "type": "integer"
+          },
+          "knownAnswer": {
+            "$ref": "#/$defs/interval"
+          },
+          "components": {
+            "type": "object",
+            "required": [
+              "snippet",
+              "page",
+              "nav"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "snippet": {
+                "type": [
+                  "number"
+                ]
+              },
+              "page": {
+                "type": "number"
+              },
+              "nav": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          },
+          "judged": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "mean",
+                  "ci95",
+                  "n",
+                  "pageShare"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "mean": {
+                    "type": "number"
+                  },
+                  "ci95": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "n": {
+                    "type": "integer"
+                  },
+                  "pageShare": {
+                    "type": "number"
+                  }
+                }
+              }
+            ]
+          },
+          "reliability": {
+            "type": "object",
+            "required": [
+              "usableRate",
+              "ci95",
+              "attempts",
+              "rates"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "usableRate": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "ci95": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "attempts": {
+                "type": "integer"
+              },
+              "rates": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "latencyMs": {
+            "type": "object",
+            "required": [
+              "n",
+              "p50",
+              "p90",
+              "p95",
+              "censoredAtMs",
+              "timeouts"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "n": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "p50": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "p90": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "p95": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "censoredAtMs": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "timeouts": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          },
+          "cost": {
+            "type": "object",
+            "required": [
+              "attempts",
+              "totalUsd",
+              "perQueryUsd",
+              "perCorrectUsd",
+              "known",
+              "unknownAttempts",
+              "sources",
+              "billed"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "attempts": {
+                "type": "integer"
+              },
+              "totalUsd": {
+                "type": "number"
+              },
+              "perQueryUsd": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "perCorrectUsd": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "known": {
+                "type": "boolean"
+              },
+              "unknownAttempts": {
+                "type": "integer"
+              },
+              "sources": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer"
+                }
+              },
+              "billed": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "pageFetchFailRate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "stale": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "n",
+                  "rate"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "n": {
+                    "type": "integer"
+                  },
+                  "rate": {
+                    "type": "number"
+                  }
+                }
+              }
+            ]
+          },
+          "retest": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "group",
+                  "tied",
+                  "reliable",
+                  "position"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "group": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "tied": {
+                    "type": "boolean"
+                  },
+                  "reliable": {
+                    "type": "boolean"
+                  },
+                  "position": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "ref",
+          "class",
+          "split"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string",
+            "pattern": "^((pub|fresh)-[a-z0-9-]+|sha256:[0-9a-f]{64})$"
+          },
+          "class": {
+            "type": "string"
+          },
+          "split": {
+            "enum": [
+              "public",
+              "private",
+              "fresh"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

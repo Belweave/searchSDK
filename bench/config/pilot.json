@@ -1,0 +1,12 @@
+{
+  "name": "pilot",
+  "description": "First live pilot: every registry provider, the seed and November freshness sets, two search passes for run-to-run variance, judging on 30 items with a 15% repeat for self-consistency, human check afterwards.",
+  "providers": ["brave", "context", "exa", "firecrawl", "perplexity", "tavily", "tinyfish"],
+  "datasets": ["datasets/public/seed-0.1.0.jsonl", "datasets/fresh/fresh-2026-11.jsonl"],
+  "passes": 2,
+  "profiles": ["default"],
+  "pagePasses": [1, 2],
+  "judgeItems": 30,
+  "capUsd": 45,
+  "seed": 20261124
+}

@@ -1,0 +1,16 @@
+{
+  "$comment": "Candidate settings per provider, from options each registry spec documents. A candidate runs only if its worst-case list price per call is known and at most maxListPriceUsd. Selection happens on `items` public items; the tuned column is then scored on the remaining items.",
+  "name": "tuning",
+  "datasets": ["datasets/public/seed-0.1.0.jsonl"],
+  "items": 30,
+  "maxListPriceUsd": 0.02,
+  "capUsd": 10,
+  "seed": 20261201,
+  "candidates": {
+    "exa": [{ "depth": "fast" }, { "depth": "deep" }],
+    "tavily": [{ "depth": "fast" }, { "depth": "deep" }, { "depth": "deep", "providerOptions": { "chunks_per_source": 3 } }],
+    "perplexity": [{ "depth": "fast" }],
+    "brave": [{ "providerOptions": { "extra_snippets": true } }],
+    "firecrawl": [{ "providerOptions": { "highlights": true } }]
+  }
+}

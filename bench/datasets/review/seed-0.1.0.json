@@ -1,0 +1,205 @@
+{
+  "for": "seed-0.1.0",
+  "reviewedOn": "2026-11-24",
+  "status": "agent-reviewed",
+  "note": "Answer checked against the Wikidata statement and general knowledge by the harness author (an AI agent); awaiting a human spot check.",
+  "take": {
+    "capital-en-head": 6,
+    "nobel-work-author": 5,
+    "best-picture-director": 4,
+    "small-language-work-author": 8,
+    "small-industry-film-director": 8,
+    "best-picture-director-birthplace": 7,
+    "nobel-work-author-birthplace": 7,
+    "language-designer": 8,
+    "software-developer": 5,
+    "university-website": 12,
+    "capital-fr": 4,
+    "capital-de": 4,
+    "capital-es": 4,
+    "capital-ja": 4
+  },
+  "drop": {
+    "capital-en-head-002": "the answer (Singapore) is in the query",
+    "small-language-work-author-006": "second Hans Christian Andersen item; one is enough",
+    "small-industry-film-director-010": "no year, and the title is ambiguous",
+    "best-picture-director-birthplace-006": "Casablanca is already in the head set",
+    "language-designer-009": "the query names the designer (Wolfram)",
+    "language-designer-010": "COBOL was designed by a committee; a single designer is contested",
+    "software-developer-006": "third Microsoft item",
+    "software-developer-007": "the answer (Microsoft) is in the query",
+    "software-developer-008": "second OS X item",
+    "software-developer-009": "the answer (Uber) is in the query",
+    "university-website-010": "not a university, and the name is ambiguous",
+    "capital-ja-002": "the answer repeats the country name",
+    "capital-de-002": "the answer (Bissau) is part of the country's name in the query",
+    "nobel-work-author-birthplace-005": "title is ambiguous with a well-known later book"
+  },
+  "answers": {
+    "capital-en-head-001": [
+      "St. George's",
+      "Saint George's",
+      "St George's"
+    ],
+    "capital-en-head-006": [
+      "Managua"
+    ],
+    "capital-en-head-007": [
+      "Minsk",
+      "Мінск",
+      "Минск"
+    ],
+    "capital-en-head-009": [
+      "Mogadishu",
+      "Muqdisho"
+    ],
+    "nobel-work-author-001": [
+      "Herta Müller",
+      "Herta Mueller"
+    ],
+    "nobel-work-author-002": [
+      "Bertrand Russell"
+    ],
+    "nobel-work-author-006": [
+      "François Mauriac"
+    ],
+    "nobel-work-author-008": [
+      "Günter Grass",
+      "Günter Graß"
+    ],
+    "best-picture-director-001": [
+      "Frank Lloyd"
+    ],
+    "best-picture-director-005": [
+      "Elia Kazan"
+    ],
+    "best-picture-director-006": [
+      "Vincente Minnelli"
+    ],
+    "best-picture-director-007": [
+      "Delbert Mann"
+    ],
+    "small-language-work-author-001": [
+      "Adam Oehlenschläger",
+      "Adam Oehlenschlaeger"
+    ],
+    "small-language-work-author-002": [
+      "Bjørnstjerne Bjørnson",
+      "Björnstjerne Björnson",
+      "Bjornstjerne Bjornson"
+    ],
+    "small-language-work-author-004": [
+      "Hans Christian Andersen"
+    ],
+    "small-language-work-author-009": [
+      "Søren Kierkegaard",
+      "Kierkegaard"
+    ],
+    "small-industry-film-director-004": [
+      "Sergiu Nicolaescu"
+    ],
+    "best-picture-director-birthplace-001": [
+      "New York City",
+      "New York, NY",
+      "New York, New York"
+    ],
+    "best-picture-director-birthplace-002": [
+      "Chicago"
+    ],
+    "best-picture-director-birthplace-003": [
+      "London"
+    ],
+    "best-picture-director-birthplace-004": [
+      "Croydon"
+    ],
+    "best-picture-director-birthplace-005": [
+      "Shipley"
+    ],
+    "best-picture-director-birthplace-007": [
+      "Toronto"
+    ],
+    "best-picture-director-birthplace-008": [
+      "Los Angeles"
+    ],
+    "nobel-work-author-birthplace-001": [
+      "Haugesund"
+    ],
+    "nobel-work-author-birthplace-002": [
+      "Kermanshah",
+      "Kermānshāh"
+    ],
+    "nobel-work-author-birthplace-005": [
+      "Lübeck"
+    ],
+    "nobel-work-author-birthplace-006": [
+      "Oak Park"
+    ],
+    "nobel-work-author-birthplace-007": [
+      "New Albany"
+    ],
+    "nobel-work-author-birthplace-008": [
+      "Genoa",
+      "Genova"
+    ],
+    "nobel-work-author-birthplace-009": [
+      "Maillane"
+    ],
+    "language-designer-002": [
+      "Niklaus Wirth"
+    ],
+    "language-designer-004": [
+      "Robin Milner"
+    ],
+    "language-designer-006": [
+      "Gert Smolka"
+    ],
+    "software-developer-002": [
+      "Samsung"
+    ],
+    "software-developer-003": [
+      "Embarcadero"
+    ],
+    "software-developer-004": [
+      "Apple"
+    ],
+    "software-developer-005": [
+      "Rapid7"
+    ],
+    "capital-fr-002": [
+      "Port-d'Espagne",
+      "Port of Spain",
+      "Port-of-Spain"
+    ],
+    "capital-fr-004": [
+      "N'Djaména",
+      "Ndjamena",
+      "N'Djamena"
+    ],
+    "capital-es-001": [
+      "Naipyidó",
+      "Naypyidaw",
+      "Nay Pyi Taw"
+    ],
+    "capital-es-003": [
+      "Santo Domingo"
+    ],
+    "capital-es-005": [
+      "Bogotá"
+    ],
+    "capital-ja-003": [
+      "ストックホルム"
+    ],
+    "capital-ja-004": [
+      "バンコク"
+    ],
+    "capital-ja-005": [
+      "リヤド",
+      "リヤード"
+    ]
+  },
+  "unchecked": [
+    "small-language-work-author-007",
+    "small-industry-film-director-002",
+    "small-industry-film-director-006"
+  ]
+}

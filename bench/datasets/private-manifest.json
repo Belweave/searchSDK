@@ -1,0 +1,8 @@
+{
+  "schema": "private-manifest/1",
+  "version": "none",
+  "createdOn": "2026-11-24",
+  "note": "No private set yet. Build one with `bench dataset private`; only these hashes are committed.",
+  "count": 0,
+  "hashes": []
+}

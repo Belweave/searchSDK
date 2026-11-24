@@ -1,0 +1,20 @@
+{
+  "for": "fresh-2026-11",
+  "reviewedOn": "2026-11-24",
+  "status": "agent-reviewed",
+  "note": "Kept only software with one release line and an unambiguous name. Versions come from Wikidata and could not be checked independently: they postdate the reviewer's knowledge.",
+  "take": { "software-latest-version": 10 },
+  "drop": {
+    "software-latest-version-005": "Maven runs parallel release lines; 'latest' is ambiguous",
+    "software-latest-version-009": "ambiguous name (Orange)",
+    "software-latest-version-010": "ambiguous name (Ripple)",
+    "software-latest-version-011": "weekly releases go stale within days; name clashes with a provider",
+    "software-latest-version-012": "ambiguous name (Synergy)",
+    "software-latest-version-013": "parallel major and minor releases in the same week"
+  },
+  "unchecked": [
+    "software-latest-version-001", "software-latest-version-002", "software-latest-version-003", "software-latest-version-004",
+    "software-latest-version-006", "software-latest-version-007", "software-latest-version-008", "software-latest-version-014",
+    "software-latest-version-015", "software-latest-version-016"
+  ]
+}

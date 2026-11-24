@@ -1,0 +1,20 @@
+{
+  "$comment": "Fixed conditions for every run of this method version. Changing any value is a new method version (METHOD.md, Versions).",
+  "method": "0.1.0",
+  "search": { "maxResults": 10, "timeoutMs": 10000, "maxRetries": 0 },
+  "pages": { "fetcher": "exa", "topK": 3, "timeoutMs": 30000, "maxStoredChars": 300000 },
+  "knownAnswer": { "snippetTopK": 10, "pageTopK": 3, "navTopK": 3 },
+  "judge": {
+    "id": "morph-kimi-k3.1-pro",
+    "topK": 3,
+    "passageMaxBytes": 4000,
+    "selfConsistencyShare": 0.15,
+    "rubric": "rubric/relevance-1.0.0.md"
+  },
+  "gate": { "minHumanLabels": 100, "minJudgeHumanKappa": 0.6, "minSelfKappa": 0.8 },
+  "stats": { "bootstrap": 2000, "seed": 20261124, "confidence": 0.95, "minSeparation": 0.06 },
+  "reliability": { "floor": 0.95 },
+  "budget": { "monthlyCapUsd": 100, "priceSafetyFactor": 1.5, "unknownPriceUsd": 0.05 },
+  "pacing": { "shareOfLimit": 0.5, "maxInFlightPerProvider": 2, "itemWindow": 4, "rateLimitPauseMs": 30000 },
+  "routing": { "minCellN": 30, "validDays": 45 }
+}
