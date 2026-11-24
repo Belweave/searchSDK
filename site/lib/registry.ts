@@ -21,14 +21,19 @@ const LIVE_VERIFIED: ReadonlySet<string> = new Set<string>();
 
 // ---- Hues ----
 
-export type HueSlot = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+/**
+ * A provider's hue is a token in styles/tokens.css. Providers with a brand colour have their own
+ * token (`--hue-<id>`, derived from that colour); any other provider takes the next free fallback
+ * slot (`--hue-1` to `--hue-4`), so a new registry file never breaks the build.
+ */
+export type HueToken = `--hue-${string}`;
 
-/** Placeholder hue slots (styles/tokens.css) for known providers. Others take the next free slot by id. */
-const HUES: Readonly<Record<string, HueSlot>> = { exa: 1, tavily: 2, context: 4, tinyfish: 5, brave: 6, perplexity: 8, firecrawl: 9 };
+const OWN_HUES: ReadonlySet<string> = new Set(["brave", "context", "exa", "firecrawl", "perplexity", "tavily", "tinyfish"]);
+const FALLBACK_SLOTS = 4;
 
-/** The CSS variable for a hue slot. */
-export function hueVar(slot: HueSlot): string {
-  return `var(--hue-${slot})`;
+/** The CSS value for a hue token. */
+export function hueVar(token: HueToken): string {
+  return `var(${token})`;
 }
 
 // ---- View model ----
@@ -54,15 +59,52 @@ export type Endpoint = {
   /** A short price for tables, in the spec's own unit. */
   priceSummary: Row;
   rateLimits: Row[];
+  wire: Wire;
+  /** List price numbers at the standard tier, for worked examples. */
+  price: Price;
 };
 
+/** A list price: per request, plus a block price per N items beyond those included. null = unknown. */
+export type Price = { perRequestUsd: number | null; block: { items: number; usd: number } | null; includedItems: number };
+
+/** What one request returning `items` items costs at list price, or null when unknown. */
+export function listPriceUsd(price: Price, items: number): number | null {
+  if (price.perRequestUsd === null) return null;
+  const extra = Math.max(0, items - price.includedItems);
+  const blocks = price.block ? Math.ceil(extra / price.block.items) : 0;
+  return price.perRequestUsd + blocks * (price.block?.usd ?? 0);
+}
+
 export type Source = { url: string; retrievedOn: string; covers: string };
+
+/**
+ * What a call looks like on the wire, read from the spec: method, URL, where the key goes (the
+ * header or parameter name, never a value), fixed body fields, where searchSDK's own inputs land,
+ * and where the normalized fields are read from in the provider's response.
+ */
+export type Wire = {
+  method: "GET" | "POST";
+  url: string;
+  encoding: "json" | "query";
+  auth: { in: string; name: string; prefix: string | null; env: string };
+  fixed: Record<string, unknown>;
+  /** searchSDK input name → provider parameter path (query, maxResults, urls). */
+  params: Record<string, string>;
+  /** Path of the result or page list in the response ("$" for the root). */
+  list: string;
+  /** Normalized field → provider path in each listed item. */
+  fields: Record<string, string>;
+  /** Normalized fields the provider returns as a list (the spec applies to-list). */
+  listFields: string[];
+  /** Where a reported cost is read, or null; creditUsd when the spec states a credit's price. */
+  cost: { path: string; unit: "usd" | "credit"; creditUsd: number | null } | null;
+};
 export type UnverifiedEntry = { pointer: string; label: string; reason: string };
 
 export type Provider = {
   id: string;
   name: string;
-  hue: HueSlot;
+  hue: HueToken;
   /** The date the spec's facts were last read from the provider's docs. */
   specVersion: string;
   /** Environment variables the runtimes read the key from, in order. */
@@ -278,8 +320,44 @@ function endpoint(r: Reader, spec: Json, kind: "search" | "contents", mark: (poi
     return row(r.str(rl.plan, `${kind}.rateLimits.${i}.plan`), `${per === "concurrent" ? `${limit} concurrent` : `${limit} per ${per}`}${scope}${extra}`, `${base}/rateLimits/${i}`);
   });
 
+  const auth = r.obj(spec.auth, "auth");
+  const fieldPath = (v: unknown) => (typeof v === "string" ? v : isObject(v) && typeof v.path === "string" ? v.path : null);
+  const listSource = kind === "search" ? { list: String(response.results), fields: r.obj(response.fields, `${kind}.response.fields`) } : (() => {
+    const first = r.obj(r.arr(response.pages, `${kind}.response.pages`)[0], `${kind}.response.pages.0`);
+    return { list: typeof first.from === "string" ? first.from : "$", fields: isObject(first.fields) ? first.fields : {} };
+  })();
+  const wire: Wire = {
+    method: request.method === "GET" ? "GET" : "POST",
+    url: r.url(request.url, `${kind}.request.url`),
+    encoding: request.encoding === "query" ? "query" : "json",
+    auth: {
+      in: r.str(auth.in, "auth.in"),
+      name: r.str(auth.name, "auth.name"),
+      prefix: typeof auth.prefix === "string" ? auth.prefix : null,
+      env: r.str(r.arr(auth.env, "auth.env")[0], "auth.env.0"),
+    },
+    fixed: isObject(request.fixed) ? request.fixed : {},
+    params: Object.fromEntries(
+      Object.entries(params).flatMap(([name, v]) => (isObject(v) && typeof v.to === "string" ? [[name, v.to]] : [])),
+    ),
+    list: listSource.list,
+    fields: Object.fromEntries(Object.entries(listSource.fields).flatMap(([name, v]) => {
+      const fp = fieldPath(v);
+      return fp ? [[name, fp]] : [];
+    })),
+    listFields: Object.entries(listSource.fields).flatMap(([name, v]) =>
+      isObject(v) && Array.isArray(v.steps) && v.steps.some((st) => isObject(st) && st.step === "to-list") ? [name] : [],
+    ),
+    cost:
+      reported && typeof reported.path === "string" && (reported.unit === "usd" || reported.unit === "credit")
+        ? { path: reported.path, unit: reported.unit, creditUsd: creditUsd }
+        : null,
+  };
+
   return {
     kind,
+    wire,
+    price: { perRequestUsd: standard, block: block ? { items: blockItems, usd: blockUsd } : null, includedItems: included ?? 0 },
     options,
     fields,
     providerFields,
@@ -317,7 +395,7 @@ function pointerLabel(pointer: string): string {
   return `${scope}: ${what}`;
 }
 
-function toProvider(file: string, spec: unknown, used: Set<HueSlot>): Provider {
+function toProvider(file: string, spec: unknown, next: () => HueToken): Provider {
   const r = makeReader(file);
   const s = r.obj(spec, "spec");
   const id = r.str(s.id, "id");
@@ -340,8 +418,7 @@ function toProvider(file: string, spec: unknown, used: Set<HueSlot>): Provider {
     return caps[kind] === true;
   };
 
-  const hue = HUES[id] ?? nextHue(used);
-  used.add(hue);
+  const hue: HueToken = OWN_HUES.has(id) ? `--hue-${id}` : next();
 
   return {
     id,
@@ -360,11 +437,6 @@ function toProvider(file: string, spec: unknown, used: Set<HueSlot>): Provider {
   };
 }
 
-function nextHue(used: Set<HueSlot>): HueSlot {
-  for (let slot = 1; slot <= 10; slot++) if (!used.has(slot as HueSlot)) return slot as HueSlot;
-  return ((used.size % 10) + 1) as HueSlot; // more than ten providers: slots repeat
-}
-
 function load(): Registry {
   let files: string[];
   try {
@@ -373,16 +445,26 @@ function load(): Registry {
     throw new Error(`No provider registry at ${REGISTRY_DIR}. The site reads ../registry/providers/*.json.`);
   }
   if (!files.length) throw new Error(`${REGISTRY_DIR} has no provider specs.`);
-  const used = new Set<HueSlot>(Object.values(HUES));
-  // Known providers first so their slots are taken before new ones choose.
-  const ordered = [...files.filter((f) => f.slice(0, -5) in HUES), ...files.filter((f) => !(f.slice(0, -5) in HUES))];
-  const providers = ordered
-    .map((file) => toProvider(file, JSON.parse(readFileSync(path.join(REGISTRY_DIR, file), "utf8")), used))
+  // Providers without a hue of their own share the fallback slots in file order; slots repeat past four.
+  let slot = 0;
+  const next = (): HueToken => `--hue-${(slot++ % FALLBACK_SLOTS) + 1}`;
+  const providers = files
+    .map((file) => toProvider(file, JSON.parse(readFileSync(path.join(REGISTRY_DIR, file), "utf8")), next))
     .sort((a, b) => a.name.localeCompare(b.name, "en"));
   return { providers, liveVerified: providers.filter((p) => p.liveVerified).length };
 }
 
 const registry = load();
+
+/** How many conformance cases the registry holds for a provider (registry/conformance/providers/<id>.json), or 0. */
+export function conformanceCases(id: string): number {
+  try {
+    const file = JSON.parse(readFileSync(path.join(REGISTRY_DIR, "..", "conformance", "providers", `${id}.json`), "utf8")) as unknown;
+    return isObject(file) && Array.isArray(file.cases) ? file.cases.length : 0;
+  } catch {
+    return 0;
+  }
+}
 
 export function getRegistry(): Registry {
   return registry;
