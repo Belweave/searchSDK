@@ -198,7 +198,7 @@ export async function checkSite(base, { log = console.log } = {}) {
     else if (!res.type.includes("image/svg+xml")) fail(src, `provider logo served as ${res.type}`);
     else if (/<script|\son[a-z]+\s*=|javascript:/i.test(res.body)) fail(src, "provider logo contains script");
   }
-  log(`provider logos ok (${brandFiles.size} files, ${brandFolders.size} providers)`);
+  log(`provider logos checked (${brandFiles.size} files, ${brandFolders.size} providers)`);
 
   // Stubs answer 501, and the 404 page is a 404.
   for (const stub of STUBS) {
