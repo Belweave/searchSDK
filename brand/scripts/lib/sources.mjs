@@ -121,35 +121,35 @@ export function sources() {
 
   // Favicon: the small master; paper colours unless the browser is dark.
   const sp = paths(SMALL);
-  const fav = `<style>.a{fill:${SETS.light.apricot}}.v{fill:${SETS.light.violet}}.c{fill:${SETS.light.cyan}}@media (prefers-color-scheme:dark){.a{fill:${SETS.dark.apricot}}.c{fill:${SETS.dark.cyan}}}</style>` +
-    `<path class="v" d="${sp.violet}"/><path class="a" d="${sp.apricot}"/><path class="c" d="${sp.cyan}"/>`;
+  const fav = `<style>.fa{fill:${SETS.light.apricot}}.fv{fill:${SETS.light.violet}}.fc{fill:${SETS.light.cyan}}@media (prefers-color-scheme:dark){.fa{fill:${SETS.dark.apricot}}.fc{fill:${SETS.dark.cyan}}}</style>` +
+    `<path class="fv" d="${sp.violet}"/><path class="fa" d="${sp.apricot}"/><path class="fc" d="${sp.cyan}"/>`;
   out['src/icon/favicon.svg'] = svg([0, 0, 16, 16], fav);
 
   // Motion study: the bands converge, hold, and clear. Loop for loading states, once for a header.
-  for (const [name, loop] of [['mark-loader', true], ['mark-intro', false]]) out[`src/motion/${name}.svg`] = motion(loop);
+  for (const [name, loop] of [['mark-loader', true], ['mark-intro', false]]) for (const v of ['dark', 'light']) out[`src/motion/${name}-${v}.svg`] = motion(loop, `ssdk-${name.slice(5)}-${v}`, SETS[v]);
   return out;
 }
 
-function motion(loop) {
+function motion(loop, ns, s) {
+  // Class and keyframe names carry the file's namespace, so the SVG can be inlined beside others.
   // The bands flow in from the right (apricot, cyan, then violet, which passes through the beam to
   // land last), hold, then flow out to the left (violet first, so its underlap is never exposed).
   // Opaque throughout; the frame clips them. Reduced motion: the finished mark, still.
   const t = tokens.motion;
   const p = paths(MAIN);
-  const s = SETS.dark;
   const band = parseInt(t.duration['mark-band']), stagger = parseInt(t.duration.stagger);
   const exit = 360;
   const total = loop ? parseInt(t.duration['mark-loop']) : band + 2 * stagger;
   const pct = (ms) => +((ms / total) * 100).toFixed(3) + '%';
   const IN = 'translateX(64px)', OUT = 'translateX(-64px)';
   const frames = (enterAt, exitAt) => {
-    let k = `0%,${pct(enterAt)}{transform:${IN};animation-timing-function:${t.easing.enter}}${pct(enterAt + band)}{transform:none;animation-timing-function:linear}`;
+    let k = `${enterAt ? '0%,' : ''}${pct(enterAt)}{transform:${IN};animation-timing-function:${t.easing.enter}}${pct(enterAt + band)}{transform:none;animation-timing-function:linear}`;
     k += loop ? `${pct(exitAt)}{transform:none;animation-timing-function:${t.easing.exit}}${pct(exitAt + exit)},100%{transform:${OUT}}` : `100%{transform:none}`;
     return k;
   };
   const hold = 1800; // exits begin here in the loop
   const bands = { a: [0, hold + stagger], c: [stagger, hold + 2 * stagger], v: [2 * stagger, hold] };
-  const css = Object.entries(bands).map(([k, [e, x]]) => `@keyframes ${k}{${frames(e, x)}}.${k}{animation:${k} ${total}ms both ${loop ? 'infinite' : '1'}}`).join('') +
-    `@media (prefers-reduced-motion:reduce){.a,.c,.v{animation:none}}`;
-  return svg([0, 0, 64, 64], `<style>${css}</style><path class="v" fill="${s.violet}" d="${p.violet}"/><path class="a" fill="${s.apricot}" d="${p.apricot}"/><path class="c" fill="${s.cyan}" d="${p.cyan}"/>`, { extra: ' overflow="hidden"' });
+  const css = Object.entries(bands).map(([k, [e, x]]) => `@keyframes ${ns}-${k}{${frames(e, x)}}.${ns}-${k}{animation:${ns}-${k} ${total}ms both ${loop ? 'infinite' : '1'}}`).join('') +
+    `@media (prefers-reduced-motion:reduce){.${ns}-a,.${ns}-c,.${ns}-v{animation:none}}`;
+  return svg([0, 0, 64, 64], `<style>${css}</style><path class="${ns}-v" fill="${s.violet}" d="${p.violet}"/><path class="${ns}-a" fill="${s.apricot}" d="${p.apricot}"/><path class="${ns}-c" fill="${s.cyan}" d="${p.cyan}"/>`, { extra: ' overflow="hidden"' });
 }

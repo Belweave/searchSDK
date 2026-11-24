@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <!-- Open Graph card, 1200 × 630. Template: edit the <text> lines, then `npm run build` renders
+       dist/social/og.png. One claim, at most eight words, sentence case. Margins 80; the mark's top
+       meets the wordmark's top and its base sits on the last headline baseline. -->
+  <rect width="1200" height="630" fill="#0E0F15"/>
+  <image href="../wordmark/wordmark-dark.svg" x="80" y="80" height="40"/>
+  <text x="80" y="328" font-family="Instrument Sans" font-size="68" font-weight="650" letter-spacing="-0.03" fill="#F6F6F9">One interface to</text>
+  <text x="80" y="408" font-family="Instrument Sans" font-size="68" font-weight="650" letter-spacing="-0.03" fill="#F6F6F9">web search providers</text>
+  <text x="80" y="550" font-family="Martian Mono" font-size="20" font-weight="400" fill="#9697A2">Open source · MIT</text>
+  <image href="../mark/mark-dark.svg" x="792" y="80" width="328" height="328"/>
+</svg>
