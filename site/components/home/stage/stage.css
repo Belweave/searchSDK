@@ -92,7 +92,11 @@
   overflow: hidden;
 }
 .stage-chip {
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 17rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
   height: 1.875rem;
   padding: 0 0.6rem;
   border: 1px solid var(--line);
