@@ -1,0 +1,26 @@
+{
+  "$comment": "Judges are pluggable: add an entry with a type the harness implements. Prices are list prices per million tokens; the budget always reserves the worst case.",
+  "morph-kimi-k3.1-pro": {
+    "type": "openai-chat",
+    "label": "Kimi K3.1 Pro via Morph",
+    "baseUrl": "https://api.morphllm.com/v1",
+    "model": "morph-kimik31",
+    "keyEnv": "MORPH_API_KEY",
+    "reasoningEffort": "low",
+    "maxTokens": 600,
+    "jsonSchema": true,
+    "priceUsdPerMTok": { "input": 2.5, "output": 14.0 },
+    "rateLimit": { "inputTokensPerMinute": 24290, "outputTokensPerMinute": 6162 },
+    "sources": [
+      { "url": "https://docs.morphllm.com/llms.txt", "readOn": "2026-11-24", "covers": "base URL, bearer auth, MORPH_API_KEY, model id morph-kimik31, reasoning_effort values, list prices" },
+      { "url": "https://docs.morphllm.com/ultra-plan", "readOn": "2026-11-24", "covers": "Ultra removes the token meter on Kimi K3.1; per-minute token limits; 429 with Retry-After" },
+      { "url": "https://www.morphllm.com/kimi-k3-1-api", "readOn": "2026-11-24", "covers": "temperature and top_p are fixed for K3.1 and should be omitted; reasoning always on and billed as output" }
+    ],
+    "unverified": [
+      "Whether max_tokens bounds reasoning tokens for this model on Morph. The budget assumes it does and halts the run on any overrun.",
+      "Whether response_format json_schema is honoured for this model. The parser also accepts a bare JSON object in the text.",
+      "The usage field names (prompt_tokens, completion_tokens) are the OpenAI convention; Morph's pages do not show a Kimi response body.",
+      "Under the Ultra plan the marginal cost is $0; the budget still counts list price so the cap holds if a key is not on a seat."
+    ]
+  }
+}
