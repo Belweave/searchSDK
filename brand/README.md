@@ -1,24 +1,23 @@
 # searchSDK brand
 
-The mark, wordmark, lockups, icons, tokens and rules. Open `index.html` to see them; read
-`GUIDELINES.md` for the rules.
+Open `index.html` to see the identity; `GUIDELINES.md` holds the rules.
 
 | Path | Contents |
 | --- | --- |
-| `src/` | SVG sources: mark, wordmark, lockups, icons, motion study, social card templates |
+| `src/` | SVG sources: mark, wordmark, lockups, icons, motion, social templates |
 | `dist/` | PNG, ICO and social images rendered from `src/` |
-| `tokens.json` | colour, type, space, radius and motion values; the source of truth |
-| `tokens.css`, `tokens.site.css` | the tokens as CSS, under brand names and under the website's names |
+| `tokens.json` | colour, type, space, radius and motion; the source of truth |
+| `tokens.css`, `tokens.site.css` | the tokens as CSS, under brand and website names |
 | `fonts/` | Instrument Sans and Martian Mono |
 
 ## Rebuild
 
 ```sh
-cd brand && npm ci && npm run build   # regenerate everything
-npm run check                         # fail if anything committed is stale or a rule is broken
+npm ci && npm run build   # regenerate everything
+npm run check             # fails on stale outputs or broken rules
 ```
 
-Two pinned development dependencies (`@resvg/resvg-js`, `harfbuzzjs`); no browser and no network at build time.
+Run in `brand/`. Two pinned development dependencies; no browser or network at build time.
 
 ## Licences
 
