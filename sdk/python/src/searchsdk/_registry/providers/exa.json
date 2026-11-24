@@ -1,0 +1,160 @@
+{
+  "$schema": "../schema/provider.schema.json",
+  "formatVersion": 1,
+  "id": "exa",
+  "name": "Exa",
+  "specVersion": "2026-11-24",
+  "sources": [
+    { "url": "https://exa.ai/docs/reference/search.md", "retrievedOn": "2026-11-24", "covers": "search request, response, errors (OpenAPI 3.1, Exa Public API 2.0.0)" },
+    { "url": "https://exa.ai/docs/reference/get-contents.md", "retrievedOn": "2026-11-24", "covers": "contents request, response, per-URL statuses" },
+    { "url": "https://exa.ai/docs/admin/pricing.md", "retrievedOn": "2026-11-24", "covers": "pricing" },
+    { "url": "https://exa.ai/docs/reference/rate-limits.md", "retrievedOn": "2026-11-24", "covers": "rate limits, 402 and 429 behaviour" },
+    { "url": "https://exa.ai/docs/admin/error-codes.md", "retrievedOn": "2026-11-24", "covers": "status codes and error tags" }
+  ],
+  "auth": { "in": "header", "name": "x-api-key", "env": ["EXA_API_KEY"] },
+  "capabilities": { "search": true, "contents": true, "answer": true, "research": true, "crawl": false },
+  "index": { "type": "own", "note": "Exa operates its own crawled index." },
+  "terms": {
+    "url": "https://exa.ai/terms",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "ask",
+    "rawResponseStorage": "restricted",
+    "note": "Terms forbid publishing information obtained from the Services without permission and include a competitive-product clause. Reading from the 2026-11-24 recon; not legal advice."
+  },
+  "errorCodePath": "tag",
+  "errors": [],
+  "search": {
+    "request": {
+      "method": "POST",
+      "url": "https://api.exa.ai/search",
+      "encoding": "json",
+      "fixed": { "type": "auto", "contents": { "highlights": true } },
+      "locked": ["contents.highlights"],
+      "params": {
+        "query": { "to": "query" },
+        "maxResults": { "to": "numResults" },
+        "includeDomains": { "to": "includeDomains" },
+        "excludeDomains": { "to": "excludeDomains" },
+        "recency": { "to": "startPublishedDate", "steps": [{ "step": "recency-to-date" }] },
+        "startDate": { "to": "startPublishedDate", "steps": [{ "step": "date-to-datetime", "edge": "start" }] },
+        "endDate": { "to": "endPublishedDate", "steps": [{ "step": "date-to-datetime", "edge": "end" }] },
+        "country": { "to": "userLocation", "steps": [{ "step": "uppercase" }] },
+        "depth": { "to": "type", "steps": [{ "step": "map-value", "table": { "fast": "lite", "standard": "auto", "deep": "deep" } }] }
+      }
+    },
+    "limits": { "maxResults": 100, "maxQueryLength": null, "maxIncludeDomains": 1200, "maxExcludeDomains": 1200 },
+    "dateBasis": "published",
+    "response": {
+      "results": "results",
+      "fields": {
+        "url": "url",
+        "title": "title",
+        "excerpts": { "path": "highlights", "steps": [{ "step": "to-list" }] },
+        "publishedAt": { "path": "publishedDate", "steps": [{ "step": "parse-date" }] },
+        "author": "author"
+      },
+      "providerFields": { "id": "id", "favicon": "favicon", "image": "image" },
+      "requestId": [{ "path": "requestId" }, { "header": "x-request-id" }],
+      "warnings": [
+        { "listPath": "warnings", "code": "provider_warning", "messageField": "message" },
+        { "listPath": "notices", "code": "provider_notice", "messageField": "message" }
+      ]
+    },
+    "cost": { "reported": { "path": "costDollars.total", "unit": "usd", "isEstimate": true } },
+    "pricing": {
+      "plan": "Developer (pay as you go)",
+      "source": "https://exa.ai/docs/admin/pricing.md",
+      "retrievedOn": "2026-11-24",
+      "perRequestUsd": { "fast": 0.004, "standard": 0.007, "deep": 0.012 },
+      "includedItems": 10,
+      "extraBlock": { "items": 1, "usd": 0.001 },
+      "costOptions": {
+        "type": { "lite": "fast", "auto": "standard", "deep": "deep" },
+        "contents": "unknown"
+      },
+      "note": "Base price covers up to 10 results; each extra result costs $1 per 1,000. Deep search is listed as $12 to $15 per 1,000. Extra content types on search are priced per page and are not modelled."
+    },
+    "rateLimits": [
+      { "plan": "Starter (free)", "limit": 10, "per": "second", "scope": "team" },
+      { "plan": "Developer", "limit": 25, "per": "second", "scope": "team" },
+      { "plan": "Growth", "limit": 50, "per": "second", "scope": "team" },
+      { "plan": "Starter (free)", "limit": 5, "per": "second", "scope": "team", "note": "deep search types" }
+    ],
+    "providerOptions": {
+      "type": { "type": "string" },
+      "category": { "enum": ["company", "publication", "news", "personal site", "financial report", "people"] },
+      "moderation": { "type": "boolean" },
+      "contents": { "type": "object" },
+      "includeText": { "type": "array", "items": { "type": "string" } },
+      "excludeText": { "type": "array", "items": { "type": "string" } },
+      "startCrawlDate": { "type": "string" },
+      "endCrawlDate": { "type": "string" },
+      "userIdentifier": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$" }
+    }
+  },
+  "contents": {
+    "request": {
+      "method": "POST",
+      "url": "https://api.exa.ai/contents",
+      "encoding": "json",
+      "fixed": { "text": true },
+      "locked": ["text"],
+      "params": { "urls": { "to": "urls" } }
+    },
+    "limits": { "maxUrls": 100 },
+    "contentFormat": "markdown",
+    "response": {
+      "pages": [
+        {
+          "from": "results",
+          "status": "ok",
+          "fields": {
+            "url": "url",
+            "title": "title",
+            "content": "text",
+            "publishedAt": { "path": "publishedDate", "steps": [{ "step": "parse-date" }] },
+            "author": "author"
+          }
+        },
+        {
+          "from": "statuses",
+          "optional": true,
+          "where": [{ "path": "status", "equals": "error" }],
+          "status": "failed",
+          "fields": { "url": "id", "errorCode": "error.tag" }
+        }
+      ],
+      "requestId": [{ "path": "requestId" }, { "header": "x-request-id" }]
+    },
+    "cost": { "reported": { "path": "costDollars.total", "unit": "usd", "isEstimate": true } },
+    "pricing": {
+      "plan": "Developer (pay as you go)",
+      "source": "https://exa.ai/docs/admin/pricing.md",
+      "retrievedOn": "2026-11-24",
+      "perRequestUsd": 0,
+      "extraBlock": { "items": 1, "usd": 0.001 },
+      "costOptions": { "highlights": "unknown", "summary": "unknown", "subpages": "unknown" },
+      "note": "$1 per 1,000 pages per content type; this spec requests text only."
+    },
+    "rateLimits": [
+      { "plan": "all", "limit": 100, "per": "second", "scope": "team" }
+    ],
+    "providerOptions": {
+      "highlights": { "anyOf": [{ "type": "boolean" }, { "type": "object" }] },
+      "summary": { "anyOf": [{ "type": "boolean" }, { "type": "object" }] },
+      "maxAgeHours": { "type": "integer", "minimum": -1, "maximum": 720 },
+      "livecrawlTimeout": { "type": "integer", "minimum": 1, "maximum": 90000 },
+      "subpages": { "type": "integer", "minimum": 0, "maximum": 100 },
+      "userIdentifier": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$" }
+    }
+  },
+  "unverified": [
+    { "pointer": "/search/pricing/perRequestUsd/deep", "reason": "Pricing lists deep search as $12 to $15 per 1,000; the lower bound is used." },
+    { "pointer": "/search/pricing/note", "reason": "Docs do not say whether highlights add cost on /search; assumed included." },
+    { "pointer": "/search/request/params/country", "reason": "userLocation accepts an ISO 3166-1 alpha-2 string; documented, but its effect on ranking is not described." },
+    { "pointer": "/contents/response/pages/0/fields/url", "reason": "Docs do not state that results[].url echoes the requested URL; matching relies on it." },
+    { "pointer": "/contents/pricing/extraBlock", "reason": "Docs do not say whether failed URLs are billed; ok pages are assumed billable." },
+    { "pointer": "/contents/contentFormat", "reason": "text is described as markdown-style plain text, not strict Markdown." },
+    { "pointer": "/terms", "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec." }
+  ]
+}

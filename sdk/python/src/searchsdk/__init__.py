@@ -1,0 +1,97 @@
+"""One interface to many web search providers: ``search`` and ``contents``.
+
+    >>> import searchsdk
+    >>> response = searchsdk.search("sqlite wal mode", provider="exa")
+    >>> print(response.results[0].title, response.cost.usd)
+
+Provider behaviour lives in the shared registry (``searchsdk.registry``), not
+in this package. Nothing here is live-verified.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any
+
+from ._client import (
+    AsyncClient,
+    Client,
+    ContentsInputs,
+    ContentsOptions,
+    SearchInputs,
+    SearchOptions,
+    acontents,
+    asearch,
+    contents,
+    search,
+)
+from ._clock import CancelToken, Clock, SystemClock
+from ._engine import HttpRequest
+from ._errors import ErrorCode, SearchError
+from ._generated import ContentsProviderOptions, ProviderId, SearchProviderOptions
+from ._registry import BUILT_IN, POLICY
+from ._transport import AsyncResponse, AsyncStdlibTransport, AsyncTransport, Response, StdlibTransport, Transport
+from ._types import (
+    Attempt,
+    Billed,
+    ContentsResponse,
+    Cost,
+    CostSource,
+    Depth,
+    Page,
+    PageError,
+    Recency,
+    ResponseWarning,
+    SearchResponse,
+    SearchResult,
+)
+
+__version__ = "0.0.0"
+
+registry: Mapping[str, Mapping[str, Any]] = BUILT_IN
+"""The embedded provider specs, read-only (mappings and tuples). For routers, benchmarks and docs."""
+
+policy: Mapping[str, Any] = POLICY
+"""The shared runtime policy, read-only."""
+
+__all__ = [
+    "AsyncClient",
+    "AsyncResponse",
+    "AsyncStdlibTransport",
+    "AsyncTransport",
+    "Attempt",
+    "Billed",
+    "CancelToken",
+    "Client",
+    "Clock",
+    "ContentsInputs",
+    "ContentsOptions",
+    "ContentsProviderOptions",
+    "ContentsResponse",
+    "Cost",
+    "CostSource",
+    "Depth",
+    "ErrorCode",
+    "HttpRequest",
+    "Page",
+    "PageError",
+    "ProviderId",
+    "Recency",
+    "Response",
+    "ResponseWarning",
+    "SearchError",
+    "SearchInputs",
+    "SearchOptions",
+    "SearchProviderOptions",
+    "SearchResponse",
+    "SearchResult",
+    "StdlibTransport",
+    "SystemClock",
+    "Transport",
+    "acontents",
+    "asearch",
+    "contents",
+    "policy",
+    "registry",
+    "search",
+]

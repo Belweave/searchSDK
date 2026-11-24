@@ -1,0 +1,152 @@
+{
+  "$schema": "../schema/provider.schema.json",
+  "formatVersion": 1,
+  "id": "context",
+  "name": "Context.dev",
+  "specVersion": "2026-11-24",
+  "sources": [
+    { "url": "https://docs.context.dev/api-reference/web-scraping/search.md", "retrievedOn": "2026-11-24", "covers": "search request, response, status codes (OpenAPI 3.1)" },
+    { "url": "https://docs.context.dev/api-reference/web-scraping/scrape.md", "retrievedOn": "2026-11-24", "covers": "scrape request, response, metadata" },
+    { "url": "https://docs.context.dev/search/overview.md", "retrievedOn": "2026-11-24", "covers": "numResults range, relevance, partial results" },
+    { "url": "https://docs.context.dev/account/credits.md", "retrievedOn": "2026-11-24", "covers": "credit costs and when requests are charged" },
+    { "url": "https://www.context.dev/pricing", "retrievedOn": "2026-11-24", "covers": "plan prices per credit" },
+    { "url": "https://docs.context.dev/optimization/rate-limits.md", "retrievedOn": "2026-11-24", "covers": "concurrency and per-minute limits, 429 headers" }
+  ],
+  "auth": { "in": "header", "name": "authorization", "prefix": "Bearer ", "env": ["CONTEXT_DEV_API_KEY"] },
+  "capabilities": { "search": true, "contents": true, "answer": true, "research": false, "crawl": true },
+  "index": { "type": "unknown", "note": "Context.dev does not state its search index; its country parameter is described as mapping to Google's gl." },
+  "terms": {
+    "url": "https://www.context.dev/terms",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "allowed",
+    "rawResponseStorage": "not-addressed",
+    "note": "Section 5 allows testing, benchmarking and publishing results. Reading from the 2026-11-24 recon; not legal advice."
+  },
+  "errorCodePath": "error_code",
+  "errors": [],
+  "search": {
+    "request": {
+      "method": "POST",
+      "url": "https://api.context.dev/v1/web/search",
+      "encoding": "json",
+      "fixed": {},
+      "params": {
+        "query": { "to": "query" },
+        "maxResults": { "to": "numResults" },
+        "includeDomains": { "to": "includeDomains" },
+        "excludeDomains": { "to": "excludeDomains" },
+        "recency": { "to": "freshness", "steps": [{ "step": "map-value", "table": { "day": "last_24_hours", "week": "last_week", "month": "last_month", "year": "last_year" } }] },
+        "country": { "to": "country", "steps": [{ "step": "lowercase" }] },
+        "language": { "to": "languages", "steps": [{ "step": "to-list" }] }
+      }
+    },
+    "limits": { "maxResults": 100, "maxQueryLength": 500, "maxIncludeDomains": 100, "maxExcludeDomains": 100 },
+    "dateBasis": "published",
+    "response": {
+      "results": "results",
+      "fields": {
+        "url": "url",
+        "title": "title",
+        "excerpts": { "path": "description", "steps": [{ "step": "to-list" }] }
+      },
+      "providerFields": { "relevance": "relevance" },
+      "requestId": [{ "path": "request_id" }, { "header": "x-request-id" }],
+      "warnings": [{ "where": [{ "path": "partial", "equals": true }], "code": "partial_results" }]
+    },
+    "cost": { "reported": { "path": "key_metadata.credits_consumed", "unit": "credit" } },
+    "pricing": {
+      "plan": "Developer",
+      "source": "https://www.context.dev/pricing",
+      "retrievedOn": "2026-11-24",
+      "creditUsd": 0.002,
+      "perRequestUsd": 0,
+      "extraBlock": { "items": 10, "usd": 0.002 },
+      "note": "1 credit per 10 returned results, rounded up. Developer is $20 for 10,000 credits; overage is $3 per 1,000; larger plans cost less per credit."
+    },
+    "rateLimits": [
+      { "plan": "Free", "limit": 2, "per": "concurrent", "scope": "organization" },
+      { "plan": "Free", "limit": 10, "per": "minute", "scope": "organization" },
+      { "plan": "Developer", "limit": 10, "per": "concurrent", "scope": "organization" },
+      { "plan": "Pro", "limit": 100, "per": "concurrent", "scope": "organization" },
+      { "plan": "Growth", "limit": 250, "per": "concurrent", "scope": "organization" },
+      { "plan": "Scale", "limit": 500, "per": "concurrent", "scope": "organization" }
+    ],
+    "providerOptions": {
+      "markdownOptions": { "type": "object" },
+      "highlightsOptions": { "type": "object" },
+      "descriptionMaxCharacters": { "type": "integer", "minimum": 0 },
+      "timeoutOpts": { "type": "object" },
+      "zdr": { "enum": ["enabled", "disabled"] },
+      "policies": { "type": "array", "items": { "type": "string" } },
+      "tags": { "type": "array", "items": { "type": "string" } }
+    }
+  },
+  "contents": {
+    "request": {
+      "method": "POST",
+      "url": "https://api.context.dev/v1/web/scrape",
+      "encoding": "json",
+      "fixed": { "formats": { "markdown": true } },
+      "params": { "urls": { "to": "url", "steps": [{ "step": "single" }] } }
+    },
+    "limits": { "maxUrls": 1 },
+    "contentFormat": "markdown",
+    "response": {
+      "pages": [
+        {
+          "from": "$",
+          "where": [{ "path": "markdown.success", "equals": true }],
+          "status": "ok",
+          "fields": {
+            "url": "metadata.sourceUrl",
+            "finalUrl": "url",
+            "title": "metadata.title",
+            "content": "markdown.data",
+            "publishedAt": { "path": "metadata.publishedTime", "steps": [{ "step": "parse-date" }] },
+            "author": "metadata.author"
+          }
+        },
+        {
+          "from": "$",
+          "where": [{ "path": "markdown.success", "equals": false }],
+          "status": "failed",
+          "fields": { "url": "metadata.sourceUrl", "errorCode": "markdown.error_code", "errorMessage": "markdown.message" }
+        }
+      ],
+      "requestId": [{ "path": "request_id" }, { "header": "x-request-id" }],
+      "warnings": [{ "where": [{ "path": "isPartial", "equals": true }], "code": "partial_results" }]
+    },
+    "cost": { "reported": { "path": "key_metadata.credits_consumed", "unit": "credit" } },
+    "pricing": {
+      "plan": "Developer",
+      "source": "https://www.context.dev/pricing",
+      "retrievedOn": "2026-11-24",
+      "creditUsd": 0.002,
+      "perRequestUsd": 0,
+      "extraBlock": { "items": 1, "usd": 0.002 },
+      "note": "1 credit per scrape when at least one output succeeds; a target 404 is still charged."
+    },
+    "rateLimits": [
+      { "plan": "Free", "limit": 2, "per": "concurrent", "scope": "organization" },
+      { "plan": "Free", "limit": 10, "per": "minute", "scope": "organization" },
+      { "plan": "Developer", "limit": 10, "per": "concurrent", "scope": "organization" }
+    ],
+    "providerOptions": {
+      "sharedParams": { "type": "object" },
+      "markdownParams": { "type": "object" },
+      "maxAgeMs": { "type": "integer", "minimum": 0, "maximum": 31536000000 },
+      "timeoutOpts": { "type": "object" },
+      "zdr": { "enum": ["enabled", "disabled"] },
+      "tags": { "type": "array", "items": { "type": "string" } }
+    }
+  },
+  "unverified": [
+    { "pointer": "/search/dateBasis", "reason": "freshness says 'published within this window'; results carry no date field to check it." },
+    { "pointer": "/search/limits/maxQueryLength", "reason": "The 500 limit's unit (characters, code points or bytes) is not stated; runtimes count code points." },
+    { "pointer": "/search/request/params/language", "reason": "languages accepts a fixed list of codes; codes outside it are passed through and rejected by the provider." },
+    { "pointer": "/search/cost/reported", "reason": "key_metadata is optional in the 200 schema; when absent, cost is computed from pricing." },
+    { "pointer": "/contents/response/pages/0/fields/url", "reason": "metadata.sourceUrl is assumed to echo the requested URL; docs examples vary on a trailing slash." },
+    { "pointer": "/contents/pricing/creditUsd", "reason": "Credit price depends on plan; the Developer list price is used." },
+    { "pointer": "/terms", "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec." }
+  ]
+}

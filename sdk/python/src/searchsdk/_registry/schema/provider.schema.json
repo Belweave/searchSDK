@@ -1,0 +1,447 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://searchsdk.dev/registry/schema/provider.schema.json",
+  "title": "searchSDK provider spec",
+  "description": "One file per provider. Uses only the JSON Schema subset listed in registry/README.md so every runtime can validate it. Cross-field rules the subset cannot express are listed in registry/README.md under 'Rules the schema cannot check'.",
+  "type": "object",
+  "required": ["formatVersion", "id", "name", "specVersion", "sources", "auth", "capabilities", "index", "terms", "errors", "unverified"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "formatVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,31}$" },
+    "name": { "type": "string", "minLength": 1 },
+    "specVersion": { "$ref": "#/$defs/date" },
+    "sources": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/source" } },
+    "auth": {
+      "description": "Where the key goes. A key may go in the URL only with keyInUrlReason, and keyInUrlReason is allowed only then.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["in", "name", "env"],
+          "additionalProperties": false,
+          "properties": {
+            "in": { "const": "header" },
+            "name": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+            "prefix": { "type": "string" },
+            "env": { "$ref": "#/$defs/envNames" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["in", "name", "env", "keyInUrlReason"],
+          "additionalProperties": false,
+          "properties": {
+            "in": { "const": "query" },
+            "name": { "type": "string", "pattern": "^[A-Za-z0-9_.~-]+$" },
+            "env": { "$ref": "#/$defs/envNames" },
+            "keyInUrlReason": { "type": "string", "minLength": 1, "description": "Why the provider offers no header alternative." }
+          }
+        }
+      ]
+    },
+    "capabilities": {
+      "type": "object",
+      "required": ["search", "contents"],
+      "additionalProperties": { "type": "boolean" },
+      "properties": {
+        "search": { "type": "boolean" },
+        "contents": { "type": "boolean" }
+      }
+    },
+    "index": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["own", "own+licensed", "serp-wrapper", "metasearch", "unknown"] },
+        "note": { "type": "string" }
+      }
+    },
+    "terms": {
+      "type": "object",
+      "required": ["url", "readOn", "benchmarkPublication", "rawResponseStorage"],
+      "additionalProperties": false,
+      "properties": {
+        "url": { "$ref": "#/$defs/url" },
+        "readOn": { "$ref": "#/$defs/date" },
+        "benchmarkPublication": { "enum": ["allowed", "not-addressed", "restricted", "ask"] },
+        "rawResponseStorage": { "enum": ["allowed", "not-addressed", "restricted", "ask"] },
+        "note": { "type": "string" }
+      }
+    },
+    "errorCodePath": { "$ref": "#/$defs/path" },
+    "errors": { "type": "array", "items": { "$ref": "#/$defs/errorRule" } },
+    "search": { "$ref": "#/$defs/searchEndpoint" },
+    "contents": { "$ref": "#/$defs/contentsEndpoint" },
+    "unverified": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["pointer", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "pointer": { "type": "string", "pattern": "^/" },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "url": { "type": "string", "pattern": "^https://[^\\s]+$" },
+    "path": {
+      "description": "'$' is the whole value. Otherwise dot-separated own-property names; a segment of digits indexes an array. Keys containing '.' cannot be addressed.",
+      "type": "string",
+      "pattern": "^(\\$|[A-Za-z_][A-Za-z0-9_]*(\\.([A-Za-z_][A-Za-z0-9_]*|[0-9]+))*)$"
+    },
+    "envNames": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" } },
+    "source": {
+      "type": "object",
+      "required": ["url", "retrievedOn", "covers"],
+      "additionalProperties": false,
+      "properties": {
+        "url": { "$ref": "#/$defs/url" },
+        "retrievedOn": { "$ref": "#/$defs/date" },
+        "covers": { "type": "string", "minLength": 1 }
+      }
+    },
+    "requestStep": {
+      "description": "A named step allowed on the request side, with its required arguments. Semantics: registry/steps.md.",
+      "anyOf": [
+        { "type": "object", "required": ["step"], "additionalProperties": false, "properties": { "step": { "const": "to-list" } } },
+        { "type": "object", "required": ["step", "separator"], "additionalProperties": false, "properties": { "step": { "const": "join" }, "separator": { "type": "string" } } },
+        { "type": "object", "required": ["step"], "additionalProperties": false, "properties": { "step": { "const": "single" } } },
+        { "type": "object", "required": ["step", "table"], "additionalProperties": false, "properties": { "step": { "const": "map-value" }, "table": { "$ref": "#/$defs/valueTable" } } },
+        { "type": "object", "required": ["step"], "additionalProperties": false, "properties": { "step": { "const": "lowercase" } } },
+        { "type": "object", "required": ["step"], "additionalProperties": false, "properties": { "step": { "const": "uppercase" } } },
+        { "type": "object", "required": ["step", "prefix"], "additionalProperties": false, "properties": { "step": { "const": "prefix" }, "prefix": { "type": "string" } } },
+        { "type": "object", "required": ["step", "edge"], "additionalProperties": false, "properties": { "step": { "const": "date-to-datetime" }, "edge": { "enum": ["start", "end"] } } },
+        { "type": "object", "required": ["step", "format"], "additionalProperties": false, "properties": { "step": { "const": "format-date" }, "format": { "enum": ["MM/DD/YYYY"] } } },
+        { "type": "object", "required": ["step"], "additionalProperties": false, "properties": { "step": { "const": "recency-to-date" } } }
+      ]
+    },
+    "responseStep": {
+      "description": "A named step allowed on the response side, with its required arguments. Semantics: registry/steps.md.",
+      "anyOf": [
+        { "type": "object", "required": ["step"], "additionalProperties": false, "properties": { "step": { "const": "parse-date" } } },
+        { "type": "object", "required": ["step"], "additionalProperties": false, "properties": { "step": { "const": "to-list" } } },
+        { "type": "object", "required": ["step", "separator"], "additionalProperties": false, "properties": { "step": { "const": "join" }, "separator": { "type": "string" } } },
+        { "type": "object", "required": ["step", "table"], "additionalProperties": false, "properties": { "step": { "const": "map-value" }, "table": { "$ref": "#/$defs/valueTable" } } },
+        { "type": "object", "required": ["step"], "additionalProperties": false, "properties": { "step": { "const": "lowercase" } } },
+        { "type": "object", "required": ["step"], "additionalProperties": false, "properties": { "step": { "const": "uppercase" } } },
+        { "type": "object", "required": ["step", "prefix"], "additionalProperties": false, "properties": { "step": { "const": "prefix" }, "prefix": { "type": "string" } } }
+      ]
+    },
+    "valueTable": { "type": "object", "additionalProperties": { "type": ["string", "number", "boolean"] } },
+    "requestSteps": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/requestStep" } },
+    "responseSteps": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/responseStep" } },
+    "field": {
+      "anyOf": [
+        { "$ref": "#/$defs/path" },
+        {
+          "type": "object",
+          "required": ["path"],
+          "additionalProperties": false,
+          "properties": { "path": { "$ref": "#/$defs/path" }, "steps": { "$ref": "#/$defs/responseSteps" } }
+        }
+      ]
+    },
+    "param": {
+      "type": "object",
+      "required": ["to"],
+      "additionalProperties": false,
+      "properties": {
+        "to": { "$ref": "#/$defs/path" },
+        "steps": { "$ref": "#/$defs/requestSteps" },
+        "append": { "type": "boolean", "description": "Add the value, or each element of an array value, to the end of the array at the target path instead of replacing it. A missing or non-array target starts as []." }
+      }
+    },
+    "composePart": {
+      "anyOf": [
+        { "type": "object", "required": ["text"], "additionalProperties": false, "properties": { "text": { "type": "string" } } },
+        {
+          "type": "object",
+          "required": ["input"],
+          "additionalProperties": false,
+          "properties": {
+            "input": { "enum": ["startDate", "endDate"] },
+            "text": { "type": "string", "description": "Emitted before the value, only when the input is set." },
+            "steps": { "$ref": "#/$defs/requestSteps" },
+            "required": { "type": "boolean", "description": "When true, an absent input makes the request unsupported for that input." }
+          }
+        }
+      ]
+    },
+    "compose": {
+      "description": "Builds one string from several normalized inputs. Applies when any of its inputs is set.",
+      "type": "object",
+      "required": ["to", "parts"],
+      "additionalProperties": false,
+      "properties": {
+        "to": { "$ref": "#/$defs/path" },
+        "parts": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/composePart" } }
+      }
+    },
+    "request": {
+      "type": "object",
+      "required": ["method", "url", "encoding", "params"],
+      "additionalProperties": false,
+      "properties": {
+        "method": { "enum": ["GET", "POST"] },
+        "url": { "$ref": "#/$defs/url" },
+        "encoding": { "enum": ["json", "query"] },
+        "fixed": { "type": "object" },
+        "locked": {
+          "description": "Paths inside fixed whose values provider options may not change.",
+          "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/path" }
+        },
+        "params": { "type": "object", "additionalProperties": { "$ref": "#/$defs/param" } },
+        "compose": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/compose" } }
+      }
+    },
+    "requestId": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "object", "required": ["path"], "additionalProperties": false, "properties": { "path": { "$ref": "#/$defs/path" } } },
+          { "type": "object", "required": ["header"], "additionalProperties": false, "properties": { "header": { "type": "string", "pattern": "^[a-z0-9-]+$" } } }
+        ]
+      }
+    },
+    "predicate": {
+      "description": "A test on the value at path. equals and in use JSON equality (registry/policy.md). range holds for a number in [min, max]. present holds when the value exists and is not null. not negates the result.",
+      "anyOf": [
+        { "type": "object", "required": ["path", "equals"], "additionalProperties": false, "properties": { "path": { "$ref": "#/$defs/path" }, "equals": {}, "not": { "type": "boolean" } } },
+        { "type": "object", "required": ["path", "in"], "additionalProperties": false, "properties": { "path": { "$ref": "#/$defs/path" }, "in": { "type": "array", "minItems": 1 }, "not": { "type": "boolean" } } },
+        { "type": "object", "required": ["path", "range"], "additionalProperties": false, "properties": { "path": { "$ref": "#/$defs/path" }, "range": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } }, "not": { "type": "boolean" } } },
+        { "type": "object", "required": ["path", "present"], "additionalProperties": false, "properties": { "path": { "$ref": "#/$defs/path" }, "present": { "type": "boolean" }, "not": { "type": "boolean" } } }
+      ]
+    },
+    "where": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/predicate" } },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "description": "One warning when every predicate holds on the body. messageField is read from the body.",
+            "type": "object", "required": ["where", "code"], "additionalProperties": false,
+            "properties": { "where": { "$ref": "#/$defs/where" }, "code": { "type": "string", "pattern": "^[a-z_]+$" }, "messageField": { "$ref": "#/$defs/path" } }
+          },
+          {
+            "description": "One warning per element of the array at listPath. messageField is read from the element.",
+            "type": "object", "required": ["listPath", "code"], "additionalProperties": false,
+            "properties": { "listPath": { "$ref": "#/$defs/path" }, "code": { "type": "string", "pattern": "^[a-z_]+$" }, "messageField": { "$ref": "#/$defs/path" } }
+          }
+        ]
+      }
+    },
+    "errorRule": {
+      "type": "object",
+      "required": ["status", "code"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "type": "integer", "minimum": 100, "maximum": 599 },
+        "bodyPath": { "$ref": "#/$defs/path" },
+        "equals": {},
+        "code": { "enum": ["auth", "forbidden", "quota", "rate_limit", "unavailable", "provider_error", "invalid_response"] }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reported": {
+          "type": "object",
+          "required": ["path", "unit"],
+          "additionalProperties": false,
+          "properties": {
+            "path": { "$ref": "#/$defs/path" },
+            "unit": { "enum": ["usd", "credit"] },
+            "isEstimate": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "price": { "description": "USD, or null when the price is not public.", "type": ["number", "null"], "minimum": 0 },
+    "pricing": {
+      "type": "object",
+      "required": ["plan", "source", "retrievedOn", "perRequestUsd"],
+      "additionalProperties": false,
+      "properties": {
+        "plan": { "type": "string" },
+        "source": { "$ref": "#/$defs/url" },
+        "retrievedOn": { "$ref": "#/$defs/date" },
+        "creditUsd": { "type": "number", "minimum": 0 },
+        "perRequestUsd": {
+          "anyOf": [
+            { "$ref": "#/$defs/price" },
+            {
+              "type": "object", "required": ["standard"], "additionalProperties": false,
+              "properties": {
+                "fast": { "$ref": "#/$defs/price" },
+                "standard": { "$ref": "#/$defs/price" },
+                "deep": { "$ref": "#/$defs/price" }
+              }
+            }
+          ]
+        },
+        "includedItems": { "type": "integer", "minimum": 0 },
+        "extraBlock": {
+          "type": "object", "required": ["items", "usd"], "additionalProperties": false,
+          "properties": { "items": { "type": "integer", "minimum": 1 }, "usd": { "type": "number", "minimum": 0 } }
+        },
+        "costOptions": {
+          "description": "Provider options that change the billed amount. \"unknown\": setting the option makes a computed cost unknown. An object: the option's string value selects a pricing tier; a value not listed, or listed as null, makes a computed cost unknown.",
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              { "const": "unknown" },
+              { "type": "object", "additionalProperties": { "enum": ["fast", "standard", "deep", null] } }
+            ]
+          }
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "rateLimits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["plan", "limit", "per"],
+        "additionalProperties": false,
+        "properties": {
+          "plan": { "type": "string" },
+          "limit": { "type": "number", "minimum": 0 },
+          "per": { "enum": ["second", "minute", "hour", "day", "month", "concurrent"] },
+          "scope": { "type": "string" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "providerOptions": { "type": "object", "additionalProperties": { "type": "object" } },
+    "searchEndpoint": {
+      "type": "object",
+      "required": ["request", "limits", "dateBasis", "response", "pricing", "rateLimits", "providerOptions"],
+      "additionalProperties": false,
+      "properties": {
+        "request": {
+          "allOf": [{ "$ref": "#/$defs/request" }],
+          "properties": {
+            "params": {
+              "required": ["query"],
+              "propertyNames": { "enum": ["query", "maxResults", "includeDomains", "excludeDomains", "recency", "startDate", "endDate", "country", "language", "depth"] }
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "required": ["maxResults", "maxQueryLength", "maxIncludeDomains", "maxExcludeDomains"],
+          "additionalProperties": false,
+          "properties": {
+            "maxResults": { "type": "integer", "minimum": 1 },
+            "maxQueryLength": { "type": ["integer", "null"], "minimum": 1 },
+            "maxIncludeDomains": { "type": "integer", "minimum": 0 },
+            "maxExcludeDomains": { "type": "integer", "minimum": 0 },
+            "maxTotalDomains": { "type": "integer", "minimum": 0, "description": "Bounds includeDomains plus excludeDomains together." },
+            "includeExcludeExclusive": { "type": "boolean", "description": "When true, includeDomains and excludeDomains cannot be sent together." }
+          }
+        },
+        "dateBasis": { "enum": ["published", "published-or-updated", "unknown", "none"] },
+        "response": {
+          "type": "object",
+          "required": ["results", "fields"],
+          "additionalProperties": false,
+          "properties": {
+            "results": { "$ref": "#/$defs/path" },
+            "resultsOptional": { "type": "boolean", "description": "When true, an absent or null result list is an empty success." },
+            "fields": {
+              "type": "object",
+              "required": ["url"],
+              "additionalProperties": false,
+              "properties": {
+                "url": { "$ref": "#/$defs/field" },
+                "title": { "$ref": "#/$defs/field" },
+                "excerpts": { "$ref": "#/$defs/field" },
+                "publishedAt": { "$ref": "#/$defs/field" },
+                "author": { "$ref": "#/$defs/field" }
+              }
+            },
+            "providerFields": { "type": "object", "additionalProperties": { "$ref": "#/$defs/field" } },
+            "requestId": { "$ref": "#/$defs/requestId" },
+            "warnings": { "$ref": "#/$defs/warnings" }
+          }
+        },
+        "cost": { "$ref": "#/$defs/cost" },
+        "pricing": { "$ref": "#/$defs/pricing" },
+        "rateLimits": { "$ref": "#/$defs/rateLimits" },
+        "providerOptions": { "$ref": "#/$defs/providerOptions" }
+      }
+    },
+    "contentsEndpoint": {
+      "type": "object",
+      "required": ["request", "limits", "contentFormat", "response", "pricing", "rateLimits", "providerOptions"],
+      "additionalProperties": false,
+      "properties": {
+        "request": {
+          "allOf": [{ "$ref": "#/$defs/request" }],
+          "properties": {
+            "params": { "required": ["urls"], "propertyNames": { "enum": ["urls"] } },
+            "compose": { "type": "array", "maxItems": 0, "description": "Contents requests have no inputs to compose." }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "required": ["maxUrls"],
+          "additionalProperties": false,
+          "properties": { "maxUrls": { "type": "integer", "minimum": 1 } }
+        },
+        "contentFormat": { "enum": ["markdown", "text"] },
+        "response": {
+          "type": "object",
+          "required": ["pages"],
+          "additionalProperties": false,
+          "properties": {
+            "pages": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["from", "status", "fields"],
+                "additionalProperties": false,
+                "properties": {
+                  "from": { "$ref": "#/$defs/path" },
+                  "optional": { "type": "boolean", "description": "When true, an absent or null list counts as empty; otherwise it makes the response invalid_response." },
+                  "where": { "$ref": "#/$defs/where" },
+                  "status": { "enum": ["ok", "failed"] },
+                  "billable": { "type": "boolean", "description": "Pages from this source count toward the computed cost. Defaults to true for ok sources and false for failed ones." },
+                  "fields": {
+                    "type": "object",
+                    "required": ["url"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "url": { "$ref": "#/$defs/field" },
+                      "finalUrl": { "$ref": "#/$defs/field" },
+                      "title": { "$ref": "#/$defs/field" },
+                      "content": { "$ref": "#/$defs/field" },
+                      "publishedAt": { "$ref": "#/$defs/field" },
+                      "author": { "$ref": "#/$defs/field" },
+                      "errorCode": { "$ref": "#/$defs/field" },
+                      "errorMessage": { "$ref": "#/$defs/field" }
+                    }
+                  }
+                }
+              }
+            },
+            "requestId": { "$ref": "#/$defs/requestId" },
+            "warnings": { "$ref": "#/$defs/warnings" }
+          }
+        },
+        "cost": { "$ref": "#/$defs/cost" },
+        "pricing": { "$ref": "#/$defs/pricing" },
+        "rateLimits": { "$ref": "#/$defs/rateLimits" },
+        "providerOptions": { "$ref": "#/$defs/providerOptions" }
+      }
+    }
+  }
+}

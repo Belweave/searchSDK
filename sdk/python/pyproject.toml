@@ -1,0 +1,28 @@
+[build-system]
+requires = ["flit_core>=3.9,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "searchsdk"
+version = "0.0.0"
+description = "One interface to many web search providers, driven by a shared provider registry."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = []
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Typing :: Typed",
+]
+
+[project.urls]
+Source = "https://github.com/Belweave/searchSDK/tree/main/sdk/python"
+
+[tool.flit.sdist]
+include = ["tests/", "scripts/"]
+
+[tool.mypy]
+strict = true
+python_version = "3.10"
+files = ["src", "tests", "scripts"]
