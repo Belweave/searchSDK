@@ -1,0 +1,66 @@
+{
+  "$comment": "Shared runtime policy. Every runtime reads these values; none may hard-code its own. Rules: registry/policy.md.",
+  "formatVersion": 1,
+  "query": {
+    "maxCodePoints": 2000,
+    "blank": [
+      ["0009", "000D"], ["0020", "0020"], ["0085", "0085"], ["00A0", "00A0"],
+      ["1680", "1680"], ["180E", "180E"], ["2000", "200D"], ["2028", "2029"],
+      ["202F", "202F"], ["205F", "2060"], ["3000", "3000"], ["FEFF", "FEFF"]
+    ],
+    "forbidden": [
+      ["0000", "0008"], ["000E", "001F"], ["007F", "0084"], ["0086", "009F"]
+    ]
+  },
+  "search": {
+    "maxResults": { "default": 10, "min": 1, "max": 100 },
+    "recencyDays": { "day": 1, "week": 7, "month": 30, "year": 365 }
+  },
+  "contents": {
+    "maxUrls": 100,
+    "maxUrlLength": 2048
+  },
+  "domains": {
+    "maxLength": 253,
+    "minLabels": 2,
+    "labelPattern": "^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$"
+  },
+  "timeouts": { "defaultMs": 30000, "minMs": 1, "maxMs": 300000 },
+  "responseBytes": { "search": 10485760, "contents": 52428800, "min": 1024, "max": 104857600 },
+  "retry": {
+    "defaultMaxRetries": 0,
+    "maxRetries": 5,
+    "baseDelayMs": 250,
+    "maxDelayMs": 5000,
+    "maxRetryAfterMs": 60000
+  },
+  "transient": ["network", "rate_limit", "unavailable", "attempt_timeout"],
+  "fallbackOn": ["network", "rate_limit", "unavailable", "attempt_timeout", "quota", "unsupported"],
+  "status": [
+    { "status": 401, "code": "auth" },
+    { "status": 402, "code": "quota" },
+    { "status": 403, "code": "forbidden" },
+    { "status": 408, "code": "unavailable" },
+    { "status": 429, "code": "rate_limit" },
+    { "range": [400, 499], "code": "provider_error" },
+    { "range": [500, 599], "code": "unavailable" }
+  ],
+  "statusDefault": "invalid_response",
+  "errors": {
+    "invalid_request": "The request is invalid.",
+    "configuration": "The client configuration is invalid.",
+    "unsupported": "The provider does not support this request.",
+    "auth": "The provider rejected the API key.",
+    "forbidden": "The provider refused this request.",
+    "quota": "The provider account is out of credits or over its limit.",
+    "rate_limit": "The provider rate limit was exceeded.",
+    "unavailable": "The provider is temporarily unavailable.",
+    "provider_error": "The provider rejected the request.",
+    "network": "The provider could not be reached.",
+    "attempt_timeout": "The attempt exceeded its deadline.",
+    "timeout": "The call exceeded its deadline.",
+    "aborted": "The call was cancelled.",
+    "invalid_response": "The provider returned an unusable response.",
+    "response_too_large": "The provider response exceeded the size limit."
+  }
+}

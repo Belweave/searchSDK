@@ -1,0 +1,73 @@
+{
+  "$comment": "The fixed named-step library. Specs may reference only these names. Exact semantics: registry/steps.md. Test vectors: registry/conformance/steps.json.",
+  "formatVersion": 1,
+  "steps": {
+    "parse-date": {
+      "side": "response",
+      "input": "any",
+      "args": {},
+      "output": "string (YYYY-MM-DDTHH:mm:ss.sssZ) or null"
+    },
+    "to-list": {
+      "side": "both",
+      "input": "any",
+      "args": {},
+      "output": "array of non-empty strings"
+    },
+    "join": {
+      "side": "both",
+      "input": "array of strings",
+      "args": { "separator": "string" },
+      "output": "string"
+    },
+    "single": {
+      "side": "request",
+      "input": "array with exactly one element",
+      "args": {},
+      "output": "that element"
+    },
+    "map-value": {
+      "side": "both",
+      "input": "string or number",
+      "args": { "table": "object" },
+      "output": "table[input]"
+    },
+    "lowercase": {
+      "side": "both",
+      "input": "string",
+      "args": {},
+      "output": "string"
+    },
+    "uppercase": {
+      "side": "both",
+      "input": "string",
+      "args": {},
+      "output": "string"
+    },
+    "date-to-datetime": {
+      "side": "request",
+      "input": "string (YYYY-MM-DD)",
+      "args": { "edge": "start | end" },
+      "output": "string (YYYY-MM-DDTHH:mm:ss.sssZ)"
+    },
+    "recency-to-date": {
+      "side": "request",
+      "input": "string (day | week | month | year)",
+      "args": {},
+      "context": ["now", "policy.search.recencyDays"],
+      "output": "string (YYYY-MM-DDTHH:mm:ss.sssZ)"
+    },
+    "credits-to-usd": {
+      "side": "cost",
+      "input": "number (credits)",
+      "args": { "rateUsd": "number" },
+      "output": "number (USD)"
+    },
+    "request-price": {
+      "side": "cost",
+      "input": "number (billable item count)",
+      "args": { "pricing": "endpoint pricing object", "tier": "string or null" },
+      "output": "number (USD)"
+    }
+  }
+}
