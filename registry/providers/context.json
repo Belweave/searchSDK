@@ -51,7 +51,7 @@
       },
       "providerFields": { "relevance": "relevance" },
       "requestId": [{ "path": "request_id" }, { "header": "x-request-id" }],
-      "warnings": [{ "ifPath": "partial", "equals": true, "code": "partial_results" }]
+      "warnings": [{ "where": [{ "path": "partial", "equals": true }], "code": "partial_results" }]
     },
     "cost": { "reported": { "path": "key_metadata.credits_consumed", "unit": "credit" } },
     "pricing": {
@@ -95,7 +95,7 @@
       "pages": [
         {
           "from": "$",
-          "where": { "path": "markdown.success", "equals": true },
+          "where": [{ "path": "markdown.success", "equals": true }],
           "status": "ok",
           "fields": {
             "url": "metadata.sourceUrl",
@@ -108,13 +108,13 @@
         },
         {
           "from": "$",
-          "where": { "path": "markdown.success", "equals": false },
+          "where": [{ "path": "markdown.success", "equals": false }],
           "status": "failed",
           "fields": { "url": "metadata.sourceUrl", "errorCode": "markdown.error_code", "errorMessage": "markdown.message" }
         }
       ],
       "requestId": [{ "path": "request_id" }, { "header": "x-request-id" }],
-      "warnings": [{ "ifPath": "isPartial", "equals": true, "code": "partial_results" }]
+      "warnings": [{ "where": [{ "path": "isPartial", "equals": true }], "code": "partial_results" }]
     },
     "cost": { "reported": { "path": "key_metadata.credits_consumed", "unit": "credit" } },
     "pricing": {

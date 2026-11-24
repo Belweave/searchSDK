@@ -61,11 +61,11 @@
               "providerFields": { "position": 2, "siteName": "arxiv.org" }
             }
           ],
-          "cost": { "usd": 0, "estimated": true, "source": "computed" },
+          "cost": { "usd": null, "estimated": true, "source": "unknown" },
           "requestId": "synthetic-tinyfish-1",
           "latencyMs": 0,
           "warnings": [],
-          "attempts": [{ "provider": "tinyfish", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "tinyfish", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": null, "estimated": true, "source": "unknown" } }]
         }
       }
     },
@@ -177,11 +177,11 @@
               "error": { "code": "bot_blocked", "message": null }
             }
           ],
-          "cost": { "usd": 0, "estimated": true, "source": "computed" },
+          "cost": { "usd": null, "estimated": true, "source": "unknown" },
           "requestId": null,
           "latencyMs": 0,
           "warnings": [],
-          "attempts": [{ "provider": "tinyfish", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "tinyfish", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": null, "estimated": true, "source": "unknown" } }]
         }
       }
     },
@@ -192,6 +192,12 @@
       "options": { "provider": "tinyfish", "providerOptions": { "tinyfish": { "format": "json" } } },
       "responses": [],
       "expect": { "requestCount": 0, "error": { "code": "invalid_request", "provider": "tinyfish", "field": "providerOptions.tinyfish.format" } }
+    },
+    {
+      "name": "an unknown price gives an unknown cost, never a computed $0",
+      "call": "search", "query": "q", "options": { "provider": "tinyfish" },
+      "responses": [{ "status": 200, "body": { "query": "q", "results": [] } }],
+      "expect": { "responseIncludes": { "cost": { "usd": null, "estimated": true, "source": "unknown" } } }
     }
   ]
 }

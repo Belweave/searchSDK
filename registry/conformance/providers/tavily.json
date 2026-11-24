@@ -88,7 +88,7 @@
           "requestId": "synthetic-tavily-1",
           "latencyMs": 0,
           "warnings": [{ "code": "invalid_rows_dropped", "provider": "tavily", "count": 1 }],
-          "attempts": [{ "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.016, "estimated": true, "source": "reported-credits", "credits": 2 } }]
         }
       }
     },
@@ -123,7 +123,7 @@
           "requestId": null,
           "latencyMs": 0,
           "warnings": [],
-          "attempts": [{ "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.008, "estimated": true, "source": "computed" } }]
         }
       }
     },
@@ -177,8 +177,8 @@
           "latencyMs": 187,
           "warnings": [],
           "attempts": [
-            { "provider": "tavily", "outcome": "error", "code": "unavailable", "status": 434, "startMs": 0, "durationMs": 0 },
-            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 187, "durationMs": 0 }
+            { "provider": "tavily", "outcome": "error", "code": "unavailable", "status": 434, "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 187, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.008, "estimated": true, "source": "reported-credits", "credits": 1 } }
           ]
         }
       }
@@ -239,7 +239,7 @@
           "requestId": "synthetic-tavily-extract-1",
           "latencyMs": 0,
           "warnings": [],
-          "attempts": [{ "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0, "estimated": true, "source": "reported-credits", "credits": 0 } }]
         }
       }
     },

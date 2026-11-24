@@ -16,9 +16,9 @@
         "responseIncludes": {
           "latencyMs": 562,
           "attempts": [
-            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0 },
-            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 187, "durationMs": 0 },
-            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 562, "durationMs": 0 }
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 187, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 562, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }
           ]
         }
       }
@@ -44,12 +44,12 @@
         "error": {
           "code": "unavailable",
           "attempts": [
-            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0 },
-            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 125, "durationMs": 0 },
-            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 375, "durationMs": 0 },
-            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 875, "durationMs": 0 },
-            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 1875, "durationMs": 0 },
-            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 3875, "durationMs": 0 }
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 125, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 375, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 875, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 1875, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 3875, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } }
           ]
         }
       }
@@ -61,8 +61,8 @@
       "expect": {
         "responseIncludes": {
           "attempts": [
-            { "provider": "exa", "outcome": "error", "code": "rate_limit", "status": 429, "startMs": 0, "durationMs": 0, "retryAfterMs": 2000 },
-            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 2000, "durationMs": 0 }
+            { "provider": "exa", "outcome": "error", "code": "rate_limit", "status": 429, "startMs": 0, "durationMs": 0, "retryAfterMs": 2000, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 2000, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }
           ]
         }
       }
@@ -86,8 +86,8 @@
       "expect": {
         "responseIncludes": {
           "attempts": [
-            { "provider": "exa", "outcome": "error", "code": "rate_limit", "status": 429, "startMs": 0, "durationMs": 0 },
-            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 187, "durationMs": 0 }
+            { "provider": "exa", "outcome": "error", "code": "rate_limit", "status": 429, "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 187, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }
           ]
         }
       }

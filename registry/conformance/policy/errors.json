@@ -35,11 +35,11 @@
           "code": "invalid_response",
           "provider": "exa",
           "raw": { "results": null, "costDollars": { "total": 0.007 } },
-          "attempts": [{ "provider": "exa", "outcome": "error", "code": "invalid_response", "status": 200, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "invalid_response", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "reported" } }]
         }
       }
     },
-    { "name": "network failure", "call": "search", "query": "q", "responses": [{ "network": true }], "expect": { "error": { "code": "network", "provider": "exa", "attempts": [{ "provider": "exa", "outcome": "error", "code": "network", "startMs": 0, "durationMs": 0 }] } } },
+    { "name": "network failure", "call": "search", "query": "q", "responses": [{ "network": true }], "expect": { "error": { "code": "network", "provider": "exa", "attempts": [{ "provider": "exa", "outcome": "error", "code": "network", "startMs": 0, "durationMs": 0, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }] } } },
     { "name": "error messages are fixed and carry no key or body", "call": "search", "query": "q", "client": { "keys": { "exa": "secret-key-must-not-leak" } }, "responses": [{ "status": 401, "body": { "error": "Your key secret-key-must-not-leak is invalid" } }], "expect": { "error": { "code": "auth", "message": "The provider rejected the API key." }, "secretAbsent": "secret-key-must-not-leak" } }
   ]
 }

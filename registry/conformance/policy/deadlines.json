@@ -9,7 +9,7 @@
       "expect": {
         "error": {
           "code": "timeout", "provider": "exa",
-          "attempts": [{ "provider": "exa", "outcome": "error", "code": "timeout", "startMs": 0, "durationMs": 1000 }]
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "timeout", "startMs": 0, "durationMs": 1000, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }]
         }
       }
     },
@@ -36,8 +36,8 @@
         "responseIncludes": {
           "latencyMs": 587,
           "attempts": [
-            { "provider": "exa", "outcome": "error", "code": "attempt_timeout", "startMs": 0, "durationMs": 300 },
-            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 487, "durationMs": 100 }
+            { "provider": "exa", "outcome": "error", "code": "attempt_timeout", "startMs": 0, "durationMs": 300, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } },
+            { "provider": "exa", "outcome": "ok", "status": 200, "startMs": 487, "durationMs": 100, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }
           ]
         }
       }
@@ -55,8 +55,8 @@
           "latencyMs": 500,
           "warnings": [{ "code": "fallback_used", "provider": "tavily" }],
           "attempts": [
-            { "provider": "exa", "outcome": "error", "code": "attempt_timeout", "startMs": 0, "durationMs": 400 },
-            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 400, "durationMs": 100 }
+            { "provider": "exa", "outcome": "error", "code": "attempt_timeout", "startMs": 0, "durationMs": 400, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } },
+            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 400, "durationMs": 100, "billed": "yes", "cost": { "usd": 0.008, "estimated": true, "source": "computed" } }
           ]
         }
       }
@@ -72,8 +72,8 @@
         "error": {
           "code": "timeout", "provider": "tavily",
           "attempts": [
-            { "provider": "exa", "outcome": "error", "code": "attempt_timeout", "startMs": 0, "durationMs": 400 },
-            { "provider": "tavily", "outcome": "error", "code": "timeout", "startMs": 400, "durationMs": 100 }
+            { "provider": "exa", "outcome": "error", "code": "attempt_timeout", "startMs": 0, "durationMs": 400, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } },
+            { "provider": "tavily", "outcome": "error", "code": "timeout", "startMs": 400, "durationMs": 100, "billed": "possible", "cost": { "usd": 0.008, "estimated": true, "source": "computed" } }
           ]
         }
       }
@@ -85,13 +85,13 @@
       "expect": { "error": { "code": "timeout" } }
     },
     {
-      "name": "the deadline covers reading the body",
+      "name": "the deadline covers reading the body; the 2xx status is kept and the attempt is billed",
       "call": "search", "query": "q", "options": { "timeoutMs": 1000 },
       "responses": [{ "delayMs": 100, "bodyDelayMs": 5000, "status": 200, "body": { "results": [] } }],
       "expect": {
         "error": {
-          "code": "timeout",
-          "attempts": [{ "provider": "exa", "outcome": "error", "code": "timeout", "startMs": 0, "durationMs": 1000 }]
+          "code": "timeout", "status": 200,
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "timeout", "status": 200, "startMs": 0, "durationMs": 1000, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }]
         }
       }
     },

@@ -15,9 +15,15 @@
       "expect": {
         "error": {
           "code": "aborted", "provider": "exa",
-          "attempts": [{ "provider": "exa", "outcome": "error", "code": "aborted", "startMs": 0, "durationMs": 100 }]
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "aborted", "startMs": 0, "durationMs": 100, "billed": "possible", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }]
         }
       }
+    },
+    {
+      "name": "abort reaches a body stream that ignores it",
+      "call": "search", "query": "q", "abortAt": 100,
+      "responses": [{ "delayMs": 50, "bodyDelayMs": 500, "ignoreAbort": true, "status": 200, "body": { "results": [] } }],
+      "expect": { "error": { "code": "aborted", "status": 200 } }
     },
     {
       "name": "abort reaches a transport that ignores it",
@@ -29,7 +35,12 @@
       "name": "abort during body reading",
       "call": "search", "query": "q", "abortAt": 100,
       "responses": [{ "delayMs": 50, "bodyDelayMs": 500, "status": 200, "body": { "results": [] } }],
-      "expect": { "error": { "code": "aborted" } }
+      "expect": {
+        "error": {
+          "code": "aborted", "provider": "exa", "status": 200,
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "aborted", "status": 200, "startMs": 0, "durationMs": 100, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }]
+        }
+      }
     },
     {
       "name": "abort during backoff",
@@ -39,7 +50,7 @@
         "requestCount": 1,
         "error": {
           "code": "aborted",
-          "attempts": [{ "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } }]
         }
       }
     },

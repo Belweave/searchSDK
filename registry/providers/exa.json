@@ -29,6 +29,7 @@
       "url": "https://api.exa.ai/search",
       "encoding": "json",
       "fixed": { "type": "auto", "contents": { "highlights": true } },
+      "locked": ["contents.highlights"],
       "params": {
         "query": { "to": "query" },
         "maxResults": { "to": "numResults" },
@@ -67,7 +68,11 @@
       "perRequestUsd": { "fast": 0.004, "standard": 0.007, "deep": 0.012 },
       "includedItems": 10,
       "extraBlock": { "items": 1, "usd": 0.001 },
-      "note": "Base price covers up to 10 results; each extra result costs $1 per 1,000. Deep search is listed as $12 to $15 per 1,000."
+      "costOptions": {
+        "type": { "lite": "fast", "auto": "standard", "deep": "deep" },
+        "contents": "unknown"
+      },
+      "note": "Base price covers up to 10 results; each extra result costs $1 per 1,000. Deep search is listed as $12 to $15 per 1,000. Extra content types on search are priced per page and are not modelled."
     },
     "rateLimits": [
       { "plan": "Starter (free)", "limit": 10, "per": "second", "scope": "team" },
@@ -93,6 +98,7 @@
       "url": "https://api.exa.ai/contents",
       "encoding": "json",
       "fixed": { "text": true },
+      "locked": ["text"],
       "params": { "urls": { "to": "urls" } }
     },
     "limits": { "maxUrls": 100 },
@@ -112,7 +118,8 @@
         },
         {
           "from": "statuses",
-          "where": { "path": "status", "equals": "error" },
+          "optional": true,
+          "where": [{ "path": "status", "equals": "error" }],
           "status": "failed",
           "fields": { "url": "id", "errorCode": "error.tag" }
         }
@@ -126,13 +133,13 @@
       "retrievedOn": "2026-11-24",
       "perRequestUsd": 0,
       "extraBlock": { "items": 1, "usd": 0.001 },
+      "costOptions": { "highlights": "unknown", "summary": "unknown", "subpages": "unknown" },
       "note": "$1 per 1,000 pages per content type; this spec requests text only."
     },
     "rateLimits": [
       { "plan": "all", "limit": 100, "per": "second", "scope": "team" }
     ],
     "providerOptions": {
-      "text": { "anyOf": [{ "type": "boolean" }, { "type": "object" }] },
       "highlights": { "anyOf": [{ "type": "boolean" }, { "type": "object" }] },
       "summary": { "anyOf": [{ "type": "boolean" }, { "type": "object" }] },
       "maxAgeHours": { "type": "integer", "minimum": -1, "maximum": 720 },

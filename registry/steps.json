@@ -1,5 +1,5 @@
 {
-  "$comment": "The fixed named-step library. Specs may reference only these names. Exact semantics: registry/steps.md. Test vectors: registry/conformance/steps.json.",
+  "$comment": "The fixed named-step library. Specs may reference only these names, and only on the side given (request, response or both; cost steps are used by the runtime, never by specs). Exact semantics: registry/steps.md. Test vectors: registry/conformance/steps.json.",
   "formatVersion": 1,
   "steps": {
     "parse-date": {
@@ -17,7 +17,9 @@
     "join": {
       "side": "both",
       "input": "array of strings",
-      "args": { "separator": "string" },
+      "args": {
+        "separator": "string (required)"
+      },
       "output": "string"
     },
     "single": {
@@ -28,8 +30,10 @@
     },
     "map-value": {
       "side": "both",
-      "input": "string or number",
-      "args": { "table": "object" },
+      "input": "string, or an integer looked up by its decimal string",
+      "args": {
+        "table": "object"
+      },
       "output": "table[input]"
     },
     "lowercase": {
@@ -44,29 +48,55 @@
       "args": {},
       "output": "string"
     },
+    "prefix": {
+      "side": "both",
+      "input": "string or array of strings",
+      "args": {
+        "prefix": "string (required)"
+      },
+      "output": "string, or array of strings"
+    },
     "date-to-datetime": {
       "side": "request",
-      "input": "string (YYYY-MM-DD)",
-      "args": { "edge": "start | end" },
+      "input": "string (YYYY-MM-DD); anything else is unsupported",
+      "args": {
+        "edge": "start | end"
+      },
       "output": "string (YYYY-MM-DDTHH:mm:ss.sssZ)"
+    },
+    "format-date": {
+      "side": "request",
+      "input": "string (YYYY-MM-DD, a real date)",
+      "args": {
+        "format": "MM/DD/YYYY (required)"
+      },
+      "output": "string"
     },
     "recency-to-date": {
       "side": "request",
       "input": "string (day | week | month | year)",
       "args": {},
-      "context": ["now", "policy.search.recencyDays"],
+      "context": [
+        "now",
+        "policy.search.recencyDays"
+      ],
       "output": "string (YYYY-MM-DDTHH:mm:ss.sssZ)"
     },
     "credits-to-usd": {
       "side": "cost",
       "input": "number (credits)",
-      "args": { "rateUsd": "number" },
+      "args": {
+        "rateUsd": "number"
+      },
       "output": "number (USD)"
     },
     "request-price": {
       "side": "cost",
       "input": "number (billable item count)",
-      "args": { "pricing": "endpoint pricing object", "tier": "string or null" },
+      "args": {
+        "pricing": "endpoint pricing object",
+        "tier": "string or null"
+      },
       "output": "number (USD)"
     }
   }

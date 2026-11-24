@@ -112,7 +112,8 @@
       "retrievedOn": "2026-11-24",
       "creditUsd": 0.008,
       "perRequestUsd": { "fast": 0.008, "standard": 0.008, "deep": 0.016 },
-      "note": "basic, fast and ultra-fast cost 1 credit; advanced costs 2. Monthly plans price a credit at $0.005 to $0.0075."
+      "costOptions": { "auto_parameters": "unknown" },
+      "note": "basic, fast and ultra-fast cost 1 credit; advanced costs 2. auto_parameters may choose advanced. Monthly plans price a credit at $0.005 to $0.0075."
     },
     "rateLimits": [
       { "plan": "Researcher (free)", "limit": 100, "per": "minute", "scope": "organization" },
@@ -159,6 +160,7 @@
         },
         {
           "from": "failed_results",
+          "optional": true,
           "status": "failed",
           "fields": { "url": "url", "errorMessage": "error" }
         }
@@ -173,6 +175,7 @@
       "creditUsd": 0.008,
       "perRequestUsd": 0,
       "extraBlock": { "items": 5, "usd": 0.008 },
+      "costOptions": { "extract_depth": { "basic": "standard" } },
       "note": "Basic extract costs 1 credit per 5 successful URLs; advanced costs 2. Failed URLs are not charged."
     },
     "rateLimits": [

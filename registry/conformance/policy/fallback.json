@@ -12,8 +12,8 @@
           "provider": "tavily",
           "warnings": [{ "code": "fallback_used", "provider": "tavily" }],
           "attempts": [
-            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0 },
-            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.008, "estimated": true, "source": "computed" } }
           ]
         }
       }
@@ -48,8 +48,8 @@
         "error": {
           "code": "rate_limit", "provider": "tavily",
           "attempts": [
-            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0 },
-            { "provider": "tavily", "outcome": "error", "code": "rate_limit", "status": 429, "startMs": 0, "durationMs": 0 }
+            { "provider": "exa", "outcome": "error", "code": "unavailable", "status": 503, "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } },
+            { "provider": "tavily", "outcome": "error", "code": "rate_limit", "status": 429, "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } }
           ]
         }
       }
@@ -64,8 +64,8 @@
           "provider": "tavily",
           "warnings": [{ "code": "fallback_used", "provider": "tavily" }],
           "attempts": [
-            { "provider": "exa", "outcome": "skipped", "code": "unsupported", "startMs": 0, "durationMs": 0 },
-            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }
+            { "provider": "exa", "outcome": "skipped", "code": "unsupported", "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": false, "source": "none" } },
+            { "provider": "tavily", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.008, "estimated": true, "source": "computed" } }
           ]
         }
       }
@@ -91,8 +91,8 @@
         "error": {
           "code": "unsupported", "provider": "context", "field": "depth",
           "attempts": [
-            { "provider": "exa", "outcome": "skipped", "code": "unsupported", "startMs": 0, "durationMs": 0 },
-            { "provider": "context", "outcome": "skipped", "code": "unsupported", "startMs": 0, "durationMs": 0 }
+            { "provider": "exa", "outcome": "skipped", "code": "unsupported", "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": false, "source": "none" } },
+            { "provider": "context", "outcome": "skipped", "code": "unsupported", "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": false, "source": "none" } }
           ]
         }
       }

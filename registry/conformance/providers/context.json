@@ -86,7 +86,7 @@
           "requestId": "3f1c2a6e-8b4d-4c1e-9f0a-2d7b5e6c8a91",
           "latencyMs": 0,
           "warnings": [{ "code": "partial_results", "provider": "context" }],
-          "attempts": [{ "provider": "context", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "context", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.002, "estimated": true, "source": "computed" } }]
         }
       }
     },
@@ -182,7 +182,7 @@
           "requestId": "d7aa1c3a-38d2-4fb5-92c8-0f0cac3efa37",
           "latencyMs": 0,
           "warnings": [],
-          "attempts": [{ "provider": "context", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "context", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.002, "estimated": true, "source": "reported-credits", "credits": 1 } }]
         }
       }
     },

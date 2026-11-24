@@ -1,0 +1,179 @@
+{
+  "description": "Locked fixed values (schema: request.locked). Provider options replace a fixed top-level key whole. Afterwards every locked path must still hold its fixed value (JSON equality); otherwise the call fails with invalid_request for that provider option before anything is sent.",
+  "synthetic": "Synthetic: format vectors use invented specs and bodies; no provider is described.",
+  "providers": {
+    "locked": {
+      "formatVersion": 1,
+      "id": "locked",
+      "name": "Synthetic locked",
+      "specVersion": "2026-11-24",
+      "sources": [
+        {
+          "url": "https://example.com/docs",
+          "retrievedOn": "2026-11-24",
+          "covers": "nothing; synthetic spec for format vectors"
+        }
+      ],
+      "auth": {
+        "in": "header",
+        "name": "x-api-key",
+        "env": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "capabilities": {
+        "search": true,
+        "contents": false
+      },
+      "index": {
+        "type": "unknown"
+      },
+      "terms": {
+        "url": "https://example.com/terms",
+        "readOn": "2026-11-24",
+        "benchmarkPublication": "not-addressed",
+        "rawResponseStorage": "not-addressed"
+      },
+      "errors": [],
+      "search": {
+        "request": {
+          "method": "POST",
+          "url": "https://api.example.com/search",
+          "encoding": "json",
+          "fixed": {
+            "opts": {
+              "needed": true,
+              "size": 1
+            },
+            "mode": "a"
+          },
+          "locked": [
+            "opts.needed"
+          ],
+          "params": {
+            "query": {
+              "to": "query"
+            }
+          }
+        },
+        "limits": {
+          "maxResults": 20,
+          "maxQueryLength": null,
+          "maxIncludeDomains": 10,
+          "maxExcludeDomains": 10
+        },
+        "dateBasis": "published",
+        "response": {
+          "results": "results",
+          "fields": {
+            "url": "url",
+            "title": "title"
+          }
+        },
+        "pricing": {
+          "plan": "Synthetic",
+          "source": "https://example.com/pricing",
+          "retrievedOn": "2026-11-24",
+          "perRequestUsd": 0.005
+        },
+        "rateLimits": [],
+        "providerOptions": {
+          "opts": {
+            "type": "object"
+          },
+          "mode": {
+            "type": "string"
+          }
+        }
+      },
+      "unverified": []
+    }
+  },
+  "cases": [
+    {
+      "name": "a replacement that keeps the locked value is sent",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "locked",
+        "providerOptions": {
+          "locked": {
+            "opts": {
+              "needed": true,
+              "size": 5
+            },
+            "mode": "b"
+          }
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "body": {
+              "opts": {
+                "needed": true,
+                "size": 5
+              },
+              "mode": "b",
+              "query": "q"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "a replacement that drops a locked value is refused",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "locked",
+        "providerOptions": {
+          "locked": {
+            "opts": {
+              "size": 5
+            }
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "locked",
+          "field": "providerOptions.locked.opts"
+        }
+      }
+    },
+    {
+      "name": "a replacement that changes a locked value is refused",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "locked",
+        "providerOptions": {
+          "locked": {
+            "opts": {
+              "needed": 1
+            }
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "locked",
+          "field": "providerOptions.locked.opts"
+        }
+      }
+    }
+  ]
+}

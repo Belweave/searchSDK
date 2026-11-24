@@ -60,8 +60,8 @@
       "plan": "Free daily allowance",
       "source": "https://www.tinyfish.ai/pricing",
       "retrievedOn": "2026-11-24",
-      "perRequestUsd": 0,
-      "note": "Search is free within a daily allowance. Requests beyond it draw on a wallet balance at a price the docs do not state."
+      "perRequestUsd": null,
+      "note": "Search is free within a daily allowance. Requests beyond it draw on a wallet balance at a price the docs do not state, so the price is unknown."
     },
     "rateLimits": [
       { "plan": "Personal", "limit": 30, "per": "minute", "scope": "person or organization" },
@@ -102,6 +102,7 @@
         },
         {
           "from": "errors",
+          "optional": true,
           "status": "failed",
           "fields": { "url": "url", "errorCode": "error" }
         }
@@ -112,8 +113,8 @@
       "plan": "Free daily allowance",
       "source": "https://www.tinyfish.ai/pricing",
       "retrievedOn": "2026-11-24",
-      "perRequestUsd": 0,
-      "note": "Fetch is free up to 1,000 successfully fetched URLs per day; beyond that it draws on a wallet balance at a price the docs do not state."
+      "perRequestUsd": null,
+      "note": "Fetch is free up to 1,000 successfully fetched URLs per day; beyond that it draws on a wallet balance at a price the docs do not state, so the price is unknown."
     },
     "rateLimits": [
       { "plan": "Personal", "limit": 150, "per": "minute", "scope": "person or organization", "note": "pricing page; URLs, not requests" },

@@ -1,0 +1,172 @@
+{
+  "description": "Query-string serialization (policy.md, Requests). Keys and values are percent-encoded except RFC 3986 unreserved characters. Booleans are true and false. Numbers use the ECMAScript Number-to-String form: integers without a fraction, otherwise the shortest round-trip decimal, exponents as e+21 or e-7. Parameters keep their order: fixed values, then mapped options, then provider options; a provider option that replaces a fixed key keeps that key's place. Arrays and objects cannot be sent in a query string.",
+  "synthetic": "Synthetic: format vectors use invented specs and bodies; no provider is described.",
+  "providers": {
+    "query-string": {
+      "formatVersion": 1,
+      "id": "query-string",
+      "name": "Synthetic query-string",
+      "specVersion": "2026-11-24",
+      "sources": [
+        {
+          "url": "https://example.com/docs",
+          "retrievedOn": "2026-11-24",
+          "covers": "nothing; synthetic spec for format vectors"
+        }
+      ],
+      "auth": {
+        "in": "header",
+        "name": "x-api-key",
+        "env": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "capabilities": {
+        "search": true,
+        "contents": false
+      },
+      "index": {
+        "type": "unknown"
+      },
+      "terms": {
+        "url": "https://example.com/terms",
+        "readOn": "2026-11-24",
+        "benchmarkPublication": "not-addressed",
+        "rawResponseStorage": "not-addressed"
+      },
+      "errors": [],
+      "search": {
+        "request": {
+          "method": "GET",
+          "url": "https://api.example.com/search",
+          "encoding": "query",
+          "fixed": {
+            "flag": false,
+            "on": true,
+            "n": 10,
+            "two": 2.0,
+            "half": 0.5,
+            "big": 1e+21,
+            "tiny": 1e-07,
+            "neg": -3,
+            "s": "a b/c"
+          },
+          "params": {
+            "query": {
+              "to": "query"
+            }
+          }
+        },
+        "limits": {
+          "maxResults": 20,
+          "maxQueryLength": null,
+          "maxIncludeDomains": 10,
+          "maxExcludeDomains": 10
+        },
+        "dateBasis": "published",
+        "response": {
+          "results": "results",
+          "fields": {
+            "url": "url",
+            "title": "title"
+          }
+        },
+        "pricing": {
+          "plan": "Synthetic",
+          "source": "https://example.com/pricing",
+          "retrievedOn": "2026-11-24",
+          "perRequestUsd": 0.005
+        },
+        "rateLimits": [],
+        "providerOptions": {
+          "n": {
+            "type": "integer"
+          },
+          "list": {
+            "type": "array"
+          },
+          "obj": {
+            "type": "object"
+          }
+        }
+      },
+      "unverified": []
+    }
+  },
+  "cases": [
+    {
+      "name": "scalars serialize in a fixed form and order",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "query-string"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "url": "https://api.example.com/search?flag=false&on=true&n=10&two=2&half=0.5&big=1e%2B21&tiny=1e-7&neg=-3&s=a%20b%2Fc&query=q"
+          }
+        ]
+      }
+    },
+    {
+      "name": "a provider option replacing a fixed key keeps its place",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "query-string",
+        "providerOptions": {
+          "query-string": {
+            "n": 20
+          }
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "results": []
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "url": "https://api.example.com/search?flag=false&on=true&n=20&two=2&half=0.5&big=1e%2B21&tiny=1e-7&neg=-3&s=a%20b%2Fc&query=q"
+          }
+        ]
+      }
+    },
+    {
+      "name": "an array cannot be sent in a query string",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "query-string",
+        "providerOptions": {
+          "query-string": {
+            "list": [
+              "a"
+            ]
+          }
+        }
+      },
+      "expect": {
+        "requestCount": 0,
+        "error": {
+          "code": "invalid_request",
+          "provider": "query-string",
+          "field": "providerOptions.query-string.list"
+        }
+      }
+    }
+  ]
+}

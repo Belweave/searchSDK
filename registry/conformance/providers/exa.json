@@ -85,7 +85,7 @@
           "requestId": "synthetic-exa-1",
           "latencyMs": 0,
           "warnings": [{ "code": "provider_warning", "provider": "exa", "message": "Synthetic warning." }],
-          "attempts": [{ "provider": "exa", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "exa", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.012, "estimated": true, "source": "reported" } }]
         }
       }
     },
@@ -117,20 +117,20 @@
           "requestId": "synthetic-exa-2",
           "latencyMs": 0,
           "warnings": [],
-          "attempts": [{ "provider": "exa", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "exa", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "computed" } }]
         }
       }
     },
     {
-      "name": "search provider options are typed and merged at the top level",
+      "name": "search provider options are typed and replace fixed top-level keys whole; the locked highlights must stay",
       "call": "search",
       "query": "llm evals",
-      "options": { "provider": "exa", "providerOptions": { "exa": { "category": "news", "contents": { "text": true } } } },
+      "options": { "provider": "exa", "providerOptions": { "exa": { "category": "news", "contents": { "highlights": true, "text": true } } } },
       "responses": [{ "status": 200, "body": { "results": [] } }],
       "expect": {
         "requests": [
           {
-            "body": { "type": "auto", "contents": { "text": true }, "query": "llm evals", "numResults": 10, "category": "news" }
+            "body": { "type": "auto", "contents": { "highlights": true, "text": true }, "query": "llm evals", "numResults": 10, "category": "news" }
           }
         ]
       }
@@ -147,7 +147,7 @@
           "code": "unsupported",
           "provider": "exa",
           "field": "language",
-          "attempts": [{ "provider": "exa", "outcome": "skipped", "code": "unsupported", "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "exa", "outcome": "skipped", "code": "unsupported", "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": false, "source": "none" } }]
         }
       }
     },
@@ -163,7 +163,7 @@
           "provider": "exa",
           "status": 402,
           "providerCode": "NO_MORE_CREDITS",
-          "attempts": [{ "provider": "exa", "outcome": "error", "code": "quota", "status": 402, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "quota", "status": 402, "startMs": 0, "durationMs": 0, "billed": "no", "cost": { "usd": 0, "estimated": true, "source": "none" } }]
         }
       }
     },
@@ -249,9 +249,43 @@
           "requestId": "synthetic-exa-contents-1",
           "latencyMs": 0,
           "warnings": [],
-          "attempts": [{ "provider": "exa", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0 }]
+          "attempts": [{ "provider": "exa", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.001, "estimated": true, "source": "reported" } }]
         }
       }
+    },
+    {
+      "name": "a provider option that selects the deep tier is priced as deep when no cost is reported",
+      "call": "search", "query": "q", "options": { "provider": "exa", "providerOptions": { "exa": { "type": "deep" } } },
+      "responses": [{ "status": 200, "body": { "results": [] } }],
+      "expect": { "requests": [{ "bodyIncludes": { "type": "deep" } }], "responseIncludes": { "cost": { "usd": 0.012, "estimated": true, "source": "computed" } } }
+    },
+    {
+      "name": "a provider option type the pricing does not know makes the computed cost unknown",
+      "call": "search", "query": "q", "options": { "provider": "exa", "providerOptions": { "exa": { "type": "deep-reasoning" } } },
+      "responses": [{ "status": 200, "body": { "results": [] } }],
+      "expect": { "responseIncludes": { "cost": { "usd": null, "estimated": true, "source": "unknown" } } }
+    },
+    {
+      "name": "extra content types make the computed cost unknown; a reported cost still wins",
+      "call": "search", "query": "q", "options": { "provider": "exa", "providerOptions": { "exa": { "contents": { "highlights": true, "text": true } } } },
+      "responses": [{ "status": 200, "body": { "results": [] } }],
+      "expect": { "requests": [{ "bodyIncludes": { "contents": { "highlights": true, "text": true } } }], "responseIncludes": { "cost": { "usd": null, "estimated": true, "source": "unknown" } } }
+    },
+    {
+      "name": "a reported cost wins over cost-affecting options",
+      "call": "search", "query": "q", "options": { "provider": "exa", "providerOptions": { "exa": { "contents": { "highlights": true, "text": true } } } },
+      "responses": [{ "status": 200, "body": { "results": [], "costDollars": { "total": 0.008 } } }],
+      "expect": { "responseIncludes": { "cost": { "usd": 0.008, "estimated": true, "source": "reported" } } }
+    },
+    {
+      "name": "a provider option may not drop the highlights the excerpts mapping needs",
+      "call": "search", "query": "q", "options": { "provider": "exa", "providerOptions": { "exa": { "contents": { "text": true } } } },
+      "expect": { "requestCount": 0, "error": { "code": "invalid_request", "provider": "exa", "field": "providerOptions.exa.contents" } }
+    },
+    {
+      "name": "contents may not switch off the text the content mapping needs",
+      "call": "contents", "urls": ["https://example.com/a"], "options": { "provider": "exa", "providerOptions": { "exa": { "text": false } } },
+      "expect": { "requestCount": 0, "error": { "code": "invalid_request", "provider": "exa", "field": "providerOptions.exa.text" } }
     }
   ]
 }

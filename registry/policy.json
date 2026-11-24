@@ -5,11 +5,14 @@
     "maxCodePoints": 2000,
     "blank": [
       ["0009", "000D"], ["0020", "0020"], ["0085", "0085"], ["00A0", "00A0"],
-      ["1680", "1680"], ["180E", "180E"], ["2000", "200D"], ["2028", "2029"],
-      ["202F", "202F"], ["205F", "2060"], ["3000", "3000"], ["FEFF", "FEFF"]
+      ["00AD", "00AD"], ["034F", "034F"], ["061C", "061C"], ["115F", "1160"],
+      ["1680", "1680"], ["180E", "180E"], ["2000", "200F"], ["2028", "2029"],
+      ["202F", "202F"], ["205F", "2060"], ["2800", "2800"], ["3000", "3000"],
+      ["3164", "3164"], ["FEFF", "FEFF"], ["FFA0", "FFA0"]
     ],
     "forbidden": [
-      ["0000", "0008"], ["000E", "001F"], ["007F", "0084"], ["0086", "009F"]
+      ["0000", "0008"], ["000E", "001F"], ["007F", "0084"], ["0086", "009F"],
+      ["202A", "202E"], ["2066", "2069"], ["E0000", "E007F"]
     ]
   },
   "search": {
@@ -35,6 +38,13 @@
     "maxRetryAfterMs": 60000
   },
   "transient": ["network", "rate_limit", "unavailable", "attempt_timeout"],
+  "billing": {
+    "$comment": "How each attempt's billed field is set. Rules: registry/policy.md, Billing.",
+    "notSent": "no",
+    "success": "yes",
+    "errorStatus": "no",
+    "possible": ["network", "attempt_timeout", "timeout", "aborted"]
+  },
   "fallbackOn": ["network", "rate_limit", "unavailable", "attempt_timeout", "quota", "unsupported"],
   "status": [
     { "status": 401, "code": "auth" },
