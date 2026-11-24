@@ -2,8 +2,12 @@
    marked in violet (the brand's selection colour). Fumadocs supplies behaviour and layout; values
    come from tokens. */
 
-#nd-docs-layout {
-  --fd-sidebar-width: 17rem;
+/* A wider sidebar from Fumadocs' md breakpoint up; below it the sidebar is a drawer and its column
+   must stay at 0, or the page squeezes into a sliver on phones. */
+@media (min-width: 768px) {
+  #nd-docs-layout {
+    --fd-sidebar-width: 17rem;
+  }
 }
 #nd-sidebar {
   background: var(--surface-0);
