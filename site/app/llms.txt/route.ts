@@ -13,7 +13,7 @@ export function GET() {
     "",
     `> ${site.description}`,
     "",
-    `Install: \`${site.install}\`. Source: ${site.repo}`,
+    `Package: \`${site.packageName}\` (TypeScript), not on npm yet; build it from source (${absoluteUrl("/docs")}). Source: ${site.repo}`,
     "",
     "## Docs",
     "",

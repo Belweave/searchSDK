@@ -1,19 +1,25 @@
 ---
 title: Quickstart
-description: Install searchSDK, add a provider key and run your first web search from TypeScript in under a minute.
+description: Build searchSDK from source, set a provider key and run your first web search from TypeScript.
 ---
-
-The API on these pages is provisional. It will change before 1.0.
 
 ## Install
 
+`searchsdk` is not on npm yet. Pack it from the repository and install the tarball:
+
 ```sh
-npm install searchsdk
+cd searchSDK/sdk/typescript
+npm ci
+npm pack --ignore-scripts=false
+cd your-app
+npm install ../searchSDK/sdk/typescript/searchsdk-0.0.0.tgz
 ```
+
+It has no runtime dependencies and needs a standard `fetch`. Tested on Node 24.
 
 ## Add a key
 
-Each provider needs its own key. Pass keys in; searchSDK never stores them.
+Each provider reads its documented variable, such as `EXA_API_KEY`. Keys stay on your server and are never logged.
 
 ```sh
 export EXA_API_KEY="your-key"
@@ -22,32 +28,28 @@ export EXA_API_KEY="your-key"
 ## Search
 
 ```ts
-import { createSearch } from "searchsdk";
+import { search } from "searchsdk";
 
-const search = createSearch({
-  providers: ["exa"],
-  keys: { exa: process.env.EXA_API_KEY },
-});
-
-const { results } = await search("vector database indexing", { limit: 5 });
+const { results, cost } = await search("vector database indexing", { provider: "exa", maxResults: 5 });
 for (const r of results) console.log(r.title, r.url);
+console.log(cost.usd, cost.source);
 ```
 
 ## Fall back
 
-List more than one provider. If one fails or runs out of time, the next answers, and the response says which one did.
+A client can try other providers, in order, when one is unavailable, rate limited, out of quota or cannot honour an option. Fallback and retries are off unless you set them.
 
 ```ts
-const search = createSearch({
-  providers: ["exa", "tavily"],
-  keys: { exa: process.env.EXA_API_KEY, tavily: process.env.TAVILY_API_KEY },
-});
+import { createClient } from "searchsdk";
 
-const { results, provider } = await search("vector database indexing");
+const client = createClient({ provider: "exa", fallback: ["tavily"], maxRetries: 1 });
+const res = await client.search("vector database indexing");
+console.log(res.provider, res.attempts.length);
 ```
 
 ## Next
 
-- [Providers](/docs/providers): pick providers and set their options.
-- [Search](/docs/search): options and the result shape.
-- [Contents](/docs/contents): fetch the text of a page.
+- [Search](/docs/search): options, results and errors.
+- [Contents](/docs/contents): the text of pages.
+- [Providers](/docs/providers): ids, keys and provider options.
+- [Cost](/docs/cost): what each call cost.

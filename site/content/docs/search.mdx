@@ -1,40 +1,67 @@
 ---
 title: Search
-description: Run a web search through one or more providers with a deadline, a result limit and a cancel signal.
+description: Search the web through one provider or a fallback chain, with filters, deadlines, retries and a cancel signal.
 ---
 
-`search(query, options)` sends the query to the first provider in order and returns its results.
-
-## Options
-
-| Option | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `limit` | `number` | `10` | Most results to return |
-| `timeoutMs` | `number` | `10000` | Deadline for the whole call, fallbacks included |
-| `signal` | `AbortSignal` | none | Cancels the call |
-| `options` | `object` | none | Per-provider options, keyed by id |
+`search(query, options)` uses keys from the environment. `createClient(config).search(query, options)` takes keys and defaults once.
 
 ```ts
-const controller = new AbortController();
+import { search } from "searchsdk";
 
-const { results } = await search("postgres full text search", {
-  limit: 5,
-  timeoutMs: 4000,
+const controller = new AbortController();
+const res = await search("postgres full text search", {
+  provider: "tavily",
+  maxResults: 5,
+  recency: "month",
+  country: "DE",
+  timeoutMs: 10_000,
   signal: controller.signal,
 });
 ```
 
+## Options
+
+| Option | Meaning |
+| --- | --- |
+| `provider` | Provider id; required unless the client sets one |
+| `fallback` | Providers to try next, in order |
+| `maxResults` | 1 to 100; default 10 |
+| `includeDomains`, `excludeDomains` | Domain filters |
+| `recency` | `day`, `week`, `month` or `year` |
+| `startDate`, `endDate` | Inclusive `YYYY-MM-DD`, by publication date |
+| `country`, `language` | ISO 3166-1 and ISO 639-1 codes |
+| `depth` | `fast`, `standard` or `deep` |
+| `providerOptions` | Options one provider understands, keyed by id |
+| `timeoutMs` | Deadline for the whole call; default 30 s |
+| `attemptTimeoutMs` | Deadline for each attempt |
+| `maxRetries` | Retries of transient failures; default 0 |
+| `maxResponseBytes` | Largest response read |
+| `signal` | Cancels the call |
+
+An option a provider cannot honour fails as `unsupported` before anything is sent. [Each provider's page](/providers) lists what it honours.
+
 ## Results
 
-| Field | Type | Meaning |
-| --- | --- | --- |
-| `title` | `string` | Page title |
-| `url` | `string` | Page address |
-| `snippet` | `string` | Text the provider matched |
-| `rank` | `number` | Position in the provider's list, from 1 |
-| `provider` | `string` | The provider that returned it |
-| `raw` | `unknown` | The provider's own record |
+| Field | Meaning |
+| --- | --- |
+| `url` | Page address |
+| `title`, `author`, `publishedAt` | Or `null` when the provider has none |
+| `excerpts` | Text the provider matched |
+| `rank` | Position, from 1 |
+| `providerFields` | Provider-scoped values such as scores; not comparable across providers |
+
+The response also carries `provider`, `cost`, `requestId`, `latencyMs`, `warnings`, `attempts` and `raw`, the provider's own body.
 
 ## Errors
 
-A call that no provider can answer throws one error listing every attempt: provider, outcome and time taken. A cancelled call throws `AbortError`.
+Failures throw `SearchError` with a fixed `code` and the `attempts` made.
+
+```ts
+import { search, SearchError } from "searchsdk";
+
+try {
+  await search("postgres full text search", { provider: "brave", includeDomains: ["postgresql.org"] });
+} catch (e) {
+  if (e instanceof SearchError) console.log(e.code, e.field, e.attempts);
+}
+```

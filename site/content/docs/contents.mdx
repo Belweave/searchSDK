@@ -1,36 +1,34 @@
 ---
 title: Contents
-description: Fetch the readable text of a web page through a provider that supports page contents, with a size limit.
+description: Fetch the readable text of web pages through a provider, one result per requested URL, with failures kept.
 ---
 
-`search.contents(url, options)` returns the readable text of one page.
+`contents(urls, options)` returns one page per requested URL, in order.
 
 ```ts
-const page = await search.contents("https://example.com/article", {
-  provider: "firecrawl",
-  maxBytes: 200_000,
-});
+import { contents } from "searchsdk";
 
-console.log(page.title, page.text.length);
+const { pages, cost } = await contents(["https://example.com/a", "https://example.com/b"], { provider: "exa" });
+for (const page of pages) {
+  if (page.status === "ok") console.log(page.title, page.content?.length);
+  else console.log(page.url, page.error?.code);
+}
+console.log(cost.usd);
 ```
 
 ## Options
 
-| Option | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `provider` | `string` | first that supports contents | Which provider fetches the page |
-| `maxBytes` | `number` | `500000` | Longest text kept; the rest is cut |
-| `timeoutMs` | `number` | `15000` | Deadline for the call |
-| `signal` | `AbortSignal` | none | Cancels the call |
+The call options from [Search](/docs/search): `provider`, `fallback`, `providerOptions`, `timeoutMs`, `attemptTimeoutMs`, `maxRetries`, `maxResponseBytes` and `signal`. Each provider takes a limited number of URLs per call; [its page](/providers) says how many.
 
-## Result
+## Pages
 
-| Field | Type | Meaning |
-| --- | --- | --- |
-| `url` | `string` | The address fetched, after redirects |
-| `title` | `string` | Page title |
-| `text` | `string` | Readable text |
-| `truncated` | `boolean` | True when `maxBytes` cut the text |
-| `provider` | `string` | The provider that fetched it |
+| Field | Meaning |
+| --- | --- |
+| `url` | The URL as requested |
+| `status` | `ok` or `failed` |
+| `finalUrl` | Address after redirects, or `null` |
+| `title`, `author`, `publishedAt` | Or `null` |
+| `content` | Page text, Markdown or plain per provider |
+| `error` | Code and message for a failed page |
 
-Not every provider fetches contents. The [provider list](/providers) says which do.
+A URL the provider did not return is `failed` with code `missing`. One failed page does not fail the call.

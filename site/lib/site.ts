@@ -4,7 +4,8 @@ export const site = {
   url: (process.env.SITE_URL ?? "https://searchsdk.dev").replace(/\/$/, ""),
   description: "One interface for AI apps and agents to many web search providers, with open benchmarks. MIT licensed.",
   repo: "https://github.com/Belweave/searchSDK",
-  install: "npm install searchsdk",
+  /** The npm package. Not published yet: the docs install it from source. */
+  packageName: "searchsdk",
 } as const;
 
 export const primaryNav = [

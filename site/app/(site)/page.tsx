@@ -1,22 +1,20 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DataRegion } from "@/components/data/data-region";
 import { Race } from "@/components/home/race";
-import { CopyCommand } from "@/components/site/copy-command";
 import { getRace } from "@/lib/race";
 import { pageMetadata } from "@/lib/seo";
-import { site } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
   path: "/",
   title: "searchSDK: one interface to every web search API",
-  description: "One TypeScript and Python interface for AI apps and agents to many web search providers, with open benchmarks. MIT licensed.",
+  description: "One TypeScript interface for AI apps and agents to many web search providers, with open benchmarks. MIT licensed.",
 });
 
-const EXAMPLE = `import { createSearch } from "searchsdk";
-const search = createSearch({ providers: ["exa", "tavily"] });
-const { results } = await search("vector database indexing");
-console.log(results[0]?.url);`;
+/** The example is a real module, typechecked against the SDK by `npm run check`. */
+const EXAMPLE = readFileSync(path.join(process.cwd(), "content", "examples", "home.ts"), "utf8").trimEnd();
 
 export default function Home() {
   return (
@@ -38,9 +36,10 @@ export default function Home() {
       <section aria-labelledby="install" className="mt-section grid gap-10 md:grid-cols-2">
         <div className="min-w-0">
           <h2 id="install" className="text-xl font-semibold tracking-tight">Install</h2>
-          <div className="mt-4">
-            <CopyCommand command={site.install} />
-          </div>
+          <p className="mt-4 max-w-measure text-fg-muted">
+            <code className="font-mono text-fg">searchsdk</code> is not on npm yet.{" "}
+            <Link href="/docs#install" className="text-accent underline underline-offset-4">Build it from source</Link>, then install the tarball.
+          </p>
         </div>
         <div className="min-w-0">
           <h2 className="text-xl font-semibold tracking-tight">Search</h2>

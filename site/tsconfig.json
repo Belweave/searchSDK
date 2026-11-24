@@ -41,6 +41,7 @@
   "exclude": [
     "node_modules",
     "checks",
-    ".cache"
+    ".cache",
+    "content/examples"
   ]
 }

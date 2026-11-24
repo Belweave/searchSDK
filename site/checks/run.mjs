@@ -1,10 +1,11 @@
-// npm run check: typecheck → token scan → production build → serve on a free port → crawl and
+// npm run check: typecheck → examples against the SDK → token scan → production build → serve on a free port → crawl and
 // check every page → stop. Exit 1 on any failure. Makes no network request beyond localhost.
 //   node checks/run.mjs [--no-build]
 import { spawn } from "node:child_process";
 import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { checkExamples } from "./examples.mjs";
 import { checkSite } from "./site.mjs";
 import { checkSource } from "./source.mjs";
 
@@ -54,6 +55,15 @@ try {
   await run(NEXT, ["typegen"], "typegen");
   await run(TSC, ["--noEmit"], "typecheck");
   results.push("typecheck ok");
+
+  console.log("\n▸ examples");
+  const examples = await checkExamples();
+  if (examples.failures.length) {
+    for (const f of examples.failures) console.error(`  ✗ ${f}`);
+    throw new Error(`${examples.failures.length} example error(s)`);
+  }
+  console.log(`examples ok (${examples.count})`);
+  results.push(`examples ok (${examples.count} TypeScript examples typechecked against sdk/typescript)`);
 
   console.log("\n▸ tokens");
   const source = await checkSource();

@@ -80,6 +80,10 @@ export default async function ProviderPage({ params }: Props) {
             <dt className="text-fg-muted">Id</dt>
             <dd><code className="font-mono">{p.id}</code></dd>
           </div>
+          <div className="flex gap-2">
+            <dt className="text-fg-muted">Key</dt>
+            <dd><code className="font-mono">{p.env.join(", ")}</code></dd>
+          </div>
         </dl>
 
         {p.search ? <EndpointSection ep={p.search} providerName={p.name} /> : null}

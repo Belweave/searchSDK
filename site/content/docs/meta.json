@@ -1,4 +1,4 @@
 {
   "title": "Docs",
-  "pages": ["index", "providers", "search", "contents", "benchmarks-method"]
+  "pages": ["index", "search", "contents", "providers", "cost", "benchmarks-method"]
 }

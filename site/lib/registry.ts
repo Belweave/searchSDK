@@ -65,6 +65,8 @@ export type Provider = {
   hue: HueSlot;
   /** The date the spec's facts were last read from the provider's docs. */
   specVersion: string;
+  /** Environment variables the runtimes read the key from, in order. */
+  env: string[];
   liveVerified: boolean;
   sources: Source[];
   search: Endpoint | null;
@@ -346,6 +348,7 @@ function toProvider(file: string, spec: unknown, used: Set<HueSlot>): Provider {
     name: r.str(s.name, "name"),
     hue,
     specVersion: r.date(s.specVersion, "specVersion"),
+    env: r.arr(r.obj(s.auth, "auth").env, "auth.env").map((v, i) => r.str(v, `auth.env.${i}`)),
     liveVerified: LIVE_VERIFIED.has(id),
     sources: r.arr(s.sources, "sources").map((x, i) => {
       const src = r.obj(x, `sources.${i}`);

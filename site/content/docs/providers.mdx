@@ -1,38 +1,50 @@
 ---
 title: Providers
-description: How searchSDK names providers, passes their keys, exposes their own options and keeps their raw responses.
+description: How searchSDK names providers, finds their keys, passes provider-only options and keeps raw responses.
 ---
 
-A provider is a search API that searchSDK calls for you. Each has an id, a key and its own options. The [provider list](/providers) shows what each one supports.
+A provider is a search API that searchSDK calls from your server. [Each provider's page](/providers) shows what it supports, its prices and limits, read from the registry.
 
 ## Ids and keys
 
-Use the id in `providers` and in `keys`. Calls go straight from your server to the provider.
+Ids are lowercase, such as `exa` or `brave`, and typed as `ProviderId`. Keys come from each provider's documented variable, or from `keys`:
 
 ```ts
-const search = createSearch({
-  providers: ["brave", "firecrawl"],
-  keys: { brave: process.env.BRAVE_API_KEY, firecrawl: process.env.FIRECRAWL_API_KEY },
+import { createClient } from "searchsdk";
+
+const client = createClient({
+  provider: "brave",
+  fallback: ["firecrawl"],
+  keys: { brave: "your-brave-key", firecrawl: "your-firecrawl-key" },
 });
 ```
 
-Never ship a key to a browser or a mobile app. Call searchSDK from your server.
+Pass `env` instead to read variables from elsewhere, such as Worker bindings. A fallback without a key is skipped with a warning. Never ship a key to a browser or mobile app.
 
 ## Provider options
 
-Options only one provider understands go under its id. They are typed per provider.
+Options only one provider understands go under its id, typed per provider and checked before sending.
 
 ```ts
-await search("rust async runtimes", {
-  options: { exa: { type: "neural" } },
+import { search } from "searchsdk";
+
+const res = await search("rust async runtimes", {
+  provider: "exa",
+  providerOptions: { exa: { category: "news" } },
 });
 ```
 
 ## Raw responses
 
-Every result keeps the provider's original response, so nothing is lost when a field has no common name.
+`raw` is the provider's own parsed body, and `providerFields` keeps fields with no common name.
 
 ```ts
-const { results } = await search("rust async runtimes");
-console.log(results[0]?.raw);
+import { search } from "searchsdk";
+
+const res = await search("rust async runtimes", { provider: "tavily" });
+console.log(res.raw, res.results[0]?.providerFields);
 ```
+
+## The registry
+
+Provider behaviour is data, one spec per provider. `registry` exports it; `createClient({ registry })` accepts edited copies and validates them.
