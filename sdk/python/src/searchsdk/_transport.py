@@ -112,6 +112,8 @@ class _StdlibResponse:
                 self._conn.sock.settimeout(remaining)
             chunk = self._resp.read1(_CHUNK)
             if not chunk:
+                if self._resp.length:  # read1 reports a body cut short of Content-Length as a clean end
+                    raise ConnectionResetError("the connection closed before the body was complete")
                 return
             yield chunk
 
