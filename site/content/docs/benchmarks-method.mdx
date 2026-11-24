@@ -13,16 +13,14 @@ Every provider runs the same queries through searchSDK, end to end, with setting
 
 ## Quality
 
-Two measures, combined into one score from 0 to 100:
-
-- **Known-answer tasks.** Queries with a checked answer. A provider scores when its results contain it.
-- **Judge panel.** Low-cost model judges grade relevance against a published rubric. People check a sample of their grades.
+- **Known-answer tasks** set the rank. Each query has a checked answer. A provider scores when its top results, or the pages behind them, contain it. The harness reads those pages itself, obeying robots.txt, so no provider fetches for its rivals. A page it cannot read counts the same for everyone.
+- **Judged relevance** is a separate column. One model grades results against a published rubric. People check a sample, and the column appears only when they agree with it.
 
 ## Ranking
 
-1. Providers that fail or return nothing too often are marked unreliable and ranked below every dependable one.
-2. Quality decides the rest.
-3. Providers within 6 points of each other are tied.
+1. Providers with fewer than 95% usable responses are marked unreliable and ranked below every dependable one.
+2. The known-answer score decides the rest.
+3. Two providers are tied unless the gap is statistically clear and at least 6 points.
 
 Latency and cost are reported beside the rank. Cost never changes rank.
 

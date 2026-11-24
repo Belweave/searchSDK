@@ -31,4 +31,18 @@ console.log(known ? usd : "unknown");
 
 A failed call carries the same `attempts` on its `SearchError`.
 
+## Before a call
+
+`costBound` gives the most one request can cost at the highest documented rate, such as overage or the top of a price range. Use it to hold a spend cap without guessing a margin. `listPrice` gives the computed price for a result count.
+
+```ts
+import { costBound, listPrice, registry } from "searchsdk";
+
+const bound = costBound(registry.exa, "search", { maxResults: 10, depth: "deep" });
+console.log(bound.usd); // null when it cannot be bounded; see bound.unknownBecause
+console.log(listPrice(registry.exa, "search", { count: 10 }).usd);
+```
+
+A free allowance gives a bound with `requiresOverageOff: true`: it holds while paid use past the allowance stays off.
+
 Prices come from [each provider's page](/providers), with the date they were read.

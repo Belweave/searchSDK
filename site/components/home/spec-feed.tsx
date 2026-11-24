@@ -9,7 +9,7 @@ import { jsonLines } from "./stage/code";
 
 /**
  * One file per provider: an excerpt of the provider's registry spec on the left, and what reads
- * it on the right (the TypeScript runtime, the conformance suite, the leaderboard, these docs).
+ * it on the right (the TypeScript and Python runtimes, the conformance suite, the leaderboard, these docs).
  * Choosing a provider sends a pulse down every beam and each target redraws from that one file.
  */
 export type FeedProvider = {
@@ -49,7 +49,16 @@ export function SpecFeed({ providers }: { providers: FeedProvider[] }) {
         </code>
       ),
     },
-    { key: "conf", title: "Conformance", body: <span className="figures feed-big">{p.cases} cases</span> },
+    {
+      key: "py",
+      title: "Python runtime",
+      body: (
+        <code className="feed-code">
+          search(q, provider=<span className="c-str">&quot;{id}&quot;</span>)
+        </code>
+      ),
+    },
+    { key: "conf", title: "Conformance, both runtimes", body: <span className="figures feed-big">{p.cases} cases</span> },
     {
       key: "bench",
       title: "Benchmark lane",

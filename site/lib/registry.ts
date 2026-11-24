@@ -13,12 +13,6 @@ import path from "node:path";
 
 export const REGISTRY_DIR = path.join(process.cwd(), "..", "registry", "providers");
 
-/**
- * Provider ids whose conformance vectors have passed against the live API. None has
- * (registry/README.md, "Versions"). Add an id only when that is true.
- */
-const LIVE_VERIFIED: ReadonlySet<string> = new Set<string>();
-
 // ---- Hues ----
 
 /**
@@ -43,8 +37,12 @@ export type Row = { label: string; value: string; pointer: string; unverified: s
 
 export type CostSource = "reported" | "reported-credits" | "computed" | "unknown";
 
+/** An endpoint's live verification, read from the spec's `verification` (registry/README.md, "Versions"). */
+export type Verification = { status: "unverified" } | { status: "verified"; on: string };
+
 export type Endpoint = {
   kind: "search" | "contents";
+  verification: Verification;
   /** searchSDK request options and whether this provider honours each. */
   options: Row[];
   /** Normalized result (search) or page (contents) fields and whether the provider fills each. */
@@ -109,7 +107,10 @@ export type Provider = {
   specVersion: string;
   /** Environment variables the runtimes read the key from, in order. */
   env: string[];
+  /** True when every endpoint the provider has is verified against the live API. */
   liveVerified: boolean;
+  /** The latest date an endpoint was verified, or null. */
+  verifiedOn: string | null;
   sources: Source[];
   search: Endpoint | null;
   contents: Endpoint | null;
@@ -179,6 +180,8 @@ const usd = (v: number) => {
 };
 const per1k = (v: number, unit: string) => `${usd(v * 1000)} per 1,000 ${unit}`;
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : `${n.toLocaleString("en-US")} ${many}`);
+const UNITS: Record<string, string> = { requests: "requests", urls: "URLs", results: "results", "query-units": "query units" };
+const EXCERPT_KINDS: Record<string, string> = { description: "a page description", "content-chunk": "content chunks", highlights: "highlights" };
 
 function endpoint(r: Reader, spec: Json, kind: "search" | "contents", mark: (pointer: string) => string[]): Endpoint {
   const base = `/${kind}`;
@@ -190,6 +193,11 @@ function endpoint(r: Reader, spec: Json, kind: "search" | "contents", mark: (poi
   const response = r.obj(ep.response, `${kind}.response`);
   const pricing = r.obj(ep.pricing, `${kind}.pricing`);
   const row = (label: string, value: string, pointer: string): Row => ({ label, value, pointer, unverified: mark(pointer) });
+  const v = r.obj(ep.verification, `${kind}.verification`);
+  const verification: Verification =
+    v.status === "verified" ? { status: "verified", on: r.date(v.on, `${kind}.verification.on`) }
+    : v.status === "unverified" ? { status: "unverified" }
+    : r.fail(`${kind}.verification.status`, "must be verified or unverified");
   const items = kind === "search" ? "results" : "pages";
 
   // Request options.
@@ -218,7 +226,11 @@ function endpoint(r: Reader, spec: Json, kind: "search" | "contents", mark: (poi
     r.str(response.results, `${kind}.response.results`);
     const f = r.obj(response.fields, `${kind}.response.fields`);
     if (!("url" in f)) r.fail(`${kind}.response.fields`, "must map url");
-    for (const name of SEARCH_FIELDS) fields.push(row(name, name in f ? "Yes" : "No", `${base}/response/fields/${name}`));
+    const excerptKind = r.str(response.excerptKind, `${kind}.response.excerptKind`);
+    for (const name of SEARCH_FIELDS) {
+      const value = !(name in f) ? "No" : name === "excerpts" && EXCERPT_KINDS[excerptKind] ? `Yes, ${EXCERPT_KINDS[excerptKind]}` : "Yes";
+      fields.push(row(name, value, name === "excerpts" && name in f ? `${base}/response/excerptKind` : `${base}/response/fields/${name}`));
+    }
   } else {
     const sources = r.arr(response.pages, `${kind}.response.pages`).map((s, i) => r.obj(s, `${kind}.response.pages.${i}`));
     if (!sources.length) r.fail(`${kind}.response.pages`, "needs at least one source");
@@ -277,6 +289,17 @@ function endpoint(r: Reader, spec: Json, kind: "search" | "contents", mark: (poi
   const blockUnit = `${included !== null ? "extra " : ""}${blockItems === 1 ? items.slice(0, -1) : items}`;
   if (block) pricingRows.push(row(`Per ${blockItems === 1 ? "" : `${blockItems} `}${blockUnit}`, usd(blockUsd), p("extraBlock")));
   if (creditUsd !== null) pricingRows.push(row("Credit", usd(creditUsd), p("creditUsd")));
+  const allowance = pricing.allowance === undefined ? null : r.obj(pricing.allowance, `${kind}.pricing.allowance`);
+  if (allowance) {
+    const unit = UNITS[r.str(allowance.unit, `${kind}.pricing.allowance.unit`)] ?? String(allowance.unit);
+    const resets = typeof allowance.resetsAtUtc === "string" ? `, resets ${allowance.resetsAtUtc} UTC` : "";
+    pricingRows.push(row("Free allowance", `${(r.num(allowance.limit, `${kind}.pricing.allowance.limit`) as number).toLocaleString("en-US")} ${unit} per ${r.str(allowance.per, `${kind}.pricing.allowance.per`)}${resets}`, p("allowance")));
+    const beyond = r.obj(allowance.beyond, `${kind}.pricing.allowance.beyond`);
+    const overPrice = beyond.perRequestUsd === undefined || beyond.perRequestUsd === null ? "price not public" : per1k(r.num(beyond.perRequestUsd, `${kind}.pricing.allowance.beyond.perRequestUsd`) as number, "requests");
+    pricingRows.push(row("Past the allowance", beyond.billing === "opt-in" ? `Refused unless paid use is turned on (${overPrice})` : "Billed at the listed price", p("allowance/beyond/perRequestUsd")));
+  }
+  const ceiling = pricing.ceiling === undefined ? null : r.obj(pricing.ceiling, `${kind}.pricing.ceiling`);
+  if (ceiling) pricingRows.push(row("Highest documented rate", r.str(ceiling.note, `${kind}.pricing.ceiling.note`), p("ceiling")));
   const costOptions = pricing.costOptions === undefined ? [] : Object.keys(r.obj(pricing.costOptions, `${kind}.pricing.costOptions`));
   if (costOptions.length) pricingRows.push(row("Price-changing options", costOptions.join(", "), p("costOptions")));
   const note = typeof pricing.note === "string" && pricing.note.trim() ? pricing.note : null;
@@ -285,6 +308,8 @@ function endpoint(r: Reader, spec: Json, kind: "search" | "contents", mark: (poi
   const summaryValue =
     standard === null
       ? "Unknown"
+      : standard === 0 && !block && allowance
+        ? `Free up to ${(allowance.limit as number).toLocaleString("en-US")} ${UNITS[String(allowance.unit)] ?? String(allowance.unit)} a ${String(allowance.per)}`
       : standard === 0 && block
         ? `${usd(blockUsd)} per ${plural(blockItems, items.slice(0, -1), items)}`
         : per1k(standard, "requests");
@@ -314,10 +339,11 @@ function endpoint(r: Reader, spec: Json, kind: "search" | "contents", mark: (poi
   const rateLimits = r.arr(ep.rateLimits, `${kind}.rateLimits`).map((x, i) => {
     const rl = r.obj(x, `${kind}.rateLimits.${i}`);
     const limit = (r.num(rl.limit, `${kind}.rateLimits.${i}.limit`) as number).toLocaleString("en-US");
+    const unit = UNITS[r.str(rl.unit, `${kind}.rateLimits.${i}.unit`)] ?? String(rl.unit);
     const per = r.str(rl.per, `${kind}.rateLimits.${i}.per`);
     const scope = typeof rl.scope === "string" ? `, per ${rl.scope}` : "";
     const extra = typeof rl.note === "string" ? ` (${rl.note})` : "";
-    return row(r.str(rl.plan, `${kind}.rateLimits.${i}.plan`), `${per === "concurrent" ? `${limit} concurrent` : `${limit} per ${per}`}${scope}${extra}`, `${base}/rateLimits/${i}`);
+    return row(r.str(rl.plan, `${kind}.rateLimits.${i}.plan`), `${per === "concurrent" ? `${limit} concurrent ${unit}` : `${limit} ${unit} per ${per}`}${scope}${extra}`, `${base}/rateLimits/${i}`);
   });
 
   const auth = r.obj(spec.auth, "auth");
@@ -356,6 +382,7 @@ function endpoint(r: Reader, spec: Json, kind: "search" | "contents", mark: (poi
 
   return {
     kind,
+    verification,
     wire,
     price: { perRequestUsd: standard, block: block ? { items: blockItems, usd: blockUsd } : null, includedItems: included ?? 0 },
     options,
@@ -384,6 +411,8 @@ function pointerLabel(pointer: string): string {
     if (section === "response" && a === "pages" && b !== undefined) return c === "fields" && d ? `page field ${d}` : "page mapping";
     if (section === "response" && a === "results") return "result list";
     if (section === "response" && a === "resultsOptional") return "empty result handling";
+    if (section === "response" && a === "excerptKind") return "excerpt kind";
+    if (section === "verification") return "live verification";
     if (section === "limits" && a) return `limit ${a}`;
     if (section === "pricing" && a) return `price ${[a, b].filter(Boolean).join(" ")}`;
     if (section === "cost") return "reported cost";
@@ -419,6 +448,10 @@ function toProvider(file: string, spec: unknown, next: () => HueToken): Provider
   };
 
   const hue: HueToken = OWN_HUES.has(id) ? `--hue-${id}` : next();
+  const search = has("search") ? endpoint(r, s, "search", mark) : null;
+  const contents = has("contents") ? endpoint(r, s, "contents", mark) : null;
+  const endpoints = [search, contents].filter((e): e is Endpoint => e !== null);
+  const verifiedOn = endpoints.flatMap((e) => (e.verification.status === "verified" ? [e.verification.on] : [])).sort().at(-1) ?? null;
 
   return {
     id,
@@ -426,13 +459,14 @@ function toProvider(file: string, spec: unknown, next: () => HueToken): Provider
     hue,
     specVersion: r.date(s.specVersion, "specVersion"),
     env: r.arr(r.obj(s.auth, "auth").env, "auth.env").map((v, i) => r.str(v, `auth.env.${i}`)),
-    liveVerified: LIVE_VERIFIED.has(id),
+    liveVerified: endpoints.length > 0 && endpoints.every((e) => e.verification.status === "verified"),
+    verifiedOn,
     sources: r.arr(s.sources, "sources").map((x, i) => {
       const src = r.obj(x, `sources.${i}`);
       return { url: r.url(src.url, `sources.${i}.url`), retrievedOn: r.date(src.retrievedOn, `sources.${i}.retrievedOn`), covers: r.str(src.covers, `sources.${i}.covers`) };
     }),
-    search: has("search") ? endpoint(r, s, "search", mark) : null,
-    contents: has("contents") ? endpoint(r, s, "contents", mark) : null,
+    search,
+    contents,
     unverified,
   };
 }
@@ -486,7 +520,7 @@ export function providerHue(id: string): string {
 /** The one status statement for a provider. A fact about verification, not a sample label. */
 export function statusLine(p: Provider): string {
   return p.liveVerified
-    ? `Verified against the live API. Spec read ${p.specVersion}.`
+    ? `Verified against the live API on ${p.verifiedOn}. Spec read ${p.specVersion}.`
     : `Not verified against the live API yet. Mapped from ${p.name}'s public docs, read ${p.specVersion}.`;
 }
 

@@ -139,7 +139,12 @@ export function HomeSections() {
         </Section>
       ) : null}
 
-      <Section id="registry" layout="wide" title="One file per provider" line="A registry spec drives the runtime, its tests, the benchmark and these pages.">
+      <Section
+        id="registry"
+        layout="wide"
+        title="One file per provider"
+        line="A registry spec drives the TypeScript and Python runtimes, their shared tests, the benchmark and these pages. Both runtimes pass the same vectors. Neither is published or verified against live APIs yet."
+      >
         <SpecFeed providers={feed} />
       </Section>
 

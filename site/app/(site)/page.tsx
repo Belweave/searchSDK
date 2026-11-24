@@ -11,7 +11,7 @@ import "@/components/home/home.css";
 export const metadata: Metadata = pageMetadata({
   path: "/",
   title: "searchSDK: one interface to every web search API",
-  description: "One TypeScript interface for AI apps and agents to many web search providers, with fallback, honest cost and open benchmarks. MIT licensed.",
+  description: "One interface for AI apps and agents to many web search providers, in TypeScript and Python, with fallback, honest cost and open benchmarks. MIT licensed.",
 });
 
 const NUMBERS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
