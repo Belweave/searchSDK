@@ -314,7 +314,7 @@ def _warnings(provider: str, rules: Any, body: Any) -> list[ResponseWarning]:
 UNKNOWN = Cost(None, True, "unknown")
 
 
-def _priced_tier(ep: Mapping[str, Any], depth: str | None, options: Any) -> str | None:
+def priced_tier(ep: Mapping[str, Any], depth: str | None, options: Any) -> str | None:
     """The tier a request is priced at: the normalized depth unless a cost option decides; None makes the price unknown."""
     tier = depth or "standard"
     cost_options = ep["pricing"].get("costOptions") or {}
@@ -334,7 +334,7 @@ def _priced_tier(ep: Mapping[str, Any], depth: str | None, options: Any) -> str 
 
 
 def computed_cost(ep: Mapping[str, Any], count: int, depth: str | None, options: Any) -> Cost:
-    tier = _priced_tier(ep, depth, options)
+    tier = priced_tier(ep, depth, options)
     usd = None if tier is None else request_price(count, ep["pricing"], tier)
     return UNKNOWN if usd is None else Cost(usd, True, "computed")
 

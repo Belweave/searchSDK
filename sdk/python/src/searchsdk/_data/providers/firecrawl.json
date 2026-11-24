@@ -24,6 +24,7 @@
   "errorCodePath": "code",
   "errors": [],
   "search": {
+    "verification": { "status": "unverified" },
     "request": {
       "method": "POST",
       "url": "https://api.firecrawl.dev/v2/search",
@@ -52,6 +53,7 @@
     "dateBasis": "unknown",
     "response": {
       "results": "data.web",
+      "excerptKind": "description",
       "resultsOptional": true,
       "fields": {
         "url": "url",
@@ -69,16 +71,17 @@
       "creditUsd": 0.0038,
       "perRequestUsd": 0,
       "extraBlock": { "items": 10, "usd": 0.0076 },
+      "ceiling": { "extraBlockUsd": 0.01, "note": "Hobby extra credits cost $5 per 1,000 ($0.005 each), above the plan's $0.0038; 2 credits per block." },
       "costOptions": { "scrapeOptions": "unknown", "categories": "unknown" },
       "note": "2 credits per 10 results, rounded up. Hobby is $19 for 5,000 credits; Standard is about $0.001 per credit. Scraping results adds scrape credits; the gov category adds none."
     },
     "rateLimits": [
-      { "plan": "Free", "limit": 10, "per": "minute", "scope": "team" },
-      { "plan": "Free", "limit": 2, "per": "concurrent", "scope": "team" },
-      { "plan": "Hobby", "limit": 5, "per": "concurrent", "scope": "team" },
-      { "plan": "Standard", "limit": 25, "per": "concurrent", "scope": "team" },
-      { "plan": "Growth", "limit": 50, "per": "concurrent", "scope": "team" },
-      { "plan": "Scale", "limit": 100, "per": "concurrent", "scope": "team" }
+      { "plan": "Free", "limit": 10, "unit": "requests", "per": "minute", "scope": "team" },
+      { "plan": "Free", "limit": 2, "unit": "requests", "per": "concurrent", "scope": "team" },
+      { "plan": "Hobby", "limit": 5, "unit": "requests", "per": "concurrent", "scope": "team" },
+      { "plan": "Standard", "limit": 25, "unit": "requests", "per": "concurrent", "scope": "team" },
+      { "plan": "Growth", "limit": 50, "unit": "requests", "per": "concurrent", "scope": "team" },
+      { "plan": "Scale", "limit": 100, "unit": "requests", "per": "concurrent", "scope": "team" }
     ],
     "providerOptions": {
       "categories": { "type": "array", "items": { "enum": ["developer", "gov", "research", "pdf"] } },
@@ -91,6 +94,7 @@
     }
   },
   "contents": {
+    "verification": { "status": "unverified" },
     "request": {
       "method": "POST",
       "url": "https://api.firecrawl.dev/v2/scrape",
@@ -134,11 +138,12 @@
       "creditUsd": 0.0038,
       "perRequestUsd": 0,
       "extraBlock": { "items": 1, "usd": 0.0038 },
+      "ceiling": { "extraBlockUsd": 0.005, "note": "Hobby extra credits cost $5 per 1,000 ($0.005 each), above the plan's $0.0038." },
       "note": "1 credit per returned document, including target 403 and 404 pages; a scrape that returns no document is free."
     },
     "rateLimits": [
-      { "plan": "Free", "limit": 10, "per": "minute", "scope": "team" },
-      { "plan": "Hobby", "limit": 5, "per": "concurrent", "scope": "team" }
+      { "plan": "Free", "limit": 10, "unit": "requests", "per": "minute", "scope": "team" },
+      { "plan": "Hobby", "limit": 5, "unit": "requests", "per": "concurrent", "scope": "team" }
     ],
     "providerOptions": {
       "waitFor": { "type": "integer", "minimum": 0, "maximum": 60000 },

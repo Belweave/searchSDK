@@ -24,6 +24,7 @@
   "errorCodePath": "tag",
   "errors": [],
   "search": {
+    "verification": { "status": "unverified" },
     "request": {
       "method": "POST",
       "url": "https://api.exa.ai/search",
@@ -46,6 +47,7 @@
     "dateBasis": "published",
     "response": {
       "results": "results",
+      "excerptKind": "highlights",
       "fields": {
         "url": "url",
         "title": "title",
@@ -68,6 +70,7 @@
       "perRequestUsd": { "fast": 0.004, "standard": 0.007, "deep": 0.012 },
       "includedItems": 10,
       "extraBlock": { "items": 1, "usd": 0.001 },
+      "ceiling": { "perRequestUsd": { "fast": 0.004, "standard": 0.007, "deep": 0.015 }, "note": "Deep search is listed as $12 to $15 per 1,000; the bound uses $15." },
       "costOptions": {
         "type": { "lite": "fast", "auto": "standard", "deep": "deep" },
         "contents": "unknown"
@@ -75,10 +78,10 @@
       "note": "Base price covers up to 10 results; each extra result costs $1 per 1,000. Deep search is listed as $12 to $15 per 1,000. Extra content types on search are priced per page and are not modelled."
     },
     "rateLimits": [
-      { "plan": "Starter (free)", "limit": 10, "per": "second", "scope": "team" },
-      { "plan": "Developer", "limit": 25, "per": "second", "scope": "team" },
-      { "plan": "Growth", "limit": 50, "per": "second", "scope": "team" },
-      { "plan": "Starter (free)", "limit": 5, "per": "second", "scope": "team", "note": "deep search types" }
+      { "plan": "Starter (free)", "limit": 10, "unit": "requests", "per": "second", "scope": "team" },
+      { "plan": "Developer", "limit": 25, "unit": "requests", "per": "second", "scope": "team" },
+      { "plan": "Growth", "limit": 50, "unit": "requests", "per": "second", "scope": "team" },
+      { "plan": "Starter (free)", "limit": 5, "unit": "requests", "per": "second", "scope": "team", "note": "deep search types" }
     ],
     "providerOptions": {
       "type": { "type": "string" },
@@ -93,6 +96,7 @@
     }
   },
   "contents": {
+    "verification": { "status": "unverified" },
     "request": {
       "method": "POST",
       "url": "https://api.exa.ai/contents",
@@ -137,7 +141,7 @@
       "note": "$1 per 1,000 pages per content type; this spec requests text only."
     },
     "rateLimits": [
-      { "plan": "all", "limit": 100, "per": "second", "scope": "team" }
+      { "plan": "all", "limit": 100, "unit": "requests", "per": "second", "scope": "team" }
     ],
     "providerOptions": {
       "highlights": { "anyOf": [{ "type": "boolean" }, { "type": "object" }] },

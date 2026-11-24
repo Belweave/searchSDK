@@ -13,6 +13,8 @@ import unittest
 from collections.abc import Callable
 from typing import Any
 
+import searchsdk
+from searchsdk import SearchError, cost_bound, list_price, url_key
 from searchsdk._steps import StepUnsupported, credits_to_usd, request_price, run_step
 
 from .harness import DEFAULT_NOW, Mode, assert_json, load_vectors, parse_iso, run_case
@@ -32,6 +34,10 @@ class ConformanceAsync(unittest.TestCase):
 
 class Steps(unittest.TestCase):
     """registry/conformance/steps.json."""
+
+
+class CostFunctions(unittest.TestCase):
+    """registry/conformance/cost.json: list_price, cost_bound and url_key."""
 
 
 def _case_test(case: dict[str, Any], data: dict[str, Any], mode: Mode) -> Callable[[unittest.TestCase], None]:
@@ -75,6 +81,41 @@ for _file, _data in load_vectors(""):
     if _file == "steps.json":
         for _i, _c in enumerate(_data["cases"]):
             setattr(Steps, _name(f"{_i:03d}", _c["step"]), _step_test(_c))
+
+
+def _cost_test(c: dict[str, Any]) -> Callable[[unittest.TestCase], None]:
+    def test(self: unittest.TestCase) -> None:
+        spec = c.get("spec") or searchsdk.registry.get(c.get("provider", ""))
+        given: Any = c.get("input")
+
+        def run() -> Any:
+            if c["fn"] == "urlKey":
+                return url_key(given)
+            assert spec is not None
+            o = given or {}
+            if c["fn"] == "listPrice":
+                return list_price(spec, c["kind"], count=o["count"], depth=o.get("depth"), provider_options=o.get("providerOptions")).to_json()
+            if c["fn"] == "costBound":
+                return cost_bound(
+                    spec, c["kind"], max_results=o.get("maxResults"), urls=o.get("urls"), depth=o.get("depth"), provider_options=o.get("providerOptions")
+                ).to_json()
+            raise AssertionError(f"unknown fn {c['fn']}")
+
+        if "expectError" in c:
+            with self.assertRaises(SearchError) as caught:
+                run()
+            self.assertEqual((caught.exception.code, caught.exception.field), (c["expectError"]["code"], c["expectError"]["field"]))
+        else:
+            assert_json(run(), c["expect"], c["name"])
+
+    test.__doc__ = c["name"]
+    return test
+
+
+for _file, _data in load_vectors(""):
+    if _file == "cost.json":
+        for _i, _c in enumerate(_data["cases"]):
+            setattr(CostFunctions, _name(f"{_i:03d}", _c["name"]), _cost_test(_c))
 
 
 if __name__ == "__main__":

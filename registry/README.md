@@ -24,7 +24,15 @@ addition for every runtime.
 - Record each source URL with its retrieval date; list anything unclear under
   `unverified` with a JSON pointer and the reason.
 - Write `null` for a price that is not public; list provider options that
-  change the bill in `pricing.costOptions`.
+  change the bill in `pricing.costOptions`. Record higher documented rates
+  (overage, another plan, the top of a range) in `pricing.ceiling`, and free
+  use with what happens past it in `pricing.allowance`.
+- Give every rate limit and allowance a `unit` (`requests`, `urls`, `results`
+  or `query-units`). When documents disagree, record each limit with its
+  `source`; consumers obey the strictest.
+- Say what search excerpts are in `response.excerptKind`: `description`,
+  `content-chunk`, `highlights`, or `none` when no excerpts are mapped.
+- Start each endpoint at `"verification": { "status": "unverified" }`.
 - Keys go in headers. A key may go in the URL only with `keyInUrlReason`.
 
 ## Rules the schema cannot check
@@ -54,5 +62,7 @@ syntax characters; `(...)`, `(?:...)` and `|`; quantifiers `* + ? {n}
 ## Versions
 
 `formatVersion` changes only when the format breaks. `specVersion` is when a
-spec's facts were last checked. A provider is verified only once its vectors
-pass against the live API; none has.
+spec's facts were last checked. An endpoint is verified only once its vectors
+pass against the live API; its `verification` then records the date and the
+runtimes that passed. Every endpoint is `unverified` today. The site and
+benchmark read this field; nobody keeps a separate list.

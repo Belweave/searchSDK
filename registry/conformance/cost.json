@@ -1,0 +1,66 @@
+{
+  "description": "Vectors for the exported price functions (registry/steps.md, List price and Cost bound). provider names a built-in spec; spec gives an invented one instead. input spells options in camelCase; providerOptions are that provider's own options. Results are compared in their shared JSON form; expectError lists the error's code and field.",
+  "synthetic": "Synthetic: specs under spec are invented; built-in specs are used for their documented prices only, and nothing is sent.",
+  "cases": [
+    { "name": "exa list price within the included results", "fn": "listPrice", "provider": "exa", "kind": "search", "input": { "count": 10 }, "expect": { "usd": 0.007, "estimated": true, "source": "computed" } },
+    { "name": "exa list price adds extra results at the deep tier", "fn": "listPrice", "provider": "exa", "kind": "search", "input": { "count": 15, "depth": "deep" }, "expect": { "usd": 0.017, "estimated": true, "source": "computed" } },
+    { "name": "a cost option selects the tier", "fn": "listPrice", "provider": "exa", "kind": "search", "input": { "count": 10, "providerOptions": { "type": "deep" } }, "expect": { "usd": 0.012, "estimated": true, "source": "computed" } },
+    { "name": "a cost option listed as unknown makes the list price unknown", "fn": "listPrice", "provider": "exa", "kind": "search", "input": { "count": 10, "providerOptions": { "contents": { "text": true } } }, "expect": { "usd": null, "estimated": true, "source": "unknown" } },
+    { "name": "context bills one block per 10 results, rounded up", "fn": "listPrice", "provider": "context", "kind": "search", "input": { "count": 11 }, "expect": { "usd": 0.004, "estimated": true, "source": "computed" } },
+    { "name": "tinyfish inside its free allowance is a documented $0", "fn": "listPrice", "provider": "tinyfish", "kind": "search", "input": { "count": 10 }, "expect": { "usd": 0, "estimated": true, "source": "computed" } },
+    { "name": "contents ignores depth and prices pages", "fn": "listPrice", "provider": "tavily", "kind": "contents", "input": { "count": 6, "depth": "deep", "providerOptions": { "extract_depth": "basic" } }, "expect": { "usd": 0.016, "estimated": true, "source": "computed" } },
+    { "name": "a cost option value with no tier makes the list price unknown", "fn": "listPrice", "provider": "tavily", "kind": "contents", "input": { "count": 1, "providerOptions": { "extract_depth": "advanced" } }, "expect": { "usd": null, "estimated": true, "source": "unknown" } },
+    { "name": "a flat price ignores the count", "fn": "listPrice", "provider": "brave", "kind": "search", "input": { "count": 20 }, "expect": { "usd": 0.005, "estimated": true, "source": "computed" } },
+    { "name": "list price for a missing endpoint is unsupported", "fn": "listPrice", "provider": "brave", "kind": "contents", "input": { "count": 1 }, "expectError": { "code": "unsupported", "field": "contents" } },
+
+    { "name": "bound at the default result count", "fn": "costBound", "provider": "exa", "kind": "search", "input": {}, "expect": { "usd": 0.007 } },
+    { "name": "bound uses the ceiling for the top of a published range", "fn": "costBound", "provider": "exa", "kind": "search", "input": { "maxResults": 25, "depth": "deep" }, "expect": { "usd": 0.03 } },
+    { "name": "bound uses the overage rate", "fn": "costBound", "provider": "context", "kind": "search", "input": { "maxResults": 10 }, "expect": { "usd": 0.003 } },
+    { "name": "bound counts blocks for the requested results", "fn": "costBound", "provider": "context", "kind": "search", "input": { "maxResults": 11 }, "expect": { "usd": 0.006 } },
+    { "name": "bound uses the price of extra credits", "fn": "costBound", "provider": "firecrawl", "kind": "search", "input": {}, "expect": { "usd": 0.01 } },
+    { "name": "bound is unknown when a cost option makes the price unknown", "fn": "costBound", "provider": "firecrawl", "kind": "search", "input": { "providerOptions": { "scrapeOptions": { "formats": ["markdown"] } } }, "expect": { "usd": null, "unknownBecause": "option" } },
+    { "name": "bound inside a free allowance holds only while paid overage stays off", "fn": "costBound", "provider": "tinyfish", "kind": "search", "input": {}, "expect": { "usd": 0, "requiresOverageOff": true } },
+    { "name": "contents bound inside a free allowance", "fn": "costBound", "provider": "tinyfish", "kind": "contents", "input": { "urls": 5 }, "expect": { "usd": 0, "requiresOverageOff": true } },
+    { "name": "contents bound counts one billable page per URL", "fn": "costBound", "provider": "perplexity", "kind": "contents", "input": { "urls": 3 }, "expect": { "usd": 0.003 } },
+    { "name": "contents bound defaults to one URL", "fn": "costBound", "provider": "firecrawl", "kind": "contents", "input": {}, "expect": { "usd": 0.005 } },
+    { "name": "bound is unknown for a tier with no price", "fn": "costBound", "provider": "perplexity", "kind": "search", "input": { "depth": "deep" }, "expect": { "usd": null, "unknownBecause": "price" } },
+    { "name": "bound at the deep tier", "fn": "costBound", "provider": "tavily", "kind": "search", "input": { "depth": "deep" }, "expect": { "usd": 0.016 } },
+    { "name": "bound for a missing endpoint is unsupported", "fn": "costBound", "provider": "brave", "kind": "contents", "input": {}, "expectError": { "code": "unsupported", "field": "contents" } },
+    {
+      "name": "bound is unknown when the billed count cannot be bounded",
+      "fn": "costBound", "kind": "search", "input": { "maxResults": 5 },
+      "spec": { "id": "synthetic-unbounded", "search": { "request": { "params": { "query": { "to": "q" } } }, "pricing": { "perRequestUsd": 0, "extraBlock": { "items": 10, "usd": 0.002 } } } },
+      "expect": { "usd": null, "unknownBecause": "count" }
+    },
+    {
+      "name": "a flat price needs no count bound",
+      "fn": "costBound", "kind": "search", "input": { "maxResults": 5 },
+      "spec": { "id": "synthetic-flat", "search": { "request": { "params": { "query": { "to": "q" } } }, "pricing": { "perRequestUsd": 0.004 } } },
+      "expect": { "usd": 0.004 }
+    },
+    {
+      "name": "an opt-in overage with a public price bounds by the larger price",
+      "fn": "costBound", "kind": "search", "input": { "maxResults": 10 },
+      "spec": { "id": "synthetic-allowance", "search": { "request": { "params": { "query": { "to": "q" }, "maxResults": { "to": "n" } } }, "pricing": { "perRequestUsd": 0, "allowance": { "limit": 100, "unit": "requests", "per": "day", "source": "https://example.com/pricing", "beyond": { "billing": "opt-in", "perRequestUsd": 0.002 } } } } },
+      "expect": { "usd": 0.002 }
+    },
+    {
+      "name": "an automatic overage is already the listed price",
+      "fn": "costBound", "kind": "search", "input": { "maxResults": 10 },
+      "spec": { "id": "synthetic-automatic", "search": { "request": { "params": { "query": { "to": "q" }, "maxResults": { "to": "n" } } }, "pricing": { "perRequestUsd": 0.003, "allowance": { "limit": 1000, "unit": "requests", "per": "month", "source": "https://example.com/pricing", "beyond": { "billing": "automatic" } } } } },
+      "expect": { "usd": 0.003 }
+    },
+    {
+      "name": "a ceiling without a block price keeps the listed block price",
+      "fn": "costBound", "kind": "search", "input": { "maxResults": 3 },
+      "spec": { "id": "synthetic-ceiling", "search": { "request": { "params": { "query": { "to": "q" }, "maxResults": { "to": "n" } } }, "pricing": { "perRequestUsd": { "standard": 0.001 }, "includedItems": 1, "extraBlock": { "items": 1, "usd": 0.001 }, "ceiling": { "perRequestUsd": { "standard": 0.002 }, "note": "synthetic" } } } },
+      "expect": { "usd": 0.004 }
+    },
+
+    { "name": "url key: scheme and host case, default port, fragment, trailing slash", "fn": "urlKey", "input": "HTTPS://Example.COM:443/a/b/?q=1#frag", "expect": "https://example.com/a/b?q=1" },
+    { "name": "url key: path trailing slash and unreserved escapes", "fn": "urlKey", "input": "http://example.com:80/%7euser/", "expect": "http://example.com/~user" },
+    { "name": "url key: empty path", "fn": "urlKey", "input": "https://example.com", "expect": "https://example.com/" },
+    { "name": "url key: a string that is not an absolute URL is its own key", "fn": "urlKey", "input": "not a url", "expect": "not a url" },
+    { "name": "url key: non-ASCII host becomes punycode", "fn": "urlKey", "input": "https://Bücher.example/Straße", "expect": "https://xn--bcher-kva.example/Stra%C3%9Fe" }
+  ]
+}

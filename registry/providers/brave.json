@@ -25,6 +25,7 @@
     { "status": 429, "bodyPath": "error.code", "equals": "QUOTA_LIMITED", "code": "quota" }
   ],
   "search": {
+    "verification": { "status": "unverified" },
     "request": {
       "method": "GET",
       "url": "https://api.search.brave.com/res/v1/web/search",
@@ -56,6 +57,7 @@
     "dateBasis": "published-or-updated",
     "response": {
       "results": "web.results",
+      "excerptKind": "description",
       "resultsOptional": true,
       "fields": {
         "url": "url",
@@ -73,7 +75,7 @@
       "note": "$5 per 1,000 requests, with $5 of credit included every month. Only successful requests are billed."
     },
     "rateLimits": [
-      { "plan": "Search", "limit": 50, "per": "second", "scope": "subscription" }
+      { "plan": "Search", "limit": 50, "unit": "requests", "per": "second", "scope": "subscription" }
     ],
     "providerOptions": {
       "safesearch": { "enum": ["off", "moderate", "strict"] },

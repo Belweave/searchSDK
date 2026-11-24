@@ -9,7 +9,7 @@ import os
 import random as _random
 import re
 from collections.abc import Awaitable, Callable, Generator, Iterable, Mapping, Sequence
-from typing import TYPE_CHECKING, Any, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypedDict, TypeVar, overload
 
 from ._clock import SYSTEM_CLOCK, CancelToken, Clock
 from ._core import Effect, Reply, Send, Sleep, run_call
@@ -22,14 +22,18 @@ from ._transport import AsyncResponse, AsyncStdlibTransport, AsyncTransport, Res
 from ._types import ContentsResponse, Depth, Recency, SearchResponse
 
 if TYPE_CHECKING:
+    from typing_extensions import TypeVar as _DefaultTypeVar
     from typing_extensions import Unpack
+
+    P = _DefaultTypeVar("P", bound=str, default=ProviderId)
+    """The provider ids a client accepts: the built-in ids, or a custom registry's keys (inferred, so no casts)."""
+else:
+    P = TypeVar("P", bound=str)
 
 T = TypeVar("T")
 
 
 class _CallOptions(TypedDict, total=False):
-    fallback: Sequence[ProviderId] | None
-    """Providers tried, in order, after a fallback-eligible failure. Overrides the client's list."""
     timeout_ms: int | None
     """Bounds the whole call, retries and body reading included. Default 30 000."""
     attempt_timeout_ms: int | None
@@ -40,7 +44,7 @@ class _CallOptions(TypedDict, total=False):
     """Cancels the call from any thread (async code may also cancel its task)."""
 
 
-class SearchInputs(_CallOptions, total=False):
+class _SearchCore(_CallOptions, total=False):
     max_results: int | None
     include_domains: Sequence[str] | None
     exclude_domains: Sequence[str] | None
@@ -53,20 +57,36 @@ class SearchInputs(_CallOptions, total=False):
     language: str | None
     """ISO 639-1."""
     depth: Depth | None
+
+
+class SearchInputs(_SearchCore, total=False):
     provider_options: SearchProviderOptions | None
 
 
+class _CustomSearchInputs(_SearchCore, total=False):
+    provider_options: Mapping[str, Mapping[str, Any]] | None
+
+
 class SearchOptions(SearchInputs, total=False):
+    """Search options with the call's provider, for building option dicts against the built-in registry."""
+
     provider: ProviderId | None
     """The provider for this call. Overrides the client's provider."""
+    fallback: Sequence[ProviderId] | None
+    """Providers tried, in order, after a fallback-eligible failure. Overrides the client's list."""
 
 
 class ContentsInputs(_CallOptions, total=False):
     provider_options: ContentsProviderOptions | None
 
 
+class _CustomContentsInputs(_CallOptions, total=False):
+    provider_options: Mapping[str, Mapping[str, Any]] | None
+
+
 class ContentsOptions(ContentsInputs, total=False):
     provider: ProviderId | None
+    fallback: Sequence[ProviderId] | None
 
 
 _SEARCH_NAMES = frozenset(SearchOptions.__annotations__) | frozenset(SearchInputs.__annotations__) | frozenset(_CallOptions.__annotations__)
@@ -89,19 +109,28 @@ class _Keys:
         return f"<{len(self._keys)} keys>"
 
 
-class _Base:
+def _with_chain(options: Mapping[str, Any], provider: str | None, fallback: Sequence[str] | None) -> dict[str, Any]:
+    out = dict(options)
+    if provider is not None:
+        out["provider"] = provider
+    if fallback is not None:
+        out["fallback"] = fallback
+    return out
+
+
+class _Base(Generic[P]):
     def __init__(
         self,
         *,
-        provider: ProviderId | None = None,
-        fallback: Sequence[ProviderId] | None = None,
+        provider: P | None = None,
+        fallback: Sequence[P] | None = None,
         keys: Mapping[str, str] | None = None,
         env: Mapping[str, str] | None = None,
         timeout_ms: int | None = None,
         attempt_timeout_ms: int | None = None,
         max_retries: int | None = None,
         max_response_bytes: int | None = None,
-        registry: Mapping[str, Any] | None = None,
+        registry: Mapping[P, Any] | None = None,
         clock: Clock | None = None,
         random: Callable[[], float] | None = None,
     ) -> None:
@@ -443,7 +472,7 @@ async def _drive_async(gen: Generator[Effect, Any, T], transport: AsyncTransport
 # ---- Public clients ----
 
 
-class Client(_Base):
+class Client(_Base[P]):
     """A synchronous client. Thread-safe; reuse one per application.
 
     >>> with Client(provider="exa", fallback=["tavily"], max_retries=1) as client:
@@ -458,8 +487,8 @@ class Client(_Base):
     def __init__(
         self,
         *,
-        provider: ProviderId | None = None,
-        fallback: Sequence[ProviderId] | None = None,
+        provider: P | None = None,
+        fallback: Sequence[P] | None = None,
         keys: Mapping[str, str] | None = None,
         env: Mapping[str, str] | None = None,
         timeout_ms: int | None = None,
@@ -467,7 +496,7 @@ class Client(_Base):
         max_retries: int | None = None,
         max_response_bytes: int | None = None,
         transport: Transport | None = None,
-        registry: Mapping[str, Any] | None = None,
+        registry: Mapping[P, Any] | None = None,
         clock: Clock | None = None,
         random: Callable[[], float] | None = None,
     ) -> None:
@@ -478,28 +507,56 @@ class Client(_Base):
         )
         self._transport: Transport = transport or StdlibTransport()
 
-    def search(self, query: str, **options: Unpack[SearchOptions]) -> SearchResponse:
-        """Searches the web. Raises SearchError."""
-        result: SearchResponse = _drive_sync(self._prepare("search", query, options), self._transport, self._clock)
+    @overload
+    def search(
+        self: Client[ProviderId], query: str, *, provider: ProviderId | None = None, fallback: Sequence[ProviderId] | None = None,
+        **options: Unpack[SearchInputs],
+    ) -> SearchResponse: ...
+    @overload
+    def search(
+        self: Client[str], query: str, *, provider: str | None = None, fallback: Sequence[str] | None = None,
+        **options: Unpack[_CustomSearchInputs],
+    ) -> SearchResponse: ...
+    def search(self, query: str, *, provider: str | None = None, fallback: Sequence[str] | None = None, **options: Any) -> SearchResponse:
+        """Searches the web. Raises SearchError.
+
+        With the built-in registry, provider ids and provider options are typed;
+        with a custom registry, any id from it is accepted without a cast.
+        """
+        prepared = self._prepare("search", query, _with_chain(options, provider, fallback))
+        result: SearchResponse = _drive_sync(prepared, self._transport, self._clock)
         return result
 
-    def contents(self, urls: str | Iterable[str], **options: Unpack[ContentsOptions]) -> ContentsResponse:
+    @overload
+    def contents(
+        self: Client[ProviderId], urls: str | Iterable[str], *, provider: ProviderId | None = None,
+        fallback: Sequence[ProviderId] | None = None, **options: Unpack[ContentsInputs],
+    ) -> ContentsResponse: ...
+    @overload
+    def contents(
+        self: Client[str], urls: str | Iterable[str], *, provider: str | None = None, fallback: Sequence[str] | None = None,
+        **options: Unpack[_CustomContentsInputs],
+    ) -> ContentsResponse: ...
+    def contents(
+        self, urls: str | Iterable[str], *, provider: str | None = None, fallback: Sequence[str] | None = None, **options: Any
+    ) -> ContentsResponse:
         """Fetches clean page text for one URL or a list of URLs. Raises SearchError."""
         subject = urls if isinstance(urls, (str, Sequence)) else list(urls)
-        result: ContentsResponse = _drive_sync(self._prepare("contents", subject, options), self._transport, self._clock)
+        prepared = self._prepare("contents", subject, _with_chain(options, provider, fallback))
+        result: ContentsResponse = _drive_sync(prepared, self._transport, self._clock)
         return result
 
     def close(self) -> None:
         self._transport.close()
 
-    def __enter__(self) -> Client:
+    def __enter__(self) -> Client[P]:
         return self
 
     def __exit__(self, *exc: object) -> None:
         self.close()
 
 
-class AsyncClient(_Base):
+class AsyncClient(_Base[P]):
     """An asynchronous client with the same shape as Client.
 
     Cancelling the awaiting task stops the call at once and raises
@@ -509,8 +566,8 @@ class AsyncClient(_Base):
     def __init__(
         self,
         *,
-        provider: ProviderId | None = None,
-        fallback: Sequence[ProviderId] | None = None,
+        provider: P | None = None,
+        fallback: Sequence[P] | None = None,
         keys: Mapping[str, str] | None = None,
         env: Mapping[str, str] | None = None,
         timeout_ms: int | None = None,
@@ -518,7 +575,7 @@ class AsyncClient(_Base):
         max_retries: int | None = None,
         max_response_bytes: int | None = None,
         transport: AsyncTransport | None = None,
-        registry: Mapping[str, Any] | None = None,
+        registry: Mapping[P, Any] | None = None,
         clock: Clock | None = None,
         random: Callable[[], float] | None = None,
     ) -> None:
@@ -529,21 +586,49 @@ class AsyncClient(_Base):
         )
         self._transport: AsyncTransport = transport or AsyncStdlibTransport()
 
-    async def search(self, query: str, **options: Unpack[SearchOptions]) -> SearchResponse:
-        """Searches the web. Raises SearchError."""
-        result: SearchResponse = await _drive_async(self._prepare("search", query, options), self._transport, self._clock)
+    @overload
+    async def search(
+        self: AsyncClient[ProviderId], query: str, *, provider: ProviderId | None = None, fallback: Sequence[ProviderId] | None = None,
+        **options: Unpack[SearchInputs],
+    ) -> SearchResponse: ...
+    @overload
+    async def search(
+        self: AsyncClient[str], query: str, *, provider: str | None = None, fallback: Sequence[str] | None = None,
+        **options: Unpack[_CustomSearchInputs],
+    ) -> SearchResponse: ...
+    async def search(self, query: str, *, provider: str | None = None, fallback: Sequence[str] | None = None, **options: Any) -> SearchResponse:
+        """Searches the web. Raises SearchError.
+
+        With the built-in registry, provider ids and provider options are typed;
+        with a custom registry, any id from it is accepted without a cast.
+        """
+        prepared = self._prepare("search", query, _with_chain(options, provider, fallback))
+        result: SearchResponse = await _drive_async(prepared, self._transport, self._clock)
         return result
 
-    async def contents(self, urls: str | Iterable[str], **options: Unpack[ContentsOptions]) -> ContentsResponse:
+    @overload
+    async def contents(
+        self: AsyncClient[ProviderId], urls: str | Iterable[str], *, provider: ProviderId | None = None,
+        fallback: Sequence[ProviderId] | None = None, **options: Unpack[ContentsInputs],
+    ) -> ContentsResponse: ...
+    @overload
+    async def contents(
+        self: AsyncClient[str], urls: str | Iterable[str], *, provider: str | None = None, fallback: Sequence[str] | None = None,
+        **options: Unpack[_CustomContentsInputs],
+    ) -> ContentsResponse: ...
+    async def contents(
+        self, urls: str | Iterable[str], *, provider: str | None = None, fallback: Sequence[str] | None = None, **options: Any
+    ) -> ContentsResponse:
         """Fetches clean page text for one URL or a list of URLs. Raises SearchError."""
         subject = urls if isinstance(urls, (str, Sequence)) else list(urls)
-        result: ContentsResponse = await _drive_async(self._prepare("contents", subject, options), self._transport, self._clock)
+        prepared = self._prepare("contents", subject, _with_chain(options, provider, fallback))
+        result: ContentsResponse = await _drive_async(prepared, self._transport, self._clock)
         return result
 
     async def aclose(self) -> None:
         await self._transport.aclose()
 
-    async def __aenter__(self) -> AsyncClient:
+    async def __aenter__(self) -> AsyncClient[P]:
         return self
 
     async def __aexit__(self, *exc: object) -> None:
@@ -568,22 +653,30 @@ def _async_client() -> AsyncClient:
     return _default_async
 
 
-def search(query: str, *, provider: ProviderId, **options: Unpack[SearchInputs]) -> SearchResponse:
+def search(
+    query: str, *, provider: ProviderId, fallback: Sequence[ProviderId] | None = None, **options: Unpack[SearchInputs]
+) -> SearchResponse:
     """Searches with the provider's key from its environment variable."""
-    return _client().search(query, provider=provider, **options)
+    return _client().search(query, provider=provider, fallback=fallback, **options)
 
 
-def contents(urls: str | Iterable[str], *, provider: ProviderId, **options: Unpack[ContentsInputs]) -> ContentsResponse:
+def contents(
+    urls: str | Iterable[str], *, provider: ProviderId, fallback: Sequence[ProviderId] | None = None, **options: Unpack[ContentsInputs]
+) -> ContentsResponse:
     """Fetches clean page text with the provider's key from its environment variable."""
-    return _client().contents(urls, provider=provider, **options)
+    return _client().contents(urls, provider=provider, fallback=fallback, **options)
 
 
-async def asearch(query: str, *, provider: ProviderId, **options: Unpack[SearchInputs]) -> SearchResponse:
+async def asearch(
+    query: str, *, provider: ProviderId, fallback: Sequence[ProviderId] | None = None, **options: Unpack[SearchInputs]
+) -> SearchResponse:
     """The asynchronous search."""
-    return await _async_client().search(query, provider=provider, **options)
+    return await _async_client().search(query, provider=provider, fallback=fallback, **options)
 
 
-async def acontents(urls: str | Iterable[str], *, provider: ProviderId, **options: Unpack[ContentsInputs]) -> ContentsResponse:
+async def acontents(
+    urls: str | Iterable[str], *, provider: ProviderId, fallback: Sequence[ProviderId] | None = None, **options: Unpack[ContentsInputs]
+) -> ContentsResponse:
     """The asynchronous contents."""
-    return await _async_client().contents(urls, provider=provider, **options)
+    return await _async_client().contents(urls, provider=provider, fallback=fallback, **options)
 

@@ -27,6 +27,42 @@ test("every spec passes the cross-field rules the schema cannot express", () => 
   for (const { where, spec } of allSpecs) assert.deepEqual(specProblems(spec), [], `${where} ${spec.id}`);
 });
 
+test("excerptKind is none exactly when a spec maps no excerpts", () => {
+  for (const { where, spec } of allSpecs) {
+    if (!spec.search) continue;
+    const hasExcerpts = spec.search.response.fields.excerpts !== undefined;
+    assert.equal(spec.search.response.excerptKind === "none", !hasExcerpts, `${where} ${spec.id}`);
+  }
+});
+
+test("a pricing ceiling never lowers a listed price", () => {
+  const tiers = (p: unknown): Record<string, number | null> => (p === null || typeof p === "number" ? { standard: p } : (p as Record<string, number | null>));
+  for (const { where, spec } of allSpecs) {
+    for (const kind of ["search", "contents"] as const) {
+      const pricing = spec[kind]?.pricing;
+      if (!pricing?.ceiling) continue;
+      if (pricing.ceiling.perRequestUsd !== undefined) {
+        const list = tiers(pricing.perRequestUsd), high = tiers(pricing.ceiling.perRequestUsd);
+        for (const [t, v] of Object.entries(list)) if (v !== null) assert.ok((high[t] ?? Infinity) >= v, `${where} ${kind} ${t}`);
+      }
+      if (pricing.ceiling.extraBlockUsd !== undefined) {
+        assert.ok(pricing.extraBlock, `${where} ${kind}: a block ceiling needs a block price`);
+        assert.ok(pricing.ceiling.extraBlockUsd >= pricing.extraBlock.usd, `${where} ${kind}`);
+      }
+    }
+  }
+});
+
+test("every built-in endpoint records whether it is verified against the live API", () => {
+  for (const [id, spec] of Object.entries(providers)) {
+    for (const kind of ["search", "contents"] as const) {
+      const v = spec[kind]?.verification;
+      if (!spec[kind]) continue;
+      assert.ok(v && (v.status === "unverified" || (v.status === "verified" && /^\d{4}-\d{2}-\d{2}$/.test(v.on))), `${id} ${kind}`);
+    }
+  }
+});
+
 test("the schema rejects a spec with an unknown step and an extra field", () => {
   const spec = read("providers/exa.json");
   spec.search.request.params.query.steps = [{ step: "eval" }];

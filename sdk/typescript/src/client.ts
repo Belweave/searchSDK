@@ -47,7 +47,15 @@ function billedFor(status: number | undefined, code: ErrorCode): Billed {
   return (b.possible as readonly string[]).includes(code) ? "possible" : (b.notSent as Billed);
 }
 
-export function createClient(config: ClientConfig = {}): Client {
+/**
+ * A client for the built-in registry, or for `config.registry`, whose keys then
+ * become the accepted provider ids (inferred, so custom ids need no casts).
+ */
+export function createClient<Id extends string = ProviderId>(config: ClientConfig<Id> = {}): Client<Id> {
+  return create(config as unknown as ClientConfig) as unknown as Client<Id>;
+}
+
+function create(config: ClientConfig): Client {
   const registry = config.registry === undefined ? builtInRegistry : loadRegistry(config.registry);
   const cfg: ClientConfig = config.keys ? { ...config, keys: { ...config.keys } } : { ...config };
   delete cfg.registry;

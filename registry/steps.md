@@ -115,6 +115,42 @@ it is the number of pages read from sources that are `ok` or marked
 body (billed `possible`, or a 2xx that could not be mapped) it is the requested
 `maxResults`, or the number of URLs sent.
 
+## List price (exported)
+Runtimes export the computed price as `listPrice(spec, kind, {count, depth,
+providerOptions})` (Python: `list_price(spec, kind, count=, depth=,
+provider_options=)`). It is step 3 of Cost above: the `computed` or `unknown`
+cost of one request that returned `count` items. Contents ignore `depth`.
+`providerOptions` are that provider's own options. A spec without the endpoint
+raises `unsupported` naming the kind. Vectors: `conformance/cost.json`.
+
+## Cost bound (exported)
+`costBound(spec, kind, {maxResults, urls, depth, providerOptions})` (Python:
+`cost_bound(...)`) is the most one request can cost under the documented
+prices, so a spend cap can reserve it instead of a guessed margin. It gives
+`{usd}`, `{usd: null, unknownBecause}` or `{usd, requiresOverageOff: true}`:
+
+1. The tier as in Cost; an option that makes it unknown gives
+   `unknownBecause: "option"`.
+2. The count: search uses `maxResults` (default
+   `policy.search.maxResults.default`); with `pricing.extraBlock` and no
+   `maxResults` param in the spec the provider decides how many rows it
+   bills, giving `unknownBecause: "count"`. Contents use `urls` (default 1),
+   one billable page per URL.
+3. The highest rates: `pricing.ceiling.perRequestUsd` replaces
+   `perRequestUsd` and `ceiling.extraBlockUsd` replaces `extraBlock.usd`
+   when given. `usd` is `request-price(count, …, tier)`; `null` gives
+   `unknownBecause: "price"`.
+4. With `pricing.allowance.beyond.billing` `opt-in`: a public
+   `beyond.perRequestUsd` replaces `perRequestUsd` in a second
+   `request-price`, and `usd` is the larger result; a `null` one leaves `usd`
+   and adds `requiresOverageOff: true` (the bound holds only while paid use
+   past the allowance stays off). `automatic` changes nothing: `perRequestUsd`
+   is already the price past the allowance.
+
+The bound assumes the provider bills no more items than were requested and
+bills as documented. A reported cost above it means the registry's price data
+is wrong.
+
 ## parse-date details
 The RFC 5322 form accepts a day name without checking it against the date, and
 needs at least one space after its comma.

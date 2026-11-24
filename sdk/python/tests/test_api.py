@@ -182,6 +182,23 @@ class Registry(unittest.TestCase):
         client.search("q", provider="exa")
         self.assertEqual(transport.requests[0].url, "https://api.exa.ai/search")
 
+    def test_a_custom_registrys_ids_need_no_casts(self) -> None:
+        from searchsdk._json import thaw
+
+        mine = {**thaw(searchsdk.registry["exa"]), "id": "mine"}
+        client = Client(registry={"mine": mine}, keys={"mine": "k"}, transport=Fixed({"results": []}), fallback=["mine"])
+        response = client.search("q", provider="mine", fallback=["mine"], provider_options={"mine": {"type": "fast"}})
+        self.assertEqual(response.provider, "mine")
+        built_in = Client(keys={"exa": "k"}, transport=Fixed({"results": []}))
+        with self.assertRaises(SearchError) as caught:
+            built_in.search("q", provider="mine")  # type: ignore[arg-type]  # the built-in client checks ids statically
+        self.assertEqual((caught.exception.code, caught.exception.field), ("configuration", "provider"))
+
+    def test_price_functions_and_url_key_are_exported(self) -> None:
+        self.assertEqual(searchsdk.cost_bound(searchsdk.registry["brave"], "search").to_json(), {"usd": 0.005})
+        self.assertEqual(searchsdk.list_price(searchsdk.registry["brave"], "search", count=3).to_json(), {"usd": 0.005, "estimated": True, "source": "computed"})
+        self.assertEqual(searchsdk.url_key("HTTPS://Example.COM:443/#x"), "https://example.com/")
+
     def test_a_custom_registry_is_validated(self) -> None:
         from searchsdk._json import thaw
 

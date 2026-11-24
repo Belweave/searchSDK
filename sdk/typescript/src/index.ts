@@ -2,7 +2,9 @@ import { createClient } from "./client.ts";
 import type { Client, ContentsOptions, ContentsResponse, ProviderId, SearchOptions, SearchResponse } from "./types.ts";
 
 export { createClient } from "./client.ts";
+export { costBound, listPrice, type CostBoundInput, type ListPriceInput } from "./cost.ts";
 export { SearchError } from "./errors.ts";
+export { urlKey } from "./policy.ts";
 export { policy, providers as registry } from "./generated/registry.ts";
 export type * from "./types.ts";
 

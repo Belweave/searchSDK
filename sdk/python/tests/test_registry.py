@@ -127,6 +127,18 @@ class Registry(unittest.TestCase):
         self.assertEqual(names(SCHEMA["$defs"]["responseStep"]), sides("response"))
         self.assertEqual(sorted(STEP_NAMES), library)
 
+    def test_excerpt_kind_is_none_exactly_when_no_excerpts_are_mapped(self) -> None:
+        for where, spec in ALL_SPECS:
+            if "search" in spec:
+                response = spec["search"]["response"]
+                self.assertEqual(response["excerptKind"] == "none", "excerpts" not in response["fields"], f"{where} {spec['id']}")
+
+    def test_every_built_in_endpoint_records_its_live_verification(self) -> None:
+        for pid, spec in registry.items():
+            for kind in ("search", "contents"):
+                if kind in spec:
+                    self.assertIn(spec[kind]["verification"]["status"], ("unverified", "verified"), f"{pid} {kind}")
+
     def test_every_unverified_pointer_resolves_inside_its_spec(self) -> None:
         for f in FILES:
             spec = read(f"providers/{f}")

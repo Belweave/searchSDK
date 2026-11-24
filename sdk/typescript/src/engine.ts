@@ -205,7 +205,7 @@ const UNKNOWN: Cost = { usd: null, estimated: true, source: "unknown" };
  * option listed in pricing.costOptions decides it. Returns null when an
  * option makes the price unknown.
  */
-function pricedTier(ep: EndpointBase, depth: string | undefined, options: unknown): string | null {
+export function pricedTier(ep: EndpointBase, depth: string | undefined, options: unknown): string | null {
   let tier: string = depth ?? "standard";
   const costOptions = ep.pricing.costOptions ?? {};
   if (!isPlainObject(options)) return tier;

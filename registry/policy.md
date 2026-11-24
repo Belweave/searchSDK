@@ -129,7 +129,9 @@ boolean.
   drop `:80` for http and `:443` for https; drop the fragment; in path and
   query, decode `%XX` escapes of unreserved characters, uppercase the rest,
   and encode non-ASCII as UTF-8 escapes (an unpaired surrogate as U+FFFD); an
-  empty path becomes `/` and a longer path loses one trailing `/`.
+  empty path becomes `/` and a longer path loses one trailing `/`. A string
+  that is not `scheme://…` is its own key. Runtimes export this rule as
+  `urlKey` (Python `url_key`) for callers that match or deduplicate URLs.
 - A header value containing a comma (duplicates joined) is ignored.
 - `Retry-After`, after removing spaces and tabs around it, is delta-seconds
   or an IMF-fixdate naming a real date and time (no rollover); anything else is

@@ -53,6 +53,7 @@
         }
       ],
       "contents": {
+        "verification": { "status": "unverified" },
         "request": {
           "method": "POST",
           "url": "https://api.example.com/contents",

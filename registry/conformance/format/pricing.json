@@ -36,6 +36,7 @@
       },
       "errors": [],
       "search": {
+        "verification": { "status": "unverified" },
         "request": {
           "method": "POST",
           "url": "https://api.example.com/search",
@@ -55,6 +56,7 @@
         "dateBasis": "published",
         "response": {
           "results": "results",
+          "excerptKind": "none",
           "fields": {
             "url": "url",
             "title": "title"
@@ -112,6 +114,7 @@
       },
       "errors": [],
       "search": {
+        "verification": { "status": "unverified" },
         "request": {
           "method": "POST",
           "url": "https://api.example.com/search",
@@ -144,6 +147,7 @@
         "dateBasis": "published",
         "response": {
           "results": "results",
+          "excerptKind": "none",
           "fields": {
             "url": "url",
             "title": "title"

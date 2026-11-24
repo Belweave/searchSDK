@@ -79,6 +79,19 @@ test("a client copies a custom registry, so later edits by other code have no ef
   assert.deepEqual(urls, ["https://api.exa.ai/search"]);
 });
 
+test("a custom registry's ids are the client's provider ids, with no casts", async () => {
+  const mine = { ...structuredClone(registry.exa), id: "mine" };
+  const client = createClient({
+    registry: { mine }, keys: { mine: "k" }, fallback: ["mine"],
+    fetch: (async () => new Response('{"results":[]}')) as typeof fetch,
+  });
+  const response = await client.search("q", { provider: "mine", providerOptions: { mine: { type: "fast" } } });
+  const id: "mine" = response.provider;
+  assert.equal(id, "mine");
+  // @ts-expect-error built-in ids are not in this client's registry
+  await assert.rejects(client.search("q", { provider: "exa" }), (e: unknown) => e instanceof SearchError && e.code === "configuration" && e.field === "provider");
+});
+
 test("a custom registry is validated against the schema", () => {
   const bad = structuredClone({ exa: registry.exa }) as any;
   bad.exa.search.request.url = "http://insecure.example/search";

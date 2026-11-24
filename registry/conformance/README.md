@@ -23,6 +23,9 @@ provider ids and provider option names are wire names and never change.
 their shared JSON form (camelCase keys, optional keys left out), which every
 runtime should be able to produce.
 - `steps.json`: the named-step library.
+- `cost.json`: the exported `listPrice`, `costBound` and `urlKey`
+  (steps.md, List price and Cost bound; policy.md, URL key). A case names a
+  built-in `provider` or gives an invented `spec`.
 
 ## Case format
 

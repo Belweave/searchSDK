@@ -1,8 +1,11 @@
 import { policy } from "./generated/registry.ts";
 import type { Attempt, ErrorCode, ProviderId } from "./types.ts";
 
+/** A provider id: a built-in one, or any id from a caller-supplied registry. */
+type AnyProviderId = ProviderId | (string & {});
+
 export interface SearchErrorDetails {
-  provider?: ProviderId;
+  provider?: AnyProviderId;
   status?: number;
   /** Machine-readable code sent by the provider, if any. */
   providerCode?: string;
@@ -17,12 +20,12 @@ export interface SearchErrorDetails {
 /** The only error the SDK throws. Messages are fixed per code and never include keys or bodies. */
 export class SearchError extends Error {
   readonly code: ErrorCode;
-  readonly provider?: ProviderId;
+  readonly provider?: AnyProviderId;
   readonly status?: number;
   readonly providerCode?: string;
   readonly retryAfterMs?: number;
   readonly field?: string;
-  attempts: Attempt[];
+  attempts: Attempt<AnyProviderId>[];
   readonly raw?: unknown;
 
   constructor(code: ErrorCode, details: SearchErrorDetails = {}) {

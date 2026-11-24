@@ -17,13 +17,18 @@ export interface Clock {
   clearTimeout(handle: unknown): void;
 }
 
-export interface ClientConfig {
+/**
+ * Client settings. `Id` is the set of provider ids the client accepts: the
+ * built-in ids by default, or the keys of a caller-supplied `registry`, which
+ * TypeScript infers from it so custom ids need no casts.
+ */
+export interface ClientConfig<Id extends string = ProviderId> {
   /** Provider used when a call names none. */
-  provider?: ProviderId;
+  provider?: NoInfer<Id>;
   /** Providers tried, in order, after a fallback-eligible failure. */
-  fallback?: readonly ProviderId[];
+  fallback?: readonly NoInfer<Id>[];
   /** API keys by provider. Missing keys are read from each provider's documented environment variables. */
-  keys?: Partial<Record<ProviderId, string>>;
+  keys?: Partial<Record<NoInfer<Id>, string>>;
   /** Environment to read keys from instead of process.env (for example Worker bindings). */
   env?: Readonly<Record<string, string | undefined>>;
   timeoutMs?: number;
@@ -38,12 +43,15 @@ export interface ClientConfig {
    * Provider specs to use instead of the built-in registry, keyed by id. They
    * are validated against the schema and copied, so later edits have no effect.
    */
-  registry?: Readonly<Record<string, unknown>>;
+  registry?: Readonly<Record<Id, unknown>>;
 }
 
-interface CallOptions {
-  provider?: ProviderId;
-  fallback?: readonly ProviderId[];
+/** Typed provider options for built-in ids; plain option objects keyed by id for a custom registry. */
+type OptionsFor<Id extends string, Typed> = [Id] extends [ProviderId] ? Typed : Partial<Record<Id, Readonly<Record<string, unknown>>>>;
+
+interface CallOptions<Id extends string> {
+  provider?: Id;
+  fallback?: readonly Id[];
   timeoutMs?: number;
   attemptTimeoutMs?: number;
   maxRetries?: number;
@@ -51,7 +59,7 @@ interface CallOptions {
   signal?: AbortSignal;
 }
 
-export interface SearchOptions extends CallOptions {
+export interface SearchOptions<Id extends string = ProviderId> extends CallOptions<Id> {
   maxResults?: number;
   includeDomains?: readonly string[];
   excludeDomains?: readonly string[];
@@ -65,11 +73,11 @@ export interface SearchOptions extends CallOptions {
   /** ISO 639-1. */
   language?: string;
   depth?: Depth;
-  providerOptions?: SearchProviderOptions;
+  providerOptions?: OptionsFor<Id, SearchProviderOptions>;
 }
 
-export interface ContentsOptions extends CallOptions {
-  providerOptions?: ContentsProviderOptions;
+export interface ContentsOptions<Id extends string = ProviderId> extends CallOptions<Id> {
+  providerOptions?: OptionsFor<Id, ContentsProviderOptions>;
 }
 
 /** Where a cost came from. "none" means nothing is expected to be billed. */
@@ -91,15 +99,15 @@ export interface Cost {
  */
 export type Billed = "yes" | "possible" | "no";
 
-export interface Warning {
+export interface Warning<Id extends string = ProviderId> {
   code: string;
-  provider: ProviderId;
+  provider: Id;
   message?: string;
   count?: number;
 }
 
-export interface Attempt {
-  provider: ProviderId;
+export interface Attempt<Id extends string = ProviderId> {
+  provider: Id;
   outcome: "ok" | "error" | "skipped";
   code?: ErrorCode;
   status?: number;
@@ -134,23 +142,35 @@ export interface Page {
   error: { code: string | null; message: string | null } | null;
 }
 
-interface ResponseBase {
-  provider: ProviderId;
+interface ResponseBase<Id extends string> {
+  provider: Id;
   cost: Cost;
   requestId: string | null;
   latencyMs: number;
-  warnings: Warning[];
-  attempts: Attempt[];
+  warnings: Warning<Id>[];
+  attempts: Attempt<Id>[];
   /** The provider's parsed JSON body. */
   raw: unknown;
 }
 
-export interface SearchResponse extends ResponseBase { results: SearchResult[] }
-export interface ContentsResponse extends ResponseBase { pages: Page[] }
+export interface SearchResponse<Id extends string = ProviderId> extends ResponseBase<Id> { results: SearchResult[] }
+export interface ContentsResponse<Id extends string = ProviderId> extends ResponseBase<Id> { pages: Page[] }
 
-export interface Client {
-  search(query: string, options?: SearchOptions): Promise<SearchResponse>;
-  contents(urls: string | readonly string[], options?: ContentsOptions): Promise<ContentsResponse>;
+export interface Client<Id extends string = ProviderId> {
+  search(query: string, options?: SearchOptions<Id>): Promise<SearchResponse<Id>>;
+  contents(urls: string | readonly string[], options?: ContentsOptions<Id>): Promise<ContentsResponse<Id>>;
+}
+
+/**
+ * The most one request can cost under the registry's documented prices
+ * (registry/steps.md, Cost bound). `usd` is null when it cannot be bounded.
+ */
+export interface CostBound {
+  usd: number | null;
+  /** Why usd is null: a cost option makes the price unknown, the billed count is unbounded, or the price is not public. */
+  unknownBecause?: "option" | "count" | "price";
+  /** True when the bound holds only while paid use past the provider's free allowance stays off on the account. */
+  requiresOverageOff?: true;
 }
 
 // ---- Registry shapes (mirror registry/schema/provider.schema.json) ----
@@ -174,21 +194,38 @@ export type Predicate = { path: Path; not?: boolean } & ({ equals: unknown } | {
 export type RequestIdRule = { path: Path } | { header: string };
 export type WarningRule = { where: Predicate[]; code: string; messageField?: Path } | { listPath: Path; code: string; messageField?: Path };
 export type Tier = "fast" | "standard" | "deep";
+export type PerRequestUsd = number | null | { fast?: number | null; standard: number | null; deep?: number | null };
+export type UsageUnit = "requests" | "urls" | "results" | "query-units";
+export interface Allowance {
+  limit: number; unit: UsageUnit; per: "day" | "month"; resetsAtUtc?: string; source: string;
+  beyond: { billing: "automatic" | "opt-in"; perRequestUsd?: number | null; refusal?: string };
+  note?: string;
+}
 export interface Pricing {
   plan: string; source: string; retrievedOn: string;
   creditUsd?: number;
-  perRequestUsd: number | null | { fast?: number | null; standard: number | null; deep?: number | null };
+  perRequestUsd: PerRequestUsd;
   includedItems?: number;
   extraBlock?: { items: number; usd: number };
+  ceiling?: { perRequestUsd?: PerRequestUsd; extraBlockUsd?: number; note: string };
+  allowance?: Allowance;
   costOptions?: Record<string, "unknown" | Record<string, Tier | null>>;
   note?: string;
 }
+export interface RateLimit {
+  plan: string; limit: number; unit: UsageUnit;
+  per: "second" | "minute" | "hour" | "day" | "month" | "concurrent";
+  scope?: string; source?: string; note?: string;
+}
+export type Verification = { status: "unverified" } | { status: "verified"; on: string; runtimes: ("typescript" | "python")[]; note?: string };
+export type ExcerptKind = "description" | "content-chunk" | "highlights" | "none";
 export interface CostSpec { reported?: { path: Path; unit: "usd" | "credit"; isEstimate?: boolean } }
 export interface EndpointBase {
+  verification: Verification;
   request: RequestSpec;
   cost?: CostSpec;
   pricing: Pricing;
-  rateLimits: unknown[];
+  rateLimits: RateLimit[];
   providerOptions: Record<string, JsonSchema>;
 }
 export interface SearchEndpoint extends EndpointBase {
@@ -199,6 +236,7 @@ export interface SearchEndpoint extends EndpointBase {
   dateBasis: string;
   response: {
     results: Path;
+    excerptKind: ExcerptKind;
     resultsOptional?: boolean;
     fields: { url: Field; title?: Field; excerpts?: Field; publishedAt?: Field; author?: Field };
     providerFields?: Record<string, Field>;

@@ -61,11 +61,11 @@
               "providerFields": { "position": 2, "siteName": "arxiv.org" }
             }
           ],
-          "cost": { "usd": null, "estimated": true, "source": "unknown" },
+          "cost": { "usd": 0, "estimated": true, "source": "computed" },
           "requestId": "synthetic-tinyfish-1",
           "latencyMs": 0,
           "warnings": [],
-          "attempts": [{ "provider": "tinyfish", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": null, "estimated": true, "source": "unknown" } }]
+          "attempts": [{ "provider": "tinyfish", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0, "estimated": true, "source": "computed" } }]
         }
       }
     },
@@ -177,11 +177,11 @@
               "error": { "code": "bot_blocked", "message": null }
             }
           ],
-          "cost": { "usd": null, "estimated": true, "source": "unknown" },
+          "cost": { "usd": 0, "estimated": true, "source": "computed" },
           "requestId": null,
           "latencyMs": 0,
           "warnings": [],
-          "attempts": [{ "provider": "tinyfish", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": null, "estimated": true, "source": "unknown" } }]
+          "attempts": [{ "provider": "tinyfish", "outcome": "ok", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0, "estimated": true, "source": "computed" } }]
         }
       }
     },
@@ -194,10 +194,10 @@
       "expect": { "requestCount": 0, "error": { "code": "invalid_request", "provider": "tinyfish", "field": "providerOptions.tinyfish.format" } }
     },
     {
-      "name": "an unknown price gives an unknown cost, never a computed $0",
+      "name": "a documented $0 price inside the free allowance computes an estimated $0 (the allowance and its opt-in overage are in pricing.allowance)",
       "call": "search", "query": "q", "options": { "provider": "tinyfish" },
       "responses": [{ "status": 200, "body": { "query": "q", "results": [] } }],
-      "expect": { "responseIncludes": { "cost": { "usd": null, "estimated": true, "source": "unknown" } } }
+      "expect": { "responseIncludes": { "cost": { "usd": 0, "estimated": true, "source": "computed" } } }
     }
   ]
 }

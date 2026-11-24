@@ -26,9 +26,11 @@ from ._client import (
     search,
 )
 from ._clock import CancelToken, Clock, SystemClock
+from ._cost import CostBound, cost_bound, list_price
 from ._engine import HttpRequest
 from ._errors import ErrorCode, SearchError
 from ._generated import ContentsProviderOptions, ProviderId, SearchProviderOptions
+from ._policy import url_key
 from ._registry import BUILT_IN, POLICY
 from ._transport import AsyncResponse, AsyncStdlibTransport, AsyncTransport, Response, StdlibTransport, Transport
 from ._types import (
@@ -69,6 +71,7 @@ __all__ = [
     "ContentsProviderOptions",
     "ContentsResponse",
     "Cost",
+    "CostBound",
     "CostSource",
     "Depth",
     "ErrorCode",
@@ -91,7 +94,10 @@ __all__ = [
     "acontents",
     "asearch",
     "contents",
+    "cost_bound",
+    "list_price",
     "policy",
     "registry",
     "search",
+    "url_key",
 ]

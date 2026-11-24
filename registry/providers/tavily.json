@@ -26,6 +26,7 @@
     { "status": 434, "code": "unavailable" }
   ],
   "search": {
+    "verification": { "status": "unverified" },
     "request": {
       "method": "POST",
       "url": "https://api.tavily.com/search",
@@ -96,6 +97,7 @@
     "dateBasis": "published-or-updated",
     "response": {
       "results": "results",
+      "excerptKind": "content-chunk",
       "fields": {
         "url": "url",
         "title": "title",
@@ -116,9 +118,9 @@
       "note": "basic, fast and ultra-fast cost 1 credit; advanced costs 2. auto_parameters may choose advanced. Monthly plans price a credit at $0.005 to $0.0075."
     },
     "rateLimits": [
-      { "plan": "Researcher (free)", "limit": 100, "per": "minute", "scope": "organization" },
-      { "plan": "Pay as you go, Project, Bootstrap, Startup", "limit": 1000, "per": "minute", "scope": "organization" },
-      { "plan": "Growth, Scale", "limit": 1500, "per": "minute", "scope": "organization" }
+      { "plan": "Researcher (free)", "limit": 100, "unit": "requests", "per": "minute", "scope": "organization" },
+      { "plan": "Pay as you go, Project, Bootstrap, Startup", "limit": 1000, "unit": "requests", "per": "minute", "scope": "organization" },
+      { "plan": "Growth, Scale", "limit": 1500, "unit": "requests", "per": "minute", "scope": "organization" }
     ],
     "providerOptions": {
       "topic": { "enum": ["general", "news", "finance"] },
@@ -138,6 +140,7 @@
     }
   },
   "contents": {
+    "verification": { "status": "unverified" },
     "request": {
       "method": "POST",
       "url": "https://api.tavily.com/extract",
@@ -179,9 +182,9 @@
       "note": "Basic extract costs 1 credit per 5 successful URLs; advanced costs 2. Failed URLs are not charged."
     },
     "rateLimits": [
-      { "plan": "Researcher (free)", "limit": 100, "per": "minute", "scope": "organization" },
-      { "plan": "Pay as you go, Project, Bootstrap, Startup", "limit": 1000, "per": "minute", "scope": "organization" },
-      { "plan": "Growth, Scale", "limit": 1500, "per": "minute", "scope": "organization" }
+      { "plan": "Researcher (free)", "limit": 100, "unit": "requests", "per": "minute", "scope": "organization" },
+      { "plan": "Pay as you go, Project, Bootstrap, Startup", "limit": 1000, "unit": "requests", "per": "minute", "scope": "organization" },
+      { "plan": "Growth, Scale", "limit": 1500, "unit": "requests", "per": "minute", "scope": "organization" }
     ],
     "providerOptions": {
       "query": { "type": "string", "minLength": 1 },

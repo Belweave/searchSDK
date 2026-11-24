@@ -580,6 +580,62 @@ export const schema = deepFreeze<JsonSchema>({
         "pattern": "^[A-Z][A-Z0-9_]*$"
       }
     },
+    "usageUnit": {
+      "description": "What a limit or allowance counts. requests: HTTP requests. urls: URLs submitted or fetched. results: result rows returned. query-units: units the provider counts per query; searchSDK sends one query per request.",
+      "enum": [
+        "requests",
+        "urls",
+        "results",
+        "query-units"
+      ]
+    },
+    "verification": {
+      "description": "Whether this endpoint's conformance vectors have passed against the live API, and when. Every runtime and the site read this; nobody keeps a separate list.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "status"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "const": "unverified"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "status",
+            "on",
+            "runtimes"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "const": "verified"
+            },
+            "on": {
+              "$ref": "#/$defs/date"
+            },
+            "runtimes": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "enum": [
+                  "typescript",
+                  "python"
+                ]
+              }
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
     "source": {
       "type": "object",
       "required": [
@@ -1270,6 +1326,31 @@ export const schema = deepFreeze<JsonSchema>({
       ],
       "minimum": 0
     },
+    "perRequestUsd": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/price"
+        },
+        {
+          "type": "object",
+          "required": [
+            "standard"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "fast": {
+              "$ref": "#/$defs/price"
+            },
+            "standard": {
+              "$ref": "#/$defs/price"
+            },
+            "deep": {
+              "$ref": "#/$defs/price"
+            }
+          }
+        }
+      ]
+    },
     "pricing": {
       "type": "object",
       "required": [
@@ -1294,29 +1375,7 @@ export const schema = deepFreeze<JsonSchema>({
           "minimum": 0
         },
         "perRequestUsd": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/price"
-            },
-            {
-              "type": "object",
-              "required": [
-                "standard"
-              ],
-              "additionalProperties": false,
-              "properties": {
-                "fast": {
-                  "$ref": "#/$defs/price"
-                },
-                "standard": {
-                  "$ref": "#/$defs/price"
-                },
-                "deep": {
-                  "$ref": "#/$defs/price"
-                }
-              }
-            }
-          ]
+          "$ref": "#/$defs/perRequestUsd"
         },
         "includedItems": {
           "type": "integer",
@@ -1337,6 +1396,86 @@ export const schema = deepFreeze<JsonSchema>({
             "usd": {
               "type": "number",
               "minimum": 0
+            }
+          }
+        },
+        "ceiling": {
+          "description": "The highest documented rates where they exceed this plan's: another plan, overage, or the top of a published range. Only the cost bound uses them (registry/steps.md, Cost bound); computed costs do not.",
+          "type": "object",
+          "required": [
+            "note"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "perRequestUsd": {
+              "$ref": "#/$defs/perRequestUsd"
+            },
+            "extraBlockUsd": {
+              "type": "number",
+              "minimum": 0
+            },
+            "note": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "allowance": {
+          "description": "Free use the plan includes before any charge, and what happens past it. beyond.billing: automatic means further use is billed at perRequestUsd; opt-in means it is refused unless the account enables paid use, whose price is beyond.perRequestUsd (null when not public).",
+          "type": "object",
+          "required": [
+            "limit",
+            "unit",
+            "per",
+            "source",
+            "beyond"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "unit": {
+              "$ref": "#/$defs/usageUnit"
+            },
+            "per": {
+              "enum": [
+                "day",
+                "month"
+              ]
+            },
+            "resetsAtUtc": {
+              "type": "string",
+              "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+            },
+            "source": {
+              "$ref": "#/$defs/url"
+            },
+            "beyond": {
+              "type": "object",
+              "required": [
+                "billing"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "billing": {
+                  "enum": [
+                    "automatic",
+                    "opt-in"
+                  ]
+                },
+                "perRequestUsd": {
+                  "$ref": "#/$defs/price"
+                },
+                "refusal": {
+                  "type": "string",
+                  "description": "How the provider refuses use past the allowance when paid use is off."
+                }
+              }
+            },
+            "note": {
+              "type": "string"
             }
           }
         },
@@ -1371,9 +1510,11 @@ export const schema = deepFreeze<JsonSchema>({
       "type": "array",
       "items": {
         "type": "object",
+        "description": "One documented limit: at most `limit` of `unit` per `per` (a time window), or `limit` in flight at once when `per` is concurrent. Conflicting documents are recorded as separate entries, each with its source; consumers obey the strictest.",
         "required": [
           "plan",
           "limit",
+          "unit",
           "per"
         ],
         "additionalProperties": false,
@@ -1384,6 +1525,9 @@ export const schema = deepFreeze<JsonSchema>({
           "limit": {
             "type": "number",
             "minimum": 0
+          },
+          "unit": {
+            "$ref": "#/$defs/usageUnit"
           },
           "per": {
             "enum": [
@@ -1396,7 +1540,11 @@ export const schema = deepFreeze<JsonSchema>({
             ]
           },
           "scope": {
-            "type": "string"
+            "type": "string",
+            "description": "Who shares the limit, such as an API key, team or organization."
+          },
+          "source": {
+            "$ref": "#/$defs/url"
           },
           "note": {
             "type": "string"
@@ -1413,6 +1561,7 @@ export const schema = deepFreeze<JsonSchema>({
     "searchEndpoint": {
       "type": "object",
       "required": [
+        "verification",
         "request",
         "limits",
         "dateBasis",
@@ -1423,6 +1572,9 @@ export const schema = deepFreeze<JsonSchema>({
       ],
       "additionalProperties": false,
       "properties": {
+        "verification": {
+          "$ref": "#/$defs/verification"
+        },
         "request": {
           "allOf": [
             {
@@ -1503,12 +1655,22 @@ export const schema = deepFreeze<JsonSchema>({
           "type": "object",
           "required": [
             "results",
-            "fields"
+            "fields",
+            "excerptKind"
           ],
           "additionalProperties": false,
           "properties": {
             "results": {
               "$ref": "#/$defs/path"
+            },
+            "excerptKind": {
+              "description": "What the excerpts are, since it changes how they score. description: one short summary of the page, such as a meta description or search-engine snippet, which need not address the query. content-chunk: passages of the page's own text chosen for the query. highlights: sentences the provider selected for the query. none: no excerpts (fields.excerpts is absent).",
+              "enum": [
+                "description",
+                "content-chunk",
+                "highlights",
+                "none"
+              ]
             },
             "resultsOptional": {
               "type": "boolean",
@@ -1569,6 +1731,7 @@ export const schema = deepFreeze<JsonSchema>({
     "contentsEndpoint": {
       "type": "object",
       "required": [
+        "verification",
         "request",
         "limits",
         "contentFormat",
@@ -1579,6 +1742,9 @@ export const schema = deepFreeze<JsonSchema>({
       ],
       "additionalProperties": false,
       "properties": {
+        "verification": {
+          "$ref": "#/$defs/verification"
+        },
         "request": {
           "allOf": [
             {
@@ -1785,6 +1951,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       }
     ],
     "search": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "GET",
         "url": "https://api.search.brave.com/res/v1/web/search",
@@ -1947,6 +2116,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       "dateBasis": "published-or-updated",
       "response": {
         "results": "web.results",
+        "excerptKind": "description",
         "resultsOptional": true,
         "fields": {
           "url": "url",
@@ -1986,6 +2156,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         {
           "plan": "Search",
           "limit": 50,
+          "unit": "requests",
           "per": "second",
           "scope": "subscription"
         }
@@ -2123,6 +2294,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
     "errorCodePath": "error_code",
     "errors": [],
     "search": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "POST",
         "url": "https://api.context.dev/v1/web/search",
@@ -2182,6 +2356,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       "dateBasis": "published",
       "response": {
         "results": "results",
+        "excerptKind": "description",
         "fields": {
           "url": "url",
           "title": "title",
@@ -2233,42 +2408,52 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
           "items": 10,
           "usd": 0.002
         },
+        "ceiling": {
+          "extraBlockUsd": 0.003,
+          "note": "Developer overage is $3 per 1,000 credits, above the plan's $2 per 1,000."
+        },
         "note": "1 credit per 10 returned results, rounded up. Developer is $20 for 10,000 credits; overage is $3 per 1,000; larger plans cost less per credit."
       },
       "rateLimits": [
         {
           "plan": "Free",
           "limit": 2,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "organization"
         },
         {
           "plan": "Free",
           "limit": 10,
+          "unit": "requests",
           "per": "minute",
           "scope": "organization"
         },
         {
           "plan": "Developer",
           "limit": 10,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "organization"
         },
         {
           "plan": "Pro",
           "limit": 100,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "organization"
         },
         {
           "plan": "Growth",
           "limit": 250,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "organization"
         },
         {
           "plan": "Scale",
           "limit": 500,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "organization"
         }
@@ -2308,6 +2493,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       }
     },
     "contents": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "POST",
         "url": "https://api.context.dev/v1/web/scrape",
@@ -2411,24 +2599,31 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
           "items": 1,
           "usd": 0.002
         },
+        "ceiling": {
+          "extraBlockUsd": 0.003,
+          "note": "Developer overage is $3 per 1,000 credits, above the plan's $2 per 1,000."
+        },
         "note": "1 credit per scrape when at least one output succeeds; a target 404 is still charged."
       },
       "rateLimits": [
         {
           "plan": "Free",
           "limit": 2,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "organization"
         },
         {
           "plan": "Free",
           "limit": 10,
+          "unit": "requests",
           "per": "minute",
           "scope": "organization"
         },
         {
           "plan": "Developer",
           "limit": 10,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "organization"
         }
@@ -2553,6 +2748,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
     "errorCodePath": "tag",
     "errors": [],
     "search": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "POST",
         "url": "https://api.exa.ai/search",
@@ -2637,6 +2835,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       "dateBasis": "published",
       "response": {
         "results": "results",
+        "excerptKind": "highlights",
         "fields": {
           "url": "url",
           "title": "title",
@@ -2705,6 +2904,14 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
           "items": 1,
           "usd": 0.001
         },
+        "ceiling": {
+          "perRequestUsd": {
+            "fast": 0.004,
+            "standard": 0.007,
+            "deep": 0.015
+          },
+          "note": "Deep search is listed as $12 to $15 per 1,000; the bound uses $15."
+        },
         "costOptions": {
           "type": {
             "lite": "fast",
@@ -2719,24 +2926,28 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         {
           "plan": "Starter (free)",
           "limit": 10,
+          "unit": "requests",
           "per": "second",
           "scope": "team"
         },
         {
           "plan": "Developer",
           "limit": 25,
+          "unit": "requests",
           "per": "second",
           "scope": "team"
         },
         {
           "plan": "Growth",
           "limit": 50,
+          "unit": "requests",
           "per": "second",
           "scope": "team"
         },
         {
           "plan": "Starter (free)",
           "limit": 5,
+          "unit": "requests",
           "per": "second",
           "scope": "team",
           "note": "deep search types"
@@ -2787,6 +2998,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       }
     },
     "contents": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "POST",
         "url": "https://api.exa.ai/contents",
@@ -2879,6 +3093,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         {
           "plan": "all",
           "limit": 100,
+          "unit": "requests",
           "per": "second",
           "scope": "team"
         }
@@ -3017,6 +3232,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
     "errorCodePath": "code",
     "errors": [],
     "search": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "POST",
         "url": "https://api.firecrawl.dev/v2/search",
@@ -3098,6 +3316,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       "dateBasis": "unknown",
       "response": {
         "results": "data.web",
+        "excerptKind": "description",
         "resultsOptional": true,
         "fields": {
           "url": "url",
@@ -3145,6 +3364,10 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
           "items": 10,
           "usd": 0.0076
         },
+        "ceiling": {
+          "extraBlockUsd": 0.01,
+          "note": "Hobby extra credits cost $5 per 1,000 ($0.005 each), above the plan's $0.0038; 2 credits per block."
+        },
         "costOptions": {
           "scrapeOptions": "unknown",
           "categories": "unknown"
@@ -3155,36 +3378,42 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         {
           "plan": "Free",
           "limit": 10,
+          "unit": "requests",
           "per": "minute",
           "scope": "team"
         },
         {
           "plan": "Free",
           "limit": 2,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "team"
         },
         {
           "plan": "Hobby",
           "limit": 5,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "team"
         },
         {
           "plan": "Standard",
           "limit": 25,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "team"
         },
         {
           "plan": "Growth",
           "limit": 50,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "team"
         },
         {
           "plan": "Scale",
           "limit": 100,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "team"
         }
@@ -3224,6 +3453,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       }
     },
     "contents": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "POST",
         "url": "https://api.firecrawl.dev/v2/scrape",
@@ -3330,18 +3562,24 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
           "items": 1,
           "usd": 0.0038
         },
+        "ceiling": {
+          "extraBlockUsd": 0.005,
+          "note": "Hobby extra credits cost $5 per 1,000 ($0.005 each), above the plan's $0.0038."
+        },
         "note": "1 credit per returned document, including target 403 and 404 pages; a scrape that returns no document is free."
       },
       "rateLimits": [
         {
           "plan": "Free",
           "limit": 10,
+          "unit": "requests",
           "per": "minute",
           "scope": "team"
         },
         {
           "plan": "Hobby",
           "limit": 5,
+          "unit": "requests",
           "per": "concurrent",
           "scope": "team"
         }
@@ -3485,6 +3723,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       }
     ],
     "search": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "POST",
         "url": "https://api.perplexity.ai/search",
@@ -3566,6 +3807,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       "dateBasis": "published",
       "response": {
         "results": "results",
+        "excerptKind": "content-chunk",
         "fields": {
           "url": "url",
           "title": "title",
@@ -3609,8 +3851,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         {
           "plan": "all tiers",
           "limit": 50,
+          "unit": "query-units",
           "per": "second",
-          "scope": "query units"
+          "note": "leaky bucket; bursts of up to 50 units; one unit per query"
         }
       ],
       "providerOptions": {
@@ -3632,6 +3875,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       }
     },
     "contents": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "POST",
         "url": "https://api.perplexity.ai/v1/context",
@@ -3729,18 +3975,21 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         {
           "plan": "Tier 0",
           "limit": 1,
+          "unit": "requests",
           "per": "second",
           "scope": "organization"
         },
         {
           "plan": "Tiers 1-3",
           "limit": 3,
+          "unit": "requests",
           "per": "second",
           "scope": "organization"
         },
         {
           "plan": "Tiers 4-5",
           "limit": 5,
+          "unit": "requests",
           "per": "second",
           "scope": "organization"
         }
@@ -3872,6 +4121,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       }
     ],
     "search": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "POST",
         "url": "https://api.tavily.com/search",
@@ -4109,6 +4361,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       "dateBasis": "published-or-updated",
       "response": {
         "results": "results",
+        "excerptKind": "content-chunk",
         "fields": {
           "url": "url",
           "title": "title",
@@ -4164,18 +4417,21 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         {
           "plan": "Researcher (free)",
           "limit": 100,
+          "unit": "requests",
           "per": "minute",
           "scope": "organization"
         },
         {
           "plan": "Pay as you go, Project, Bootstrap, Startup",
           "limit": 1000,
+          "unit": "requests",
           "per": "minute",
           "scope": "organization"
         },
         {
           "plan": "Growth, Scale",
           "limit": 1500,
+          "unit": "requests",
           "per": "minute",
           "scope": "organization"
         }
@@ -4257,6 +4513,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       }
     },
     "contents": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "POST",
         "url": "https://api.tavily.com/extract",
@@ -4337,18 +4596,21 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         {
           "plan": "Researcher (free)",
           "limit": 100,
+          "unit": "requests",
           "per": "minute",
           "scope": "organization"
         },
         {
           "plan": "Pay as you go, Project, Bootstrap, Startup",
           "limit": 1000,
+          "unit": "requests",
           "per": "minute",
           "scope": "organization"
         },
         {
           "plan": "Growth, Scale",
           "limit": 1500,
+          "unit": "requests",
           "per": "minute",
           "scope": "organization"
         }
@@ -4480,6 +4742,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       }
     ],
     "search": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "GET",
         "url": "https://api.search.tinyfish.ai",
@@ -4549,6 +4814,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       "dateBasis": "unknown",
       "response": {
         "results": "results",
+        "excerptKind": "description",
         "fields": {
           "url": "url",
           "title": "title",
@@ -4593,29 +4859,38 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         "plan": "Free daily allowance",
         "source": "https://www.tinyfish.ai/pricing",
         "retrievedOn": "2026-11-24",
-        "perRequestUsd": null,
-        "note": "Search is free within a daily allowance. Requests beyond it draw on a wallet balance at a price the docs do not state, so the price is unknown."
+        "perRequestUsd": 0,
+        "allowance": {
+          "limit": 12000,
+          "unit": "requests",
+          "per": "day",
+          "resetsAtUtc": "00:00",
+          "source": "https://docs.tinyfish.ai/tinysearch/reference.md",
+          "beyond": {
+            "billing": "opt-in",
+            "perRequestUsd": null,
+            "refusal": "HTTP 429 RATE_LIMIT_EXCEEDED with details.reason free_allowance_exhausted"
+          }
+        },
+        "note": "The pricing page lists Search at $0.00 per request. The API reference makes 12,000 requests a day free; past that, requests are refused unless wallet spending is enabled on the account, at a wallet price the docs do not state."
       },
       "rateLimits": [
         {
           "plan": "Personal",
           "limit": 30,
+          "unit": "requests",
           "per": "minute",
-          "scope": "person or organization"
+          "scope": "person or organization",
+          "source": "https://docs.tinyfish.ai/tinysearch/reference.md"
         },
         {
           "plan": "Personal",
           "limit": 500,
+          "unit": "requests",
           "per": "hour",
           "scope": "person or organization",
-          "note": "pricing page"
-        },
-        {
-          "plan": "Personal",
-          "limit": 12000,
-          "per": "day",
-          "scope": "person or organization",
-          "note": "docs; free allowance, resets 00:00 UTC"
+          "source": "https://www.tinyfish.ai/pricing",
+          "note": "on the pricing page only; the API reference gives no hourly limit"
         }
       ],
       "providerOptions": {
@@ -4649,6 +4924,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       }
     },
     "contents": {
+      "verification": {
+        "status": "unverified"
+      },
       "request": {
         "method": "POST",
         "url": "https://api.fetch.tinyfish.ai",
@@ -4707,23 +4985,30 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         "plan": "Free daily allowance",
         "source": "https://www.tinyfish.ai/pricing",
         "retrievedOn": "2026-11-24",
-        "perRequestUsd": null,
-        "note": "Fetch is free up to 1,000 successfully fetched URLs per day; beyond that it draws on a wallet balance at a price the docs do not state, so the price is unknown."
+        "perRequestUsd": 0,
+        "allowance": {
+          "limit": 1000,
+          "unit": "urls",
+          "per": "day",
+          "resetsAtUtc": "00:00",
+          "source": "https://docs.tinyfish.ai/tinyfetch/reference.md",
+          "beyond": {
+            "billing": "opt-in",
+            "perRequestUsd": null,
+            "refusal": "HTTP 429 RATE_LIMIT_EXCEEDED with details.reason free_allowance_exhausted"
+          },
+          "note": "Counted per successfully fetched URL."
+        },
+        "note": "The pricing page lists Fetch at $0.00 per URL. The API reference makes 1,000 fetched URLs a day free; past that, requests are refused unless wallet spending is enabled, at a wallet price the docs do not state."
       },
       "rateLimits": [
         {
           "plan": "Personal",
           "limit": 150,
+          "unit": "urls",
           "per": "minute",
           "scope": "person or organization",
-          "note": "pricing page; URLs, not requests"
-        },
-        {
-          "plan": "Personal",
-          "limit": 1000,
-          "per": "day",
-          "scope": "person or organization",
-          "note": "free allowance in URLs, resets 00:00 UTC"
+          "source": "https://docs.tinyfish.ai/tinyfetch/reference.md"
         }
       ],
       "providerOptions": {
@@ -4794,16 +5079,24 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         "reason": "Docs do not say whether date filters use publish or crawl dates."
       },
       {
-        "pointer": "/search/rateLimits",
-        "reason": "Docs say 12,000 free requests per day; the pricing page says 500 per hour. They conflict."
+        "pointer": "/search/rateLimits/1",
+        "reason": "The pricing page lists 500 requests per hour; the API reference lists only 30 per minute and the 12,000-a-day free allowance. Both are recorded; the strictest applies."
       },
       {
         "pointer": "/search/pricing/perRequestUsd",
-        "reason": "Free within the daily allowance; the wallet price beyond it is not documented."
+        "reason": "$0.00 per the pricing page and free within the daily allowance per the API reference; no live bill has been checked."
+      },
+      {
+        "pointer": "/search/pricing/allowance/beyond/perRequestUsd",
+        "reason": "The wallet price past the allowance is not documented."
       },
       {
         "pointer": "/contents/pricing/perRequestUsd",
-        "reason": "Free within the daily allowance; the wallet price beyond it is not documented."
+        "reason": "$0.00 per the pricing page and free within the daily allowance per the API reference; no live bill has been checked."
+      },
+      {
+        "pointer": "/contents/pricing/allowance/beyond/perRequestUsd",
+        "reason": "The wallet price past the allowance is not documented."
       },
       {
         "pointer": "/terms",
