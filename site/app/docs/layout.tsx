@@ -2,7 +2,6 @@ import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import type { ReactNode } from "react";
 import { DocsProvider } from "@/components/docs/provider";
 import { SiteFooter } from "@/components/site/footer";
-import { SkipLink } from "@/components/site/skip-link";
 import { ThemeToggle } from "@/components/site/theme-toggle";
 import { Wordmark } from "@/components/site/wordmark";
 import { primaryNav } from "@/lib/site";
@@ -11,7 +10,7 @@ import { source } from "@/lib/source";
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <DocsProvider>
-      <SkipLink target="nd-page" />
+      {/* Fumadocs renders its own skip link to #nd-page as the first focusable element. */}
       <DocsLayout
         tree={source.getPageTree()}
         nav={{ title: <Wordmark />, url: "/" }}
