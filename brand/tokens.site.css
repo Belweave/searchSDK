@@ -51,6 +51,8 @@
   --motion-settle: 1000ms;
   --motion-stagger: 60ms;
   --motion-blink: 1s;
+  --motion-mark-band: 480ms;
+  --motion-mark-loop: 2400ms;
   --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
   --motion-ease-exit: cubic-bezier(0.7, 0, 0.84, 0);
@@ -72,7 +74,9 @@
   --on-beam: #0E0F15;
   --accent: #FF9C3F;
   --accent-strong: #FFBB74;
+  --accent-text: #FF9C3F;
   --on-accent: #0E0F15;
+  --selection: #823BFA;
   --ok: #6FE79F;
   --warn: #FFB24F;
   --danger: #FF716B;
@@ -112,7 +116,9 @@
   --on-beam: #0E0F15;
   --accent: #F3821D;
   --accent-strong: #E06D00;
+  --accent-text: #A74900;
   --on-accent: #0E0F15;
+  --selection: #823BFA;
   --ok: #007440;
   --warn: #955400;
   --danger: #BE222A;
@@ -142,5 +148,8 @@
     --motion-reveal: 0.01ms;
     --motion-settle: 0.01ms;
     --motion-stagger: 0.01ms;
+    --motion-blink: 0.01ms;
+    --motion-mark-band: 0.01ms;
+    --motion-mark-loop: 0.01ms;
   }
 }

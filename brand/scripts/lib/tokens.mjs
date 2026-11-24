@@ -89,7 +89,7 @@ const SITE = {
     ['--layout-page-max', t.space['page-max']], ['--layout-measure', t.space.measure],
     ['--corner-sm', t.radius.sm], ['--corner-md', t.radius.md], ['--corner-lg', t.radius.lg],
     ['--focus-width', t.focus.width], ['--focus-offset', t.focus.offset],
-    ...['instant', 'fast', 'base', 'slow', 'reveal', 'settle', 'stagger', 'blink'].map((k) => [`--motion-${k}`, t.motion.duration[k]]),
+    ...['instant', 'fast', 'base', 'slow', 'reveal', 'settle', 'stagger', 'blink', 'mark-band', 'mark-loop'].map((k) => [`--motion-${k}`, t.motion.duration[k]]),
     ...Object.entries(t.motion.easing).map(([k, v]) => [`--motion-ease-${k}`, v]),
     ['--motion-reveal-distance', t.motion.distance.reveal],
   ],
@@ -99,7 +99,8 @@ const SITE = {
       ...['surface-0', 'surface-1', 'surface-2', 'surface-3', 'well', 'edge', 'edge-lit', 'line', 'line-strong', 'fg', 'fg-muted', 'fg-subtle'].map((k) => [`--${k}`, R(k)]),
       ['--grid-dot', R('line')],
       ['--beam', R('accent')], ['--on-beam', R('on-accent')],
-      ['--accent', R('accent')], ['--accent-strong', R('accent-strong')], ['--on-accent', R('on-accent')],
+      ['--accent', R('accent')], ['--accent-strong', R('accent-strong')], ['--accent-text', R('accent-text')], ['--on-accent', R('on-accent')],
+      ['--selection', R('selection')],
       ...['ok', 'warn', 'danger', 'sample', 'on-state'].map((k) => [`--${k}`, R(k)]),
       ['--danger', R('danger')],
       ['--code-bg', R('well')], ['--code-fg', R('fg')], ['--code-comment', R('fg-subtle')],
@@ -117,5 +118,5 @@ export function siteCss() {
     '/* Site-owned, not defined here: --hue-*, --spectrum*, --glow-strength, --backdrop-opacity,\n   --key-wall, --key-travel, --slab-wall, --stage-tilt, --stage-perspective. */\n\n' +
     block(':root', [['color-scheme', 'dark'], ...SITE.shared(tokens), ...SITE.theme('dark')]) + '\n' +
     block(':root[data-theme="light"]', [['color-scheme', 'light'], ...SITE.theme('light')]) + '\n' +
-    `@media (prefers-reduced-motion: reduce) {\n  :root {\n${['instant', 'fast', 'base', 'slow', 'reveal', 'settle', 'stagger'].map((k) => `    --motion-${k}: 0.01ms;`).join('\n')}\n  }\n}\n`;
+    `@media (prefers-reduced-motion: reduce) {\n  :root {\n${Object.keys(tokens.motion.duration).map((k) => `    --motion-${k}: 0.01ms;`).join('\n')}\n  }\n}\n`;
 }
