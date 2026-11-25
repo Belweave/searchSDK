@@ -1,0 +1,37 @@
+{
+  "name": "full-2026-12-firecrawl",
+  "description": "Firecrawl's part of the first full run: the same 404 items, seed, passes, page passes, judges and tuned condition as full-2026-12, run on its own because Firecrawl's credits arrived after full-2026-12 had started (2026-11-25). Its calls start a few hours after the other providers'; results note the window beside its scores. Credits are a sponsor grant; the run is held to 20,000 Firecrawl credits as a guard.",
+  "providers": [
+    "firecrawl"
+  ],
+  "datasets": [
+    "datasets/public/public-1.0.0.jsonl",
+    "datasets/fresh/fresh-2026-12.jsonl"
+  ],
+  "privateDatasets": [
+    "private/private-1.0.0.jsonl"
+  ],
+  "passes": 3,
+  "profiles": [
+    "default"
+  ],
+  "pagePasses": [
+    1,
+    2,
+    3
+  ],
+  "judgeItems": 404,
+  "judgePricing": "covered-by-plan",
+  "capUsd": 15,
+  "tuning": "config/tuning.json",
+  "seed": 20261125,
+  "providerLimits": {
+    "firecrawl": {
+      "credits": 20000,
+      "since": "2026-11-25"
+    }
+  },
+  "creditsUsd": {
+    "firecrawl": 100
+  }
+}
