@@ -1,0 +1,60 @@
+// Our own connection failing is not the provider's failure (METHOD section 4).
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { fixtureFetch } from "../src/fixtures.ts";
+import { reclassifyLocalOutages, readAttemptLog, readAttempts, runPaths, type AttemptRecord } from "../src/run/records.ts";
+import { runSearch } from "../src/run/runner.ts";
+import { loadRunItems } from "../src/run/plan.ts";
+import { scoreRun } from "../src/score/score.ts";
+import { openSession } from "../src/session.ts";
+import { fixtureConfig, tempStore } from "./helpers.ts";
+
+const rec = (provider: string, startedAt: string, over: Partial<AttemptRecord> = {}): AttemptRecord => ({
+  key: `s|1|i|${provider}|default`, pass: 1, itemId: "i", provider, profile: "default", startedAt, outcome: "network_error",
+  durationMs: 1, billed: "possible", costUsd: 0, costSource: "none", costEstimated: false, reservedUsd: 0,
+  resultCount: 0, urls: [], resultHashes: [], requestId: null, warnings: [], ...over,
+});
+
+test("network failures of two providers within seconds are ours; a lone one is the provider's", () => {
+  const out = reclassifyLocalOutages([
+    rec("a", "2026-11-25T21:05:39.000Z"),
+    rec("b", "2026-11-25T21:05:47.000Z"),
+    rec("a", "2026-11-25T20:28:41.000Z", { key: "lone" }),
+    rec("c", "2026-11-25T20:28:45.000Z", { key: "ok", outcome: "ok_nonempty" }),
+  ]);
+  assert.deepEqual(out.map((a) => a.outcome), ["local_network", "local_network", "network_error", "ok_nonempty"]);
+});
+
+test("a probe result overrides the time rule", () => {
+  const out = reclassifyLocalOutages([
+    rec("a", "2026-11-25T21:05:39.000Z", { probeOnline: true }),
+    rec("b", "2026-11-25T21:05:40.000Z", { probeOnline: true }),
+    rec("c", "2026-11-25T22:00:00.000Z", { probeOnline: false }),
+  ]);
+  assert.deepEqual(out.map((a) => a.outcome), ["network_error", "network_error", "local_network"]);
+});
+
+test("calls lost to our own outage wait for the connection and are retried, never scored", async () => {
+  tempStore();
+  const config = fixtureConfig();
+  const base = fixtureFetch(loadRunItems(config));
+  let offline = true;
+  let failed = 0;
+  const fetch: typeof globalThis.fetch = async (input, init) => {
+    if (offline) { failed++; throw new TypeError("fetch failed"); }
+    return base(input, init);
+  };
+  const s = openSession({ config, mode: "fixture", fetch });
+  // Offline at the first probe; back online once the run has waited.
+  let probes = 0;
+  const connectivity = async () => { probes++; if (probes === 1) return false; offline = false; return true; };
+  assert.equal(await runSearch({ ...s, connectivity }), "done");
+  assert.ok(failed > 0);
+  const log = readAttemptLog(runPaths(s.dir).attempts);
+  assert.ok(log.some((a) => a.outcome === "local_network"));
+  const current = readAttempts(runPaths(s.dir).attempts);
+  assert.ok(current.every((a) => a.outcome !== "local_network"), "every lost call was retried");
+  assert.equal(current.length, s.plan.search.calls);
+  const scores = scoreRun(s.dir, { config: s.config, method: s.method, items: s.items, judgeItemIds: s.plan.judgeItemIds });
+  for (const p of scores.profiles) assert.equal(p.reliability.rates["local_network"], undefined);
+});

@@ -9,6 +9,7 @@ import { selectPassage, type Judge, type JudgeVerdict, JudgeError } from "../jud
 import type { FetchedPage } from "../pages/fetcher.ts";
 import { SearchError, type Attempt, type Client, type ErrorCode, type ProviderSpec, type SearchResponse } from "../sdk.ts";
 import type { PageFetcher } from "../session.ts";
+import type { Connectivity } from "./connectivity.ts";
 import { appendJsonl, readJsonl, rng, seedOf, sha256, shuffle, writeJson } from "../util/core.ts";
 import type { Budget } from "./budget.ts";
 import type { Method, RunConfig } from "./config.ts";
@@ -16,7 +17,7 @@ import { Pacer, realTimer, type Timer } from "./pacer.ts";
 import { hasProfile, reusesDefault, scopeOf, settingsFor, type Plan } from "./plan.ts";
 import { attemptsCredits, creditReservation, reservation } from "./pricing.ts";
 import {
-  judgePairIdOf, runPaths, urlKey, type AttemptRecord, type EventRecord, type JudgmentRecord, type Outcome, type PageRecord,
+  judgePairIdOf, readAttempts, RETRIED_OUTCOMES, runPaths, urlKey, type AttemptRecord, type EventRecord, type JudgmentRecord, type Outcome, type PageRecord,
 } from "./records.ts";
 
 export interface RunContext {
@@ -35,7 +36,13 @@ export interface RunContext {
   timer?: Timer;
   log?: (line: string) => void;
   signal?: AbortSignal;
+  /** Probes our own connection after a network failure (section 4); without it every network failure is the provider's. */
+  connectivity?: Connectivity;
 }
+
+/** How often an offline run re-probes, and how many times a sweep retries calls lost to our own outage. */
+const OFFLINE_POLL_MS = 15_000;
+const LOCAL_RETRY_SWEEPS = 3;
 
 export type StopReason = "done" | "budget" | "overrun" | "aborted";
 
@@ -88,8 +95,8 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
   const { config, method, budget, client, registry, dir } = ctx;
   const timer = ctx.timer ?? realTimer;
   const paths = runPaths(dir);
-  const previous = readJsonl<AttemptRecord>(paths.attempts);
-  const done = new Set(previous.filter((a) => a.outcome !== "aborted").map((a) => a.key));
+  const previous = readAttempts(paths.attempts);
+  const done = new Set(previous.filter((a) => !RETRIED_OUTCOMES.includes(a.outcome)).map((a) => a.key));
   const disabled = new Map<string, string>();
   for (const a of previous) if (a.outcome === "setup_error") disabled.set(a.provider, a.code ?? "setup");
   const pacers = new Map(ctx.plan.providers.map((p) => [p.id, new Pacer(p.pace, timer)]));
@@ -104,7 +111,27 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
   };
   let stop: StopReason | null = null;
   const halt = (r: StopReason) => { stop ??= r; };
+  // While our own connection is down, no new call starts: one probe loop holds the gate until we are back online.
+  let offline: Promise<void> | null = null;
+  const waitOnline = (): Promise<void> => {
+    offline ??= (async () => {
+      event(dir, { event: "offline", detail: "our connection failed; calls wait until it returns" });
+      ctx.log?.("offline: our own connection is down; waiting for it to return");
+      while (!ctx.signal?.aborted && !(await ctx.connectivity!())) await timer.sleep(OFFLINE_POLL_MS);
+      event(dir, { event: "online" });
+      ctx.log?.("online again; continuing");
+      offline = null;
+    })();
+    return offline;
+  };
+  let lostToOutage = 0;
 
+  for (let sweep = 0; sweep <= LOCAL_RETRY_SWEEPS && !stop; sweep++) {
+  if (sweep > 0) {
+    if (!lostToOutage) break;
+    ctx.log?.(`retrying ${lostToOutage} calls lost to our own connection (sweep ${sweep})`);
+  }
+  lostToOutage = 0;
   for (let pass = 1; pass <= config.passes && !stop; pass++) {
     const order = shuffle(ctx.items, rng(seedOf(config.seed, "order", pass)));
     await pool(order, method.pacing.itemWindow, () => stop !== null || !!ctx.signal?.aborted, async (item) => {
@@ -128,6 +155,8 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
           }
           return;
         }
+        if (offline) await offline;
+        if (stop || ctx.signal?.aborted) return;
         const hold = budget.reserve(provider, "search", res.usd, credits);
         if (!hold) return halt(budget.halted ? "overrun" : "budget");
         const release = await pacers.get(provider)!.acquire();
@@ -161,6 +190,12 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
         if (response) outcome = response.results.length ? "ok_nonempty" : "ok_empty";
         else if (error instanceof SearchError) { code = error.code; outcome = OUTCOME_BY_CODE[error.code] ?? "harness_error"; }
         else { outcome = "harness_error"; code = error instanceof Error ? error.name : "unknown"; }
+        // A network failure is the provider's only while we are online (section 4).
+        let probeOnline: boolean | undefined;
+        if (outcome === "network_error" && ctx.connectivity) {
+          probeOnline = await ctx.connectivity();
+          if (!probeOnline) outcome = "local_network";
+        }
         // Nothing sent (validation or a skipped provider) costs nothing; otherwise the SDK's per-attempt costs.
         const cost = sent.length ? attemptsCost(sent) : 0;
         const creditsUsed = credits === null ? null : sent.length ? attemptsCredits(spec, "search", sent) : 0;
@@ -182,6 +217,7 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
           resultHashes: results.map((r) => sha256(JSON.stringify([r.title, r.excerpts]))),
           requestId: response?.requestId ?? null,
           warnings: (response?.warnings ?? []).map((w) => w.code),
+          ...(probeOnline !== undefined ? { probeOnline } : {}),
         };
         writeJson(paths.rawSearch(pass, provider, profile, item.id), {
           key, query: item.query, outcome, code: code ?? null,
@@ -189,6 +225,11 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
           raw: response?.raw ?? (error instanceof SearchError ? (error.raw ?? null) : null),
         }, 0o600);
         appendJsonl(paths.attempts, rec);
+        if (outcome === "local_network") {
+          lostToOutage++;
+          await waitOnline();
+          return;
+        }
         done.add(key);
         if (outcome === "rate_limited") pacers.get(provider)!.pause(last?.retryAfterMs ?? method.pacing.rateLimitPauseMs);
         if (outcome === "setup_error" && !disabled.has(provider)) {
@@ -199,6 +240,7 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
         if (outcome === "aborted") halt("aborted");
       }));
     });
+  }
   }
   if (stop) event(dir, { event: "search-stopped", detail: stop });
   return stop ?? "done";
@@ -255,7 +297,7 @@ export async function runPages(ctx: RunContext): Promise<StopReason> {
   const paths = runPaths(dir);
   const done = new Set(readJsonl<PageRecord>(paths.pages).filter((p) => p.reason !== "aborted").map((p) => p.urlKey));
   // A seeded order, so when a page is read does not depend on which provider returned it first.
-  const targets = shuffle([...pageTargets(readJsonl<AttemptRecord>(paths.attempts), ctx.config, method.pages.topK)].filter(([k]) => !done.has(k)), rng(seedOf(ctx.config.seed, "pages")));
+  const targets = shuffle([...pageTargets(readAttempts(paths.attempts), ctx.config, method.pages.topK)].filter(([k]) => !done.has(k)), rng(seedOf(ctx.config.seed, "pages")));
   const hosts = new HostPacer(ctx.timer ?? realTimer);
   let stop: StopReason | null = null;
   await pool(targets, method.pages.maxInFlight, () => stop !== null || !!ctx.signal?.aborted, async ([key, url]) => {
@@ -317,7 +359,7 @@ export function judgePairs(ctx: Pick<RunContext, "dir" | "plan" | "method">): Ju
   const judged = new Set(ctx.plan.judgeItemIds);
   const read = readPages(ctx.dir);
   const pairs = new Map<string, JudgePair>();
-  for (const a of readJsonl<AttemptRecord>(paths.attempts)) {
+  for (const a of readAttempts(paths.attempts)) {
     if (a.pass !== 1 || a.profile !== "default" || a.outcome !== "ok_nonempty" || !judged.has(a.itemId)) continue;
     const raw = readRawSearch(paths.rawSearch(a.pass, a.provider, a.profile, a.itemId));
     for (const [i, u] of a.urls.slice(0, ctx.method.judge.topK).entries()) {

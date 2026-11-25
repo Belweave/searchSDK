@@ -5,7 +5,7 @@ import type { Item } from "../dataset/items.ts";
 import { textHasAnswer, urlMatches } from "../dataset/match.ts";
 import type { Method, RunConfig } from "../run/config.ts";
 import { hasProfile, reusesDefault, scopeOf } from "../run/plan.ts";
-import { judgePairIdOf, runPaths, SCORED_OUTCOMES, urlKey, type AttemptRecord, type HumanLabel, type JudgmentRecord, type PageRecord } from "../run/records.ts";
+import { judgePairIdOf, readAttempts, runPaths, SCORED_OUTCOMES, urlKey, type AttemptRecord, type HumanLabel, type JudgmentRecord, type PageRecord } from "../run/records.ts";
 import { readJsonl, round, seedOf } from "../util/core.ts";
 import { rank, type RankRow } from "./rank.ts";
 import { bootstrapMean, kappaInterval, mean, pairedBootstrap, quantile, retest, wilson, type Interval } from "./stats.ts";
@@ -207,11 +207,8 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
   const { config, method } = o;
   const paths = runPaths(dir);
   const conf = method.stats.confidence;
-  const attempts = readJsonl<AttemptRecord>(paths.attempts);
-  // The last record for a key wins (a resumed aborted attempt is superseded).
-  const byKey = new Map<string, AttemptRecord>();
-  for (const a of attempts) byKey.set(a.key, a);
-  const all = [...byKey.values()];
+  // The last record for a key wins (a resumed retry supersedes an aborted or local-outage attempt).
+  const all = readAttempts(paths.attempts);
   const pages = new Map<string, PageRecord>();
   for (const p of readJsonl<PageRecord>(paths.pages)) pages.set(p.urlKey, p);
   const pageCache = new Map<string, string | null>();

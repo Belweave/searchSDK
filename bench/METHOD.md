@@ -234,6 +234,20 @@ Each call has exactly one outcome.
 | `invalid_response` | a 2xx the spec cannot read, or too large | 0 | yes |
 | `setup_error` | our key, request or option was wrong | not scored; the provider stops until fixed | no |
 | `aborted`, `harness_error` | we interrupted it, or our bug | not scored; rerun on resume | no |
+| `local_network` | our own connection was down | not scored; retried | no |
+
+A network failure is the provider's only while our own connection works.
+After every `network_error` the runner probes the internet without touching
+any ranked provider: a TCP connect to two public anycast resolvers (1.1.1.1
+and 9.9.9.9) and a DNS lookup. If the probe fails, the call is
+`local_network`. No new call starts until the probe succeeds again, and every
+lost call is retried after the pass, up to three sweeps. A record written
+before the probe existed has no probe result. It is `local_network` when a
+different provider also had a `network_error` starting within 10 seconds:
+two independent services failing to connect in the same seconds points at
+our side. A provider's lone network failure, or one the probe saw while we
+were online, counts against it. Results publish every record, the
+reclassified ones included, and the count of retried calls per provider.
 
 Empty results, errors, timeouts and rate limits all score zero. The old
 benchmark counted empty responses as successes. Here an always-empty
@@ -613,7 +627,12 @@ as provider measurements.
   judges unreadable pages per provider, titles read pages from the harness,
   and resolves page hosts before fetching. Major means scores are not
   comparable across versions; minor adds metrics, classes or providers;
-  patch fixes bugs.
+  patch fixes bugs. The local-outage rule (section 4) was added on
+  2026-11-25, during the first full run and before any score was computed:
+  this machine's connection dropped on and off for about 45 minutes, and 65
+  calls were recorded as the providers' network failures. It applies to every provider the same
+  way. The label stays 0.4.0 so that run's pinned plan can resume; the next
+  method change ships it as 0.4.1.
 - **Datasets:** `name-version`, with a SHA-256 in the manifest.
 - **Rubric:** a versioned file, recorded with its hash.
 - **Judge:** model ID, parameters and prompt hash, recorded in every result.

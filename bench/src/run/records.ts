@@ -3,7 +3,7 @@
 import { join } from "node:path";
 import type { UnreadableReason } from "../pages/fetcher.ts";
 import { urlKey } from "../sdk.ts";
-import { sha256 } from "../util/core.ts";
+import { readJsonl, sha256 } from "../util/core.ts";
 
 /** URL identity for de-duplicating pages and judged pairs: the SDK's own URL key (registry/policy.md). */
 export { urlKey };
@@ -15,7 +15,9 @@ export type Outcome =
   /** The run was interrupted: not scored, retried on resume. */
   | "aborted"
   /** A harness bug, not the provider's fault: not scored. */
-  | "harness_error";
+  | "harness_error"
+  /** Our own connection was down (section 4): not scored, retried on resume. */
+  | "local_network";
 
 export const SCORED_OUTCOMES: readonly Outcome[] = ["ok_nonempty", "ok_empty", "rate_limited", "timeout", "server_error", "network_error", "invalid_response"];
 
@@ -46,6 +48,46 @@ export interface AttemptRecord {
   resultHashes: string[];
   requestId: string | null;
   warnings: string[];
+  /** Whether the connectivity probe reached the internet after a network failure; absent when no probe ran. */
+  probeOnline?: boolean;
+}
+
+/** Outcomes that are not the provider's: retried when the run resumes. */
+export const RETRIED_OUTCOMES: readonly Outcome[] = ["aborted", "local_network"];
+
+/** Two network failures of different providers starting this close together mean our own connection failed. */
+export const LOCAL_OUTAGE_WINDOW_MS = 10_000;
+
+/**
+ * Reclassifies network failures that were our own connection's (section 4).
+ * A network_error whose probe found us offline is local. One recorded without
+ * a probe is local when a different provider also had a network_error starting
+ * within LOCAL_OUTAGE_WINDOW_MS: two independent services failing to connect
+ * in the same seconds points at our side. A provider's lone network_error, or
+ * one the probe saw while we were online, stays the provider's.
+ */
+export function reclassifyLocalOutages(attempts: readonly AttemptRecord[]): AttemptRecord[] {
+  const net = attempts.filter((a) => a.outcome === "network_error" && a.probeOnline === undefined).map((a) => ({ a, t: Date.parse(a.startedAt) }));
+  return attempts.map((a) => {
+    if (a.outcome !== "network_error") return a;
+    if (a.probeOnline === false) return { ...a, outcome: "local_network" };
+    if (a.probeOnline === true) return a;
+    const t = Date.parse(a.startedAt);
+    const local = net.some((o) => o.a.provider !== a.provider && Math.abs(o.t - t) <= LOCAL_OUTAGE_WINDOW_MS);
+    return local ? { ...a, outcome: "local_network", code: a.code ?? "network" } : a;
+  });
+}
+
+/** Every attempt record, local outages reclassified, in file order (superseded records included). */
+export function readAttemptLog(path: string): AttemptRecord[] {
+  return reclassifyLocalOutages(readJsonl<AttemptRecord>(path));
+}
+
+/** The current attempt for each key: the last record wins (a resumed retry supersedes what it retried). */
+export function readAttempts(path: string): AttemptRecord[] {
+  const byKey = new Map<string, AttemptRecord>();
+  for (const a of readAttemptLog(path)) byKey.set(a.key, a);
+  return [...byKey.values()];
 }
 
 /** One page read by the harness's own fetcher. Unreadable pages count the same for every provider that returned them. */

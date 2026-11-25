@@ -1,6 +1,7 @@
 // Opens a run (new or resumed) in live or fixture mode and wires the SDK
 // client, judge, budget and plan together. Live mode is refused unless every
 // guard passes; fixture mode never touches the network.
+import { liveConnectivity, type Connectivity } from "./run/connectivity.ts";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Item } from "./dataset/items.ts";
@@ -55,6 +56,8 @@ export interface Session {
   checkJudge: Judge | null;
   budget: Budget;
   createdAt: string;
+  /** Live runs probe our own connection after a network failure; fixture runs have none. */
+  connectivity?: Connectivity;
 }
 
 export interface RunMeta {
@@ -156,5 +159,5 @@ export function openSession(o: {
   if (!o.runId) {
     writeJson(runPaths(dir).run, { runId, mode: o.mode, config, method, planHash: hash, createdAt, judge: judge?.info ?? null, checkJudge: checkJudge?.info ?? null } satisfies RunMeta, 0o600);
   }
-  return { runId, dir, mode: o.mode, config, method, items, plan, registry, client, pageFetcher, judge, checkJudge, budget, createdAt };
+  return { runId, dir, mode: o.mode, config, method, items, plan, registry, client, pageFetcher, judge, checkJudge, budget, createdAt, ...(o.mode === "live" ? { connectivity: liveConnectivity } : {}) };
 }

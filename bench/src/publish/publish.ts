@@ -11,7 +11,7 @@ import { itemHash, MANIFEST_PATH, PRIVATE_MANIFEST_PATH, type Item } from "../da
 import type { JudgeInfo } from "../judge/judge.ts";
 import type { Method, RunConfig, Settings } from "../run/config.ts";
 import { scopeOf, settingsFor } from "../run/plan.ts";
-import { runPaths, type AttemptRecord } from "../run/records.ts";
+import { readAttemptLog, runPaths } from "../run/records.ts";
 import type { ProviderSpec } from "../sdk.ts";
 import type { Scores } from "../score/score.ts";
 import { addDays, BENCH_DIR, readJson, readJsonl, REPO_DIR, round, writeJson, writeJsonl } from "../util/core.ts";
@@ -161,7 +161,7 @@ export function buildOutputs(c: Ctx) {
     items: c.items.map((i) => ({ ref: ref(i), class: i.class, split: i.split })),
   };
 
-  const attempts = readJsonl<AttemptRecord>(runPaths(c.dir).attempts).map((a) => {
+  const attempts = readAttemptLog(runPaths(c.dir).attempts).map((a) => {
     const item = itemById.get(a.itemId)!;
     const priv = item.split === "private";
     const k = c.items.indexOf(item);
