@@ -5,7 +5,7 @@ import type { Item } from "../dataset/items.ts";
 import { textHasAnswer, urlMatches } from "../dataset/match.ts";
 import type { Method, RunConfig } from "../run/config.ts";
 import { hasProfile } from "../run/plan.ts";
-import { pairIdOf, runPaths, SCORED_OUTCOMES, urlKey, type AttemptRecord, type HumanLabel, type JudgmentRecord, type PageRecord } from "../run/records.ts";
+import { judgePairIdOf, runPaths, SCORED_OUTCOMES, urlKey, type AttemptRecord, type HumanLabel, type JudgmentRecord, type PageRecord } from "../run/records.ts";
 import { readJsonl, round, seedOf } from "../util/core.ts";
 import { rank, type RankRow } from "./rank.ts";
 import { bootstrapMean, kappaInterval, mean, pairedBootstrap, quantile, retest, wilson, type Interval } from "./stats.ts";
@@ -48,8 +48,10 @@ export interface ProfileScore {
   stale: { n: number; rate: number } | null;
   retest: { n: number; agreement: number; flipped: number; meanDelta: number; urlJaccard: number } | null;
   rank: RankRow | null;
-  /** Per item (pass 1) known-answer scores, aligned with Scores.items; null where not scored. */
+  /** Per item known-answer scores (the mean over every pass), aligned with Scores.items; null where not scored. */
   perItem: (number | null)[];
+  /** Per pass (index pass - 1), per item known-answer scores, aligned with Scores.items. */
+  perItemPasses: (number | null)[][];
 }
 
 export interface ClassCell {
@@ -85,8 +87,17 @@ export interface PageSummary {
   reasons: Record<string, number>;
 }
 
+/** How far apart in time the providers were queried for the same item and pass: max minus min start time. */
+export interface TimingSpread {
+  items: number;
+  p50Ms: number;
+  p95Ms: number;
+  maxMs: number;
+}
+
 export interface Scores {
   items: { id: string; class: string; split: string }[];
+  timing: TimingSpread;
   pages: PageSummary;
   pairedN: Record<string, number>;
   droppedItems: Record<string, number>;
@@ -142,22 +153,36 @@ function reliability(attempts: readonly AttemptRecord[], confidence: number): Re
   return { attempts: scored.length, usable, usableRate: scored.length ? usable / scored.length : 0, ci: wilson(usable, scored.length, confidence), rates };
 }
 
-function cost(attempts: readonly AttemptRecord[], correctPass1: number, pass1: readonly AttemptRecord[]): CostSummary {
+/** `correct` counts correct answers over every pass, so cost per correct answer divides all spend by all correct answers. */
+function cost(attempts: readonly AttemptRecord[], correct: number): CostSummary {
   const known = attempts.filter((a) => a.costUsd !== null);
   const total = known.reduce((s, a) => s + a.costUsd!, 0);
-  const total1 = pass1.filter((a) => a.costUsd !== null).reduce((s, a) => s + a.costUsd!, 0);
   const count = (k: (a: AttemptRecord) => string) => attempts.reduce<Record<string, number>>((m, a) => ((m[k(a)] = (m[k(a)] ?? 0) + 1), m), {});
   const allKnown = known.length === attempts.length;
   return {
     attempts: attempts.length,
     totalUsd: round(total, 6),
     perQueryUsd: known.length ? round(total / known.length, 6) : null,
-    perCorrectUsd: allKnown && correctPass1 > 0 ? round(total1 / correctPass1, 6) : null,
+    perCorrectUsd: allKnown && correct > 0 ? round(total / correct, 6) : null,
     known: allKnown,
     unknownAttempts: attempts.length - known.length,
     sources: count((a) => a.costSource),
     billed: count((a) => a.billed),
   };
+}
+
+/** For each item and pass with two or more calls, the time between the first and the last provider's start. */
+export function timingSpread(attempts: readonly AttemptRecord[]): TimingSpread {
+  const starts = new Map<string, number[]>();
+  for (const a of attempts) {
+    const t = Date.parse(a.startedAt);
+    if (!Number.isFinite(t)) continue;
+    const k = `${a.pass}|${a.itemId}`;
+    starts.set(k, [...(starts.get(k) ?? []), t]);
+  }
+  const spreads = [...starts.values()].filter((xs) => xs.length > 1).map((xs) => Math.max(...xs) - Math.min(...xs));
+  if (!spreads.length) return { items: 0, p50Ms: 0, p95Ms: 0, maxMs: 0 };
+  return { items: spreads.length, p50Ms: round(quantile(spreads, 0.5), 0), p95Ms: round(quantile(spreads, 0.95), 0), maxMs: Math.max(...spreads) };
 }
 
 /** nDCG@k for one ranked list of grades, against the ideal from the item's pooled grades. */
@@ -190,6 +215,10 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
   };
   const items = o.items;
   const index = new Map(items.map((i, k) => [i.id, k]));
+  const readKeys = new Set([...pages.values()].filter((p) => p.status === "ok").map((p) => p.urlKey));
+  // The judged pair of one provider's result: shared when the harness read the page, the provider's own otherwise.
+  const pairOf = (itemId: string, url: string, provider: string) => judgePairIdOf(itemId, urlKey(url), provider, readKeys.has(urlKey(url)));
+  const noPages = (): string | null => null;
 
   // Judged pool: grades from repeat 0 per pair; repeats feed self-consistency.
   const judgments = readJsonl<JudgmentRecord>(paths.judgments);
@@ -232,20 +261,31 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
   const cells: ClassCell[] = [];
 
   for (const profile of config.profiles) {
-    const rows = new Map<string, { a1: Map<string, AttemptRecord>; per: Map<string, ReturnType<typeof knownAnswer>>; list: AttemptRecord[] }>();
+    const rows = new Map<string, { a1: Map<string, AttemptRecord>; per: Map<string, ReturnType<typeof knownAnswer>>; passes: Map<string, number[]>; list: AttemptRecord[] }>();
     const runs = config.providers.filter((p) => hasProfile(config, profile, p));
     const exclude = new Set(config.profileExclude?.[profile] ?? []);
     const pItems = items.filter((i) => !exclude.has(i.id));
     for (const provider of runs) {
       const list = all.filter((a) => a.provider === provider && a.profile === profile);
-      const a1 = new Map(list.filter((a) => a.pass === 1).map((a) => [a.itemId, a]));
+      const byPass = Array.from({ length: config.passes }, (_, k) => new Map(list.filter((a) => a.pass === k + 1).map((a) => [a.itemId, a])));
+      const a1 = byPass[0]!;
+      // An item counts only when every pass scored it; its score is the mean over the passes.
       const per = new Map<string, ReturnType<typeof knownAnswer>>();
-      for (const [id, a] of a1) {
+      const passes = new Map<string, number[]>();
+      for (const id of a1.keys()) {
         const item = items[index.get(id)!];
-        if (!item || !SCORED.has(a.outcome)) continue;
-        per.set(id, knownAnswer(item, a, readRaw<RawSearch>(paths.rawSearch(1, provider, profile, id)), pageText, method));
+        if (!item) continue;
+        const each: ReturnType<typeof knownAnswer>[] = [];
+        for (const [k, m] of byPass.entries()) {
+          const a = m.get(id);
+          if (!a || !SCORED.has(a.outcome)) break;
+          each.push(knownAnswer(item, a, readRaw<RawSearch>(paths.rawSearch(k + 1, provider, profile, id)), config.pagePasses.includes(k + 1) ? pageText : noPages, method));
+        }
+        if (each.length !== config.passes) continue;
+        per.set(id, { score: mean(each.map((x) => x.score)), snippet: mean(each.map((x) => x.snippet)), page: mean(each.map((x) => x.page)) });
+        passes.set(id, each.map((x) => x.score));
       }
-      rows.set(provider, { a1, per, list });
+      rows.set(provider, { a1, per, passes, list });
     }
     // A provider scored on fewer than 90% of items is incomplete and left out of the ranking.
     const complete = runs.filter((p) => pItems.filter((i) => rows.get(p)!.per.has(i.id)).length >= 0.9 * pItems.length);
@@ -263,21 +303,21 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
       const usableItems = paired.filter((i) => judgedSet.has(i.id)).filter((i) => {
         return complete.every((p) => {
           const a = rows.get(p)!.a1.get(i.id)!;
-          return a.outcome !== "ok_nonempty" || a.urls.slice(0, method.judge.topK).every((u) => grade0.has(pairIdOf(i.id, urlKey(u))));
+          return a.outcome !== "ok_nonempty" || a.urls.slice(0, method.judge.topK).every((u) => grade0.has(pairOf(i.id, u, p)));
         });
       });
       for (const i of usableItems) {
-        // The ideal ranking uses the best distinct (item, URL) pairs any provider returned.
+        // The ideal ranking uses the best distinct URLs any provider returned (a URL judged on several snippets counts once, at its best grade).
         const distinct = new Map<string, number>();
         for (const p of complete) {
           const a = rows.get(p)!.a1.get(i.id)!;
-          if (a.outcome === "ok_nonempty") for (const u of a.urls.slice(0, method.judge.topK)) distinct.set(pairIdOf(i.id, urlKey(u)), grade0.get(pairIdOf(i.id, urlKey(u)))!);
+          if (a.outcome === "ok_nonempty") for (const u of a.urls.slice(0, method.judge.topK)) distinct.set(urlKey(u), Math.max(distinct.get(urlKey(u)) ?? 0, grade0.get(pairOf(i.id, u, p))!));
         }
         if (ndcg([], [...distinct.values()], method.judge.topK) === null) continue;
         judgedItems.push(i);
         for (const p of complete) {
           const a = rows.get(p)!.a1.get(i.id)!;
-          const grades = a.outcome === "ok_nonempty" ? a.urls.slice(0, method.judge.topK).map((u) => grade0.get(pairIdOf(i.id, urlKey(u)))!) : [];
+          const grades = a.outcome === "ok_nonempty" ? a.urls.slice(0, method.judge.topK).map((u) => grade0.get(pairOf(i.id, u, p))!) : [];
           (judgedScores[p] ??= []).push(ndcg(grades, [...distinct.values()], method.judge.topK)!);
         }
       }
@@ -291,10 +331,10 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
     const ranks = rank(inputs, boot, { floor: method.reliability.floor, minSeparation: method.stats.minSeparation });
 
     for (const provider of runs) {
-      const { a1, per, list } = rows.get(provider)!;
+      const { a1, per, passes, list } = rows.get(provider)!;
       const isComplete = complete.includes(provider);
       const pass1 = list.filter((a) => a.pass === 1);
-      const correct = [...per.values()].reduce((s, x) => s + x.score, 0);
+      const correct = [...per.values()].reduce((s, x) => s + x.score, 0) * config.passes;
       const comp = [...per.entries()];
       const nonNav = comp.filter(([id]) => items[index.get(id)!]!.class !== "nav");
       const navs = comp.filter(([id]) => items[index.get(id)!]!.class === "nav");
@@ -314,8 +354,7 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
       if (config.passes >= 2) {
         const a2 = new Map(list.filter((a) => a.pass === 2).map((a) => [a.itemId, a]));
         const ids = [...per.keys()].filter((id) => a2.has(id) && SCORED.has(a2.get(id)!.outcome));
-        const s2 = ids.map((id) => knownAnswer(items[index.get(id)!]!, a2.get(id)!, readRaw<RawSearch>(paths.rawSearch(2, provider, profile, id)), pageText, method).score);
-        const t = retest(ids.map((id) => per.get(id)!.score), s2);
+        const t = retest(ids.map((id) => passes.get(id)![0]!), ids.map((id) => passes.get(id)![1]!));
         const jac = ids.map((id) => {
           const x = new Set(a1.get(id)!.urls.map(urlKey));
           const y = new Set(a2.get(id)!.urls.map(urlKey));
@@ -338,12 +377,13 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
         judged: jb ? { ...jb, n: judgedScores[provider]!.length, pageShare: 0 } : null,
         reliability: reliability(list, conf),
         latencyMs: latency(list, method.search.timeoutMs),
-        cost: cost(list, correct, pass1),
+        cost: cost(list, correct),
         pageUnreadableRate: fetched.length ? round(fetched.filter((p) => p.status !== "ok").length / fetched.length) : null,
         stale: freshIds.length ? { n: freshIds.length, rate: round(staleN / freshIds.length) } : null,
         retest: rt,
         rank: ranks.find((r) => r.id === provider) ?? null,
         perItem: items.map((i) => per.get(i.id)?.score ?? null),
+        perItemPasses: Array.from({ length: config.passes }, (_, k) => items.map((i) => passes.get(i.id)?.[k] ?? null)),
       });
     }
     // Share of judged pairs whose passage came from the fetched page rather than the provider's snippet.
@@ -368,8 +408,8 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
         const list = rows.get(p)!.list.filter((a) => cIds.has(a.itemId));
         const r = reliability(list, conf);
         const l = latency(list, method.search.timeoutMs);
-        const correct = cKa[p]!.reduce((s, x) => s + x, 0);
-        const c = cost(list, correct, list.filter((a) => a.pass === 1));
+        const correct = cKa[p]!.reduce((s, x) => s + x, 0) * config.passes;
+        const c = cost(list, correct);
         const jv = judgedScores[p] ? judgedScores[p]!.filter((_, k) => judgedItems[k]!.class === cls) : [];
         const js = jv.length ? bootstrapMean(jv, method.stats.bootstrap, seedOf(method.stats.seed, "judged", p, cls), conf) : null;
         const flags: string[] = [];
@@ -390,5 +430,5 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
   for (const p of pages.values()) if (p.status !== "ok") reasons[p.reason ?? "unknown"] = (reasons[p.reason ?? "unknown"] ?? 0) + 1;
   const unreadable = Object.values(reasons).reduce((a, b) => a + b, 0);
   const pageSummary: PageSummary = { urls: pages.size, read: pages.size - unreadable, unreadable, unreadableRate: pages.size ? round(unreadable / pages.size) : null, reasons };
-  return { items: items.map((i) => ({ id: i.id, class: i.class, split: i.split })), pages: pageSummary, pairedN, droppedItems, profiles, cells, agreement };
+  return { items: items.map((i) => ({ id: i.id, class: i.class, split: i.split })), timing: timingSpread(all), pages: pageSummary, pairedN, droppedItems, profiles, cells, agreement };
 }

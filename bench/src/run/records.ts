@@ -93,6 +93,16 @@ export interface EventRecord {
 
 export const pairIdOf = (itemId: string, key: string) => sha256(`${itemId}\n${key}`).slice(0, 20);
 
+/**
+ * The judged pair a provider's result belongs to. When the harness read the
+ * page, every provider that returned the URL shares one pair, judged on the
+ * harness's own text. When it could not, the judge sees the result's own
+ * title and excerpts, so each provider gets a pair of its own: one provider's
+ * snippet never grades another provider's result.
+ */
+export const judgePairIdOf = (itemId: string, key: string, provider: string, pageRead: boolean) =>
+  pageRead ? pairIdOf(itemId, key) : sha256(`${itemId}\n${key}\n${provider}`).slice(0, 20);
+
 export function runPaths(dir: string) {
   return {
     dir,

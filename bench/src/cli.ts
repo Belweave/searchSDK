@@ -135,6 +135,8 @@ function report(scores: Scores): string {
     }
   }
   L.push("\n= tied group, ! unreliable (ranked below dependable providers), * some costs unknown");
+  const t = scores.timing;
+  if (t.items) L.push(`timing: providers queried for the same item within ${(t.p50Ms / 1000).toFixed(1)} s (median), ${(t.p95Ms / 1000).toFixed(1)} s (p95), ${(t.maxMs / 1000).toFixed(1)} s (max) of each other`);
   const pg = scores.pages;
   if (pg.urls) {
     const why = Object.entries(pg.reasons).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(", ");

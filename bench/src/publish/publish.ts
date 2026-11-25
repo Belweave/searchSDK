@@ -125,7 +125,7 @@ export function buildOutputs(c: Ctx) {
       resultCount: a.resultCount,
       // Private items publish no URLs until they retire: URLs would reveal the query.
       urls: priv ? [] : a.urls, resultHashes: a.resultHashes,
-      knownAnswer: a.pass === 1 && ps ? (ps.perItem[k] ?? null) : null,
+      knownAnswer: ps ? (ps.perItemPasses[a.pass - 1]?.[k] ?? null) : null,
     };
   });
 

@@ -85,6 +85,8 @@ export function loadRunConfig(path: string): RunConfig {
   if (!Array.isArray(c.profiles) || !c.profiles.length) problems.push("profiles: at least one");
   for (const p of c.profiles ?? []) if (p !== "default" && !c.settings?.[p]) problems.push(`settings.${p}: missing`);
   if (!Array.isArray(c.pagePasses) || c.pagePasses.some((p) => !Number.isInteger(p) || p < 1 || p > c.passes)) problems.push("pagePasses: pass numbers");
+  // Every pass is scored, so the page check covers every pass or none: a pass without pages would score on snippets alone.
+  else if (c.pagePasses.length && new Set(c.pagePasses).size !== c.passes) problems.push("pagePasses: every pass (1 to passes) or none");
   if (!Number.isInteger(c.judgeItems) || c.judgeItems < 0) problems.push("judgeItems: a whole number");
   if (c.judgePricing !== undefined && c.judgePricing !== "covered-by-plan" && c.judgePricing !== "list-price") problems.push("judgePricing: covered-by-plan or list-price");
   if (typeof c.capUsd !== "number" || !(c.capUsd > 0)) problems.push("capUsd: a positive number");

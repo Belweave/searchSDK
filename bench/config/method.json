@@ -1,6 +1,6 @@
 {
   "$comment": "Fixed conditions for every run of this method version. Changing any value is a new method version (METHOD.md, Versions).",
-  "method": "0.2.0",
+  "method": "0.3.0",
   "search": { "maxResults": 10, "timeoutMs": 10000, "maxRetries": 0 },
   "pages": { "fetcher": "plain-1", "topK": 3, "timeoutMs": 20000, "maxBytes": 5242880, "maxRedirects": 5, "maxInFlight": 4, "perHostIntervalMs": 1000, "maxCrawlDelayMs": 30000, "userAgent": "BenchPageFetcher/1.0 (compatible; reads public pages for a web search benchmark; obeys robots.txt)", "robotsToken": "BenchPageFetcher", "maxStoredChars": 300000 },
   "knownAnswer": { "snippetTopK": 10, "pageTopK": 3, "navTopK": 3 },

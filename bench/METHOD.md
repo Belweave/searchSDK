@@ -1,4 +1,4 @@
-# searchSDK Benchmarks: method 0.2.0
+# searchSDK Benchmarks: method 0.3.0
 
 Values in this document come from `config/method.json`. Changing any of them,
 the rubric or the scoring code is a new method version.
@@ -80,15 +80,21 @@ The seed set holds 86 public and 10 fresh items. To reach the monthly 400:
 
 ## 3. Conditions
 
-- **Order.** Items run in a seeded random order. Each item goes to every
-  provider within the same few seconds, in a seeded random provider order.
-  At most 4 items are in flight.
+- **Order.** Items run in a seeded random order, reshuffled for each pass.
+  All of an item's calls are dispatched together, in a seeded provider order
+  that differs per item and pass, and run concurrently, each under its own
+  provider's pacing. At most 4 items are in flight. The spread between the
+  first and the last provider's start for the same item is published (median,
+  p95, max), so freshness drift between providers is measured, not assumed.
 - **Pacing.** Each provider is held to half of its strictest documented rate
   limit for the chosen plan (the most restrictive one when no plan is
   named). A 429 under that pacing is the provider's failure. After one, the
   provider pauses for `Retry-After` or 30 seconds.
-- **Passes.** The pilot runs every item twice to measure run-to-run change.
-  Monthly runs use one pass.
+- **Passes.** A run may send every item to every provider several times
+  (`passes`). Every pass is scored: an item's known-answer score is its mean
+  over the passes, and an item counts only when every pass scored it. The
+  page check covers every pass or none. The first run uses three passes;
+  monthly runs use one.
 - **Where.** Runs are started by hand, never by CI, on the owner's machine
   or a VM. `BENCH_REGION` is recorded.
 
@@ -114,7 +120,7 @@ provider scores zero and ranks last.
 
 ## 5. Known-answer score (objective)
 
-For each attempt:
+For each attempt (an item's score is the mean over its passes):
 
 - **Non-nav items** score 1 when an alias or pattern matches in the title and
   excerpts of any of the top 10 results, or in the text of any of the top 3
@@ -167,19 +173,28 @@ each provider's score.
 ## 6. Judged relevance
 
 - **Pool.** On the judged items (pass 1, default profile), each provider's
-  top 3 URLs are pooled, then de-duplicated by the SDK's URL key. When the
-  judge is covered by a plan, every item is judged; otherwise a seeded
-  sample within classes keeps the cost down.
-- **Passage.** The judge sees the query, URL, title and up to 4,000 bytes of
-  the fetched page. The passage is the paragraph-aligned window holding the
-  most query terms. When the page was unreadable, the judge sees the
-  result's own title and excerpts instead, and the published `pageShare`
-  says how often the page was used.
-- **Blind.** The judge never learns which provider returned the page.
+  top 3 URLs are pooled. A URL whose page the harness read is one pair,
+  shared by every provider that returned it (de-duplicated by the SDK's URL
+  key). A URL the harness could not read is one pair per provider, judged on
+  that provider's own title and excerpts, so one provider's snippet never
+  grades another provider's result. When the judge is covered by a plan,
+  every item is judged; otherwise a seeded sample within classes keeps the
+  cost down.
+- **Passage.** For a read page the judge sees the query, the URL, the title
+  the harness read and up to 4,000 bytes of the page text: the
+  paragraph-aligned window holding the most query terms. For an unreadable
+  page it sees the query, the URL and that provider's title and excerpts. The
+  published `pageShare` says how often the page was used.
+- **Blind.** The judge never learns which provider returned a page: no
+  provider name or id, no rank or position, no other provider's results. It
+  grades one pair per call, in a seeded order across all pairs, so position
+  bias cannot follow a provider. URLs are shown without a fragment and
+  without `utm_*` parameters, which some APIs add to name themselves.
 - **Grades.** Grades follow `rubric/relevance-1.0.0.md` (0 to 3). The
   rationale comes before the grade.
 - **Score.** nDCG@3 with gain 2^g − 1. The ideal is the best 3 distinct
-  pairs anyone returned for the item. Items where nobody returned anything
+  URLs anyone returned for the item (a URL judged on several snippets counts
+  once, at its best grade). Items where nobody returned anything
   relevant are dropped. A failed or empty response scores 0. Items with any
   unresolved pair are left out, and the count is published.
 - **Judge.** Kimi K3.1 Pro (`morph-kimik31`) through Morph's
@@ -255,9 +270,9 @@ usable-response floor.
   providers share a group number and are shown as tied, with intervals.
 - **Per class.** The same rule runs within each query class for the routing
   table.
-- **Run-to-run change** (two passes): the share of items whose score changed
-  between passes, and the mean Jaccard overlap of the two passes' result
-  URLs.
+- **Run-to-run change** (two or more passes): the share of items whose score
+  changed between passes 1 and 2, and the mean Jaccard overlap of the two
+  passes' result URLs. The headline already averages every pass.
 
 ## 10. Spend control
 
@@ -320,7 +335,9 @@ as provider measurements.
 
 ## 12. Versions
 
-- **Method:** semver in `config/method.json`. Major means scores are not
+- **Method:** semver in `config/method.json`. 0.3.0 scores every pass,
+  judges unreadable pages per provider, titles read pages from the harness,
+  and resolves page hosts before fetching. Major means scores are not
   comparable across versions; minor adds metrics, classes or providers;
   patch fixes bugs.
 - **Datasets:** `name-version`, with a SHA-256 in the manifest.
@@ -328,7 +345,63 @@ as provider measurements.
 - **Judge:** model ID, parameters and prompt hash, recorded in every result.
 - **Schemas:** a version in every file name and `schema` field.
 
-## 13. Known limits
+## 13. Bias controls
+
+Audited 2026-11-25 for anything that could favour one provider over another.
+Each control below has a test in `test/bias.test.ts` or the suites it names.
+
+Controlled:
+
+- **Same request.** Every provider gets the item's query text unchanged, the
+  same `maxResults` (10), the same 10-second deadline, no retries and no
+  fallback. The headline profile sends no depth and no provider options; the
+  only differences are each registry spec's fixed parameters, which are part
+  of what is measured. TinyFish has no result-count parameter; it returns at
+  most 10 and the runtime truncates.
+- **Order and timing.** Provider order is seeded per item and pass; an
+  item's calls run concurrently; item order is reshuffled per pass. The
+  start-time spread per item is published (section 3).
+- **Same pages.** Every provider's URLs are read by the same harness fetcher,
+  once per URL key, in a seeded order, so the page check never uses a
+  provider's own page text and an unreadable page is unreadable for everyone.
+- **Same matching.** Known-answer matching runs the same normalization and
+  aliases on every provider's text; URLs are de-duplicated with the SDK's
+  URL key for everyone; nav items compare hosts the same way.
+- **Same failures.** Empty lists, errors, timeouts and rate limits score 0
+  for every provider; a timeout counts as the full deadline in latency.
+- **No leaks between providers.** No response cache exists in the SDK. Raw
+  responses, attempts and judgments are keyed by provider. Judge pairs are
+  shared only through harness-read pages; snippet pairs are per provider.
+  Read pages are titled by the harness, never by whichever provider answered
+  first.
+- **Blind, pointwise judging** (section 6).
+- **Cost and latency never move a rank** (`cost never moves a rank`).
+- **Several samples.** Each item is scored as the mean over its passes, and
+  pass-to-pass change is published, so one noisy reply does not decide an
+  item.
+
+Residual biases, not removed:
+
+- **Dataset.** Every item comes from Wikidata; head and multi-hop classes
+  favour providers with strong encyclopedic coverage (section 2, Known limits).
+- **Excerpt kind.** Snippet credit depends on what a provider's excerpts are
+  (highlights, content chunks or descriptions); the page check and the
+  published `excerptKind` offset but do not remove this.
+- **Pages a plain GET cannot read** (JavaScript, PDFs, bot walls) count
+  against the providers that return them; the per-provider unreadable share
+  shows how much.
+- **Pacing.** Providers are paced to half their own documented limits, so a
+  slowly paced provider is queried up to about a minute after the others for
+  the same item. The published spread shows the actual gap.
+- **Specs.** A wrong registry field path counts as the provider's failure
+  (`invalid_response` or missing excerpts). `bench smoke` checks the paths
+  against live responses before a full run.
+- **Judges.** Large language model judges have their own preferences; see
+  section 6 for the second judge and the human gate.
+- **Location.** One region per run (`BENCH_REGION`); providers that localize
+  results may do better or worse elsewhere.
+
+## 14. Known limits
 
 - Every item comes from Wikidata. Search providers index Wikipedia heavily,
   so the head and multi-hop classes favour encyclopedic coverage. Other
