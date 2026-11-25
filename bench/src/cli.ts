@@ -20,21 +20,24 @@ import { scoreRun, type Scores } from "./score/score.ts";
 import { formatSmoke, formatSmokePlan, runSmoke, smokePlan } from "./smoke.ts";
 import { shapeFetch } from "./smoke-fixtures.ts";
 import { ledgerPath, liveGuards, openSession, type RunMeta, type Session } from "./session.ts";
-import { loadTuning, select, tuningRunConfig, withTuned, type Selection } from "./tune.ts";
-import { BENCH_DIR, isoDate, readJson, storeDir, usd, writeJson, writeJsonl } from "./util/core.ts";
+import { formatTuningPlan, limitProblems, loadTuning, resolveTuned, select, splitMissing, TUNING_PATH, tuningRunConfig, withTunedWorstCase, type Selection } from "./tune.ts";
+import { creditReservation } from "./run/pricing.ts";
+import { BENCH_DIR, canonical, isoDate, readJson, sha256, storeDir, usd, writeJson, writeJsonl } from "./util/core.ts";
 
 const HELP = `searchSDK Benchmarks
 
   keys     --config <run.json> | --providers a,b [--no-judge] [--file <keys.env>]   which key variables are present; names only
   smoke    --config <run.json> | --providers a,b [--searches 2] [--cap 0.10] [--live --confirm-spend <cap>]
            2 or 3 searches and 1 contents call per provider: status, latency, fields found per spec path, cost vs bound
-  plan     --config <run.json> [--tuned <selection.json>] [--no-judge]   print the calls and the maximum spend; sends nothing
-  pilot    --config <run.json> [--no-judge] [--live --confirm-spend <cap>]   plan, confirm, search, fetch pages, judge, score
-  run      --config <run.json> [--tuned <sel>] [--no-judge] [--live --confirm-spend <cap>] [--resume <runId>]
+  plan     --config <run.json> [--tuned <selection.json> | --no-tuned] [--no-judge]   print the calls and the maximum spend; sends nothing
+  pilot    --config <run.json> [--tuned <sel> | --no-tuned] [--no-judge] [--live --confirm-spend <cap>]   plan, confirm, search, fetch pages, judge, score
+  run      --config <run.json> [--tuned <sel> | --no-tuned] [--no-judge] [--live --confirm-spend <cap>] [--resume <runId>]
   score    --run <runId>                                        print scores (local)
   label    --run <runId> [--n 120] [--labeller name]            human check: grade judged pairs blind
   publish  --run <runId> [--out <dir>]                          write results, leaderboard and routing table
-  tune     --tuning <tuning.json> --providers a,b [--live --confirm-spend <cap>]
+  tune     --config <run.json> [--tuning config/tuning.json] [--live --confirm-spend <tuning cap>]
+           plan by default: the split, each provider's candidates, and the spend and credits of tuning, the main run and its tuned condition.
+           --live tunes on the split and writes a selection; pass it to run with --tuned.
   dataset  validate | build --spec <spec.json> | review --spec <spec.json> | private --from <file> --version <v>
 
 Without --live, runs use synthetic fixture providers and a synthetic judge, and every output is marked "fixture".
@@ -64,10 +67,17 @@ const need = (f: Record<string, string | true>, k: string): string => {
   return v;
 };
 
-function configFrom(f: Record<string, string | true>): RunConfig {
+/** The run config with its tuned condition resolved: a selection (--tuned), the headline only (--no-tuned), or the plan's worst case. */
+function configFrom(f: Record<string, string | true>, o: { forPlan: boolean; live?: boolean } = { forPlan: true }): RunConfig {
   let c = loadRunConfig(need(f, "config"));
   const tuned = str(f, "tuned");
-  if (tuned) c = withTuned(c, readJson<Selection>(resolve(tuned)));
+  if (tuned && f["no-tuned"] === true) throw new Error("pass --tuned or --no-tuned, not both");
+  const selection = tuned ? readJson<Selection>(resolve(tuned)) : undefined;
+  if (selection && o.live && selection.mode !== "live") throw new Error(`${tuned} is a ${selection.mode} selection; a live run needs a live one`);
+  c = resolveTuned(c, {
+    ...(selection ? { selection } : {}), noTuned: f["no-tuned"] === true, forPlan: o.forPlan,
+    registry: builtInRegistry as unknown as Record<string, ProviderSpec>, method: loadMethod(),
+  });
   // An explicit choice, never a silent fallback when the judge key is missing.
   if (f["no-judge"] === true) c = withoutJudging(c);
   return c;
@@ -219,6 +229,83 @@ async function smoke(flags: Record<string, string | true>): Promise<void> {
   if (report.problems.some((p) => p.severity === "error")) process.exitCode = 2;
 }
 
+/** `bench tune`: the tuning plan by default; with --live, tune on the split under the guards and write a selection. */
+async function tune(flags: Record<string, string | true>): Promise<void> {
+  const method = loadMethod();
+  const reg = builtInRegistry as unknown as Record<string, ProviderSpec>;
+  const tuningPath = resolve(str(flags, "tuning") ?? TUNING_PATH);
+  const t = loadTuning(tuningPath);
+  const run = loadRunConfig(need(flags, "config"));
+  const { config, rejected, candidates } = tuningRunConfig(t, run, reg, method);
+  const missing = splitMissing(t);
+  // The split may not be built yet: the plan still counts its calls from the method's split size.
+  const items = missing.length
+    ? Array.from({ length: method.tuning.splitItems }, (_, k) => ({ id: `planned-${k}`, split: "public", class: "fact.head", query: `planned ${k}` }) as unknown as Item)
+    : loadRunItems(config);
+  const tplan = makePlan({ config, method, items, registry: reg, judge: null, checkCommitted: false });
+  const main = withTunedWorstCase(run, t, reg, method);
+  // Provider calls and credits only: judging never draws on a provider's credits.
+  const mplan = makePlan({ config: { ...main, judgeItems: 0 }, method, items: loadRunItems(main), registry: reg, judge: null, checkCommitted: false });
+  const used = creditsUsed(run);
+  type PP = (typeof tplan.providers)[number];
+  const calls = (p: PP | undefined) => p?.profiles.reduce((a, x) => a + x.calls, 0) ?? 0;
+  const rows = run.providers.map((id) => {
+    const tp = tplan.providers.find((p) => p.id === id);
+    const mp = mplan.providers.find((p) => p.id === id);
+    const tunedP = mp?.profiles.find((x) => x.profile === "tuned");
+    const perTuned = tunedP ? creditReservation(reg[id]!, "search", method.search.maxResults, tunedP.settings) : null;
+    return {
+      id, configs: tp?.profiles.length ?? 0, calls: calls(tp), maxUsd: tp?.profiles.reduce((a, x) => a + x.maxUsd, 0) ?? 0,
+      credits: tp?.credits?.planned ?? null, mainCalls: calls(mp), mainCredits: mp?.credits?.planned ?? null,
+      tunedCalls: tunedP?.calls ?? 0, tunedCredits: perTuned === null ? null : perTuned * (tunedP?.calls ?? 0),
+      used: used[id] ?? null, limit: run.providerLimits?.[id]?.credits ?? null,
+    };
+  });
+  const files = [...t.split.datasets, ...(t.split.storeDatasets ?? []).map((f) => `store:${f}`)];
+  console.log(formatTuningPlan({ method, split: { files, missing }, rows, maxUsd: tplan.maxUsd, capUsd: t.capUsd, candidates, rejected }));
+  console.log(`\nmain run ${run.name} with its tuned condition at the worst case: maximum possible spend ${usd(mplan.maxUsd)} under its cap ${usd(run.capUsd)}`);
+  const limits = run.providerLimits ?? {};
+  const byId = (f: (r: (typeof rows)[number]) => number) => Object.fromEntries(rows.map((r) => [r.id, f(r)]));
+  const problems = [
+    ...limitProblems({ limits, used, tuning: byId((r) => r.credits ?? 0), main: byId((r) => r.mainCredits ?? 0) }),
+    ...limitProblems({
+      limits, unit: "calls", tuning: byId((r) => r.calls), main: byId((r) => r.mainCalls),
+      used: Object.fromEntries(Object.entries(limits).map(([id, l]) => [id, poolUsage(ledgerPath(), id, l.since).calls])),
+    }),
+  ];
+  for (const p of problems) console.log(`REFUSED: ${p}`);
+  if (flags.live !== true) {
+    if (problems.length) process.exitCode = 1;
+    return;
+  }
+  if (missing.length) throw new Error(`tuning refused: the split is not built (${missing.join(", ")})`);
+  if (problems.length) throw new Error("tuning refused: it would not leave room for the main run under a provider limit");
+  await prepareLive(config, flags);
+  const s = openSession({ config, mode: "live" });
+  const r = await execute(s);
+  const scores = scoreRun(s.dir, { config: s.config, method: s.method, items: s.items, judgeItemIds: [] });
+  const sel = select({
+    runId: s.runId, mode: "live", tuning: t, tuningPath: tuningPath.replace(`${BENCH_DIR}/`, ""), tuningConfigSha256: sha256(canonical(t)),
+    config: s.config, scores, registry: s.registry, method: s.method, rejected, items: s.items,
+  });
+  console.log(report(scores));
+  const f = (x: number) => (Number.isFinite(x) ? x.toFixed(2) : " -  ");
+  for (const [p, x] of Object.entries(sel.providers)) {
+    console.log(`\n${p}: ${x.reason}`);
+    for (const e of x.evidence) {
+      console.log(`  ${e.profile.padEnd(8)} ${JSON.stringify(e.settings).padEnd(60)} ${f(e.knownAnswer.mean)} [${f(e.knownAnswer.lo)}, ${f(e.knownAnswer.hi)}]${e.gain ? ` gain ${f(e.gain.mean)} [${f(e.gain.lo)}, ${f(e.gain.hi)}]` : ""}  bound ${e.boundUsd === null ? "unknown" : `$${e.boundUsd}`}`);
+    }
+  }
+  if (r !== "done") {
+    process.exitCode = 2;
+    console.log(`\ntuning stopped (${r}); no selection written. Run it again once the cause is fixed.`);
+    return;
+  }
+  const path = join(storeDir(), "tuning", `${s.runId}.json`);
+  writeJson(path, sel, 0o600);
+  console.log(`\nselection: ${path}\nNext: bench run --config <run.json> --tuned ${path} --live --confirm-spend <cap>`);
+}
+
 async function main(): Promise<void> {
   const { cmd, sub, flags } = args(process.argv.slice(2));
   switch (cmd) {
@@ -252,7 +339,7 @@ async function main(): Promise<void> {
     }
     case "pilot":
     case "run": {
-      const config = configFrom(flags);
+      const config = configFrom(flags, { forPlan: false, live: flags.live === true });
       if (flags.live === true) await prepareLive(config, flags);
       const s = session(config, flags);
       const r = await execute(s);
@@ -296,20 +383,7 @@ async function main(): Promise<void> {
       return;
     }
     case "tune": {
-      const t = loadTuning(need(flags, "tuning"));
-      const method = loadMethod();
-      const providers = need(flags, "providers").split(",").map((x) => x.trim()).filter(Boolean);
-      const reg = builtInRegistry as unknown as Record<string, ProviderSpec>;
-      const { config, rejected } = tuningRunConfig(t, reg, method, providers);
-      if (flags.live === true) await prepareLive(config, flags);
-      const s = session(config, flags);
-      const r = await execute(s);
-      const scores = scoreRun(s.dir, { config: s.config, method: s.method, items: s.items, judgeItemIds: [] });
-      const sel = select(s.runId, s.config, scores, s.registry, s.method, t, rejected);
-      const path = join(storeDir(), "tuning", `${s.runId}.json`);
-      writeJson(path, sel);
-      console.log(report(scores));
-      console.log(`\nselection: ${path}${r !== "done" ? ` (run stopped: ${r})` : ""}`);
+      await tune(flags);
       return;
     }
     case "dataset": {

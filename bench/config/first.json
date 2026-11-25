@@ -1,6 +1,6 @@
 {
   "name": "first",
-  "description": "First live run: Exa, Context.dev, Firecrawl and TinyFish over the seed (86) and November freshness (10) sets, every item three times (every pass scored, pages read for every pass), both judges on every item under the owner's Morph Ultra plan with a 15% primary repeat, human check afterwards. Firecrawl is held to 800 credits since 2026-11-25 across smoke checks, this run and its resumes. Finish before 2026-12-09, when the Morph Ultra period ends.",
+  "description": "First live run: Exa, Context.dev, Firecrawl and TinyFish over the seed (86) and November freshness (10) sets, every item three times (every pass scored, pages read for every pass), both judges on every item under the owner's Morph Ultra plan with a 15% primary repeat, human check afterwards. Includes the tuned condition (METHOD §8): each provider's selected setting from `bench tune` on 32 seeded items, pass 1, beside the default headline. Firecrawl is held to 800 credits since 2026-11-25 across smoke checks, tuning, this run and its resumes. Finish before 2026-12-09, when the Morph Ultra period ends.",
   "providers": ["exa", "context", "firecrawl", "tinyfish"],
   "datasets": ["datasets/public/seed-0.1.0.jsonl", "datasets/fresh/fresh-2026-11.jsonl"],
   "passes": 3,
@@ -8,7 +8,8 @@
   "pagePasses": [1, 2, 3],
   "judgeItems": 96,
   "judgePricing": "covered-by-plan",
-  "capUsd": 7,
+  "capUsd": 8,
+  "tuning": "config/tuning.json",
   "providerLimits": { "firecrawl": { "credits": 800, "since": "2026-11-25" } },
   "seed": 20261125
 }
