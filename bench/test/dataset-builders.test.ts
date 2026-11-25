@@ -37,7 +37,7 @@ test("fresh helpers: exact version tokens and dated phrasing", () => {
   assert.equal(longDate("2026-11-25"), "25 November 2026");
 });
 
-test("the spot-check sample is seeded, about 10% and covers every class", () => {
+test("the spot-check sample is seeded, about 10% and covers every class and template", () => {
   const items = Array.from({ length: 60 }, (_, k) => item(`pub-x-${String(k).padStart(3, "0")}`, { class: (["fact.head", "tech", "nav"] as const)[k % 3]!, query: `question ${k}?` }));
   const a = sample(items, 7, "public");
   assert.equal(a.length, 6);

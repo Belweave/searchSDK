@@ -1,5 +1,5 @@
 // Draws the owner's spot-check list: a seeded 10% sample (at least 3) of each
-// split, stratified by class so every class is seen.
+// split, stratified by class and template so classes and sources are all seen.
 //
 //   node scripts/datasets/spot-check.ts --seed 20261125 --out datasets/review/spot-check-2026-12.json \
 //     --public datasets/public/public-1.0.0.jsonl --fresh datasets/fresh/fresh-2026-12.jsonl \
@@ -17,11 +17,22 @@ const flag = (k: string): string | undefined => (a.includes(`--${k}`) ? a[a.inde
 
 export function sample(items: readonly Item[], seed: number, label: string, share = 0.1): Item[] {
   const want = Math.max(3, Math.ceil(items.length * share));
-  const byClass = new Map<string, Item[]>();
-  for (const i of [...items].sort((x, y) => x.id.localeCompare(y.id))) byClass.set(i.class, [...(byClass.get(i.class) ?? []), i]);
-  const queues = [...byClass.keys()].sort().map((c) => shuffle(byClass.get(c)!, rng(seedOf(seed, label, c))));
+  const group = <K,>(xs: readonly Item[], key: (i: Item) => K) => {
+    const m = new Map<K, Item[]>();
+    for (const i of xs) m.set(key(i), [...(m.get(key(i)) ?? []), i]);
+    return m;
+  };
+  const sorted = [...items].sort((x, y) => x.id.localeCompare(y.id));
+  // Per class: its templates in a seeded order, interleaved, each in a seeded order.
+  const queues = [...group(sorted, (i) => i.class)].sort((x, y) => x[0].localeCompare(y[0])).map(([c, xs]) => {
+    const byTemplate = [...group(xs, (i) => i.builder.template)].sort((x, y) => x[0].localeCompare(y[0]));
+    const lanes = shuffle(byTemplate, rng(seedOf(seed, label, c))).map(([t, ys]) => shuffle(ys, rng(seedOf(seed, label, c, t))));
+    const out: Item[] = [];
+    for (let k = 0; out.length < xs.length; k++) for (const lane of lanes) if (lane[k]) out.push(lane[k]!);
+    return out;
+  });
   const out: Item[] = [];
-  // Round-robin over classes, in seeded order within each.
+  // Round-robin over classes.
   for (let k = 0; out.length < want; k++) {
     let added = false;
     for (const q of queues) if (q[k] && out.length < want) { out.push(q[k]!); added = true; }
@@ -39,7 +50,7 @@ const view = (i: Item) => ({
 function main(): void {
   const seed = Number(flag("seed") ?? 20261125);
   const out: Record<string, unknown> = {
-    note: "Seeded 10% sample per split, round-robin across classes. Set ownerCheck to ok, wrong or ambiguous after checking each answer against its source.",
+    note: "Seeded 10% sample per split, round-robin across classes, and across templates within a class. Set ownerCheck to ok, wrong or ambiguous after checking each answer against its source.",
     seed, drawnOn: new Date().toISOString().slice(0, 10), splits: {},
   };
   const splits = out.splits as Record<string, unknown>;
