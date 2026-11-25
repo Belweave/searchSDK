@@ -117,11 +117,23 @@ export function rubricText(rubricPath: string): string {
   return readFileSync(join(BENCH_DIR, rubricPath), "utf8");
 }
 
+/** The URL as the judge sees it: no fragment and no utm_* parameters, which some APIs add to name themselves. */
+export function judgeUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    u.hash = "";
+    for (const k of [...u.searchParams.keys()]) if (/^utm_/i.test(k)) u.searchParams.delete(k);
+    return u.href;
+  } catch {
+    return url;
+  }
+}
+
 /** The user message: only the query and the page, never the provider. */
 export function userMessage(input: JudgeInput): string {
   return JSON.stringify({
     query: input.query,
-    url: truncateBytes(input.url, 300),
+    url: truncateBytes(judgeUrl(input.url), 300),
     title: input.title === null ? null : truncateBytes(input.title, 200),
     passage: input.passage,
   });

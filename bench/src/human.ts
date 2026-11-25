@@ -23,9 +23,13 @@ export async function labelSession(o: {
   target: number;
   labeller: string;
   io: LabelIO;
+  /** The primary judge's id; its graded pairs are sampled. */
+  judgeId?: string | null;
 }): Promise<{ labelled: number; total: number }> {
   const paths = runPaths(o.dir);
-  const judged = new Set(readJsonl<JudgmentRecord>(paths.judgments).filter((j) => j.grade !== null && j.repeat === 0).map((j) => j.pairId));
+  // Pairs the primary judge graded (the human check measures the judge whose grades are published).
+  const primary = o.judgeId ?? null;
+  const judged = new Set(readJsonl<JudgmentRecord>(paths.judgments).filter((j) => j.grade !== null && j.repeat === 0 && (primary === null || j.judge === primary)).map((j) => j.pairId));
   const already = new Set(readJsonl<HumanLabel>(paths.labels).map((l) => l.pairId));
   const items = new Map(o.items.map((i) => [i.id, i]));
   const pairs = shuffle(judgePairs({ dir: o.dir, plan: o.plan, method: o.method }).filter((p) => judged.has(p.pairId)), rng(seedOf(o.config.seed, "human")));

@@ -6,7 +6,7 @@ import { lstat, readFile } from 'node:fs/promises';
 const paths = [...new Set(execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean))];
 const forbiddenPath = /(?:^|\/)(?:\.env(?:\..*)?|\.local|\.vercel|\.agents|\.claude|\.codex|node_modules|__pycache__)(?:\/|$)|\.(?:pyc|bundle|pem|key)$/i;
 const checks = [
-  ['personal home directory', /\/(?:Users|home)\/[A-Za-z0-9._-]+\//],
+  ['personal home directory', /(?:^|[^A-Za-z0-9._-])\/(?:Users|home)\/[A-Za-z0-9._-]+\//m],
   ['private key', /-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----/],
   ['GitHub credential', /\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{60,})\b/],
   ['AWS access key', /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/],

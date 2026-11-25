@@ -6,6 +6,7 @@ import { join } from "node:path";
 import type { Item } from "./dataset/items.ts";
 import { fixtureFetch, fixtureJudge, fixtureKeys, fixtureRegistry } from "./fixtures.ts";
 import { createJudge, type Judge } from "./judge/judge.ts";
+import { pinnedFetch, systemResolver, type Resolver } from "./pages/address.ts";
 import { PlainFetcher, type FetchedPage } from "./pages/fetcher.ts";
 import { Budget } from "./run/budget.ts";
 import { loadMethod, type Method, type RunConfig } from "./run/config.ts";
@@ -23,13 +24,19 @@ export interface PageFetcher {
   crawlDelayMs(url: string): Promise<number>;
 }
 
-/** The harness's own fetcher with the method's limits and user agent, on the given fetch. */
-export function pageFetcherFor(method: Method, fetchFn: typeof fetch): PageFetcher {
+/** The harness's own fetcher with the method's limits and user agent, on the given fetch (and resolver, when names are real). */
+export function pageFetcherFor(method: Method, fetchFn: typeof fetch, resolve?: Resolver): PageFetcher {
   const p = method.pages;
   return new PlainFetcher({
     fetch: fetchFn, userAgent: p.userAgent, robotsToken: p.robotsToken, timeoutMs: p.timeoutMs,
     maxBytes: p.maxBytes, maxRedirects: p.maxRedirects, maxCrawlDelayMs: p.maxCrawlDelayMs,
+    ...(resolve ? { resolve } : {}),
   });
+}
+
+/** Live page reads: names resolved and checked before each hop, sockets pinned to checked addresses. */
+export function livePageFetcher(method: Method): PageFetcher {
+  return pageFetcherFor(method, pinnedFetch({ resolve: systemResolver }), systemResolver);
 }
 
 export interface Session {
@@ -44,6 +51,8 @@ export interface Session {
   client: Client<string>;
   pageFetcher: PageFetcher;
   judge: Judge | null;
+  /** The second, different-vendor judge: a blind cross-check of the primary's grades. */
+  checkJudge: Judge | null;
   budget: Budget;
   createdAt: string;
 }
@@ -56,10 +65,11 @@ export interface RunMeta {
   planHash: string;
   createdAt: string;
   judge: Judge["info"] | null;
+  checkJudge?: Judge["info"] | null;
 }
 
 /** Reasons live mode must not start. Empty means every guard passed. */
-export function liveGuards(o: { env: Record<string, string | undefined>; registry: Readonly<Record<string, ProviderSpec>>; config: RunConfig; method: Method; judgeKeyEnv: string | null }): string[] {
+export function liveGuards(o: { env: Record<string, string | undefined>; registry: Readonly<Record<string, ProviderSpec>>; config: RunConfig; method: Method; judgeKeyEnv: string | null; checkJudgeKeyEnv?: string | null }): string[] {
   const out: string[] = [];
   if (o.env.CI) out.push("CI is set: live runs never start from automated CI");
   if (o.env.BENCH_TEST) out.push("BENCH_TEST is set: tests never run live");
@@ -69,7 +79,9 @@ export function liveGuards(o: { env: Record<string, string | undefined>; registr
     const env = (o.registry[id]?.auth.env ?? []) as string[];
     if (!env.some((n) => (o.env[n] ?? "") !== "")) out.push(`${id}: no key in ${env.join(" or ")}`);
   }
-  if (o.config.judgeItems > 0 && o.judgeKeyEnv && !o.env[o.judgeKeyEnv]) out.push(`judge: ${o.judgeKeyEnv} is not set`);
+  const unjudged = "add --no-judge to run known-answer scoring only, marked not judged";
+  if (o.config.judgeItems > 0 && o.judgeKeyEnv && !o.env[o.judgeKeyEnv]) out.push(`judge: ${o.judgeKeyEnv} is not set (${unjudged})`);
+  else if (o.config.judgeItems > 0 && o.checkJudgeKeyEnv && !o.env[o.checkJudgeKeyEnv]) out.push(`check judge: ${o.checkJudgeKeyEnv} is not set (${unjudged})`);
   return out;
 }
 
@@ -86,6 +98,7 @@ export function openSession(o: {
   /** Fixture mode only: replaces the synthetic fetch (tests count calls with it). */
   fetch?: typeof fetch;
   judge?: Judge | null;
+  checkJudge?: Judge | null;
   now?: () => number;
   ledger?: string;
   /** Fixture registry behaviours (tests). */
@@ -99,6 +112,8 @@ export function openSession(o: {
   let client: Client<string>;
   let pageFetcher: PageFetcher;
   let judge: Judge | null;
+  let checkJudge: Judge | null;
+  const judging = config.judgeItems > 0;
   if (o.mode === "fixture") {
     const reg = fixtureRegistry(o.fixtureProviders);
     registry = reg as unknown as Record<string, ProviderSpec>;
@@ -108,13 +123,15 @@ export function openSession(o: {
     client = createClient({ registry: reg, keys: fixtureKeys(reg), fetch: fx });
     pageFetcher = pageFetcherFor(method, fx);
     judge = o.judge === undefined ? fixtureJudge(items) : o.judge;
+    checkJudge = o.checkJudge === undefined ? (judging && method.judge.checkId ? fixtureJudge(items, 0.2, "fixture-check-judge") : null) : o.checkJudge;
   } else {
     registry = builtInRegistry as unknown as Record<string, ProviderSpec>;
-    judge = o.judge === undefined ? (config.judgeItems > 0 ? createJudge(method.judge.id, method.judge.rubric, { fetch: globalThis.fetch, env }) : null) : o.judge;
+    judge = o.judge === undefined ? (judging ? createJudge(method.judge.id, method.judge.rubric, { fetch: globalThis.fetch, env }) : null) : o.judge;
+    checkJudge = o.checkJudge === undefined ? (judging && method.judge.checkId ? createJudge(method.judge.checkId, method.judge.rubric, { fetch: globalThis.fetch, env }) : null) : o.checkJudge;
     client = createClient<string>({ env });
-    pageFetcher = pageFetcherFor(method, globalThis.fetch);
+    pageFetcher = livePageFetcher(method);
   }
-  const plan = makePlan({ config, method, items, registry, judge, checkCommitted: o.mode === "live" });
+  const plan = makePlan({ config, method, items, registry, judge, checkJudge, checkCommitted: o.mode === "live" });
   const hash = planHash(plan, config);
   const now = o.now ?? Date.now;
   let runId = o.runId;
@@ -133,10 +150,11 @@ export function openSession(o: {
   const budget = new Budget({
     ledgerPath: o.ledger ?? (o.mode === "fixture" ? join(dir, "fixture-ledger.jsonl") : ledgerPath()),
     runId, runCapUsd: config.capUsd, monthlyCapUsd: method.budget.monthlyCapUsd,
-    ...(config.creditsUsd ? { creditsUsd: config.creditsUsd } : {}), now,
+    ...(config.creditsUsd ? { creditsUsd: config.creditsUsd } : {}),
+    ...(config.providerLimits ? { providerLimits: config.providerLimits } : {}), now,
   });
   if (!o.runId) {
-    writeJson(runPaths(dir).run, { runId, mode: o.mode, config, method, planHash: hash, createdAt, judge: judge?.info ?? null } satisfies RunMeta, 0o600);
+    writeJson(runPaths(dir).run, { runId, mode: o.mode, config, method, planHash: hash, createdAt, judge: judge?.info ?? null, checkJudge: checkJudge?.info ?? null } satisfies RunMeta, 0o600);
   }
-  return { runId, dir, mode: o.mode, config, method, items, plan, registry, client, pageFetcher, judge, budget, createdAt };
+  return { runId, dir, mode: o.mode, config, method, items, plan, registry, client, pageFetcher, judge, checkJudge, budget, createdAt };
 }

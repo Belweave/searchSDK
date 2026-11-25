@@ -14,9 +14,9 @@ import type { Budget } from "./budget.ts";
 import type { Method, RunConfig } from "./config.ts";
 import { Pacer, realTimer, type Timer } from "./pacer.ts";
 import { hasProfile, settingsFor, type Plan } from "./plan.ts";
-import { reservation } from "./pricing.ts";
+import { attemptsCredits, creditReservation, reservation } from "./pricing.ts";
 import {
-  pairIdOf, runPaths, urlKey, type AttemptRecord, type EventRecord, type JudgmentRecord, type Outcome, type PageRecord,
+  judgePairIdOf, runPaths, urlKey, type AttemptRecord, type EventRecord, type JudgmentRecord, type Outcome, type PageRecord,
 } from "./records.ts";
 
 export interface RunContext {
@@ -29,6 +29,8 @@ export interface RunContext {
   client: Client<string>;
   pageFetcher: PageFetcher;
   judge: Judge | null;
+  /** A second, different-vendor judge that grades every pair once, as a blind cross-check. */
+  checkJudge?: Judge | null;
   budget: Budget;
   timer?: Timer;
   log?: (line: string) => void;
@@ -69,6 +71,15 @@ async function pool<T>(items: readonly T[], width: number, stop: () => boolean, 
   }));
 }
 
+/**
+ * The order providers are dispatched in for one item and pass: seeded by run,
+ * item and pass, so no provider is systematically first. All of an item's
+ * calls are dispatched together and run concurrently, each under its own pacer.
+ */
+export function providerOrder(config: RunConfig, itemId: string, pass: number): string[] {
+  return shuffle(config.providers, rng(seedOf(config.seed, itemId, pass)));
+}
+
 /** Search phase: every pass, item, provider and profile once, in a seeded order. */
 export async function runSearch(ctx: RunContext): Promise<StopReason> {
   const { config, method, budget, client, registry, dir } = ctx;
@@ -85,7 +96,8 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
   for (let pass = 1; pass <= config.passes && !stop; pass++) {
     const order = shuffle(ctx.items, rng(seedOf(config.seed, "order", pass)));
     await pool(order, method.pacing.itemWindow, () => stop !== null || !!ctx.signal?.aborted, async (item) => {
-      const units = shuffle(config.providers.flatMap((provider) => config.profiles.filter((profile) => hasProfile(config, profile, provider)).map((profile) => ({ provider, profile }))), rng(seedOf(config.seed, item.id, pass)));
+      const order = providerOrder(config, item.id, pass);
+      const units = order.flatMap((provider) => config.profiles.filter((profile) => hasProfile(config, profile, provider)).map((profile) => ({ provider, profile })));
       await Promise.all(units.map(async ({ provider, profile }) => {
         const key = `s|${pass}|${item.id}|${provider}|${profile}`;
         if (done.has(key) || disabled.has(provider) || stop) return;
@@ -93,7 +105,18 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
         const spec = registry[provider]!;
         const settings = settingsFor(config, profile, provider);
         const res = reservation(spec, "search", method.search.maxResults, settings, method);
-        const hold = budget.reserve(provider, "search", res.usd);
+        const credits = creditReservation(spec, "search", method.search.maxResults, settings);
+        // A provider's own account limit (credits or calls) stops that provider alone, before the call that could pass it.
+        const refusal = budget.providerRefusal(provider, credits);
+        if (refusal) {
+          if (!disabled.has(provider)) {
+            disabled.set(provider, "limit");
+            event(dir, { event: "provider-stopped", provider, detail: `${refusal}; the other providers continue` });
+            ctx.log?.(`${refusal}; stopping ${provider}, the other providers continue`);
+          }
+          return;
+        }
+        const hold = budget.reserve(provider, "search", res.usd, credits);
         if (!hold) return halt(budget.halted ? "overrun" : "budget");
         const release = await pacers.get(provider)!.acquire();
         const startedAt = new Date().toISOString();
@@ -127,7 +150,8 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
         else { outcome = "harness_error"; code = error instanceof Error ? error.name : "unknown"; }
         // Nothing sent (validation or a skipped provider) costs nothing; otherwise the SDK's per-attempt costs.
         const cost = sent.length ? attemptsCost(sent) : 0;
-        if (budget.commit(hold, cost)) halt("overrun");
+        const creditsUsed = credits === null ? null : sent.length ? attemptsCredits(spec, "search", sent) : 0;
+        if (budget.commit(hold, cost, creditsUsed)) halt("overrun");
         const results = response?.results ?? [];
         const rec: AttemptRecord = {
           key, pass, itemId: item.id, provider, profile, startedAt, outcome,
@@ -139,6 +163,7 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
           costSource: last?.cost.source ?? "none",
           costEstimated: last?.cost.estimated ?? false,
           reservedUsd: res.usd,
+          ...(credits !== null ? { credits: creditsUsed } : {}),
           resultCount: results.length,
           urls: results.map((r) => r.url),
           resultHashes: results.map((r) => sha256(JSON.stringify([r.title, r.excerpts]))),
@@ -216,7 +241,8 @@ export async function runPages(ctx: RunContext): Promise<StopReason> {
   if (!ctx.config.pagePasses.length) return "done";
   const paths = runPaths(dir);
   const done = new Set(readJsonl<PageRecord>(paths.pages).filter((p) => p.reason !== "aborted").map((p) => p.urlKey));
-  const targets = [...pageTargets(readJsonl<AttemptRecord>(paths.attempts), ctx.config, method.pages.topK)].filter(([k]) => !done.has(k));
+  // A seeded order, so when a page is read does not depend on which provider returned it first.
+  const targets = shuffle([...pageTargets(readJsonl<AttemptRecord>(paths.attempts), ctx.config, method.pages.topK)].filter(([k]) => !done.has(k)), rng(seedOf(ctx.config.seed, "pages")));
   const hosts = new HostPacer(ctx.timer ?? realTimer);
   let stop: StopReason | null = null;
   await pool(targets, method.pages.maxInFlight, () => stop !== null || !!ctx.signal?.aborted, async ([key, url]) => {
@@ -251,58 +277,98 @@ export interface JudgePair {
   itemId: string;
   urlKey: string;
   url: string;
+  /** "page": the harness read the page and the judge sees its text and title. "snippet": it could not, and the judge sees this provider's own title and excerpts. */
+  source: "page" | "snippet";
+  /** Bookkeeping for snippet pairs only; never sent to the judge. */
+  provider: string | null;
   title: string | null;
   excerpts: string[];
 }
 
-/** The pooled (item, URL) pairs to judge: top K of every provider's pass-1 default-profile results on the judged items. */
+/** URL keys whose page the harness's own fetcher read. */
+export function readPages(dir: string): Set<string> {
+  const out = new Set<string>();
+  for (const p of readJsonl<PageRecord>(runPaths(dir).pages)) {
+    if (p.status === "ok") out.add(p.urlKey);
+    else out.delete(p.urlKey);
+  }
+  return out;
+}
+
+/**
+ * The (item, URL) pairs to judge: top K of every provider's pass-1 default-profile results on the judged items.
+ * Read pages are shared by every provider that returned them; unreadable ones become one pair per provider.
+ */
 export function judgePairs(ctx: Pick<RunContext, "dir" | "plan" | "method">): JudgePair[] {
   const paths = runPaths(ctx.dir);
   const judged = new Set(ctx.plan.judgeItemIds);
+  const read = readPages(ctx.dir);
   const pairs = new Map<string, JudgePair>();
   for (const a of readJsonl<AttemptRecord>(paths.attempts)) {
     if (a.pass !== 1 || a.profile !== "default" || a.outcome !== "ok_nonempty" || !judged.has(a.itemId)) continue;
     const raw = readRawSearch(paths.rawSearch(a.pass, a.provider, a.profile, a.itemId));
     for (const [i, u] of a.urls.slice(0, ctx.method.judge.topK).entries()) {
       const key = urlKey(u);
-      const pairId = pairIdOf(a.itemId, key);
+      const pageRead = read.has(key);
+      const pairId = judgePairIdOf(a.itemId, key, a.provider, pageRead);
       if (pairs.has(pairId)) continue;
-      const r = raw?.results?.[i];
-      pairs.set(pairId, { pairId, itemId: a.itemId, urlKey: key, url: u, title: r?.title ?? null, excerpts: r?.excerpts ?? [] });
+      if (pageRead) {
+        const page = readJsonFile<{ title?: string | null }>(paths.rawPage(key));
+        pairs.set(pairId, { pairId, itemId: a.itemId, urlKey: key, url: u, source: "page", provider: null, title: page?.title ?? null, excerpts: [] });
+      } else {
+        const r = raw?.results?.[i];
+        pairs.set(pairId, { pairId, itemId: a.itemId, urlKey: key, url: u, source: "snippet", provider: a.provider, title: r?.title ?? null, excerpts: r?.excerpts ?? [] });
+      }
     }
   }
   return [...pairs.values()].sort((a, b) => a.pairId.localeCompare(b.pairId));
 }
 
-function readRawSearch(path: string): { results?: { title: string | null; excerpts: string[] }[] } | null {
+function readJsonFile<T>(path: string): T | null {
   if (!existsSync(path)) return null;
   try {
-    return JSON.parse(readFileSync(path, "utf8"));
+    return JSON.parse(readFileSync(path, "utf8")) as T;
   } catch {
     return null;
   }
 }
 
-/** The passage for a pair: the fetched page when there is one, else the result's own title and excerpts. */
+function readRawSearch(path: string): { results?: { title: string | null; excerpts: string[] }[] } | null {
+  return readJsonFile(path);
+}
+
+/** The passage for a pair: the harness's fetched page, or for an unreadable page the provider's own title and excerpts. */
 export function passageFor(dir: string, pair: JudgePair, query: string, maxBytes: number): { passage: string; source: "page" | "snippet" } {
-  const p = runPaths(dir).rawPage(pair.urlKey);
-  if (existsSync(p)) {
-    const page = JSON.parse(readFileSync(p, "utf8")) as { content: string };
-    if (page.content.trim()) return { passage: selectPassage(page.content, query, maxBytes), source: "page" };
+  if (pair.source === "page") {
+    const page = readJsonFile<{ content?: string }>(runPaths(dir).rawPage(pair.urlKey));
+    return { passage: selectPassage(page?.content ?? "", query, maxBytes), source: "page" };
   }
   return { passage: selectPassage([pair.title ?? "", ...pair.excerpts].join("\n\n"), query, maxBytes), source: "snippet" };
 }
 
-/** Judge phase: every pair once, a seeded share twice for self-consistency, in a seeded order, blind to provider. */
+/**
+ * Judge phase: the primary judge grades every pair once and a seeded share twice
+ * (self-consistency); the check judge grades every pair once. Both run at the
+ * same time, each paced to its own limits, each in its own seeded order, both
+ * blind to provider.
+ */
 export async function runJudge(ctx: RunContext): Promise<StopReason> {
-  const { judge, budget, dir, method } = ctx;
-  if (!judge || !ctx.plan.judgeItemIds.length) return "done";
+  if (!ctx.judge || !ctx.plan.judgeItemIds.length) return "done";
+  const pairs = judgePairs(ctx);
+  const loops = [judgeLoop(ctx, ctx.judge, pairs, true), ...(ctx.checkJudge ? [judgeLoop(ctx, ctx.checkJudge, pairs, false)] : [])];
+  const results = await Promise.all(loops);
+  for (const r of ["overrun", "budget", "aborted"] as const) if (results.includes(r)) return r;
+  return "done";
+}
+
+async function judgeLoop(ctx: RunContext, judge: Judge, pairs: JudgePair[], primary: boolean): Promise<StopReason> {
+  const { budget, dir, method } = ctx;
   const paths = runPaths(dir);
   const items = new Map(ctx.items.map((i) => [i.id, i]));
-  const pairs = judgePairs(ctx);
-  const repeatIds = new Set(shuffle(pairs.map((p) => p.pairId), rng(seedOf(ctx.config.seed, "repeat"))).slice(0, Math.ceil(pairs.length * method.judge.selfConsistencyShare)));
-  const tasks = shuffle(pairs.flatMap((p) => (repeatIds.has(p.pairId) ? [{ p, repeat: 0 }, { p, repeat: 1 }] : [{ p, repeat: 0 }])), rng(seedOf(ctx.config.seed, "judge-order")));
-  const done = new Set(readJsonl<JudgmentRecord>(paths.judgments).filter((j) => j.grade !== null).map((j) => `${j.pairId}|${j.repeat}`));
+  const repeatIds = primary ? new Set(shuffle(pairs.map((p) => p.pairId), rng(seedOf(ctx.config.seed, "repeat"))).slice(0, Math.ceil(pairs.length * method.judge.selfConsistencyShare))) : new Set<string>();
+  const orderSeed = primary ? seedOf(ctx.config.seed, "judge-order") : seedOf(ctx.config.seed, "judge-order", judge.info.id);
+  const tasks = shuffle(pairs.flatMap((p) => (repeatIds.has(p.pairId) ? [{ p, repeat: 0 }, { p, repeat: 1 }] : [{ p, repeat: 0 }])), rng(orderSeed));
+  const done = new Set(readJsonl<JudgmentRecord>(paths.judgments).filter((j) => j.grade !== null && j.judge === judge.info.id).map((j) => `${j.pairId}|${j.repeat}`));
   const timer = ctx.timer ?? realTimer;
   const account = `judge:${judge.info.id}`;
   // Covered by a plan: nothing is reserved, and any charge the judge reports halts the run.
@@ -319,6 +385,7 @@ export async function runJudge(ctx: RunContext): Promise<StopReason> {
     let verdict: JudgeVerdict | null = null;
     let err: string | undefined;
     let wait = 0;
+    const startedAt = timer.now();
     try {
       verdict = await judge.grade(input, ctx.signal);
     } catch (e) {
@@ -343,14 +410,16 @@ export async function runJudge(ctx: RunContext): Promise<StopReason> {
       costUsd: verdict ? (covered ? (verdict.chargedUsd ?? 0) : (verdict.chargedUsd ?? verdict.costUsd)) : null,
       rationaleSha256: verdict ? sha256(verdict.rationale) : null, at: new Date().toISOString(),
     };
-    if (verdict) writeJson(paths.rawJudge(p.pairId, repeat), { rationale: verdict.rationale, model: verdict.model, raw: verdict.raw }, 0o600);
+    if (verdict) writeJson(paths.rawJudge(p.pairId, repeat, primary ? null : judge.info.id), { rationale: verdict.rationale, model: verdict.model, raw: verdict.raw }, 0o600);
     appendJsonl(paths.judgments, rec);
     if (failures >= 20 && failures > tasks.length * 0.2) {
-      event(dir, { event: "judge-stopped", detail: `${failures} failed calls` });
+      event(dir, { event: "judge-stopped", detail: `${judge.info.id}: ${failures} failed calls` });
       return "done";
     }
-    const cool = Math.max(wait, judge.cooldownMs(verdict, input));
+    // The token-rate cooldown runs from the call's start, so the call's own time counts towards it; a 429's Retry-After is waited in full.
+    const cool = Math.max(wait, judge.cooldownMs(verdict, input) - (timer.now() - startedAt));
     if (cool > 0) await timer.sleep(cool);
+    if (budget.halted) return "overrun";
   }
   return "done";
 }

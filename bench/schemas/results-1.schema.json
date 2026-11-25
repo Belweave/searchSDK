@@ -16,7 +16,9 @@
     "datasets",
     "privateSet",
     "registry",
+    "judging",
     "judge",
+    "checkJudge",
     "conditions",
     "agreement",
     "ranking",
@@ -181,7 +183,54 @@
         }
       }
     },
+    "judging": {
+      "type": "string",
+      "enum": [
+        "judged",
+        "not judged (--no-judge)",
+        "no judged items"
+      ]
+    },
     "judge": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "model",
+            "rubric",
+            "rubricSha256",
+            "promptSha256",
+            "params"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            },
+            "rubric": {
+              "type": "string"
+            },
+            "rubricSha256": {
+              "type": "string"
+            },
+            "promptSha256": {
+              "type": "string"
+            },
+            "params": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "checkJudge": {
       "anyOf": [
         {
           "type": "null"
@@ -235,6 +284,7 @@
             "judged",
             "unresolved",
             "selfKappa",
+            "crossKappa",
             "humanKappa",
             "humanExact",
             "judgedPublished",
@@ -252,6 +302,12 @@
               "type": "integer"
             },
             "selfKappa": {
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "crossKappa": {
               "type": [
                 "object",
                 "null"
@@ -360,6 +416,7 @@
           "knownAnswer",
           "components",
           "judged",
+          "judgedCheck",
           "reliability",
           "latencyMs",
           "cost",
@@ -463,6 +520,38 @@
                   },
                   "pageShare": {
                     "type": "number"
+                  }
+                }
+              }
+            ]
+          },
+          "judgedCheck": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "mean",
+                  "ci95",
+                  "n"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "mean": {
+                    "type": "number"
+                  },
+                  "ci95": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "n": {
+                    "type": "integer"
                   }
                 }
               }

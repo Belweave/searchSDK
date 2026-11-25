@@ -102,8 +102,7 @@
           "where": [{ "path": "markdown.success", "equals": true }],
           "status": "ok",
           "fields": {
-            "url": "metadata.sourceUrl",
-            "finalUrl": "url",
+            "url": "url",
             "title": "metadata.title",
             "content": "markdown.data",
             "publishedAt": { "path": "metadata.publishedTime", "steps": [{ "step": "parse-date" }] },
@@ -114,7 +113,7 @@
           "from": "$",
           "where": [{ "path": "markdown.success", "equals": false }],
           "status": "failed",
-          "fields": { "url": "metadata.sourceUrl", "errorCode": "markdown.error_code", "errorMessage": "markdown.message" }
+          "fields": { "url": "url", "errorCode": "markdown.error_code", "errorMessage": "markdown.message" }
         }
       ],
       "requestId": [{ "path": "request_id" }, { "header": "x-request-id" }],
@@ -151,7 +150,7 @@
     { "pointer": "/search/limits/maxQueryLength", "reason": "The 500 limit's unit (characters, code points or bytes) is not stated; runtimes count code points." },
     { "pointer": "/search/request/params/language", "reason": "languages accepts a fixed list of codes; codes outside it are passed through and rejected by the provider." },
     { "pointer": "/search/cost/reported", "reason": "key_metadata is optional in the 200 schema; when absent, cost is computed from pricing." },
-    { "pointer": "/contents/response/pages/0/fields/url", "reason": "metadata.sourceUrl is assumed to echo the requested URL; docs examples vary on a trailing slash." },
+    { "pointer": "/contents/response/pages/0/fields/url", "reason": "Live check 2026-11-25: top-level url echoed the requested URL and metadata.sourceUrl was absent. Whether url is the requested or the post-redirect URL is untested." },
     { "pointer": "/contents/pricing/creditUsd", "reason": "Credit price depends on plan; the Developer list price is used." },
     { "pointer": "/contents/pricing/costOptions/sharedParams", "reason": "Credits docs (read 2026-11-25) charge 2 credits for a scrape with browser actions; which option object carries them is not stated, so sharedParams makes the price unknown." },
     { "pointer": "/contents/response/pages/1", "reason": "Credits docs charge a target 404; whether it arrives as markdown.success false (mapped failed, not billable) is not stated. The reported credits_consumed still gives the real cost when present." },

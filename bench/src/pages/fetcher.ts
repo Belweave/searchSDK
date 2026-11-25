@@ -5,6 +5,10 @@
 // bounded number of redirects (each hop checked again), and stops at a byte
 // and time limit. A page it cannot read is "unreadable" for every provider
 // alike; the reason is recorded so the unreadable rate can be published.
+// Host names are resolved before each hop and refused when any address is
+// local or private; the live transport (address.ts) pins the connection to
+// checked addresses, so DNS rebinding cannot reach a private address either.
+import { blockedHost, isBlockedAddressError, resolvePublic, type Resolver } from "./address.ts";
 
 export interface FetcherOptions {
   /** The fetch to use: globalThis.fetch live, a local fixture in tests. */
@@ -20,6 +24,12 @@ export interface FetcherOptions {
   maxRedirects: number;
   /** Largest Crawl-delay honoured, in ms; a longer one makes the host unreadable. */
   maxCrawlDelayMs: number;
+  /**
+   * Resolves host names before each hop (robots.txt included); a host with any
+   * local or private address is refused unread. Live runs pass the system
+   * resolver together with the pinned transport; fixture webs may omit it.
+   */
+  resolve?: Resolver;
 }
 
 export type UnreadableReason =
@@ -54,18 +64,8 @@ class Unreadable extends Error {
 
 // ---- URL checks ----
 
-/** Hosts the fetcher never contacts: loopback, private, link-local and unspecified addresses, and bare names. */
-export function blockedHost(hostname: string): boolean {
-  const h = hostname.toLowerCase().replace(/^\[|\]$/g, "");
-  if (h === "localhost" || h.endsWith(".localhost") || !h.includes(".") && !h.includes(":")) return true;
-  const v4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
-  if (v4) {
-    const [a, b] = [Number(v4[1]), Number(v4[2])];
-    return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224;
-  }
-  if (h.includes(":")) return h === "::" || h === "::1" || /^f[cd]/.test(h) || /^fe[89ab]/.test(h) || h.startsWith("::ffff:");
-  return false;
-}
+/** Hosts the fetcher never contacts without resolving: see ./address.ts. */
+export { blockedHost };
 
 function checkUrl(raw: string): URL {
   let u: URL;
@@ -288,6 +288,11 @@ export class PlainFetcher {
     });
   }
 
+  /** Resolves the host when a resolver is set; throws BlockedAddressError for a local or private one. */
+  private async checkHost(url: URL): Promise<void> {
+    if (this.o.resolve) await resolvePublic(url.hostname, this.o.resolve);
+  }
+
   /** The robots rules for an origin, fetched once per run under their own deadline, so one slow page cannot decide them. */
   rulesFor(origin: string): Promise<RobotsRules> {
     let p = this.robots.get(origin);
@@ -302,6 +307,7 @@ export class PlainFetcher {
     const disallow: RobotsRules = { mode: "disallow-all", rules: [], crawlDelayMs: null };
     let url = new URL("/robots.txt", origin);
     try {
+      await this.checkHost(url);
       for (let hop = 0; hop <= 5; hop++) {
         const res = await this.get(url, signal);
         if (res.status >= 300 && res.status < 400) {
@@ -309,6 +315,7 @@ export class PlainFetcher {
           const loc = res.headers.get("location");
           if (!loc) return disallow;
           url = checkUrl(new URL(loc, url).href);
+          await this.checkHost(url);
           continue;
         }
         if (res.status === 429 || res.status >= 500) { await res.body?.cancel().catch(() => {}); return disallow; }
@@ -340,6 +347,7 @@ export class PlainFetcher {
     try {
       let target = checkUrl(url);
       for (let hop = 0; ; hop++) {
+        await this.checkHost(target);
         const rules = await this.rulesFor(target.origin);
         if (!robotsAllows(rules, target.pathname + target.search)) throw new Unreadable("robots", undefined, rules.mode);
         if ((rules.crawlDelayMs ?? 0) > this.o.maxCrawlDelayMs) throw new Unreadable("robots", undefined, "crawl-delay too long");
@@ -370,6 +378,7 @@ export class PlainFetcher {
       }
     } catch (e) {
       if (e instanceof Unreadable) return { status: "unreadable", url, reason: e.reason, ...(e.httpStatus !== undefined ? { httpStatus: e.httpStatus } : {}), ...(e.detail ? { detail: e.detail } : {}) };
+      if (isBlockedAddressError(e)) return { status: "unreadable", url, reason: "blocked-url", detail: "resolves to a local or private address" };
       if (outer?.aborted) return { status: "unreadable", url, reason: "aborted" };
       if (deadline.aborted) return { status: "unreadable", url, reason: "timeout" };
       return { status: "unreadable", url, reason: "network", detail: e instanceof Error ? e.name : "error" };

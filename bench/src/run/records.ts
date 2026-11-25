@@ -37,6 +37,8 @@ export interface AttemptRecord {
   costSource: string;
   costEstimated: boolean;
   reservedUsd: number;
+  /** Provider credits used, for providers priced in credits; null when unknown (the reservation was kept). */
+  credits?: number | null;
   resultCount: number;
   /** Result URLs in rank order (at most maxResults). */
   urls: string[];
@@ -93,6 +95,16 @@ export interface EventRecord {
 
 export const pairIdOf = (itemId: string, key: string) => sha256(`${itemId}\n${key}`).slice(0, 20);
 
+/**
+ * The judged pair a provider's result belongs to. When the harness read the
+ * page, every provider that returned the URL shares one pair, judged on the
+ * harness's own text. When it could not, the judge sees the result's own
+ * title and excerpts, so each provider gets a pair of its own: one provider's
+ * snippet never grades another provider's result.
+ */
+export const judgePairIdOf = (itemId: string, key: string, provider: string, pageRead: boolean) =>
+  pageRead ? pairIdOf(itemId, key) : sha256(`${itemId}\n${key}\n${provider}`).slice(0, 20);
+
 export function runPaths(dir: string) {
   return {
     dir,
@@ -106,6 +118,7 @@ export function runPaths(dir: string) {
     publish: join(dir, "publish"),
     rawSearch: (pass: number, provider: string, profile: string, itemId: string) => join(dir, "raw", "search", `p${pass}`, provider, profile, `${itemId}.json`),
     rawPage: (key: string) => join(dir, "raw", "pages", `${sha256(key).slice(0, 32)}.json`),
-    rawJudge: (pairId: string, repeat: number) => join(dir, "raw", "judge", `${pairId}-${repeat}.json`),
+    /** The primary judge's raw replies keep their original names; a check judge's carry its id. */
+    rawJudge: (pairId: string, repeat: number, judge: string | null = null) => join(dir, "raw", "judge", judge ? `${pairId}-${repeat}-${judge.replace(/[^a-z0-9.-]/gi, "_")}.json` : `${pairId}-${repeat}.json`),
   };
 }

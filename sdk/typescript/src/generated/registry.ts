@@ -2554,8 +2554,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
             ],
             "status": "ok",
             "fields": {
-              "url": "metadata.sourceUrl",
-              "finalUrl": "url",
+              "url": "url",
               "title": "metadata.title",
               "content": "markdown.data",
               "publishedAt": {
@@ -2579,7 +2578,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
             ],
             "status": "failed",
             "fields": {
-              "url": "metadata.sourceUrl",
+              "url": "url",
               "errorCode": "markdown.error_code",
               "errorMessage": "markdown.message"
             }
@@ -2701,7 +2700,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       },
       {
         "pointer": "/contents/response/pages/0/fields/url",
-        "reason": "metadata.sourceUrl is assumed to echo the requested URL; docs examples vary on a trailing slash."
+        "reason": "Live check 2026-11-25: top-level url echoed the requested URL and metadata.sourceUrl was absent. Whether url is the requested or the post-redirect URL is untested."
       },
       {
         "pointer": "/contents/pricing/creditUsd",
