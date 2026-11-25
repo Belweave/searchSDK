@@ -5,7 +5,7 @@ import { SearchError, type SearchErrorDetails } from "./errors.ts";
 import { policy } from "./generated/registry.ts";
 import { getPath } from "./json.ts";
 import {
-  backoffMs, callSettings, checkOptionKeys, fallsBack, isTransient, maxRetryAfterMs, normalizeSearch, normalizeUrls,
+  backoffMs, callSettings, checkClientConfig, checkOptionKeys, fallsBack, isTransient, maxRetryAfterMs, normalizeSearch, normalizeUrls,
   providerChain, retryAfterMs, statusCode, type NormalizedSearch,
 } from "./policy.ts";
 import { builtInRegistry, loadRegistry, type Registry } from "./registry.ts";
@@ -59,6 +59,7 @@ function create(config: ClientConfig): Client {
   const registry = config.registry === undefined ? builtInRegistry : loadRegistry(config.registry);
   const cfg: ClientConfig = config.keys ? { ...config, keys: { ...config.keys } } : { ...config };
   delete cfg.registry;
+  checkClientConfig(registry, cfg as Record<string, unknown>); // a misconfigured client fails here, not at its first call
   const clock = cfg.clock ?? systemClock;
   const random = cfg.random ?? Math.random;
 

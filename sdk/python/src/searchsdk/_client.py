@@ -16,7 +16,7 @@ from ._core import Effect, Reply, Send, Sleep, run_call
 from ._engine import Kind, header
 from ._errors import ErrorCode, SearchError
 from ._generated import ContentsProviderOptions, ProviderId, SearchProviderOptions
-from ._policy import call_settings, normalize_search, normalize_urls, provider_chain
+from ._policy import call_settings, check_client_config, normalize_search, normalize_urls, provider_chain
 from ._registry import BUILT_IN, Registry, load_registry
 from ._transport import AsyncResponse, AsyncStdlibTransport, AsyncTransport, Response, StdlibTransport, Transport
 from ._types import ContentsResponse, Depth, Recency, SearchResponse
@@ -143,6 +143,7 @@ class _Base(Generic[P]):
             "max_retries": max_retries,
             "max_response_bytes": max_response_bytes,
         }
+        check_client_config(self._registry, self._config)  # a misconfigured client fails here, not at its first call
         self._keys = _Keys(keys)
         self._env = env
         self._clock: Clock = clock or SYSTEM_CLOCK

@@ -211,6 +211,37 @@ class Registry(unittest.TestCase):
             self.assertEqual((caught.exception.code, caught.exception.field), ("configuration", "registry"))
 
 
+class ClientSettings(unittest.TestCase):
+    def test_settings_are_checked_when_the_client_is_created(self) -> None:
+        from searchsdk._json import thaw
+
+        cases: list[tuple[dict[str, Any], tuple[str, str] | None]] = [
+            ({"provider": "nope"}, ("configuration", "provider")),
+            ({"provider": "__class__"}, ("configuration", "provider")),
+            ({"provider": 5}, ("configuration", "provider")),
+            ({"provider": "exa", "fallback": ["nope"]}, ("configuration", "fallback")),
+            ({"fallback": "exa"}, ("configuration", "fallback")),
+            ({"timeout_ms": 0}, ("invalid_request", "timeout_ms")),
+            ({"max_retries": 9}, ("invalid_request", "max_retries")),
+            ({"max_response_bytes": 1}, ("invalid_request", "max_response_bytes")),
+            ({"provider": "nope", "timeout_ms": 0}, ("invalid_request", "timeout_ms")),  # policy order: settings, provider, fallback
+            ({}, None),
+            ({"provider": "exa", "fallback": ["tavily"], "timeout_ms": 1000}, None),
+            ({"fallback": ["tavily"]}, None),
+        ]
+        mine = {**thaw(searchsdk.registry["exa"]), "id": "mine"}
+        cases += [({"registry": {"mine": mine}, "provider": "mine"}, None), ({"registry": {"mine": mine}, "provider": "exa"}, ("configuration", "provider"))]
+        for cls in (Client, AsyncClient):
+            for config, expected in cases:
+                with self.subTest(cls=cls.__name__, config=config):
+                    try:
+                        cls(**config)
+                        got = None
+                    except SearchError as e:
+                        got = (e.code, e.field)
+                    self.assertEqual(got, expected)
+
+
 class PythonInputs(unittest.TestCase):
     def client(self) -> tuple[Client, Fixed]:
         transport = Fixed({"results": []})
