@@ -7,7 +7,7 @@ import { performance } from "node:perf_hooks";
 import type { Item } from "../dataset/items.ts";
 import { selectPassage, type Judge, type JudgeVerdict, JudgeError } from "../judge/judge.ts";
 import type { FetchedPage } from "../pages/fetcher.ts";
-import { SearchError, type Attempt, type Client, type ProviderSpec, type SearchResponse } from "../sdk.ts";
+import { SearchError, type Attempt, type Client, type ErrorCode, type ProviderSpec, type SearchResponse } from "../sdk.ts";
 import type { PageFetcher } from "../session.ts";
 import { appendJsonl, readJsonl, rng, seedOf, sha256, shuffle, writeJson } from "../util/core.ts";
 import type { Budget } from "./budget.ts";
@@ -39,13 +39,16 @@ export interface RunContext {
 
 export type StopReason = "done" | "budget" | "overrun" | "aborted";
 
-const OUTCOME_BY_CODE: Record<string, Outcome> = {
+// Exhaustive over the SDK's codes: a new SDK code fails typecheck here instead of becoming harness_error.
+const OUTCOME_BY_CODE: Record<ErrorCode, Outcome> = {
   rate_limit: "rate_limited", quota: "rate_limited",
   timeout: "timeout", attempt_timeout: "timeout",
   unavailable: "server_error", provider_error: "server_error",
   network: "network_error",
   invalid_response: "invalid_response", response_too_large: "invalid_response",
   auth: "setup_error", forbidden: "setup_error", configuration: "setup_error", invalid_request: "setup_error", unsupported: "setup_error",
+  // Our spec does not match a 2xx body: a harness-side defect, not a provider failure; stop calling that provider.
+  spec_mismatch: "setup_error",
   aborted: "aborted",
 };
 
