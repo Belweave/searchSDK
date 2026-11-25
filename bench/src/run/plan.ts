@@ -38,6 +38,8 @@ export interface Plan {
   checkJudge: { id: string; pricing: JudgePricing; maxPairs: number; perCallMaxUsd: number; maxUsd: number } | null;
   maxUsd: number;
   capUsd: number;
+  /** The owner chose --no-judge: known-answer scoring only, and every output says "not judged". */
+  notJudged: boolean;
   warnings: string[];
 }
 
@@ -184,6 +186,7 @@ export function makePlan(o: {
     checkJudge,
     maxUsd,
     capUsd: config.capUsd,
+    notJudged: config.notJudged === true,
     warnings,
   };
 }
@@ -246,7 +249,8 @@ export function formatPlan(plan: Plan, extra: { mode: string; monthCashUsd?: num
     L.push(`  judge ${j.id}: ${j.maxPairs} pairs + ${j.maxRepeats} repeats, covered by plan; any charge the judge reports halts the run`);
     const c = plan.checkJudge;
     if (c) L.push(`  check judge ${c.id}: ${c.maxPairs} pairs, covered by plan; same halt rule`);
-  } else if (!plan.judge) L.push("  judge: off");
+  } else if (plan.notJudged) L.push("  judges: off (--no-judge): known-answer scoring only; results are marked not judged");
+  else if (!plan.judge) L.push("  judge: off");
   L.push("");
   L.push(`maximum possible spend ${money(plan.maxUsd)}; run cap ${money(plan.capUsd)}; monthly cap ${money(extra.monthlyCapUsd)}${extra.monthCashUsd !== undefined ? ` (${money(extra.monthCashUsd)} already spent this month)` : ""}`);
   if (extra.credits && Object.keys(extra.credits).length) L.push(`declared credits: ${Object.entries(extra.credits).map(([k, v]) => `${k} ${money(v)}`).join(", ")}`);

@@ -97,3 +97,18 @@ test("the plan lists both judges and what each will grade", () => {
   assert.equal(plan.checkJudge!.maxPairs, plan.judge!.maxPairs);
   assert.match(formatPlan(plan, { mode: "live", monthlyCapUsd: 100 }), /morph-deepseek-v4\.1-flash: \d+ pairs, covered by plan/);
 });
+
+test("judge pacing counts the call's own time: the cooldown runs from the call's start, not after it", async () => {
+  tempStore();
+  let t = 0;
+  const sleeps: number[] = [];
+  const timer = { now: () => t, sleep: async (ms: number) => { sleeps.push(ms); t += ms; } };
+  const base = fixtureJudge([], 0, "slow-judge");
+  const judge: Judge = { ...base, cooldownMs: () => 10_000, grade: async (i) => { t += 4_000; return base.grade(i); } };
+  const s = openSession({ config: fixtureConfig({ judgeItems: 3 }), mode: "fixture", judge, checkJudge: null });
+  await runSearch(s);
+  await runPages(s);
+  assert.equal(await runJudge({ ...s, timer }), "done");
+  assert.ok(sleeps.length > 3);
+  assert.ok(sleeps.every((ms) => ms === 6_000), `slept ${[...new Set(sleeps)].join(", ")} ms`);
+});

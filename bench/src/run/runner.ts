@@ -385,6 +385,7 @@ async function judgeLoop(ctx: RunContext, judge: Judge, pairs: JudgePair[], prim
     let verdict: JudgeVerdict | null = null;
     let err: string | undefined;
     let wait = 0;
+    const startedAt = timer.now();
     try {
       verdict = await judge.grade(input, ctx.signal);
     } catch (e) {
@@ -415,7 +416,8 @@ async function judgeLoop(ctx: RunContext, judge: Judge, pairs: JudgePair[], prim
       event(dir, { event: "judge-stopped", detail: `${judge.info.id}: ${failures} failed calls` });
       return "done";
     }
-    const cool = Math.max(wait, judge.cooldownMs(verdict, input));
+    // The token-rate cooldown runs from the call's start, so the call's own time counts towards it; a 429's Retry-After is waited in full.
+    const cool = Math.max(wait, judge.cooldownMs(verdict, input) - (timer.now() - startedAt));
     if (cool > 0) await timer.sleep(cool);
     if (budget.halted) return "overrun";
   }

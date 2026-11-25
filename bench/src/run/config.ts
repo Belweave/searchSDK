@@ -61,6 +61,8 @@ export interface RunConfig {
    * (the default): each call reserves its worst case at the judge's list price.
    */
   judgePricing?: JudgePricing;
+  /** Set by --no-judge: the owner chose to run without judging; every output says "not judged". */
+  notJudged?: boolean;
   /** The most this run may spend, in USD. A live run must repeat it to confirm. */
   capUsd: number;
   /** Free credit per provider, in USD, which spend uses before the cash caps. */

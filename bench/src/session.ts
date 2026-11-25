@@ -79,8 +79,9 @@ export function liveGuards(o: { env: Record<string, string | undefined>; registr
     const env = (o.registry[id]?.auth.env ?? []) as string[];
     if (!env.some((n) => (o.env[n] ?? "") !== "")) out.push(`${id}: no key in ${env.join(" or ")}`);
   }
-  if (o.config.judgeItems > 0 && o.judgeKeyEnv && !o.env[o.judgeKeyEnv]) out.push(`judge: ${o.judgeKeyEnv} is not set`);
-  else if (o.config.judgeItems > 0 && o.checkJudgeKeyEnv && !o.env[o.checkJudgeKeyEnv]) out.push(`check judge: ${o.checkJudgeKeyEnv} is not set`);
+  const unjudged = "add --no-judge to run known-answer scoring only, marked not judged";
+  if (o.config.judgeItems > 0 && o.judgeKeyEnv && !o.env[o.judgeKeyEnv]) out.push(`judge: ${o.judgeKeyEnv} is not set (${unjudged})`);
+  else if (o.config.judgeItems > 0 && o.checkJudgeKeyEnv && !o.env[o.checkJudgeKeyEnv]) out.push(`check judge: ${o.checkJudgeKeyEnv} is not set (${unjudged})`);
   return out;
 }
 

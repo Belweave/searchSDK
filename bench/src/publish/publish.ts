@@ -97,6 +97,7 @@ export function buildOutputs(c: Ctx) {
     datasets: manifest.datasets.filter((d) => usedFiles.has(d.file)).map((d) => ({ name: d.name, version: d.version, sha256: d.sha256, count: d.count })),
     privateSet: config.privateDatasets?.length && privateManifest ? { version: privateManifest.version, count: privateManifest.count } : null,
     registry: config.providers.map((p) => ({ provider: p, specVersion: spec(p) })),
+    judging: config.notJudged ? "not judged (--no-judge)" : scores.agreement ? "judged" : "no judged items",
     judge: c.judge ? { id: c.judge.id, model: c.judge.model, rubric: c.judge.rubric, rubricSha256: c.judge.rubricSha256, promptSha256: c.judge.promptSha256, params: c.judge.params } : null,
     checkJudge: c.checkJudge ? { id: c.checkJudge.id, model: c.checkJudge.model, rubric: c.checkJudge.rubric, rubricSha256: c.checkJudge.rubricSha256, promptSha256: c.checkJudge.promptSha256, params: c.checkJudge.params } : null,
     conditions: {

@@ -7,6 +7,7 @@ import { applyReview, type BuildSpec, type Review } from "./dataset/review.ts";
 import { buildFromWikidata } from "./dataset/wikidata.ts";
 import { FIXTURE_PROVIDERS } from "./fixtures.ts";
 import { labelSession } from "./human.ts";
+import { keyReport, keysFileReport, withoutJudging } from "./keys.ts";
 import { createJudge, loadJudgeConfig } from "./judge/judge.ts";
 import { writeOutputs } from "./publish/publish.ts";
 import { Budget, poolUsage } from "./run/budget.ts";
@@ -22,9 +23,10 @@ import { BENCH_DIR, isoDate, readJson, storeDir, usd, writeJson, writeJsonl } fr
 
 const HELP = `searchSDK Benchmarks
 
-  plan     --config <run.json> [--tuned <selection.json>]       print the calls and the maximum spend; sends nothing
-  pilot    --config <run.json> [--live --confirm-spend <cap>]   plan, confirm, search, fetch pages, judge, score
-  run      --config <run.json> [--tuned <sel>] [--live --confirm-spend <cap>] [--resume <runId>]
+  keys     --config <run.json> | --providers a,b [--no-judge] [--file <keys.env>]   which key variables are present; names only
+  plan     --config <run.json> [--tuned <selection.json>] [--no-judge]   print the calls and the maximum spend; sends nothing
+  pilot    --config <run.json> [--no-judge] [--live --confirm-spend <cap>]   plan, confirm, search, fetch pages, judge, score
+  run      --config <run.json> [--tuned <sel>] [--no-judge] [--live --confirm-spend <cap>] [--resume <runId>]
   score    --run <runId>                                        print scores (local)
   label    --run <runId> [--n 120] [--labeller name]            human check: grade judged pairs blind
   publish  --run <runId> [--out <dir>]                          write results, leaderboard and routing table
@@ -32,6 +34,8 @@ const HELP = `searchSDK Benchmarks
   dataset  validate | build --spec <spec.json> | review --spec <spec.json> | private --from <file> --version <v>
 
 Without --live, runs use synthetic fixture providers and a synthetic judge, and every output is marked "fixture".
+--no-judge runs known-answer scoring only, by choice; the run is named <name>-notjudged and every output says "not judged".
+Keys: node --env-file=<keys.env> src/cli.ts ... loads them (KEY=value lines, mode 600, git-ignored); nothing prints them.
 Live runs need BENCH_ALLOW_LIVE=1, provider keys in their documented variables, and --confirm-spend equal to the cap.
 Local data (raw responses, pages, labels, ledger, private items) lives in ${storeDir()}.`;
 
@@ -60,6 +64,8 @@ function configFrom(f: Record<string, string | true>): RunConfig {
   let c = loadRunConfig(need(f, "config"));
   const tuned = str(f, "tuned");
   if (tuned) c = withTuned(c, readJson<Selection>(resolve(tuned)));
+  // An explicit choice, never a silent fallback when the judge key is missing.
+  if (f["no-judge"] === true) c = withoutJudging(c);
   return c;
 }
 
@@ -137,8 +143,9 @@ function loadRun(runId: string): { meta: RunMeta; dir: string; items: Item[]; s:
   return { meta, dir, items: s.items, s };
 }
 
-function report(scores: Scores): string {
+function report(scores: Scores, config?: RunConfig): string {
   const L: string[] = [];
+  if (config?.notJudged) L.push("NOT JUDGED (--no-judge): known-answer scoring only; no judged relevance in this run.");
   const f = (x: number) => (Number.isFinite(x) ? x.toFixed(2) : "  - ");
   for (const profile of [...new Set(scores.profiles.map((p) => p.profile))]) {
     L.push(`\nprofile ${profile}: ${scores.pairedN[profile]} paired items (${scores.droppedItems[profile]} dropped)`);
@@ -171,6 +178,19 @@ function report(scores: Scores): string {
 async function main(): Promise<void> {
   const { cmd, sub, flags } = args(process.argv.slice(2));
   switch (cmd) {
+    case "keys": {
+      const method = loadMethod();
+      const providers = str(flags, "providers");
+      const config = providers
+        ? { providers: providers.split(",").map((x) => x.trim()).filter(Boolean), judgeItems: 0 }
+        : configFrom(flags);
+      const r = keyReport(config, method, builtInRegistry as unknown as Record<string, ProviderSpec>, process.env, { noJudge: flags["no-judge"] === true });
+      console.log(r.text);
+      const file = str(flags, "file");
+      if (file) console.log(keysFileReport(resolve(file)));
+      if (!r.ok) process.exitCode = 1;
+      return;
+    }
     case "plan": {
       const config = configFrom(flags);
       const method = loadMethod();
@@ -191,7 +211,7 @@ async function main(): Promise<void> {
       if (cmd === "pilot" || r === "done") {
         const scores = scoreRun(s.dir, { config: s.config, method: s.method, items: s.items, judgeItemIds: s.plan.judgeItemIds });
         writeJson(runPaths(s.dir).scores, scores, 0o600);
-        console.log(report(scores));
+        console.log(report(scores, s.config));
         console.log(`\nspent ${usd(s.budget.runCashUsd(), 4)} of the ${usd(s.config.capUsd)} cap. Next: bench label --run ${s.runId}, then bench publish --run ${s.runId}`);
       }
       if (r !== "done") process.exitCode = 2;
@@ -201,7 +221,7 @@ async function main(): Promise<void> {
       const { meta, dir, items, s } = loadRun(need(flags, "run"));
       const scores = scoreRun(dir, { config: meta.config, method: meta.method, items, judgeItemIds: s.plan.judgeItemIds });
       writeJson(runPaths(dir).scores, scores, 0o600);
-      console.log(report(scores));
+      console.log(report(scores, meta.config));
       return;
     }
     case "label": {
