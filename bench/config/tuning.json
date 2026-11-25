@@ -1,16 +1,105 @@
 {
-  "$comment": "Candidate settings per provider, from options each registry spec documents. A candidate runs only if the SDK can bound its cost per call (costBound) and the bound is at most maxListPriceUsd. Selection happens on `items` public items; the tuned column is then scored on the remaining items.",
+  "$comment": "Published search spaces for the tuned column (METHOD §8). Every provider has exactly method.tuning.maxCandidates candidates, chosen by one rule from options its registry spec documents: (1) depth values the spec maps, other than the default; (2) the provider's own options that change ranking or the excerpt text the scorer reads; (3) a region hint, country US (with the paired location option where the provider's docs ask for both); the first ones in that order fill the slots. Every other documented option is listed under `excluded` (or `normalizedExcluded`) with its reason. Candidates whose SDK cost bound is above method.tuning.maxCostPerCallUsd are dropped before any call. The split is drawn by seed from its own files and must share no item id, query, Wikidata statement or subject with the scored sets.",
+  "schema": "tuning-spaces/1",
   "name": "tuning",
-  "datasets": ["datasets/public/seed-0.1.0.jsonl"],
-  "items": 30,
-  "maxListPriceUsd": 0.02,
-  "capUsd": 10,
-  "seed": 20261201,
-  "candidates": {
-    "exa": [{ "depth": "fast" }, { "depth": "deep" }],
-    "tavily": [{ "depth": "fast" }, { "depth": "deep" }, { "depth": "deep", "providerOptions": { "chunks_per_source": 3 } }],
-    "perplexity": [{ "depth": "fast" }],
-    "brave": [{ "providerOptions": { "extra_snippets": true } }],
-    "firecrawl": [{ "providerOptions": { "highlights": true } }]
+  "split": {
+    "datasets": ["datasets/public/tuning-0.1.0.jsonl"],
+    "storeDatasets": [],
+    "seed": 20261202
+  },
+  "capUsd": 1.25,
+  "normalizedExcluded": {
+    "includeDomains": "a per-query filter: a fixed list would need to know the items",
+    "excludeDomains": "a per-query filter: a fixed list would need to know the items",
+    "recency": "a date filter: drops the older pages most answers are on",
+    "startDate": "a date filter: drops the older pages most answers are on",
+    "endDate": "a date filter",
+    "language": "a result-language filter: the nonen class asks in French, German, Spanish and Japanese, so one fixed language removes their answers"
+  },
+  "spaces": {
+    "exa": {
+      "candidates": [{ "depth": "fast" }, { "depth": "deep" }],
+      "excluded": {
+        "country": "region comes third in the order; the two slots are filled by depth",
+        "type": "the same request field as depth (the SDK maps depth to type); other values such as deep-lite have no modelled price",
+        "category": "restricts results to one vertical (company, news, people...): a filter",
+        "moderation": "a safety filter: removes results",
+        "contents": "extra content types have no modelled price, and the spec's excerpts are locked to highlights",
+        "includeText": "a per-query text filter",
+        "excludeText": "a per-query text filter",
+        "startCrawlDate": "a date filter",
+        "endCrawlDate": "a date filter",
+        "userIdentifier": "an account label; no effect on results"
+      }
+    },
+    "context": {
+      "candidates": [{ "providerOptions": { "descriptionMaxCharacters": 2000 } }, { "country": "US" }],
+      "excluded": {
+        "highlightsOptions": "adds 1 credit per 10 results, which the registry's costOptions does not model (the SDK bound would under-reserve), and the spec reads description, not highlights",
+        "markdownOptions": "shapes the page text used for highlights, which the spec does not read",
+        "timeoutOpts": "server-side timeouts; the method fixes the deadline",
+        "zdr": "data retention; no effect on results",
+        "policies": "account policies; no effect on ranking",
+        "tags": "request labels; no effect on results"
+      }
+    },
+    "firecrawl": {
+      "candidates": [{ "providerOptions": { "highlights": false } }, { "country": "US", "providerOptions": { "location": "United States" } }],
+      "excluded": {
+        "categories": "restricts results to a vertical (developer, gov, research, pdf), and its price is unknown (costOptions)",
+        "safe": "a safety filter: removes results",
+        "ignoreInvalidURLs": "error handling for invalid URLs; no documented effect on ranking",
+        "scrapeOptions": "scrapes every result at an unknown price (costOptions)",
+        "timeout": "a server-side timeout; the method fixes the deadline"
+      }
+    },
+    "tinyfish": {
+      "candidates": [{ "providerOptions": { "purpose": "Find a web page that states the factual answer to this question." } }, { "country": "US" }],
+      "excluded": {
+        "domain_type": "web is the default; news and research_paper restrict results to one vertical",
+        "page": "pagination: returns a later page of results",
+        "pub_year_min": "a date filter",
+        "pub_year_max": "a date filter"
+      }
+    },
+    "brave": {
+      "candidates": [{ "providerOptions": { "extra_snippets": true } }, { "country": "US" }],
+      "excluded": {
+        "safesearch": "a safety filter: removes results",
+        "offset": "pagination: returns a later page of results",
+        "ui_lang": "the interface language of the response; no documented effect on ranking",
+        "goggles": "custom re-ranking needs a hosted goggle file; no neutral value is documented",
+        "units": "measurement units in the response; no effect on ranking"
+      }
+    },
+    "perplexity": {
+      "candidates": [{ "depth": "fast" }, { "country": "US" }],
+      "excluded": {
+        "snapshot_as_of": "pins an index snapshot date: a date filter",
+        "last_updated_after_filter": "a date filter",
+        "last_updated_before_filter": "a date filter",
+        "display_server_time": "adds a field the spec does not read"
+      }
+    },
+    "tavily": {
+      "candidates": [{ "depth": "fast" }, { "depth": "deep" }],
+      "excluded": {
+        "country": "region comes third in the order; the two slots are filled by depth",
+        "topic": "general is the default; news and finance restrict results to one vertical",
+        "chunks_per_source": "an excerpt option, second in the order; the two slots are filled by depth",
+        "max_age_hours": "a freshness filter",
+        "include_answer": "adds a generated answer outside the result list, which the method does not score",
+        "include_raw_content": "adds full page text the spec does not read",
+        "include_images": "adds fields the spec does not read",
+        "include_image_descriptions": "adds fields the spec does not read",
+        "include_favicon": "adds a field the spec does not read",
+        "include_domains_mode": "applies only with includeDomains, which is excluded",
+        "filter_by_language": "a result-language filter",
+        "filter_by_published_date": "a date filter",
+        "exact_match": "changes the query's meaning to an exact-phrase filter",
+        "safe_search": "a safety filter: removes results",
+        "auto_parameters": "lets the provider pick options, at an unknown price (costOptions)"
+      }
+    }
   }
 }

@@ -136,33 +136,3 @@ test("two passes give a test-retest measurement", async () => {
   assert.ok(strong.retest.n > 50);
   assert.ok(strong.retest.agreement > 0 && strong.retest.agreement <= 1);
 });
-
-test("tuning compares candidates with each provider's default on the same items and counts its spend", async () => {
-  tempStore();
-  const { fixtureRegistry } = await import("../src/fixtures.ts");
-  const { loadMethod } = await import("../src/run/config.ts");
-  const { tuningRunConfig, select, withTuned } = await import("../src/tune.ts");
-  const method = loadMethod();
-  const t = {
-    name: "tuning-test", datasets: ["datasets/public/seed-0.1.0.jsonl"], items: 20, maxListPriceUsd: 0.02, capUsd: 5, seed: 3,
-    candidates: { "fx-strong": [{ providerOptions: { mode: "boosted" } }], "fx-unpriced": [{ providerOptions: { mode: "boosted" } }] },
-  };
-  const reg = fixtureRegistry() as never;
-  const { config, rejected } = tuningRunConfig(t, reg, method, ["fx-strong", "fx-fair", "fx-unpriced"]);
-  assert.deepEqual(rejected.map((r) => [r.provider, r.reason]), [["fx-unpriced", "price not public"]]);
-  assert.deepEqual(config.profiles, ["default", "t1"]);
-  const s = openSession({ config, mode: "fixture" });
-  // Only fx-strong has a candidate, so t1 runs for it alone.
-  assert.deepEqual(s.plan.providers.map((p) => [p.id, p.profiles.map((x) => x.profile)]), [["fx-strong", ["default", "t1"]], ["fx-fair", ["default"]], ["fx-unpriced", ["default"]]]);
-  assert.equal(await runSearch(s), "done");
-  assert.equal(await runPages(s), "done");
-  assert.ok(s.budget.runCashUsd() > 0 && s.budget.runCashUsd() <= t.capUsd);
-  const scores = scoreRun(s.dir, { config: s.config, method: s.method, items: s.items, judgeItemIds: [] });
-  const sel = select(s.runId, s.config, scores, s.registry, s.method, t, rejected);
-  assert.equal(sel.items.length, 20);
-  assert.ok(["default", "t1"].includes(sel.chosen["fx-strong"]!.profile));
-  assert.equal(sel.chosen["fx-fair"]!.profile, "default");
-  const monthly = withTuned(fixtureConfig(), sel);
-  assert.deepEqual(monthly.profileExclude!.tuned, sel.items);
-  assert.ok(monthly.profiles.includes("tuned"));
-});

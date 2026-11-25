@@ -1,6 +1,6 @@
 {
   "$comment": "Fixed conditions for every run of this method version. Changing any value is a new method version (METHOD.md, Versions).",
-  "method": "0.3.0",
+  "method": "0.4.0",
   "search": { "maxResults": 10, "timeoutMs": 10000, "maxRetries": 0 },
   "pages": { "fetcher": "plain-1", "topK": 3, "timeoutMs": 20000, "maxBytes": 5242880, "maxRedirects": 5, "maxInFlight": 4, "perHostIntervalMs": 1000, "maxCrawlDelayMs": 30000, "userAgent": "BenchPageFetcher/1.0 (compatible; reads public pages for a web search benchmark; obeys robots.txt)", "robotsToken": "BenchPageFetcher", "maxStoredChars": 300000 },
   "knownAnswer": { "snippetTopK": 10, "pageTopK": 3, "navTopK": 3 },
@@ -10,5 +10,6 @@
   "reliability": { "floor": 0.95 },
   "budget": { "monthlyCapUsd": 100, "unknownPriceUsd": 0.05 },
   "pacing": { "shareOfLimit": 0.5, "maxInFlightPerProvider": 2, "itemWindow": 4, "rateLimitPauseMs": 30000 },
-  "routing": { "minCellN": 30, "validDays": 45 }
+  "routing": { "minCellN": 30, "validDays": 45 },
+  "tuning": { "splitItems": 16, "passes": 1, "maxCandidates": 2, "maxCostPerCallUsd": 0.02, "minGain": 0.06, "requireSeparation": true, "judged": false, "conditionItems": 32, "conditionPasses": [1] }
 }

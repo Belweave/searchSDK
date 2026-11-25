@@ -109,7 +109,7 @@ export function fixtureFetch(items: readonly Item[], providers: Record<string, F
       return new Response(fixturePageHtml(url, byId), { status: 200, headers: { "content-type": "text/html; charset=utf-8" } });
     }
     const [, id] = m;
-    const body = JSON.parse(String(init?.body ?? "{}")) as { q?: string; n?: number };
+    const body = JSON.parse(String(init?.body ?? "{}")) as { q?: string; n?: number; mode?: string };
     const json = (status: number, value: unknown) => new Response(JSON.stringify(value), { status, headers: { "content-type": "application/json" } });
     const b = providers[id!];
     const item = byQuery.get(body.q ?? "");
@@ -121,7 +121,8 @@ export function fixtureFetch(items: readonly Item[], providers: Record<string, F
     if (roll < (b.status503 ?? 0)) return json(503, { error: "synthetic outage" });
     if (roll < (b.status503 ?? 0) + (b.status429 ?? 0)) return json(429, { error: "synthetic rate limit" });
     if (r() < (b.empty ?? 0)) return json(200, { results: [], ...(b.reportedUsd !== undefined ? { costUsd: b.reportedUsd } : {}) });
-    const hit = r() < b.hit;
+    // The "boosted" provider option stands in for a setting that helps: it lifts the hit rate by 0.35.
+    const hit = r() < (body.mode === "boosted" ? Math.min(1, b.hit + 0.35) : b.hit);
     const count = Math.min(body.n ?? 10, 10);
     const slot = Math.floor(r() * 3);
     const results = Array.from({ length: count }, (_, i) => {
