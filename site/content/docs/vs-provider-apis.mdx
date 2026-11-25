@@ -1,0 +1,31 @@
+---
+title: searchSDK vs calling providers directly
+description: When to call a web search provider directly, and when searchSDK fits.
+---
+
+Calling a provider directly means using its own API or SDK. searchSDK is one interface over many. Both call the provider from your server; the difference is what you write and maintain.
+
+| | Provider API or SDK | searchSDK |
+| --- | --- | --- |
+| Shape | The provider's own | One for every provider, its body in `raw` |
+| Switching | Rewrite the calls | Change the `provider` id |
+| Fallback | You write it | Opt-in, in your order, every attempt recorded |
+| Cost | From the provider's billing | On every response and attempt, with its source |
+| Features | All of them, as they ship | The options each [provider's spec](/providers) maps |
+| Status | Maintained by the provider | Not on npm or PyPI; not verified against live APIs yet |
+
+## When should you call a provider directly?
+
+- You use one provider and do not plan to change.
+- You need an option searchSDK does not map yet.
+- You want a published package the provider supports.
+
+## When does searchSDK fit?
+
+- You call more than one provider, or want to try several with the same code.
+- You want fallback when a provider is down, rate limited or out of quota.
+- You want to know what each attempt cost, retries included.
+
+## Can you use both?
+
+Yes. `raw` keeps the provider's response and `providerOptions` passes options only one provider understands. A provider's own SDK can sit beside searchSDK in one app.

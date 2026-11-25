@@ -1,4 +1,4 @@
 {
   "title": "Docs",
-  "pages": ["index", "search", "contents", "providers", "cost", "benchmarks-method"]
+  "pages": ["what-is-searchsdk", "vs-provider-apis", "alternatives", "faq", "---Guide---", "index", "search", "contents", "providers", "cost", "benchmarks-method"]
 }

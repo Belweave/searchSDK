@@ -34,6 +34,18 @@ const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   allowedDevOrigins: ["127.0.0.1"],
+  async redirects() {
+    // One canonical host: www (once its DNS record exists) answers with a permanent redirect to the apex.
+    return [{ source: "/:path*", has: [{ type: "host", value: "www.searchsdk.dev" }], destination: "https://searchsdk.dev/:path*", permanent: true }];
+  },
+  async rewrites() {
+    // The Markdown copy of each docs and provider page sits beside it (lib/markdown.ts).
+    return [
+      { source: "/docs.md", destination: "/md/docs" },
+      { source: "/docs/:path(.+)\\.md", destination: "/md/docs/:path" },
+      { source: "/providers/:id([a-z0-9-]+)\\.md", destination: "/md/providers/:id" },
+    ];
+  },
   async headers() {
     // Dev keeps the defaults so hot reload works; production and `npm run check` send the policy.
     if (process.env.NODE_ENV === "development") return [];

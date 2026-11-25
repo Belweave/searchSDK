@@ -6,12 +6,13 @@ import { Board } from "@/components/home/board";
 import { getLeaderboard } from "@/lib/benchmarks";
 import { allBrands, providerBrand } from "@/lib/provider-assets";
 import { pageMetadata } from "@/lib/seo";
+import { breadcrumbs, JsonLd } from "@/lib/structured-data";
 import "@/components/home/home.css";
 import "@/components/site/pages.css";
 
 export const metadata: Metadata = pageMetadata({
   path: "/benchmarks",
-  title: "Benchmarks",
+  title: "Open benchmark of web search APIs",
   description: "searchSDK's open benchmark of web search providers: quality first, then reliability, with latency and cost. Results pending; the first run is in progress.",
 });
 
@@ -20,6 +21,7 @@ export default function BenchmarksPage() {
   const brands = Object.fromEntries(allBrands().map((b) => [b.id, b]));
   return (
     <div className="page-wrap page-top">
+      <JsonLd nodes={[breadcrumbs([{ name: "Home", path: "/" }, { name: "Benchmarks", path: "/benchmarks" }])]} />
       <div className="page-head">
         <h1 className="type-h2">Benchmarks</h1>
         <p className="page-line">

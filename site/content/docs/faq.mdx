@@ -1,0 +1,38 @@
+---
+title: FAQ
+metaTitle: "searchSDK FAQ: providers, fallback, cost, license"
+description: "Short answers on searchSDK: providers, fallback, cost, benchmarks, status and license."
+faq: true
+---
+
+## What is searchSDK?
+
+An open-source SDK by Belweave that gives AI apps and agents one interface to many web search APIs. Your server calls `search` or `contents`; searchSDK calls the provider you name.
+
+## Which providers does it support?
+
+<ProviderNames />. [Their pages](/providers) list options, prices and limits.
+
+## How does fallback work?
+
+Off unless you set it. A call whose provider times out, is down, rate limited, out of quota or cannot honour an option then tries the next provider in your list. Every attempt is recorded.
+
+## How is cost reported?
+
+Every response and attempt carries a cost and its source: reported by the provider, computed from the list price, or unknown. An unknown price is `null`, never 0.
+
+## How does the benchmark work?
+
+The same queries go to every provider. Known-answer tasks set the rank among dependable providers; latency and cost never change it. Results are pending. [Method](/docs/benchmarks-method).
+
+## How is it different from calling a provider directly?
+
+One result shape, one id to change, explicit fallback and per-attempt cost. A direct call gets every provider feature first. [The comparison](/docs/vs-provider-apis).
+
+## Is it on npm or PyPI?
+
+Not yet. Both build from source: TypeScript with [the quickstart](/docs), Python with [its README](https://github.com/Belweave/searchSDK/tree/v2/integration/sdk/python). No provider is verified against its live API yet.
+
+## What license is it under?
+
+MIT. [Source on GitHub](https://github.com/Belweave/searchSDK).

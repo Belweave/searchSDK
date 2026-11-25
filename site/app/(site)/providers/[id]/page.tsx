@@ -7,7 +7,9 @@ import { HEADER_MARK_PX } from "@/components/brand/searchsdk";
 import { NameList, RowList, StatusLine } from "@/components/data/spec";
 import { providerBrand } from "@/lib/provider-assets";
 import { type Endpoint, getProvider, getRegistry, statusLine } from "@/lib/registry";
+import { providerApiName, providerDescription } from "@/lib/routes";
 import { pageMetadata } from "@/lib/seo";
+import { breadcrumbs, JsonLd } from "@/lib/structured-data";
 import "@/components/site/pages.css";
 
 type Props = { params: Promise<{ id: string }> };
@@ -23,8 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!provider) notFound();
   return pageMetadata({
     path: `/providers/${provider.id}`,
-    title: `${provider.name} provider`,
-    description: `${provider.name} in searchSDK: supported options, result fields, pricing and cost source, limits and sources, from the registry.`,
+    title: `${providerApiName(provider)} in searchSDK`,
+    description: providerDescription(provider),
   });
 }
 
@@ -73,6 +75,15 @@ export default async function ProviderPage({ params }: Props) {
 
   return (
     <div className="page-wrap page-top" style={{ "--lane": brand.hue } as CSSProperties}>
+      <JsonLd
+        nodes={[
+          breadcrumbs([
+            { name: "Home", path: "/" },
+            { name: "Providers", path: "/providers" },
+            { name: p.name, path: `/providers/${p.id}` },
+          ]),
+        ]}
+      />
       <nav aria-label="Providers" className="provider-crumbs">
         <Link href="/providers" className="prose-link">
           Providers

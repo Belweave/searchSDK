@@ -45,6 +45,12 @@ Placeholders, labelled "Results pending" on every page: `data/*.sample.json` (ra
 
 Home page code lives in `content/examples/` so the check can typecheck it.
 
+## Search and agents
+
+Every page's title, description, canonical URL and social tags come from `lib/seo.ts`; facts shared by pages, JSON-LD and `llms.txt` live in `lib/site.ts`. `lib/structured-data.tsx` writes schema.org JSON-LD from those facts: Organization, WebSite and SoftwareSourceCode on every page, TechArticle and BreadcrumbList on docs pages, FAQPage only on a docs page with `faq: true` whose `## …?` headings are its questions. Never add ratings, reviews, offers or usage figures. Docs frontmatter may set `metaTitle` for the `<title>`.
+
+Each docs and provider page has a Markdown copy at the same path plus `.md` (`lib/markdown.ts`, rewritten in `next.config.ts`), linked from its `<head>`; `/llms.txt` indexes them and `/llms-full.txt` holds every docs page. `app/robots.ts` names the search and AI crawlers it allows. The sitemap's `lastmod` is the latest commit to a page's sources (`lib/last-modified.ts`). The crawl also fails on a wrong canonical, JSON-LD that does not parse or lacks a page's types, a FAQ question that is not a heading, and a missing Markdown copy.
+
 ## Stubs
 
 `/api/mcp` and `/api/playground/search` answer 501.

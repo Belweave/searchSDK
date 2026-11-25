@@ -7,11 +7,12 @@ import { Reveal } from "@/components/motion/reveal";
 import { providerBrand } from "@/lib/provider-assets";
 import { type Endpoint, getRegistry, registryStatusLine } from "@/lib/registry";
 import { pageMetadata } from "@/lib/seo";
+import { breadcrumbs, JsonLd } from "@/lib/structured-data";
 import "@/components/site/pages.css";
 
 export const metadata: Metadata = pageMetadata({
   path: "/providers",
-  title: "Providers",
+  title: "Web search API providers in searchSDK",
   description: "Every web search provider in searchSDK: what it supports, what it costs, where cost comes from and its limits, from the registry.",
 });
 
@@ -26,6 +27,7 @@ export default function ProvidersPage() {
   const registry = getRegistry();
   return (
     <div className="page-wrap page-top">
+      <JsonLd nodes={[breadcrumbs([{ name: "Home", path: "/" }, { name: "Providers", path: "/providers" }])]} />
       <div className="page-head">
         <h1 className="type-h2">Providers</h1>
         <p className="page-line">What each provider supports through searchSDK, what it costs and its limits, read from the registry.</p>

@@ -1,0 +1,35 @@
+---
+title: Alternatives to searchSDK
+metaTitle: "Alternatives to searchSDK for web search in agents"
+description: Other ways to give apps and agents web search, and when each one fits.
+---
+
+searchSDK is one way to give an app or agent web search across providers. These are the others.
+
+## One provider's API or SDK
+
+The plainest option when one provider covers your needs. You get every feature as it ships, in the provider's own shape. [The comparison](/docs/vs-provider-apis) covers the trade-offs.
+
+## Your own adapter layer
+
+Full control. You map each provider's options, fields, errors and prices yourself, and keep them current as the APIs change.
+
+## Search tools in an agent framework
+
+Frameworks such as LangChain and LlamaIndex include integrations for individual search providers. Each wraps one provider, so moving between providers means changing tools.
+
+## A provider's MCP server
+
+Several search providers publish MCP servers that let an agent call their API as a tool. Each server speaks for one provider.
+
+## Hosted aggregators
+
+Hosted services put several providers behind one API of their own, so your queries pass through them. With searchSDK, calls go from your server to the provider, with your key.
+
+## How to compare them
+
+- Which providers each covers, and which of their options.
+- Whether cost is reported per attempt, retries and fallback included.
+- Whether fallback is explicit and recorded.
+- Where keys live, and which servers see your queries.
+- The license, and whether the code is open.

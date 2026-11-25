@@ -6,12 +6,13 @@ import { HomeStage } from "@/components/home/stage";
 import { getRegistry } from "@/lib/registry";
 import { pageMetadata } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site";
+import { JsonLd } from "@/lib/structured-data";
 import "@/components/home/home.css";
 
 export const metadata: Metadata = pageMetadata({
   path: "/",
-  title: "searchSDK: one interface to every web search API",
-  description: "One interface for AI apps and agents to many web search providers, in TypeScript and Python, with fallback, honest cost and open benchmarks. MIT licensed.",
+  title: "searchSDK: one SDK for many web search APIs",
+  description: "Open-source SDK for AI apps and agents: one interface to many web search APIs, in TypeScript and Python, with fallback, honest cost and open benchmarks.",
 });
 
 const NUMBERS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
@@ -21,6 +22,7 @@ export default function Home() {
   const counted = NUMBERS[count] ?? String(count);
   return (
     <>
+      <JsonLd nodes={[]} />
       <section data-cap="30" data-cap-name="hero" className="hero">
         <div className="page-wrap">
           <h1 className="type-display hero-h1">
@@ -28,8 +30,8 @@ export default function Home() {
           </h1>
           <div className="hero-side">
             <p className="type-lead hero-lead">
-              searchSDK gives AI apps and agents one interface to {counted} web search providers, with fallback, honest cost and
-              open benchmarks.
+              searchSDK, an open-source SDK, gives AI apps and agents one interface to {counted} web search providers, with fallback,
+              honest cost and open benchmarks.
             </p>
             <nav aria-label="Get started" className="hero-keys">
               <Link href="/docs" className="key key-beam">

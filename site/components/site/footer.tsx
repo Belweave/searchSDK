@@ -14,6 +14,10 @@ export function SiteFooter() {
             Source on GitHub
           </a>
           .{" "}
+          <Link href="/docs/faq" className="prose-link">
+            FAQ
+          </Link>
+          .{" "}
           <Link href="/llms.txt" className="prose-link">
             llms.txt
           </Link>

@@ -1,0 +1,34 @@
+---
+title: What is searchSDK?
+metaTitle: "What is searchSDK? Web search for AI agents"
+description: searchSDK is an open-source SDK that gives AI apps and agents one interface to many web search APIs.
+---
+
+searchSDK is an open-source, MIT-licensed SDK by Belweave. Your server makes one call; searchSDK sends it to the web search provider you name.
+
+## What is a web search API for AI agents?
+
+A web search API takes a query and returns results as data: URLs, titles, dates and excerpts. Agents use it to ground answers in current pages. Each provider has its own index, options, result fields, prices and limits.
+
+## What does searchSDK do?
+
+- Two calls, `search` and `contents`, with one result shape for every provider.
+- Switch providers by changing one id.
+- Fall back to other providers, in your order, only when you turn it on.
+- Report a cost on every response and attempt, and where it came from.
+
+## Which providers does it support?
+
+<ProviderNames />. Each is mapped from its public docs; none is verified against its live API yet. [Each provider's page](/providers) lists what it supports.
+
+## Which languages does it support?
+
+TypeScript on Node 24 and Python 3.10 or newer, neither with runtime dependencies. Neither is on npm or PyPI yet; [the quickstart](/docs) builds the TypeScript package from source.
+
+## Where do calls go?
+
+From your server to the provider, with your key. No searchSDK service sits in between.
+
+## How are providers compared?
+
+An [open benchmark](/docs/benchmarks-method) ranks quality first, then reliability. Results are pending; the first run is in progress.

@@ -72,4 +72,14 @@ export const STUBS = [
 ];
 
 /** Non-HTML documents that must exist. */
-export const REQUIRED_FILES = ["/robots.txt", "/sitemap.xml", "/llms.txt"];
+export const REQUIRED_FILES = ["/robots.txt", "/sitemap.xml", "/llms.txt", "/llms-full.txt"];
+
+/** Pages that carry a Markdown copy, linked from <head> as rel="alternate" type="text/markdown". */
+export const MARKDOWN_PAGES = (path) => path === "/docs" || path.startsWith("/docs/") || /^\/providers\/[a-z0-9-]+$/.test(path);
+
+/** schema.org types each page's JSON-LD must include, beyond the Organization, WebSite and SoftwareSourceCode every page carries. */
+export const REQUIRED_JSON_LD = [
+  { match: (path) => path === "/docs" || path.startsWith("/docs/"), types: ["TechArticle", "BreadcrumbList"] },
+  { match: (path) => path.startsWith("/providers") || path === "/benchmarks", types: ["BreadcrumbList"] },
+];
+export const BASE_JSON_LD = ["Organization", "WebSite", "SoftwareSourceCode"];

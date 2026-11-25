@@ -14,16 +14,19 @@ import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  BASE_JSON_LD,
   BANNED_PATTERNS,
   BANNED_WORDS,
   DESCRIPTION_RANGE,
   MARK_MIN_PX,
+  MARKDOWN_PAGES,
   NAME,
   NAME_PATTERN,
   ONCE_ONLY,
   PAGE_CAPS,
   REQUIRED_FILES,
   REQUIRED_HEAD,
+  REQUIRED_JSON_LD,
   REQUIRED_ON_EVERY_PAGE,
   SAMPLE_LABEL,
   STUBS,
@@ -55,6 +58,14 @@ export async function checkSite(base, { log = console.log } = {}) {
     queue.push(u.pathname);
   }
   const sitemapPaths = new Set(queue.slice(1 + REQUIRED_FILES.length));
+  const canonicalOrigin = [...siteOrigins].find((o) => o !== origin) ?? origin;
+  for (const m of sitemap.body.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
+    const lastmod = m[1].match(/<lastmod>([^<]+)<\/lastmod>/)?.[1];
+    if (lastmod && Number.isNaN(Date.parse(lastmod))) fail("/sitemap.xml", `lastmod "${lastmod}" is not a date`);
+  }
+  if (!/^https:\/\/[^/]+$/.test(canonicalOrigin) || /\/\/www\./.test(canonicalOrigin)) fail("/sitemap.xml", `canonical origin ${canonicalOrigin} is not https without www`);
+  const robots = await get("/robots.txt");
+  if (!robots.body.includes(`Sitemap: ${canonicalOrigin}/sitemap.xml`)) fail("/robots.txt", "does not point at the canonical sitemap");
 
   const toLocal = (href, from) => {
     if (!href || href.startsWith("#") || /^(mailto|tel|javascript):/i.test(href)) return null;
@@ -240,6 +251,71 @@ export async function checkSite(base, { log = console.log } = {}) {
     // Indexable HTML pages belong in the sitemap.
     const noindex = /noindex/i.test(attr(findFirst(head, (n) => n.tagName === "meta" && attr(n, "name") === "robots") ?? {}, "content") ?? "");
     if (!noindex && !sitemapPaths.has(p)) fail(p, "indexable page missing from the sitemap");
+
+    // Search: one canonical URL on the canonical host, naming this page, and og:url agreeing.
+    if (!noindex) {
+      const canonical = attr(findFirst(head, (n) => n.tagName === "link" && attr(n, "rel") === "canonical") ?? {}, "href");
+      // The home page's canonical may drop its trailing slash: https://host and https://host/ are one URL.
+      const expected = p === "/" ? [canonicalOrigin, `${canonicalOrigin}/`] : [`${canonicalOrigin}${p}`];
+      if (!canonical) fail(p, "missing <link rel=canonical>");
+      else if (!expected.includes(canonical)) fail(p, `canonical is ${canonical}; expected ${expected.at(-1)}`);
+      const ogUrl = attr(findFirst(head, (n) => n.tagName === "meta" && attr(n, "property") === "og:url") ?? {}, "content");
+      if (canonical && ogUrl !== canonical) fail(p, `og:url ${ogUrl} differs from the canonical URL`);
+    }
+
+    // Agents: the Markdown copy, linked from <head> (the crawl above fetched it).
+    if (MARKDOWN_PAGES(p)) {
+      const alt = attr(findFirst(head, (n) => n.tagName === "link" && attr(n, "rel") === "alternate" && attr(n, "type") === "text/markdown") ?? {}, "href");
+      const local = alt ? toLocal(alt, p) : null;
+      if (!local) fail(p, "no <link rel=alternate type=text/markdown>");
+      else {
+        const md = pages.get(local) ?? (await get(local));
+        if (md.status !== 200 || !md.type.includes("text/markdown")) fail(local, `Markdown copy answered ${md.status} ${md.type}`);
+      }
+    }
+
+    // Structured data: every JSON-LD block parses; each page has the base entities and its own types; a
+    // FAQPage asks only questions the page shows as headings.
+    const ldTypes = new Set();
+    const ldNodes = [];
+    for (const script of findAll(doc, (n) => n.tagName === "script" && attr(n, "type") === "application/ld+json")) {
+      const text = script.childNodes?.map((c) => c.value ?? "").join("") ?? "";
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch (e) {
+        fail(p, `JSON-LD does not parse: ${e.message}`);
+        continue;
+      }
+      if (json["@context"] !== "https://schema.org") fail(p, `JSON-LD @context is ${json["@context"]}`);
+      for (const node of json["@graph"] ?? [json]) {
+        ldNodes.push(node);
+        ldTypes.add(node["@type"]);
+      }
+    }
+    if (!noindex) {
+      const required = [...BASE_JSON_LD, ...REQUIRED_JSON_LD.filter((r) => r.match(p)).flatMap((r) => r.types)];
+      for (const type of required) if (!ldTypes.has(type)) fail(p, `JSON-LD has no ${type}`);
+    }
+    // A heading's own text, without the copy-link button Fumadocs puts beside it.
+    const headingText = (h) => {
+      const out = [];
+      walk(h, (n) => (n.tagName === "button" || n.tagName === "svg" ? false : (n.nodeName === "#text" && out.push(n.value), true)));
+      return out.join("").replace(/\s+/g, " ").trim();
+    };
+    const headings = new Set(findAll(root, (n) => /^h[2-3]$/.test(n.tagName)).map(headingText));
+    for (const node of ldNodes.filter((n) => n["@type"] === "FAQPage")) {
+      for (const q of node.mainEntity ?? []) {
+        if (!headings.has(q.name)) fail(p, `FAQPage question “${q.name}” is not a heading on the page`);
+        if (!q.acceptedAnswer?.text) fail(p, `FAQPage question “${q.name}” has no answer`);
+      }
+    }
+    for (const node of ldNodes.filter((n) => n["@type"] === "BreadcrumbList")) {
+      for (const item of node.itemListElement ?? []) {
+        const local = toLocal(item.item, p);
+        if (!local || !pages.has(local)) fail(p, `breadcrumb ${item.item} is not a crawled page`);
+      }
+    }
 
     report.push({ path: p, words, cap: cap.cap, dataWords, regions, sample: sampleRegions.length });
   }
