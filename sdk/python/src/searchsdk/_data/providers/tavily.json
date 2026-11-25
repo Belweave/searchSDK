@@ -6,7 +6,7 @@
   "specVersion": "2026-11-24",
   "sources": [
     { "url": "https://docs.tavily.com/documentation/api-reference/endpoint/search.md", "retrievedOn": "2026-11-24", "covers": "search request, response, status codes (OpenAPI 3.0.3)" },
-    { "url": "https://docs.tavily.com/documentation/api-reference/endpoint/extract.md", "retrievedOn": "2026-11-24", "covers": "extract request, response, status codes" },
+    { "url": "https://docs.tavily.com/documentation/api-reference/endpoint/extract.md", "retrievedOn": "2026-11-25", "covers": "extract request, response, status codes" },
     { "url": "https://docs.tavily.com/documentation/api-credits.md", "retrievedOn": "2026-11-24", "covers": "credit costs and credit prices" },
     { "url": "https://docs.tavily.com/documentation/rate-limits.md", "retrievedOn": "2026-11-24", "covers": "rate limits, 429 and 434 behaviour" }
   ],
@@ -196,6 +196,7 @@
     }
   },
   "unverified": [
+    { "pointer": "/contents/cost/reported", "reason": "Extract docs (read 2026-11-25) say usage.credits may be 0 until five successful extractions accumulate, so a reported per-request cost can understate what the request adds to the bill." },
     { "pointer": "/search/response/fields/publishedAt", "reason": "published_date is a beta field: Tavily's estimate of publish or update time, in RFC 1123 form in examples." },
     { "pointer": "/search/request/fixed/include_published_date", "reason": "Docs do not say whether include_published_date affects cost or latency." },
     { "pointer": "/search/request/params/country", "reason": "country takes lowercase English names; the ISO code table is ours. 'congo' is assumed to mean CG, not CD." },

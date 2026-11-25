@@ -17,6 +17,8 @@
     { "name": "bound uses the ceiling for the top of a published range", "fn": "costBound", "provider": "exa", "kind": "search", "input": { "maxResults": 25, "depth": "deep" }, "expect": { "usd": 0.03 } },
     { "name": "bound uses the overage rate", "fn": "costBound", "provider": "context", "kind": "search", "input": { "maxResults": 10 }, "expect": { "usd": 0.003 } },
     { "name": "bound counts blocks for the requested results", "fn": "costBound", "provider": "context", "kind": "search", "input": { "maxResults": 11 }, "expect": { "usd": 0.006 } },
+    { "name": "a context scrape is bounded at the overage rate per URL", "fn": "costBound", "provider": "context", "kind": "contents", "input": { "urls": 1 }, "expect": { "usd": 0.003 } },
+    { "name": "context sharedParams can carry browser actions, which change the price, so the bound is unknown", "fn": "costBound", "provider": "context", "kind": "contents", "input": { "urls": 1, "providerOptions": { "sharedParams": {} } }, "expect": { "usd": null, "unknownBecause": "option" } },
     { "name": "bound uses the price of extra credits", "fn": "costBound", "provider": "firecrawl", "kind": "search", "input": {}, "expect": { "usd": 0.01 } },
     { "name": "bound is unknown when a cost option makes the price unknown", "fn": "costBound", "provider": "firecrawl", "kind": "search", "input": { "providerOptions": { "scrapeOptions": { "formats": ["markdown"] } } }, "expect": { "usd": null, "unknownBecause": "option" } },
     { "name": "bound inside a free allowance holds only while paid overage stays off", "fn": "costBound", "provider": "tinyfish", "kind": "search", "input": {}, "expect": { "usd": 0, "requiresOverageOff": true } },

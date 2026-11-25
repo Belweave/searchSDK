@@ -40,6 +40,11 @@
         }
       ]
     },
+    "capabilityNotes": {
+      "$comment": "Why a capability is false or partial, in words, keyed by capability name. Runtimes ignore it.",
+      "type": "object",
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
     "capabilities": {
       "type": "object",
       "required": ["search", "contents"],

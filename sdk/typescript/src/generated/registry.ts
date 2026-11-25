@@ -451,6 +451,14 @@ export const schema = deepFreeze<JsonSchema>({
         }
       ]
     },
+    "capabilityNotes": {
+      "$comment": "Why a capability is false or partial, in words, keyed by capability name. Runtimes ignore it.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
     "capabilities": {
       "type": "object",
       "required": [
@@ -1920,6 +1928,11 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         "url": "https://api-dashboard.search.brave.com/documentation/guides/rate-limiting",
         "retrievedOn": "2026-11-24",
         "covers": "rate limit headers; only successful requests are billed"
+      },
+      {
+        "url": "https://api-dashboard.search.brave.com/documentation/services/llm-context",
+        "retrievedOn": "2026-11-25",
+        "covers": "LLM Context takes a query, not a URL; no endpoint fetches a given page"
       }
     ],
     "auth": {
@@ -1935,6 +1948,9 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       "answer": true,
       "research": false,
       "crawl": false
+    },
+    "capabilityNotes": {
+      "contents": "No page-contents endpoint: every Brave Search API endpoint takes a query, not a URL. LLM Context (/res/v1/llm/context) returns page chunks for search results; it is not a contents call and is not mapped. Docs read 2026-11-25."
     },
     "index": {
       "type": "own",
@@ -2609,7 +2625,10 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
           "extraBlockUsd": 0.003,
           "note": "Developer overage is $3 per 1,000 credits, above the plan's $2 per 1,000."
         },
-        "note": "1 credit per scrape when at least one output succeeds; a target 404 is still charged."
+        "costOptions": {
+          "sharedParams": "unknown"
+        },
+        "note": "1 credit per scrape when at least one output succeeds; a target 404 is still charged. Browser actions make it 2."
       },
       "rateLimits": [
         {
@@ -2689,6 +2708,14 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         "reason": "Credit price depends on plan; the Developer list price is used."
       },
       {
+        "pointer": "/contents/pricing/costOptions/sharedParams",
+        "reason": "Credits docs (read 2026-11-25) charge 2 credits for a scrape with browser actions; which option object carries them is not stated, so sharedParams makes the price unknown."
+      },
+      {
+        "pointer": "/contents/response/pages/1",
+        "reason": "Credits docs charge a target 404; whether it arrives as markdown.success false (mapped failed, not billable) is not stated. The reported credits_consumed still gives the real cost when present."
+      },
+      {
         "pointer": "/terms",
         "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec."
       }
@@ -2707,7 +2734,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       },
       {
         "url": "https://exa.ai/docs/reference/get-contents.md",
-        "retrievedOn": "2026-11-24",
+        "retrievedOn": "2026-11-25",
         "covers": "contents request, response, per-URL statuses"
       },
       {
@@ -3190,8 +3217,8 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       },
       {
         "url": "https://docs.firecrawl.dev/features/search.md",
-        "retrievedOn": "2026-11-24",
-        "covers": "tbs values and custom date ranges; 2 credits per 10 results"
+        "retrievedOn": "2026-11-25",
+        "covers": "tbs values and custom date ranges; 2 credits per 10 results; results are scraped only when scrapeOptions is sent"
       },
       {
         "url": "https://docs.firecrawl.dev/api-reference/endpoint/scrape.md",
@@ -3684,7 +3711,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       },
       {
         "url": "https://docs.perplexity.ai/api-reference/context-post.md",
-        "retrievedOn": "2026-11-24",
+        "retrievedOn": "2026-11-25",
         "covers": "context request, response in request order, per-URL status types, errors"
       },
       {
@@ -4072,7 +4099,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       },
       {
         "url": "https://docs.tavily.com/documentation/api-reference/endpoint/extract.md",
-        "retrievedOn": "2026-11-24",
+        "retrievedOn": "2026-11-25",
         "covers": "extract request, response, status codes"
       },
       {
@@ -4652,6 +4679,10 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
     },
     "unverified": [
       {
+        "pointer": "/contents/cost/reported",
+        "reason": "Extract docs (read 2026-11-25) say usage.credits may be 0 until five successful extractions accumulate, so a reported per-request cost can understate what the request adds to the bill."
+      },
+      {
         "pointer": "/search/response/fields/publishedAt",
         "reason": "published_date is a beta field: Tavily's estimate of publish or update time, in RFC 1123 form in examples."
       },
@@ -4699,7 +4730,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       },
       {
         "url": "https://docs.tinyfish.ai/tinyfetch/reference.md",
-        "retrievedOn": "2026-11-24",
+        "retrievedOn": "2026-11-25",
         "covers": "fetch request, response, per-URL errors, billing"
       },
       {

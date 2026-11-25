@@ -7,7 +7,7 @@
   "sources": [
     { "url": "https://docs.tinyfish.ai/tinysearch/reference.md", "retrievedOn": "2026-11-24", "covers": "search parameters, response, status codes, rate limits, billing" },
     { "url": "https://docs.tinyfish.ai/search-api.md", "retrievedOn": "2026-11-24", "covers": "search overview, date filter rules, daily allowance" },
-    { "url": "https://docs.tinyfish.ai/tinyfetch/reference.md", "retrievedOn": "2026-11-24", "covers": "fetch request, response, per-URL errors, billing" },
+    { "url": "https://docs.tinyfish.ai/tinyfetch/reference.md", "retrievedOn": "2026-11-25", "covers": "fetch request, response, per-URL errors, billing" },
     { "url": "https://docs.tinyfish.ai/error-codes.md", "retrievedOn": "2026-11-24", "covers": "error envelope" },
     { "url": "https://www.tinyfish.ai/pricing", "retrievedOn": "2026-11-24", "covers": "prices and free limits" }
   ],

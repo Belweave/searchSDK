@@ -9,7 +9,7 @@
     { "url": "https://docs.perplexity.ai/docs/search/filters/date-time-filters.md", "retrievedOn": "2026-11-24", "covers": "MM/DD/YYYY date filters; an after date includes that day" },
     { "url": "https://docs.perplexity.ai/docs/search/filters/domain-filter.md", "retrievedOn": "2026-11-24", "covers": "one list mixes include and '-' exclude entries, 200 entries in total" },
     { "url": "https://docs.perplexity.ai/docs/getting-started/pricing.md", "retrievedOn": "2026-11-24", "covers": "Search $5 and Fast $1 per 1,000 requests; Context $1 per 1,000 ok URLs; billing units" },
-    { "url": "https://docs.perplexity.ai/api-reference/context-post.md", "retrievedOn": "2026-11-24", "covers": "context request, response in request order, per-URL status types, errors" },
+    { "url": "https://docs.perplexity.ai/api-reference/context-post.md", "retrievedOn": "2026-11-25", "covers": "context request, response in request order, per-URL status types, errors" },
     { "url": "https://docs.perplexity.ai/docs/admin/rate-limits-usage-tiers.md", "retrievedOn": "2026-11-24", "covers": "search query units per second; context requests per second and URLs per request by tier" }
   ],
   "auth": { "in": "header", "name": "authorization", "prefix": "Bearer ", "env": ["PERPLEXITY_API_KEY"] },

@@ -8,10 +8,12 @@
     { "url": "https://api-dashboard.search.brave.com/api-reference/web/search/get", "retrievedOn": "2026-11-24", "covers": "web search parameters and enums, response model, error model" },
     { "url": "https://api-dashboard.search.brave.com/app/documentation/web-search/query", "retrievedOn": "2026-11-24", "covers": "freshness values and custom date ranges" },
     { "url": "https://api-dashboard.search.brave.com/documentation/pricing", "retrievedOn": "2026-11-24", "covers": "price per 1,000 requests, monthly credit, capacity" },
-    { "url": "https://api-dashboard.search.brave.com/documentation/guides/rate-limiting", "retrievedOn": "2026-11-24", "covers": "rate limit headers; only successful requests are billed" }
+    { "url": "https://api-dashboard.search.brave.com/documentation/guides/rate-limiting", "retrievedOn": "2026-11-24", "covers": "rate limit headers; only successful requests are billed" },
+    { "url": "https://api-dashboard.search.brave.com/documentation/services/llm-context", "retrievedOn": "2026-11-25", "covers": "LLM Context takes a query, not a URL; no endpoint fetches a given page" }
   ],
   "auth": { "in": "header", "name": "x-subscription-token", "env": ["BRAVE_API_KEY"] },
   "capabilities": { "search": true, "contents": false, "answer": true, "research": false, "crawl": false },
+  "capabilityNotes": { "contents": "No page-contents endpoint: every Brave Search API endpoint takes a query, not a URL. LLM Context (/res/v1/llm/context) returns page chunks for search results; it is not a contents call and is not mapped. Docs read 2026-11-25." },
   "index": { "type": "own", "note": "Brave describes its own independent index." },
   "terms": {
     "url": "https://api-dashboard.search.brave.com/terms-of-service",
