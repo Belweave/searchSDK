@@ -48,7 +48,8 @@
     "p1-museum-website-002": "ambiguous name: many churches are called Church of Our Lady",
     "p1-work-author-ru-005": "the title carries a Wikipedia disambiguator, \"(новелла)\"",
     "p1-film-director-zh-002": "the year in the source (2002) is wrong; the film is from 2021",
-    "p1-work-author-fr-004": "second Sienkiewicz item in this template; one is enough"
+    "p1-work-author-fr-004": "second Sienkiewicz item in this template; one is enough",
+    "p1-nobel-work-author-birthplace-004": "same author (Jon Fosse) and birthplace statement as seed item pub-nobel-work-author-birthplace-001"
   },
   "answers": {
     "p1-company-headquarters-001": [
@@ -60,9 +61,6 @@
     ],
     "p1-company-headquarters-005": [
       "Tokyo"
-    ],
-    "p1-nobel-work-author-birthplace-004": [
-      "Haugesund"
     ],
     "p1-painting-artist-birthplace-006": [
       "Saint-Maurice",
@@ -187,8 +185,8 @@
     "p1-nobel-work-author-birthplace-001": "Answer also found in https://en.wikipedia.org/wiki/Herta_M%C3%BCller.",
     "p1-nobel-work-author-birthplace-002": "Answer also found in https://en.wikipedia.org/wiki/Sigrid_Undset.",
     "p1-nobel-work-author-birthplace-003": "Answer also found in https://af.wikipedia.org/wiki/Thomas_Mann.",
-    "p1-nobel-work-author-birthplace-004": "Answer confirmed from the reviewer's general knowledge; the automatic second-source check did not find it.",
     "p1-nobel-work-author-birthplace-005": "Answer also found in https://en.wikipedia.org/wiki/Ivo_Andri%C4%87.",
+    "p1-nobel-work-author-birthplace-006": "Answer also found in https://en.wikipedia.org/wiki/Pearl_S._Buck.",
     "p1-painting-artist-birthplace-001": "Answer also found in https://en.wikipedia.org/wiki/Diego_Vel%C3%A1zquez.",
     "p1-painting-artist-birthplace-002": "Answer also found in https://en.wikipedia.org/wiki/Amedeo_Modigliani.",
     "p1-painting-artist-birthplace-004": "Answer also found in https://ast.wikipedia.org/wiki/Artemisia_Gentileschi.",

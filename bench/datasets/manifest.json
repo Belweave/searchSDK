@@ -18,7 +18,7 @@
       "name": "public",
       "version": "1.0.0",
       "file": "datasets/public/public-1.0.0.jsonl",
-      "sha256": "c1fa82f05c549396f1347a6a1ffd2dedeb46397a3f82c16f59bc2879ed1c0241",
+      "sha256": "96361379f72435be9932fef7d06c9f1e73ee9336b29c8c8a440ead72d1e8b447",
       "count": 252,
       "classes": {
         "fact.head": 42,

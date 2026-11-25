@@ -36,10 +36,21 @@ export interface Spec {
   /** Sets whose queries and subjects this build must not reuse (paths relative to bench/, or absolute). */
   exclude?: string[];
   maxPerAnswer?: number;
+  /**
+   * Also treat the Wikidata statement and the entity that holds it as used subjects, so two birthplace
+   * items about one author never share a statement, within the set or across the sets it excludes.
+   * (Added after public-1.0.0 was built; that spec leaves it off so its build stays reproducible.)
+   */
+  uniqueHolders?: boolean;
   templates: { id: string; count: number }[];
 }
 
 export const subjectOf = (i: Pick<Item, "source">): string => i.source.entity ?? `${i.source.name}:${(i.source.path ?? []).join("/")}`;
+/** The subject, plus (with uniqueHolders) the statement and the entity holding it. */
+export function subjectsOf(i: Pick<Item, "source">, uniqueHolders: boolean): string[] {
+  const st = i.source.statement?.toLowerCase();
+  return [subjectOf(i), ...(uniqueHolders && st ? [`st:${st}`, st.split(/[-$]/)[0]!.toUpperCase()] : [])];
+}
 const firstAnswer = (i: Pick<Item, "answers" | "answerPatterns" | "answerUrls">) => normalize(i.answers[0] ?? i.answerUrls[0] ?? i.answerPatterns[0] ?? "");
 
 function args(): Record<string, string> {
@@ -93,7 +104,7 @@ async function main(): Promise<void> {
   const usedSubjects = new Set<string>();
   const answerCount = new Map<string, number>();
   for (const p of [...(spec.exclude ?? []), ...(spec.carry ?? [])]) {
-    for (const i of loadSet(p)) { usedQueries.add(normalize(i.query)); usedSubjects.add(subjectOf(i)); }
+    for (const i of loadSet(p)) { usedQueries.add(normalize(i.query)); for (const k of subjectsOf(i, !!spec.uniqueHolders)) usedSubjects.add(k); }
   }
   for (const p of spec.carry ?? []) for (const i of loadSet(p)) answerCount.set(firstAnswer(i), (answerCount.get(firstAnswer(i)) ?? 0) + 1);
   const maxPerAnswer = spec.maxPerAnswer ?? 2;
@@ -116,11 +127,11 @@ async function main(): Promise<void> {
       const probe = { ...c, id: c.split === "fresh" ? "fresh-probe" : "pub-probe", split: c.split === "fresh" ? "fresh" : "public" } as Item;
       if (itemProblems([probe]).length) { invalid++; continue; }
       const q = normalize(c.query);
-      const s = subjectOf(c);
-      if (usedQueries.has(q) || usedSubjects.has(s)) { reused++; continue; }
+      const ks = subjectsOf(c, !!spec.uniqueHolders);
+      if (usedQueries.has(q) || ks.some((k) => usedSubjects.has(k))) { reused++; continue; }
       const a = firstAnswer(c);
       if ((answerCount.get(a) ?? 0) >= maxPerAnswer) { crowded++; continue; }
-      usedQueries.add(q); usedSubjects.add(s); answerCount.set(a, (answerCount.get(a) ?? 0) + 1);
+      usedQueries.add(q); for (const k of ks) usedSubjects.add(k); answerCount.set(a, (answerCount.get(a) ?? 0) + 1);
       picked++;
       out.push({ ...c, id: `cand-${spec.idPrefix}-${want.id}-${String(picked).padStart(3, "0")}` } as Item);
     }
