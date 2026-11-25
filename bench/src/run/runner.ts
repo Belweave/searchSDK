@@ -13,7 +13,7 @@ import { appendJsonl, readJsonl, rng, seedOf, sha256, shuffle, writeJson } from 
 import type { Budget } from "./budget.ts";
 import type { Method, RunConfig } from "./config.ts";
 import { Pacer, realTimer, type Timer } from "./pacer.ts";
-import { hasProfile, settingsFor, type Plan } from "./plan.ts";
+import { hasProfile, reusesDefault, scopeOf, settingsFor, type Plan } from "./plan.ts";
 import { attemptsCredits, creditReservation, reservation } from "./pricing.ts";
 import {
   judgePairIdOf, runPaths, urlKey, type AttemptRecord, type EventRecord, type JudgmentRecord, type Outcome, type PageRecord,
@@ -90,6 +90,15 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
   const disabled = new Map<string, string>();
   for (const a of previous) if (a.outcome === "setup_error") disabled.set(a.provider, a.code ?? "setup");
   const pacers = new Map(ctx.plan.providers.map((p) => [p.id, new Pacer(p.pace, timer)]));
+  // A scoped profile (the tuned condition) runs on its seeded subset and passes only, for every provider alike.
+  const scopes = new Map(config.profiles.map((p) => {
+    const sc = scopeOf(config, p, ctx.items);
+    return [p, { ids: new Set(sc.items.map((i) => i.id)), passes: new Set(sc.passes) }];
+  }));
+  const runs = (profile: string, provider: string, itemId: string, pass: number) => {
+    const sc = scopes.get(profile)!;
+    return hasProfile(config, profile, provider) && !reusesDefault(config, profile, provider) && sc.passes.has(pass) && sc.ids.has(itemId);
+  };
   let stop: StopReason | null = null;
   const halt = (r: StopReason) => { stop ??= r; };
 
@@ -97,7 +106,7 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
     const order = shuffle(ctx.items, rng(seedOf(config.seed, "order", pass)));
     await pool(order, method.pacing.itemWindow, () => stop !== null || !!ctx.signal?.aborted, async (item) => {
       const order = providerOrder(config, item.id, pass);
-      const units = order.flatMap((provider) => config.profiles.filter((profile) => hasProfile(config, profile, provider)).map((profile) => ({ provider, profile })));
+      const units = order.flatMap((provider) => config.profiles.filter((profile) => runs(profile, provider, item.id, pass)).map((profile) => ({ provider, profile })));
       await Promise.all(units.map(async ({ provider, profile }) => {
         const key = `s|${pass}|${item.id}|${provider}|${profile}`;
         if (done.has(key) || disabled.has(provider) || stop) return;
@@ -131,6 +140,7 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
             timeoutMs: method.search.timeoutMs,
             maxRetries: method.search.maxRetries,
             ...(settings.depth ? { depth: settings.depth } : {}),
+            ...(settings.country ? { country: settings.country } : {}),
             ...(settings.providerOptions ? { providerOptions: { [provider]: settings.providerOptions } } : {}),
             ...(ctx.signal ? { signal: ctx.signal } : {}),
           });

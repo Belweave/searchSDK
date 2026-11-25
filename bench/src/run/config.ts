@@ -22,13 +22,43 @@ export interface Method {
   budget: { monthlyCapUsd: number; unknownPriceUsd: number };
   pacing: { shareOfLimit: number; maxInFlightPerProvider: number; itemWindow: number; rateLimitPauseMs: number };
   routing: { minCellN: number; validDays: number };
+  /** The tuned column (METHOD §8): the same split size, passes, search-space size and price cap for every provider. */
+  tuning: TuningRule;
+}
+
+export interface TuningRule {
+  /** Items drawn by seed from the tuning split, which never overlaps the scored items. */
+  splitItems: number;
+  /** Passes over the split, for default and every candidate alike. */
+  passes: number;
+  /** Candidates per provider besides its default: every space has exactly this many. */
+  maxCandidates: number;
+  /** The SDK's cost bound per call must be at most this, for every candidate; others are excluded before any call. */
+  maxCostPerCallUsd: number;
+  /** A candidate beats the default only by at least this much known-answer score... */
+  minGain: number;
+  /** ...and, when true, with a 95% paired-bootstrap interval of the gain above zero. */
+  requireSeparation: boolean;
+  /** Selection uses known-answer scores only; judges are off for tuning in this method version. */
+  judged: false;
+  /** The tuned condition in the main run: a seeded subset of this many scored items, the same for every provider... */
+  conditionItems: number;
+  /** ...on these passes. */
+  conditionPasses: number[];
 }
 
 /** Exact settings sent with a provider's searches under one profile. Empty means SDK defaults. */
 export interface Settings {
   depth?: "fast" | "standard" | "deep";
+  /** The SDK's normalized country option (ISO 3166-1 alpha-2). */
+  country?: string;
   providerOptions?: Record<string, unknown>;
 }
+
+/** Where a run's tuned profile came from: a selection made on the tuning split, or the plan's worst case before one exists. */
+export type TunedSource =
+  | { status: "worst-case"; tuning: string }
+  | { status: "selected"; tuning: string; selection: import("../tune.ts").Selection; selectionSha256: string };
 
 export type JudgePricing = "covered-by-plan" | "list-price";
 
@@ -49,8 +79,20 @@ export interface RunConfig {
   profiles: string[];
   /** Settings per profile and provider, for profiles other than "default". */
   settings?: Record<string, Record<string, Settings>>;
-  /** Items left out of one profile's score (for example "tuned" leaves out the items it was tuned on). */
+  /** Items left out of one profile's score. */
   profileExclude?: Record<string, string[]>;
+  /**
+   * Runs a profile on part of the run only: a seeded, class-stratified subset of `items` items
+   * (the same for every provider) and the listed passes. Unscoped profiles run every item and pass.
+   */
+  profileScope?: Record<string, { items?: number; passes?: number[] }>;
+  /**
+   * The tuned condition (METHOD §8): the path of the tuning spaces file. A run that sets it needs a
+   * selection (--tuned) or an explicit --no-tuned; the plan shows the worst case before selection.
+   */
+  tuning?: string;
+  /** Filled by --tuned (or by the plan's worst case): where the "tuned" profile's settings came from. */
+  tuned?: TunedSource;
   /** Search passes whose top URLs get fetched for the page check. Empty disables page fetching. */
   pagePasses: number[];
   /** Judge this many items (drawn by seed within classes), from pass 1. Zero disables judging; at least the item count judges every item. */
@@ -100,6 +142,11 @@ export function loadRunConfig(path: string): RunConfig {
   if (c.judgePricing !== undefined && c.judgePricing !== "covered-by-plan" && c.judgePricing !== "list-price") problems.push("judgePricing: covered-by-plan or list-price");
   if (typeof c.capUsd !== "number" || !(c.capUsd > 0)) problems.push("capUsd: a positive number");
   if (!Number.isInteger(c.seed)) problems.push("seed: an integer");
+  for (const [name, sc] of Object.entries(c.profileScope ?? {})) {
+    if (sc.items !== undefined && !(Number.isInteger(sc.items) && sc.items > 0)) problems.push(`profileScope.${name}.items: a positive whole number`);
+    if (sc.passes !== undefined && (!Array.isArray(sc.passes) || !sc.passes.length || sc.passes.some((p) => !Number.isInteger(p) || p < 1 || p > c.passes))) problems.push(`profileScope.${name}.passes: pass numbers`);
+  }
+  if (c.tuning !== undefined && typeof c.tuning !== "string") problems.push("tuning: the path of the tuning spaces file");
   for (const [id, l] of Object.entries(c.providerLimits ?? {})) {
     if (l.credits !== undefined && !(Number.isFinite(l.credits) && l.credits > 0)) problems.push(`providerLimits.${id}.credits: a positive number`);
     if (l.calls !== undefined && !(Number.isInteger(l.calls) && l.calls > 0)) problems.push(`providerLimits.${id}.calls: a positive whole number`);

@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 import type { Item } from "../dataset/items.ts";
 import { textHasAnswer, urlMatches } from "../dataset/match.ts";
 import type { Method, RunConfig } from "../run/config.ts";
-import { hasProfile } from "../run/plan.ts";
+import { hasProfile, reusesDefault, scopeOf } from "../run/plan.ts";
 import { judgePairIdOf, runPaths, SCORED_OUTCOMES, urlKey, type AttemptRecord, type HumanLabel, type JudgmentRecord, type PageRecord } from "../run/records.ts";
 import { readJsonl, round, seedOf } from "../util/core.ts";
 import { rank, type RankRow } from "./rank.ts";
@@ -49,7 +49,13 @@ export interface ProfileScore {
   pageUnreadableRate: number | null;
   stale: { n: number; rate: number } | null;
   retest: { n: number; agreement: number; flipped: number; meanDelta: number; urlJaccard: number } | null;
+  /** Only the default profile is ranked; other conditions are shown beside it. */
   rank: RankRow | null;
+  /**
+   * For a condition other than default: the default's known-answer score on the same items and
+   * passes, and the paired difference (this condition minus default) with its interval.
+   */
+  vsDefault?: { n: number; default: Interval; diff: Interval } | null;
   /** Per item known-answer scores (the mean over every pass), aligned with Scores.items; null where not scored. */
   perItem: (number | null)[];
   /** Per pass (index pass - 1), per item known-answer scores, aligned with Scores.items. */
@@ -280,33 +286,40 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
   const droppedItems: Record<string, number> = {};
   const cells: ClassCell[] = [];
 
+  type Row = { a1: Map<string, AttemptRecord>; per: Map<string, ReturnType<typeof knownAnswer>>; passes: Map<string, number[]>; list: AttemptRecord[] };
+  /** One provider's known-answer scores under a profile, on a scope's items and passes. Reused default calls are read from "default". */
+  const rowFor = (provider: string, source: string, scopeIds: Set<string>, scopePasses: number[]): Row => {
+    const list = all.filter((a) => a.provider === provider && a.profile === source && scopePasses.includes(a.pass) && scopeIds.has(a.itemId));
+    const byPass = scopePasses.map((pass) => new Map(list.filter((a) => a.pass === pass).map((a) => [a.itemId, a])));
+    const a1 = byPass[0]!;
+    // An item counts only when every pass scored it; its score is the mean over the passes.
+    const per = new Map<string, ReturnType<typeof knownAnswer>>();
+    const passes = new Map<string, number[]>();
+    for (const id of a1.keys()) {
+      const item = items[index.get(id)!];
+      if (!item) continue;
+      const each: ReturnType<typeof knownAnswer>[] = [];
+      for (const [k, m] of byPass.entries()) {
+        const a = m.get(id);
+        if (!a || !SCORED.has(a.outcome)) break;
+        const pass = scopePasses[k]!;
+        each.push(knownAnswer(item, a, readRaw<RawSearch>(paths.rawSearch(pass, provider, source, id)), config.pagePasses.includes(pass) ? pageText : noPages, method));
+      }
+      if (each.length !== scopePasses.length) continue;
+      per.set(id, { score: mean(each.map((x) => x.score)), snippet: mean(each.map((x) => x.snippet)), page: mean(each.map((x) => x.page)) });
+      passes.set(id, each.map((x) => x.score));
+    }
+    return { a1, per, passes, list };
+  };
+
   for (const profile of config.profiles) {
-    const rows = new Map<string, { a1: Map<string, AttemptRecord>; per: Map<string, ReturnType<typeof knownAnswer>>; passes: Map<string, number[]>; list: AttemptRecord[] }>();
+    const rows = new Map<string, Row>();
     const runs = config.providers.filter((p) => hasProfile(config, profile, p));
     const exclude = new Set(config.profileExclude?.[profile] ?? []);
-    const pItems = items.filter((i) => !exclude.has(i.id));
-    for (const provider of runs) {
-      const list = all.filter((a) => a.provider === provider && a.profile === profile);
-      const byPass = Array.from({ length: config.passes }, (_, k) => new Map(list.filter((a) => a.pass === k + 1).map((a) => [a.itemId, a])));
-      const a1 = byPass[0]!;
-      // An item counts only when every pass scored it; its score is the mean over the passes.
-      const per = new Map<string, ReturnType<typeof knownAnswer>>();
-      const passes = new Map<string, number[]>();
-      for (const id of a1.keys()) {
-        const item = items[index.get(id)!];
-        if (!item) continue;
-        const each: ReturnType<typeof knownAnswer>[] = [];
-        for (const [k, m] of byPass.entries()) {
-          const a = m.get(id);
-          if (!a || !SCORED.has(a.outcome)) break;
-          each.push(knownAnswer(item, a, readRaw<RawSearch>(paths.rawSearch(k + 1, provider, profile, id)), config.pagePasses.includes(k + 1) ? pageText : noPages, method));
-        }
-        if (each.length !== config.passes) continue;
-        per.set(id, { score: mean(each.map((x) => x.score)), snippet: mean(each.map((x) => x.snippet)), page: mean(each.map((x) => x.page)) });
-        passes.set(id, each.map((x) => x.score));
-      }
-      rows.set(provider, { a1, per, passes, list });
-    }
+    const scope = scopeOf(config, profile, items);
+    const scopeIds = new Set(scope.items.map((i) => i.id));
+    const pItems = scope.items.filter((i) => !exclude.has(i.id));
+    for (const provider of runs) rows.set(provider, rowFor(provider, reusesDefault(config, profile, provider) ? "default" : profile, scopeIds, scope.passes));
     // A provider scored on fewer than 90% of items is incomplete and left out of the ranking.
     const complete = runs.filter((p) => pItems.filter((i) => rows.get(p)!.per.has(i.id)).length >= 0.9 * pItems.length);
     const paired = pItems.filter((i) => complete.every((p) => rows.get(p)!.per.has(i.id)));
@@ -353,13 +366,25 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
       const r = reliability(rows.get(p)!.list, conf);
       return { id: p, quality: boot.each[p]!.mean, usableRate: r.usableRate, usableUpper: r.ci[1] };
     });
-    const ranks = rank(inputs, boot, { floor: method.reliability.floor, minSeparation: method.stats.minSeparation });
+    // Only the default profile is ranked: the headline. Other conditions are shown beside it, never ranked.
+    const ranks = profile === "default" ? rank(inputs, boot, { floor: method.reliability.floor, minSeparation: method.stats.minSeparation }) : [];
+    // A condition other than default is compared with the default on its own items and passes.
+    const matched = new Map<string, NonNullable<ProfileScore["vsDefault"]>>();
+    if (profile !== "default" && config.profiles.includes("default")) {
+      for (const p of complete) {
+        const d = rowFor(p, "default", scopeIds, scope.passes);
+        const ids = paired.filter((i) => d.per.has(i.id)).map((i) => i.id);
+        if (!ids.length) continue;
+        const b = pairedBootstrap({ condition: ids.map((id) => rows.get(p)!.per.get(id)!.score), default: ids.map((id) => d.per.get(id)!.score) }, method.stats.bootstrap, seedOf(method.stats.seed, profile, p, "vs-default"), conf);
+        matched.set(p, { n: ids.length, default: b.each.default!, diff: b.diff.condition!.default! });
+      }
+    }
 
     for (const provider of runs) {
       const { a1, per, passes, list } = rows.get(provider)!;
       const isComplete = complete.includes(provider);
-      const pass1 = list.filter((a) => a.pass === 1);
-      const correct = [...per.values()].reduce((s, x) => s + x.score, 0) * config.passes;
+      const pass1 = list.filter((a) => a.pass === scope.passes[0]);
+      const correct = [...per.values()].reduce((s, x) => s + x.score, 0) * scope.passes.length;
       const comp = [...per.entries()];
       const nonNav = comp.filter(([id]) => items[index.get(id)!]!.class !== "nav");
       const navs = comp.filter(([id]) => items[index.get(id)!]!.class === "nav");
@@ -371,13 +396,13 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
       let staleN = 0;
       for (const i of freshIds) {
         if (per.get(i.id)!.score === 1) continue;
-        const raw = readRaw<RawSearch>(paths.rawSearch(1, provider, profile, i.id));
+        const raw = readRaw<RawSearch>(paths.rawSearch(scope.passes[0]!, provider, reusesDefault(config, profile, provider) ? "default" : profile, i.id));
         const text = (raw?.results ?? []).map((r) => [r.title ?? "", ...r.excerpts].join(" ")).join("\n");
         if (i.superseded!.some((v) => new RegExp(`(?<![\\w.])v?${v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w]|\\.\\d)`, "iu").test(text))) staleN++;
       }
       let rt: ProfileScore["retest"] = null;
-      if (config.passes >= 2) {
-        const a2 = new Map(list.filter((a) => a.pass === 2).map((a) => [a.itemId, a]));
+      if (scope.passes.length >= 2) {
+        const a2 = new Map(list.filter((a) => a.pass === scope.passes[1]).map((a) => [a.itemId, a]));
         const ids = [...per.keys()].filter((id) => a2.has(id) && SCORED.has(a2.get(id)!.outcome));
         const t = retest(ids.map((id) => passes.get(id)![0]!), ids.map((id) => passes.get(id)![1]!));
         const jac = ids.map((id) => {
@@ -408,8 +433,12 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
         stale: freshIds.length ? { n: freshIds.length, rate: round(staleN / freshIds.length) } : null,
         retest: rt,
         rank: ranks.find((r) => r.id === provider) ?? null,
+        ...(profile !== "default" ? { vsDefault: matched.get(provider) ?? null } : {}),
         perItem: items.map((i) => per.get(i.id)?.score ?? null),
-        perItemPasses: Array.from({ length: config.passes }, (_, k) => items.map((i) => passes.get(i.id)?.[k] ?? null)),
+        perItemPasses: Array.from({ length: config.passes }, (_, k) => {
+          const at = scope.passes.indexOf(k + 1);
+          return items.map((i) => (at < 0 ? null : (passes.get(i.id)?.[at] ?? null)));
+        }),
       });
     }
     // Share of judged pairs whose passage came from the fetched page rather than the provider's snippet.
@@ -429,12 +458,12 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
         const r = reliability(rows.get(p)!.list.filter((a) => cIds.has(a.itemId)), conf);
         return { id: p, quality: cBoot.each[p]!.mean, usableRate: r.usableRate, usableUpper: r.ci[1] };
       });
-      const cRanks = rank(cInputs, cBoot, { floor: method.reliability.floor, minSeparation: method.stats.minSeparation });
+      const cRanks = profile === "default" ? rank(cInputs, cBoot, { floor: method.reliability.floor, minSeparation: method.stats.minSeparation }) : [];
       for (const p of complete) {
         const list = rows.get(p)!.list.filter((a) => cIds.has(a.itemId));
         const r = reliability(list, conf);
         const l = latency(list, method.search.timeoutMs);
-        const correct = cKa[p]!.reduce((s, x) => s + x, 0) * config.passes;
+        const correct = cKa[p]!.reduce((s, x) => s + x, 0) * scope.passes.length;
         const c = cost(list, correct);
         const jv = judgedScores[p] ? judgedScores[p]!.filter((_, k) => judgedItems[k]!.class === cls) : [];
         const js = jv.length ? bootstrapMean(jv, method.stats.bootstrap, seedOf(method.stats.seed, "judged", p, cls), conf) : null;

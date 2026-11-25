@@ -25,6 +25,8 @@ export interface ProviderPlan {
 export interface Plan {
   runName: string;
   method: string;
+  /** Profiles that run on part of the run: their seeded item subset and passes. */
+  scopes: Record<string, { items: string[]; passes: number[] }>;
   items: { id: string; split: Item["split"]; class: string }[];
   itemsSha256: string;
   judgeItemIds: string[];
@@ -50,6 +52,21 @@ export function settingsFor(config: RunConfig, profile: string, provider: string
 /** A profile other than "default" runs only for providers it gives settings for. */
 export function hasProfile(config: RunConfig, profile: string, provider: string): boolean {
   return profile === "default" || config.settings?.[profile]?.[provider] !== undefined;
+}
+
+/**
+ * A profile whose settings for a provider are empty is the default condition: it sends no calls of
+ * its own and is scored from the default profile's calls on its scope (a tuned choice of "default").
+ */
+export function reusesDefault(config: RunConfig, profile: string, provider: string): boolean {
+  return profile !== "default" && hasProfile(config, profile, provider) && Object.keys(settingsFor(config, profile, provider)).length === 0;
+}
+
+/** The items and passes a profile runs on: a seeded subset the same for every provider, or everything. */
+export function scopeOf(config: RunConfig, profile: string, items: readonly Item[]): { items: Item[]; passes: number[] } {
+  const sc = config.profileScope?.[profile];
+  const passes = sc?.passes ? [...sc.passes].sort((a, b) => a - b) : Array.from({ length: config.passes }, (_, k) => k + 1);
+  return { items: sc?.items ? stratifiedSample(items, sc.items, seedOf(config.seed, "scope", profile)) : [...items], passes };
 }
 
 /** Seeded selection of `n` items, proportional within classes, so small runs keep the class mix. */
@@ -95,6 +112,7 @@ export function makePlan(o: {
   const warnings: string[] = [];
   if (o.checkCommitted !== false) for (const p of committedProblems()) warnings.push(`dataset: ${p}`);
   const providers: ProviderPlan[] = [];
+  const scopes = Object.fromEntries(config.profiles.map((p) => [p, scopeOf(config, p, items)]));
   let searchCalls = 0;
   let searchUsd = 0;
   for (const id of config.providers) {
@@ -106,11 +124,13 @@ export function makePlan(o: {
     const profiles = config.profiles.filter((profile) => hasProfile(config, profile, id)).map((profile) => {
       const settings = settingsFor(config, profile, id);
       if (settings.depth && !spec.search!.request.params.depth) throw new Error(`${id} (${profile}): depth is set but the provider has no depth parameter`);
+      if (settings.country && !spec.search!.request.params.country) throw new Error(`${id} (${profile}): country is set but the provider has no country parameter`);
       for (const k of Object.keys(settings.providerOptions ?? {})) {
         if (!Object.prototype.hasOwnProperty.call(spec.search!.providerOptions, k)) throw new Error(`${id} (${profile}): ${k} is not a documented provider option`);
       }
       const r = reservation(spec, "search", method.search.maxResults, settings, method);
-      const calls = items.length * config.passes;
+      const scope = scopes[profile]!;
+      const calls = reusesDefault(config, profile, id) ? 0 : scope.items.length * scope.passes.length;
       if (r.boundUsd === null) pw.push(`${profile}: the SDK cannot bound this call's cost (${r.basis}), reserving ${usd(r.usd, 4)} per call`);
       if (r.requiresOverageOff) pw.push(`${profile}: free within its allowance; the ${usd(r.usd, 4)} bound holds only while paid use past the allowance is off on the account`);
       return { profile, settings, reservation: r, calls, maxUsd: calls * r.usd };
@@ -145,8 +165,12 @@ export function makePlan(o: {
   }
 
   // Worst case: every search in a page pass returns a full list and no URL repeats.
-  const units = config.providers.reduce((n, p) => n + config.profiles.filter((x) => hasProfile(config, x, p)).length, 0);
-  const maxUrls = config.pagePasses.length * items.length * units * method.pages.topK;
+  let maxUrls = 0;
+  for (const p of config.providers) {
+    for (const x of config.profiles.filter((x) => hasProfile(config, x, p) && !reusesDefault(config, x, p))) {
+      maxUrls += scopes[x]!.passes.filter((k) => config.pagePasses.includes(k)).length * scopes[x]!.items.length * method.pages.topK;
+    }
+  }
 
   const judgeItems = config.judgeItems > 0 ? stratifiedSample(items, config.judgeItems, seedOf(config.seed, "judge")) : [];
   let judge: Plan["judge"] = null;
@@ -173,9 +197,11 @@ export function makePlan(o: {
   const maxUsd = searchUsd + (judge?.maxUsd ?? 0) + (checkJudge?.maxUsd ?? 0);
   if (maxUsd > config.capUsd) warnings.push(`the worst case (${usd(maxUsd)}) exceeds the cap (${usd(config.capUsd)}); the run stops when the cap is reached`);
   if (config.capUsd > method.budget.monthlyCapUsd) warnings.push(`the run cap is above the monthly cap (${usd(method.budget.monthlyCapUsd)}); the monthly cap applies`);
+  if (config.tuned?.status === "worst-case") warnings.push("tuned condition: no selection yet, so each provider's dearest candidate is planned (the worst case); a selection that keeps a default sends no tuned calls for that provider");
   return {
     runName: config.name,
     method: method.method,
+    scopes: Object.fromEntries(Object.entries(scopes).filter(([p]) => config.profileScope?.[p]).map(([p, sc]) => [p, { items: sc.items.map((i) => i.id), passes: sc.passes }])),
     items: items.map((i) => ({ id: i.id, split: i.split, class: i.class })),
     itemsSha256: sha256(canonical(items)),
     judgeItemIds: judgeItems.map((i) => i.id),
@@ -197,6 +223,7 @@ export function planHash(plan: Plan, config: RunConfig): string {
     items: plan.itemsSha256, judge: plan.judgeItemIds, method: plan.method,
     providers: plan.providers.map((p) => ({ id: p.id, profiles: p.profiles.map((x) => ({ profile: x.profile, settings: x.settings })) })),
     passes: config.passes, pagePasses: config.pagePasses, seed: config.seed,
+    ...(Object.keys(plan.scopes ?? {}).length ? { scopes: plan.scopes } : {}),
   }));
 }
 
@@ -214,9 +241,18 @@ export function formatPlan(plan: Plan, extra: { mode: string; monthCashUsd?: num
   L.push(`${pad("search", 26)}${lpad("calls", 7)}  ${pad("reserve per call (SDK cost bound)", 36)}${lpad("max", 9)}`);
   for (const p of plan.providers) {
     for (const x of p.profiles) {
-      L.push(`${pad(`${p.id} (${x.profile})`, 26)}${lpad(String(x.calls), 7)}  ${pad(`${money(x.reservation.usd, 4)} = ${x.reservation.basis}`, 36)}${lpad(money(x.maxUsd), 9)}`);
+      const note = x.calls === 0 && x.profile !== "default" ? "  (reuses its default calls)" : "";
+      L.push(`${pad(`${p.id} (${x.profile})`, 26)}${lpad(String(x.calls), 7)}  ${pad(`${money(x.reservation.usd, 4)} = ${x.reservation.basis}`, 36)}${lpad(money(x.maxUsd), 9)}${note}`);
     }
   }
+  const scoped = Object.entries(plan.scopes ?? {});
+  for (const [profile, sc] of scoped) L.push(`  ${profile}: a seeded subset of ${sc.items.length} items, pass${sc.passes.length > 1 ? "es" : ""} ${sc.passes.join(", ")}, the same items for every provider`);
+  const byProfile = new Map<string, { calls: number; usd: number }>();
+  for (const p of plan.providers) for (const x of p.profiles) {
+    const b = byProfile.get(x.profile) ?? { calls: 0, usd: 0 };
+    byProfile.set(x.profile, { calls: b.calls + x.calls, usd: b.usd + x.maxUsd });
+  }
+  if (byProfile.size > 1) L.push(`  by condition: ${[...byProfile].map(([k, v]) => `${k} ${v.calls} calls, ${money(v.usd)}`).join("; ")}`);
   L.push(`${pad("search subtotal", 26)}${lpad(String(plan.search.calls), 7)}  ${pad("", 36)}${lpad(money(plan.search.maxUsd), 9)}`);
   const credited = plan.providers.filter((p) => p.credits);
   if (credited.length) {
