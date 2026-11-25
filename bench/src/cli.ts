@@ -15,8 +15,10 @@ import { loadMethod, loadRunConfig, type RunConfig } from "./run/config.ts";
 import { formatPlan, loadRunItems, makePlan, runsDir } from "./run/plan.ts";
 import { runPaths } from "./run/records.ts";
 import { runJudge, runPages, runSearch, type StopReason } from "./run/runner.ts";
-import { registry as builtInRegistry, type ProviderSpec } from "./sdk.ts";
+import { createClient, registry as builtInRegistry, type ProviderSpec } from "./sdk.ts";
 import { scoreRun, type Scores } from "./score/score.ts";
+import { formatSmoke, formatSmokePlan, runSmoke, smokePlan } from "./smoke.ts";
+import { shapeFetch } from "./smoke-fixtures.ts";
 import { ledgerPath, liveGuards, openSession, type RunMeta, type Session } from "./session.ts";
 import { loadTuning, select, tuningRunConfig, withTuned, type Selection } from "./tune.ts";
 import { BENCH_DIR, isoDate, readJson, storeDir, usd, writeJson, writeJsonl } from "./util/core.ts";
@@ -24,6 +26,8 @@ import { BENCH_DIR, isoDate, readJson, storeDir, usd, writeJson, writeJsonl } fr
 const HELP = `searchSDK Benchmarks
 
   keys     --config <run.json> | --providers a,b [--no-judge] [--file <keys.env>]   which key variables are present; names only
+  smoke    --config <run.json> | --providers a,b [--searches 2] [--cap 0.10] [--live --confirm-spend <cap>]
+           2 or 3 searches and 1 contents call per provider: status, latency, fields found per spec path, cost vs bound
   plan     --config <run.json> [--tuned <selection.json>] [--no-judge]   print the calls and the maximum spend; sends nothing
   pilot    --config <run.json> [--no-judge] [--live --confirm-spend <cap>]   plan, confirm, search, fetch pages, judge, score
   run      --config <run.json> [--tuned <sel>] [--no-judge] [--live --confirm-spend <cap>] [--resume <runId>]
@@ -175,6 +179,46 @@ function report(scores: Scores, config?: RunConfig): string {
   return L.join("\n");
 }
 
+/** `bench smoke`: a few real calls per provider (or recorded-shape fixtures without --live), under a cents-sized cap. */
+async function smoke(flags: Record<string, string | true>): Promise<void> {
+  const method = loadMethod();
+  const providersFlag = str(flags, "providers");
+  const config = str(flags, "config") ? configFrom(flags) : null;
+  const providers = providersFlag ? providersFlag.split(",").map((x) => x.trim()).filter(Boolean) : config?.providers;
+  if (!providers?.length) throw new Error("smoke: pass --config <run.json> or --providers a,b");
+  const reg = builtInRegistry as unknown as Record<string, ProviderSpec>;
+  for (const p of providers) if (!reg[p]?.search) throw new Error(`smoke: ${p} is not a registry provider with search`);
+  const searches = Number(str(flags, "searches") ?? 2);
+  if (!Number.isInteger(searches) || searches < 1 || searches > 3) throw new Error("--searches: 1 to 3");
+  const cap = Number(str(flags, "cap") ?? 0.1);
+  if (!(cap > 0) || cap > 1) throw new Error("--cap: a smoke cap above $0 and at most $1");
+  const plan = smokePlan(reg, providers, searches, method);
+  console.log(formatSmokePlan(plan, cap));
+  if (plan.maxUsd > cap) throw new Error(`the smoke check could spend ${usd(plan.maxUsd, 4)}, above --cap ${cap}`);
+  const live = flags.live === true;
+  if (live) {
+    const problems = liveGuards({ env: process.env, registry: reg, config: { providers, judgeItems: 0 } as unknown as RunConfig, method, judgeKeyEnv: null });
+    if (problems.length) throw new Error(`live smoke check refused:\n  ${problems.join("\n  ")}`);
+    if (!(await confirmSpend(cap, flags, plan.maxUsd))) throw new Error(`not confirmed: pass --confirm-spend ${cap} to accept the smoke cap`);
+  } else console.error("FIXTURE mode: synthetic recorded-shape responses; nothing is sent. Add --live to check the real APIs.");
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\..*$/, "").replace("T", "-");
+  const dir = join(storeDir(), "smoke", live ? stamp : `${stamp}-fixture`);
+  // Live smoke calls go in the month-wide ledger, so they count against the monthly cap and any provider limit.
+  const budget = new Budget({
+    ledgerPath: live ? ledgerPath() : join(dir, "fixture-ledger.jsonl"), runId: `smoke-${stamp}${live ? "" : "-fixture"}`, runCapUsd: cap,
+    monthlyCapUsd: method.budget.monthlyCapUsd, ...(config?.providerLimits ? { providerLimits: config.providerLimits } : {}),
+  });
+  const client = live
+    ? createClient<string>({ env: process.env })
+    : createClient<string>({ keys: Object.fromEntries(providers.map((p) => [p, "fixture-key"])), fetch: shapeFetch() });
+  const report = await runSmoke({ mode: live ? "live" : "fixture", providers, registry: reg, client, budget, method, dir, searches });
+  console.log(formatSmoke(report));
+  console.log(live
+    ? `\nspent ${usd(budget.runCashUsd(), 4)} of the ${usd(cap)} smoke cap`
+    : `\nfixture: nothing was spent (a live check would have counted ${usd(budget.runCashUsd(), 4)} against the ${usd(cap)} cap)`);
+  if (report.problems.some((p) => p.severity === "error")) process.exitCode = 2;
+}
+
 async function main(): Promise<void> {
   const { cmd, sub, flags } = args(process.argv.slice(2));
   switch (cmd) {
@@ -189,6 +233,10 @@ async function main(): Promise<void> {
       const file = str(flags, "file");
       if (file) console.log(keysFileReport(resolve(file)));
       if (!r.ok) process.exitCode = 1;
+      return;
+    }
+    case "smoke": {
+      await smoke(flags);
       return;
     }
     case "plan": {
