@@ -20,15 +20,15 @@
       "required": ["name", "url", "retrievedOn"],
       "additionalProperties": false,
       "properties": {
-        "name": { "enum": ["wikidata"] },
+        "name": { "enum": ["wikidata", "pep", "cisa-kev", "endoflife-date", "arxiv"] },
         "url": { "type": "string", "pattern": "^https://" },
         "entity": { "type": "string", "pattern": "^Q[0-9]+$" },
-        "path": { "type": "array", "items": { "type": "string", "pattern": "^[PQ][0-9]+$" } },
+        "path": { "type": "array", "items": { "type": "string", "pattern": "^[A-Za-z0-9._:-]+$" } },
         "statement": { "type": "string" },
         "retrievedOn": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
       }
     },
-    "licence": { "enum": ["CC0-1.0"] },
+    "licence": { "enum": ["CC0-1.0", "MIT"] },
     "asOf": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
     "expires": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
     "builder": {

@@ -11,6 +11,10 @@ import { containsAlias, normalize } from "./match.ts";
 export const QUERY_CLASSES = ["fact.head", "fact.tail", "multihop", "tech", "nav", "nonen", "fresh"] as const;
 export type QueryClass = (typeof QUERY_CLASSES)[number];
 
+/** Openly licensed sources items may be built from; each source's licence is recorded per item and in METHOD.md. */
+export type SourceName = "wikidata" | "pep" | "cisa-kev" | "endoflife-date" | "arxiv";
+export type Licence = "CC0-1.0" | "MIT";
+
 export interface Item {
   id: string;
   split: "public" | "private" | "fresh";
@@ -21,8 +25,8 @@ export interface Item {
   answerPatterns: string[];
   answerUrls: string[];
   superseded?: string[];
-  source: { name: "wikidata"; url: string; entity?: string; path?: string[]; statement?: string; retrievedOn: string };
-  licence: "CC0-1.0";
+  source: { name: SourceName; url: string; entity?: string; path?: string[]; statement?: string; retrievedOn: string };
+  licence: Licence;
   asOf: string;
   expires?: string;
   builder: { template: string; version: string };
@@ -144,10 +148,12 @@ export function committedProblems(): string[] {
     out.push(...itemProblems(items, { committed: true }).map((e) => `${entry.file}: ${e}`));
     all.push(...items);
   }
-  const ids = new Set<string>();
+  // A later version of a set may carry an item forward unchanged; the same id with different content is an error.
+  const ids = new Map<string, string>();
   for (const i of all) {
-    if (ids.has(i.id)) out.push(`id ${i.id} appears in more than one committed set`);
-    ids.add(i.id);
+    const c = canonical(i);
+    if (ids.has(i.id) && ids.get(i.id) !== c) out.push(`id ${i.id} appears in more than one committed set with different content`);
+    ids.set(i.id, c);
   }
   if (existsSync(PRIVATE_MANIFEST_PATH)) {
     const pm = readJson<{ hashes: { hash: string }[] }>(PRIVATE_MANIFEST_PATH);

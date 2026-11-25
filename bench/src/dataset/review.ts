@@ -17,6 +17,8 @@ export interface Review {
   answers?: Record<string, string[]>;
   /** Candidate keys whose answers the reviewer could not check; they keep "builder-checked". */
   unchecked?: string[];
+  /** Candidate key to a note added to that item's review note (for example, where the answer was confirmed). */
+  notes?: Record<string, string>;
 }
 
 export interface BuildSpec {
@@ -34,7 +36,7 @@ export function applyReview(candidates: readonly Item[], review: Review, idPrefi
   const kept = new Map<string, number>();
   const out: Item[] = [];
   const known = new Set(candidates.map((c) => keyOf(c.id)));
-  for (const k of [...Object.keys(review.drop ?? {}), ...Object.keys(review.answers ?? {}), ...(review.unchecked ?? [])]) {
+  for (const k of [...Object.keys(review.drop ?? {}), ...Object.keys(review.answers ?? {}), ...(review.unchecked ?? []), ...Object.keys(review.notes ?? {})]) {
     if (!known.has(k)) throw new Error(`review names ${k}, which is not a candidate`);
   }
   for (const c of candidates) {
@@ -51,7 +53,7 @@ export function applyReview(candidates: readonly Item[], review: Review, idPrefi
       answers: review.answers?.[key] ?? c.answers,
       review: unchecked
         ? { status: "builder-checked", on: review.reviewedOn, note: [c.review.note, "answer not independently checked"].filter(Boolean).join("; ") }
-        : { status: review.status, on: review.reviewedOn, note: review.note },
+        : { status: review.status, on: review.reviewedOn, note: [review.note, review.notes?.[key]].filter(Boolean).join(" ") },
     });
   }
   return out;
