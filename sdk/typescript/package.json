@@ -1,6 +1,6 @@
 {
   "name": "searchsdk",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "One interface to many web search providers, driven by a shared provider registry.",
   "license": "MIT",
   "type": "module",
@@ -11,7 +11,7 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": ["dist", "README.md", "CHANGELOG.md", "LICENSE"],
   "engines": { "node": ">=24.22.1" },
   "scripts": {
     "sync": "node scripts/sync-registry.mjs",

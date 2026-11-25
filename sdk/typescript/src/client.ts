@@ -1,17 +1,18 @@
 // Orchestration: provider chain, keys, retries, deadlines, fallback and
 // per-attempt billing around the engine.
+import { pathReport, redactedRequest, responseRecord } from "./diagnostics.ts";
 import { attemptCost, buildRequest, mapContents, mapSearch, type Kind } from "./engine.ts";
 import { SearchError, type SearchErrorDetails } from "./errors.ts";
 import { policy } from "./generated/registry.ts";
 import { getPath } from "./json.ts";
 import {
-  backoffMs, callSettings, checkOptionKeys, fallsBack, isTransient, maxRetryAfterMs, normalizeSearch, normalizeUrls,
+  backoffMs, callSettings, checkClientConfig, checkOptionKeys, fallsBack, isTransient, maxRetryAfterMs, normalizeSearch, normalizeUrls,
   providerChain, retryAfterMs, statusCode, type NormalizedSearch,
 } from "./policy.ts";
 import { builtInRegistry, loadRegistry, type Registry } from "./registry.ts";
-import { send, sleep, systemClock } from "./transport.ts";
+import { parseJson, send, sleep, systemClock } from "./transport.ts";
 import type {
-  Attempt, Billed, Client, ClientConfig, ContentsOptions, ContentsResponse, Cost, ErrorCode, ProviderId,
+  Attempt, AttemptDiagnostics, Billed, Client, ClientConfig, ContentsOptions, ContentsResponse, Cost, ErrorCode, ProviderId,
   SearchOptions, SearchResponse, Warning,
 } from "./types.ts";
 
@@ -47,6 +48,14 @@ function billedFor(status: number | undefined, code: ErrorCode): Billed {
   return (b.possible as readonly string[]).includes(code) ? "possible" : (b.notSent as Billed);
 }
 
+/** Calls the diagnostics hook; whatever it throws or rejects with is ignored. */
+function emit(hook: (event: AttemptDiagnostics) => void, event: AttemptDiagnostics): void {
+  try {
+    const result: unknown = hook(event);
+    if (result instanceof Promise) result.catch(() => {});
+  } catch {}
+}
+
 /**
  * A client for the built-in registry, or for `config.registry`, whose keys then
  * become the accepted provider ids (inferred, so custom ids need no casts).
@@ -59,8 +68,10 @@ function create(config: ClientConfig): Client {
   const registry = config.registry === undefined ? builtInRegistry : loadRegistry(config.registry);
   const cfg: ClientConfig = config.keys ? { ...config, keys: { ...config.keys } } : { ...config };
   delete cfg.registry;
+  checkClientConfig(registry, cfg as Record<string, unknown>); // a misconfigured client fails here, not at its first call
   const clock = cfg.clock ?? systemClock;
   const random = cfg.random ?? Math.random;
+  const diagnostics = cfg.diagnostics;
 
   async function call(kind: Kind, input: Record<string, unknown>, options: Record<string, unknown>): Promise<SearchResponse | ContentsResponse> {
     const t0 = clock.now();
@@ -106,36 +117,60 @@ function create(config: ClientConfig): Client {
         if (start >= deadline) fail(new SearchError("timeout", { provider }));
         const attempt: Attempt = { provider, outcome: "error", startMs: start - t0, durationMs: 0, billed: "no", cost: NOT_SENT };
         attempts.push(attempt);
+        const index = attempts.length - 1;
         let err: SearchError;
         let body: unknown;
+        let head: { status: number; headers: Headers } | undefined;
+        let bytes: Uint8Array | null = null;
+        const report = () => {
+          if (!diagnostics) return;
+          const ok2xx = attempt.status !== undefined && attempt.status >= 200 && attempt.status < 300;
+          emit(diagnostics, {
+            index, kind, attempt: { ...attempt, cost: { ...attempt.cost } },
+            request: redactedRequest(spec, req, key),
+            response: head && attempt.status !== undefined ? responseRecord(head.status, head.headers, bytes, key) : null,
+            paths: ok2xx && body !== undefined ? pathReport(spec, kind, body) : [],
+          });
+        };
         try {
           const reply = await send(cfg.fetch ?? globalThis.fetch, req, {
             provider, clock, callDeadline: deadline, attemptDeadline: start + settings.attemptTimeoutMs, signal, maxBytes: settings.maxResponseBytes,
+            onHead: (status, headers) => { head = { status, headers }; },
           });
           attempt.durationMs = clock.now() - start;
           attempt.status = reply.status;
-          body = reply.body;
+          bytes = reply.bytes;
           if (reply.status >= 200 && reply.status < 300) {
+            try {
+              body = parseJson(reply.bytes ?? new Uint8Array(0));
+            } catch {
+              throw new SearchError("invalid_response", { provider, status: reply.status });
+            }
             const ctx = { now: clock.now(), options: po };
             let mapped;
             try {
               mapped = kind === "search"
-                ? mapSearch(spec, input as unknown as NormalizedSearch, reply.body, reply.headers, ctx)
-                : mapContents(spec, input.urls as string[], reply.body, reply.headers, ctx);
-            } catch {
+                ? mapSearch(spec, input as unknown as NormalizedSearch, body, reply.headers, ctx)
+                : mapContents(spec, input.urls as string[], body, reply.headers, ctx);
+            } catch (e) {
               // A paid reply that cannot be mapped is never resent; the body is kept for the caller.
-              throw new SearchError("invalid_response", { provider, status: reply.status, raw: reply.body });
+              const known = e instanceof SearchError ? e : null;
+              throw new SearchError(known?.code ?? "invalid_response", {
+                provider, status: reply.status, raw: body, ...(known?.path !== undefined ? { path: known.path } : {}),
+              });
             }
             attempt.outcome = "ok";
             attempt.billed = billedFor(reply.status, "invalid_response");
             attempt.cost = mapped.cost;
+            report();
             const warnings: Warning[] = [...(provider === chain[0] ? [] : [{ code: "fallback_used", provider }]), ...keyWarnings, ...mapped.warnings];
-            const base = { provider, cost: mapped.cost, requestId: mapped.requestId, latencyMs: clock.now() - t0, warnings, attempts, raw: reply.body };
+            const base = { provider, cost: mapped.cost, requestId: mapped.requestId, latencyMs: clock.now() - t0, warnings, attempts, raw: body };
             return kind === "search" ? { ...base, results: mapped.items } as SearchResponse : { ...base, pages: mapped.items } as ContentsResponse;
           }
-          const code = statusCode(registry, provider, reply.status, reply.body);
+          try { body = reply.bytes === null ? undefined : parseJson(reply.bytes); } catch { body = undefined; }
+          const code = statusCode(registry, provider, reply.status, body);
           const details: SearchErrorDetails = { provider, status: reply.status };
-          const pc = spec.errorCodePath ? getPath(reply.body, spec.errorCodePath) : undefined;
+          const pc = spec.errorCodePath ? getPath(body, spec.errorCodePath) : undefined;
           if (typeof pc === "string") details.providerCode = pc;
           const ra = retryAfterMs(reply.headers.get("retry-after"), clock.now());
           if (ra !== null) { details.retryAfterMs = ra; attempt.retryAfterMs = ra; }
@@ -150,6 +185,7 @@ function create(config: ClientConfig): Client {
         attempt.code = err.code;
         attempt.billed = billedFor(attempt.status, err.code);
         attempt.cost = attempt.billed === "no" ? REJECTED : attemptCost(spec, kind, input, body, po);
+        report();
         lastSent = err;
         if (err.code === "aborted" || err.code === "timeout") fail(err);
         if (!isTransient(err.code) || retry >= settings.maxRetries) break;

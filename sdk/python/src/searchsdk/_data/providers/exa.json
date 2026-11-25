@@ -6,7 +6,7 @@
   "specVersion": "2026-11-24",
   "sources": [
     { "url": "https://exa.ai/docs/reference/search.md", "retrievedOn": "2026-11-24", "covers": "search request, response, errors (OpenAPI 3.1, Exa Public API 2.0.0)" },
-    { "url": "https://exa.ai/docs/reference/get-contents.md", "retrievedOn": "2026-11-24", "covers": "contents request, response, per-URL statuses" },
+    { "url": "https://exa.ai/docs/reference/get-contents.md", "retrievedOn": "2026-11-25", "covers": "contents request, response, per-URL statuses" },
     { "url": "https://exa.ai/docs/admin/pricing.md", "retrievedOn": "2026-11-24", "covers": "pricing" },
     { "url": "https://exa.ai/docs/reference/rate-limits.md", "retrievedOn": "2026-11-24", "covers": "rate limits, 402 and 429 behaviour" },
     { "url": "https://exa.ai/docs/admin/error-codes.md", "retrievedOn": "2026-11-24", "covers": "status codes and error tags" }

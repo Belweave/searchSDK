@@ -483,6 +483,39 @@
           "providerCode": "UNKNOWN_ERROR"
         }
       }
+    },
+    {
+      "name": "a plain search never asks for per-result scraping, which would cost scrape credits",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "provider": "firecrawl"
+      },
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "success": true,
+            "data": {
+              "web": []
+            },
+            "creditsUsed": 2
+          }
+        }
+      ],
+      "expect": {
+        "requests": [
+          {
+            "method": "POST",
+            "url": "https://api.firecrawl.dev/v2/search",
+            "body": {
+              "sources": ["web"],
+              "query": "q",
+              "limit": 10
+            }
+          }
+        ]
+      }
     }
   ]
 }

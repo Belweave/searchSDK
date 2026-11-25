@@ -49,6 +49,57 @@ runtime shares. Failures raise `SearchError` with a fixed `code`. Cancelling
 the asyncio task raises `CancelledError`; a `CancelToken` cancels from any
 thread. Times are integer milliseconds.
 
+## Errors
+
+Every failure raises `SearchError` with one of these codes, the `provider`,
+the HTTP `status` when one arrived, and `attempts`. Retries happen only when
+`max_retries` is set; fallback only through `fallback`.
+
+| `code` | What happened | Sent? | Billed | Retried | Falls back |
+| --- | --- | --- | --- | --- | --- |
+| `invalid_request` | an input or option failed validation | no | no | no | no |
+| `configuration` | missing or unusable key, unknown provider, bad client setting | no | no | no | no |
+| `unsupported` | the provider cannot express this request | no (skipped) | no | no | yes |
+| `auth` | 401 | yes | no | no | no |
+| `forbidden` | 403 | yes | no | no | no |
+| `quota` | 402, or a provider's out-of-credits signal | yes | no | no | yes |
+| `rate_limit` | 429 (`Retry-After` honoured) | yes | no | yes | yes |
+| `unavailable` | 5xx or 408 | yes | no | yes | yes |
+| `provider_error` | any other 4xx | yes | no | no | no |
+| `network` | no answer: connection failed or broke off | yes | possible | yes | yes |
+| `attempt_timeout` | the attempt's own deadline passed | yes | possible | yes | yes |
+| `timeout` | the call's deadline passed | yes | possible | no | no |
+| `aborted` | the caller cancelled | if under way | possible if under way | no | no |
+| `invalid_response` | a 2xx that is not a UTF-8 JSON object, or an unmapped status (3xx) | yes | yes for a 2xx | no | no |
+| `spec_mismatch` | a 2xx JSON object without the list the spec reads; `path` names it | yes | yes | no | no |
+| `response_too_large` | a 2xx over the size limit | yes | yes | no | no |
+
+An empty result list is a success (`results == []`), never an error. A
+`spec_mismatch` means our spec and the provider's body disagree, not that the
+provider found nothing; its `raw` holds the body. Rows without a URL are
+dropped with an `invalid_rows_dropped` warning. A 2xx is billed even when it
+cannot be read, so it is never retried.
+
+## Diagnostics
+
+`Client(diagnostics=hook)` (and `AsyncClient`) is an opt-in hook for smoke
+checks and spec debugging. It is called once per sent attempt with an
+`AttemptDiagnostics`:
+
+- `index`, `kind` and the `attempt` (status, timing, billed, cost);
+- `request`: method, URL, headers and body as sent, with the key replaced by
+  `[redacted]`;
+- `response` (`None` when no status arrived): status, headers (`set-cookie`
+  dropped), the raw body as text (key redacted, at most 64 KiB, cut on a
+  character boundary), `body_bytes` and `body_truncated`;
+- `paths`: for a 2xx JSON object, how each spec path resolved
+  (`PathReport(role, path, found, missing)`), so a smoke check can tell an
+  empty answer from a field the spec reads in the wrong place.
+
+`event.to_json()` gives the same JSON as the TypeScript hook. The hook cannot
+change the call; exceptions it raises are ignored. Exact rules:
+`registry/policy.md`, Diagnostics.
+
 ## Transport
 
 `StdlibTransport` uses `http.client` and the `ssl` default context: one

@@ -6,7 +6,7 @@
   "specVersion": "2026-11-24",
   "sources": [
     { "url": "https://docs.firecrawl.dev/api-reference/endpoint/search.md", "retrievedOn": "2026-11-24", "covers": "search request, response, errors (OpenAPI 3.0, API v2)" },
-    { "url": "https://docs.firecrawl.dev/features/search.md", "retrievedOn": "2026-11-24", "covers": "tbs values and custom date ranges; 2 credits per 10 results" },
+    { "url": "https://docs.firecrawl.dev/features/search.md", "retrievedOn": "2026-11-25", "covers": "tbs values and custom date ranges; 2 credits per 10 results; results are scraped only when scrapeOptions is sent" },
     { "url": "https://docs.firecrawl.dev/api-reference/endpoint/scrape.md", "retrievedOn": "2026-11-24", "covers": "scrape request, response, errors" },
     { "url": "https://docs.firecrawl.dev/billing.md", "retrievedOn": "2026-11-24", "covers": "credit costs; a returned document is charged even for a target 404" },
     { "url": "https://www.firecrawl.dev/pricing", "retrievedOn": "2026-11-24", "covers": "plan prices, credits and concurrency" }

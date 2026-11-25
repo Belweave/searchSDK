@@ -141,3 +141,50 @@ class ContentsResponse(_Response):
     pages: list[Page]
     raw: Any = field(default=None, repr=False, metadata={"verbatim": True})
     """The provider's parsed JSON body."""
+
+
+@dataclass(frozen=True)
+class PathReport(_Json):
+    """How one spec path resolved: ``found`` and ``missing`` count the items it was read from."""
+
+    role: str
+    """What the path is for: 'results', 'title', 'providerFields.id', 'pages.0.content', 'cost', 'requestId' and so on."""
+    path: str
+    found: int
+    missing: int
+
+
+@dataclass(frozen=True)
+class DiagnosticsRequest(_Json):
+    """The request as sent, with the key replaced by '[redacted]'."""
+
+    method: Literal["GET", "POST"]
+    url: str
+    headers: dict[str, str] = field(metadata={"verbatim": True})
+    body: str | None
+
+
+@dataclass(frozen=True)
+class DiagnosticsResponse(_Json):
+    """The response as received. ``body`` is UTF-8 text, key redacted, bounded by policy; None when not read whole."""
+
+    status: int
+    headers: dict[str, str] = field(metadata={"verbatim": True})
+    body: str | None
+    body_bytes: int | None
+    body_truncated: bool
+
+
+@dataclass(frozen=True)
+class AttemptDiagnostics(_Json):
+    """One sent attempt, for smoke checks and debugging specs (registry/policy.md, Diagnostics)."""
+
+    index: int
+    """The attempt's position in ``attempts``."""
+    kind: Literal["search", "contents"]
+    attempt: Attempt
+    request: DiagnosticsRequest
+    response: DiagnosticsResponse | None
+    """None when no status arrived."""
+    paths: list[PathReport]
+    """For a 2xx JSON object: which spec paths resolved; otherwise empty."""

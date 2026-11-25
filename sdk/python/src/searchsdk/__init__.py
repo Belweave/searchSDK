@@ -35,20 +35,24 @@ from ._registry import BUILT_IN, POLICY
 from ._transport import AsyncResponse, AsyncStdlibTransport, AsyncTransport, Response, StdlibTransport, Transport
 from ._types import (
     Attempt,
+    AttemptDiagnostics,
     Billed,
     ContentsResponse,
     Cost,
     CostSource,
     Depth,
+    DiagnosticsRequest,
+    DiagnosticsResponse,
     Page,
     PageError,
+    PathReport,
     Recency,
     ResponseWarning,
     SearchResponse,
     SearchResult,
 )
 
-__version__ = "0.0.0"
+__version__ = "0.1.0"
 
 registry: Mapping[str, Mapping[str, Any]] = BUILT_IN
 """The embedded provider specs, read-only (mappings and tuples). For routers, benchmarks and docs."""
@@ -62,6 +66,7 @@ __all__ = [
     "AsyncStdlibTransport",
     "AsyncTransport",
     "Attempt",
+    "AttemptDiagnostics",
     "Billed",
     "CancelToken",
     "Client",
@@ -74,10 +79,13 @@ __all__ = [
     "CostBound",
     "CostSource",
     "Depth",
+    "DiagnosticsRequest",
+    "DiagnosticsResponse",
     "ErrorCode",
     "HttpRequest",
     "Page",
     "PageError",
+    "PathReport",
     "ProviderId",
     "Recency",
     "Response",

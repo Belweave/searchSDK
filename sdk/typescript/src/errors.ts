@@ -12,6 +12,8 @@ export interface SearchErrorDetails {
   retryAfterMs?: number;
   /** The request field that failed validation. */
   field?: string;
+  /** For spec_mismatch: the spec path whose value the response did not have. */
+  path?: string;
   attempts?: Attempt[];
   /** Parsed body of a successful response that could not be mapped. */
   raw?: unknown;
@@ -25,6 +27,7 @@ export class SearchError extends Error {
   readonly providerCode?: string;
   readonly retryAfterMs?: number;
   readonly field?: string;
+  readonly path?: string;
   attempts: Attempt<AnyProviderId>[];
   readonly raw?: unknown;
 
@@ -37,6 +40,7 @@ export class SearchError extends Error {
     if (details.providerCode !== undefined) this.providerCode = details.providerCode;
     if (details.retryAfterMs !== undefined) this.retryAfterMs = details.retryAfterMs;
     if (details.field !== undefined) this.field = details.field;
+    if (details.path !== undefined) this.path = details.path;
     if (details.raw !== undefined) this.raw = details.raw;
     this.attempts = details.attempts ?? [];
   }

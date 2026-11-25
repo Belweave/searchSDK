@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 ErrorCode = Literal[
     "invalid_request", "configuration", "unsupported", "auth", "forbidden", "quota",
     "rate_limit", "unavailable", "provider_error", "network", "attempt_timeout",
-    "timeout", "aborted", "invalid_response", "response_too_large",
+    "timeout", "aborted", "invalid_response", "spec_mismatch", "response_too_large",
 ]
 
 # Fixed messages, read from registry/policy.json (embedded copy).
@@ -26,7 +26,8 @@ class SearchError(Exception):
 
     Messages, ``str()`` and ``repr()`` never include keys, URLs or provider
     bodies. ``raw`` holds the body of a successful (paid) response that could
-    not be mapped; ``attempts`` records every attempt the call made.
+    not be mapped; ``path``, for ``spec_mismatch``, names the spec path the
+    response did not have; ``attempts`` records every attempt the call made.
     """
 
     code: ErrorCode
@@ -35,6 +36,7 @@ class SearchError(Exception):
     provider_code: str | None
     retry_after_ms: int | None
     field: str | None
+    path: str | None
     attempts: list[Attempt]
     raw: Any
 
@@ -47,6 +49,7 @@ class SearchError(Exception):
         provider_code: str | None = None,
         retry_after_ms: int | None = None,
         field: str | None = None,
+        path: str | None = None,
         raw: Any = None,
     ) -> None:
         super().__init__(_MESSAGES[code])
@@ -56,6 +59,7 @@ class SearchError(Exception):
         self.provider_code = provider_code
         self.retry_after_ms = retry_after_ms
         self.field = field
+        self.path = path
         self.attempts = []
         self.raw = raw
 
@@ -68,7 +72,7 @@ class SearchError(Exception):
 
     def __repr__(self) -> str:
         parts = [f"code={self.code!r}"]
-        for name in ("provider", "status", "field", "provider_code"):
+        for name in ("provider", "status", "field", "path", "provider_code"):
             value = getattr(self, name)
             if value is not None:
                 parts.append(f"{name}={value!r}")

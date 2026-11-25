@@ -132,3 +132,45 @@ test("concurrent calls on one client keep their own attempts", async () => {
   assert.equal(b.attempts.length, 1);
   assert.notEqual(a.requestId, b.requestId);
 });
+
+test("client settings are checked when the client is created, not at its first call", () => {
+  const code = (config: Parameters<typeof createClient>[0]) => {
+    try { createClient(config as never); return null; } catch (e) { return e instanceof SearchError ? [e.code, e.field] : e; }
+  };
+  assert.deepEqual(code({ provider: "nope" as never }), ["configuration", "provider"]);
+  assert.deepEqual(code({ provider: "toString" as never }), ["configuration", "provider"]);
+  assert.deepEqual(code({ provider: "exa", fallback: ["nope" as never] }), ["configuration", "fallback"]);
+  assert.deepEqual(code({ fallback: "exa" as never }), ["configuration", "fallback"]);
+  assert.deepEqual(code({ timeoutMs: 0 }), ["invalid_request", "timeoutMs"]);
+  assert.deepEqual(code({ maxRetries: 9 }), ["invalid_request", "maxRetries"]);
+  assert.deepEqual(code({ maxResponseBytes: 1 }), ["invalid_request", "maxResponseBytes"]);
+  // Policy order: call settings first, then provider, then fallback.
+  assert.deepEqual(code({ provider: "nope" as never, timeoutMs: 0 }), ["invalid_request", "timeoutMs"]);
+  assert.equal(code({}), null);
+  assert.equal(code({ provider: "exa", fallback: ["tavily"], timeoutMs: 1000 }), null);
+  assert.equal(code({ fallback: ["tavily"] }), null);
+  const mine = { ...structuredClone(registry.exa), id: "mine" };
+  assert.equal(code({ registry: { mine }, provider: "mine" } as never), null);
+  assert.deepEqual(code({ registry: { mine }, provider: "exa" } as never), ["configuration", "provider"]);
+});
+
+test("the diagnostics hook must be a function; a hook that throws or rejects never changes the call", async () => {
+  assert.throws(() => createClient({ diagnostics: "yes" as never }), (e: unknown) => e instanceof SearchError && e.code === "configuration" && e.field === "diagnostics");
+  const seen: number[] = [];
+  const throwing = createClient({ keys: { exa: "k" }, fetch: ok({ results: [] }), diagnostics: (ev) => { seen.push(ev.index); throw new Error("hook bug"); } });
+  assert.equal((await throwing.search("q", { provider: "exa" })).provider, "exa");
+  const rejecting = createClient({ keys: { exa: "k" }, fetch: ok({ results: [] }), diagnostics: (async () => { throw new Error("hook bug"); }) as never });
+  assert.equal((await rejecting.search("q", { provider: "exa" })).provider, "exa");
+  assert.deepEqual(seen, [0]);
+});
+
+test("diagnostics never carry the key, wherever the provider echoes it", async () => {
+  const key = "sk-test-secret-never-printed";
+  const events: unknown[] = [];
+  const echo = (async () => new Response(JSON.stringify({ results: [], note: `key ${key}` }), { status: 200, headers: { "x-echo": key } })) as typeof fetch;
+  const client = createClient({ keys: { exa: key }, fetch: echo, diagnostics: (ev) => events.push(ev) });
+  await client.search("q", { provider: "exa" });
+  assert.equal(events.length, 1);
+  assert.ok(!JSON.stringify(events).includes(key));
+  assert.ok(JSON.stringify(events).includes("[redacted]"));
+});

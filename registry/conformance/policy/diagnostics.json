@@ -1,0 +1,831 @@
+{
+  "description": "The opt-in diagnostics hook (policy.md, Diagnostics). A case with client.diagnostics true installs a hook; expect.diagnostics lists every event it received, compared exactly in the shared JSON form. A request body is compared parsed; an expected string may use the $repeat form.",
+  "defaults": {
+    "options": {
+      "provider": "exa"
+    }
+  },
+  "cases": [
+    {
+      "name": "a successful search: redacted request, raw status, headers and body, and which spec paths resolved",
+      "call": "search",
+      "query": "q",
+      "client": {
+        "diagnostics": true
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": [
+            [
+              "X-Request-Id",
+              "hdr"
+            ],
+            [
+              "Set-Cookie",
+              "s=1"
+            ],
+            [
+              "x-extra",
+              "a"
+            ],
+            [
+              "x-extra",
+              "b"
+            ]
+          ],
+          "bodyText": "{\"requestId\":\"r1\",\"results\":[{\"url\":\"https://a.example/\",\"title\":\"A\",\"highlights\":[\"h\"]},{\"url\":\"https://b.example/\",\"id\":\"x\"}],\"costDollars\":{\"total\":0.007}}"
+        }
+      ],
+      "expect": {
+        "diagnostics": [
+          {
+            "index": 0,
+            "kind": "search",
+            "attempt": {
+              "provider": "exa",
+              "outcome": "ok",
+              "status": 200,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "yes",
+              "cost": {
+                "usd": 0.007,
+                "estimated": true,
+                "source": "reported"
+              }
+            },
+            "request": {
+              "method": "POST",
+              "url": "https://api.exa.ai/search",
+              "headers": {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "x-api-key": "[redacted]"
+              },
+              "body": {
+                "type": "auto",
+                "contents": {
+                  "highlights": true
+                },
+                "query": "q",
+                "numResults": 10
+              }
+            },
+            "response": {
+              "status": 200,
+              "headers": {
+                "x-extra": "a, b",
+                "x-request-id": "hdr"
+              },
+              "body": "{\"requestId\":\"r1\",\"results\":[{\"url\":\"https://a.example/\",\"title\":\"A\",\"highlights\":[\"h\"]},{\"url\":\"https://b.example/\",\"id\":\"x\"}],\"costDollars\":{\"total\":0.007}}",
+              "bodyBytes": 158,
+              "bodyTruncated": false
+            },
+            "paths": [
+              {
+                "role": "results",
+                "path": "results",
+                "found": 1,
+                "missing": 0
+              },
+              {
+                "role": "url",
+                "path": "url",
+                "found": 2,
+                "missing": 0
+              },
+              {
+                "role": "title",
+                "path": "title",
+                "found": 1,
+                "missing": 1
+              },
+              {
+                "role": "excerpts",
+                "path": "highlights",
+                "found": 1,
+                "missing": 1
+              },
+              {
+                "role": "publishedAt",
+                "path": "publishedDate",
+                "found": 0,
+                "missing": 2
+              },
+              {
+                "role": "author",
+                "path": "author",
+                "found": 0,
+                "missing": 2
+              },
+              {
+                "role": "providerFields.id",
+                "path": "id",
+                "found": 1,
+                "missing": 1
+              },
+              {
+                "role": "providerFields.favicon",
+                "path": "favicon",
+                "found": 0,
+                "missing": 2
+              },
+              {
+                "role": "providerFields.image",
+                "path": "image",
+                "found": 0,
+                "missing": 2
+              },
+              {
+                "role": "cost",
+                "path": "costDollars.total",
+                "found": 1,
+                "missing": 0
+              },
+              {
+                "role": "requestId",
+                "path": "requestId",
+                "found": 1,
+                "missing": 0
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "an error body that echoes the key is redacted; error statuses report no paths",
+      "call": "search",
+      "query": "q",
+      "client": {
+        "diagnostics": true
+      },
+      "responses": [
+        {
+          "status": 401,
+          "bodyText": "{\"error\":\"Your key test-key-exa is invalid\"}"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "auth",
+          "status": 401
+        },
+        "diagnostics": [
+          {
+            "index": 0,
+            "kind": "search",
+            "attempt": {
+              "provider": "exa",
+              "outcome": "error",
+              "code": "auth",
+              "status": 401,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "no",
+              "cost": {
+                "usd": 0,
+                "estimated": true,
+                "source": "none"
+              }
+            },
+            "request": {
+              "method": "POST",
+              "url": "https://api.exa.ai/search",
+              "headers": {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "x-api-key": "[redacted]"
+              },
+              "body": {
+                "type": "auto",
+                "contents": {
+                  "highlights": true
+                },
+                "query": "q",
+                "numResults": 10
+              }
+            },
+            "response": {
+              "status": 401,
+              "headers": {},
+              "body": "{\"error\":\"Your key [redacted] is invalid\"}",
+              "bodyBytes": 44,
+              "bodyTruncated": false
+            },
+            "paths": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "a 2xx without the spec's result list is spec_mismatch, naming the path, and its paths show what failed",
+      "call": "search",
+      "query": "q",
+      "client": {
+        "diagnostics": true
+      },
+      "responses": [
+        {
+          "status": 200,
+          "bodyText": "{\"data\":[],\"costDollars\":{\"total\":0.007}}"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "spec_mismatch",
+          "provider": "exa",
+          "status": 200,
+          "path": "results",
+          "raw": {
+            "data": [],
+            "costDollars": {
+              "total": 0.007
+            }
+          }
+        },
+        "diagnostics": [
+          {
+            "index": 0,
+            "kind": "search",
+            "attempt": {
+              "provider": "exa",
+              "outcome": "error",
+              "code": "spec_mismatch",
+              "status": 200,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "yes",
+              "cost": {
+                "usd": 0.007,
+                "estimated": true,
+                "source": "reported"
+              }
+            },
+            "request": {
+              "method": "POST",
+              "url": "https://api.exa.ai/search",
+              "headers": {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "x-api-key": "[redacted]"
+              },
+              "body": {
+                "type": "auto",
+                "contents": {
+                  "highlights": true
+                },
+                "query": "q",
+                "numResults": 10
+              }
+            },
+            "response": {
+              "status": 200,
+              "headers": {},
+              "body": "{\"data\":[],\"costDollars\":{\"total\":0.007}}",
+              "bodyBytes": 41,
+              "bodyTruncated": false
+            },
+            "paths": [
+              {
+                "role": "results",
+                "path": "results",
+                "found": 0,
+                "missing": 1
+              },
+              {
+                "role": "url",
+                "path": "url",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "title",
+                "path": "title",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "excerpts",
+                "path": "highlights",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "publishedAt",
+                "path": "publishedDate",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "author",
+                "path": "author",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "providerFields.id",
+                "path": "id",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "providerFields.favicon",
+                "path": "favicon",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "providerFields.image",
+                "path": "image",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "cost",
+                "path": "costDollars.total",
+                "found": 1,
+                "missing": 0
+              },
+              {
+                "role": "requestId",
+                "path": "requestId",
+                "found": 0,
+                "missing": 1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "a long body is cut at policy.diagnostics.maxBodyBytes on a character boundary",
+      "call": "search",
+      "query": "q",
+      "client": {
+        "diagnostics": true
+      },
+      "responses": [
+        {
+          "status": 200,
+          "bodyFill": {
+            "prefix": "{\"results\":[],\"pad\":\"",
+            "repeat": "é",
+            "count": 40000,
+            "suffix": "\"}"
+          }
+        }
+      ],
+      "expect": {
+        "diagnostics": [
+          {
+            "index": 0,
+            "kind": "search",
+            "attempt": {
+              "provider": "exa",
+              "outcome": "ok",
+              "status": 200,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "yes",
+              "cost": {
+                "usd": 0.007,
+                "estimated": true,
+                "source": "computed"
+              }
+            },
+            "request": {
+              "method": "POST",
+              "url": "https://api.exa.ai/search",
+              "headers": {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "x-api-key": "[redacted]"
+              },
+              "body": {
+                "type": "auto",
+                "contents": {
+                  "highlights": true
+                },
+                "query": "q",
+                "numResults": 10
+              }
+            },
+            "response": {
+              "status": 200,
+              "headers": {},
+              "body": {
+                "$repeat": "é",
+                "count": 32757,
+                "prefix": "{\"results\":[],\"pad\":\""
+              },
+              "bodyBytes": 80023,
+              "bodyTruncated": true
+            },
+            "paths": [
+              {
+                "role": "results",
+                "path": "results",
+                "found": 1,
+                "missing": 0
+              },
+              {
+                "role": "url",
+                "path": "url",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "title",
+                "path": "title",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "excerpts",
+                "path": "highlights",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "publishedAt",
+                "path": "publishedDate",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "author",
+                "path": "author",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "providerFields.id",
+                "path": "id",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "providerFields.favicon",
+                "path": "favicon",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "providerFields.image",
+                "path": "image",
+                "found": 0,
+                "missing": 0
+              },
+              {
+                "role": "cost",
+                "path": "costDollars.total",
+                "found": 0,
+                "missing": 1
+              },
+              {
+                "role": "requestId",
+                "path": "requestId",
+                "found": 0,
+                "missing": 1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "a 2xx over the size limit has a status but no body",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "maxResponseBytes": 1024
+      },
+      "client": {
+        "diagnostics": true
+      },
+      "responses": [
+        {
+          "status": 200,
+          "bodyFill": {
+            "prefix": "{\"results\":[],\"pad\":\"",
+            "repeat": "x",
+            "count": 2000,
+            "suffix": "\"}"
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "response_too_large"
+        },
+        "diagnostics": [
+          {
+            "index": 0,
+            "kind": "search",
+            "attempt": {
+              "provider": "exa",
+              "outcome": "error",
+              "code": "response_too_large",
+              "status": 200,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "yes",
+              "cost": {
+                "usd": 0.007,
+                "estimated": true,
+                "source": "computed"
+              }
+            },
+            "request": {
+              "method": "POST",
+              "url": "https://api.exa.ai/search",
+              "headers": {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "x-api-key": "[redacted]"
+              },
+              "body": {
+                "type": "auto",
+                "contents": {
+                  "highlights": true
+                },
+                "query": "q",
+                "numResults": 10
+              }
+            },
+            "response": {
+              "status": 200,
+              "headers": {},
+              "body": null,
+              "bodyBytes": null,
+              "bodyTruncated": false
+            },
+            "paths": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "every sent attempt is reported, in order; one with no answer has a null response",
+      "call": "search",
+      "query": "q",
+      "options": {
+        "maxRetries": 1
+      },
+      "client": {
+        "diagnostics": true
+      },
+      "responses": [
+        {
+          "network": true
+        },
+        {
+          "status": 503,
+          "bodyText": ""
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "unavailable"
+        },
+        "diagnostics": [
+          {
+            "index": 0,
+            "kind": "search",
+            "attempt": {
+              "provider": "exa",
+              "outcome": "error",
+              "code": "network",
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "possible",
+              "cost": {
+                "usd": 0.007,
+                "estimated": true,
+                "source": "computed"
+              }
+            },
+            "request": {
+              "method": "POST",
+              "url": "https://api.exa.ai/search",
+              "headers": {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "x-api-key": "[redacted]"
+              },
+              "body": {
+                "type": "auto",
+                "contents": {
+                  "highlights": true
+                },
+                "query": "q",
+                "numResults": 10
+              }
+            },
+            "response": null,
+            "paths": []
+          },
+          {
+            "index": 1,
+            "kind": "search",
+            "attempt": {
+              "provider": "exa",
+              "outcome": "error",
+              "code": "unavailable",
+              "status": 503,
+              "startMs": 187,
+              "durationMs": 0,
+              "billed": "no",
+              "cost": {
+                "usd": 0,
+                "estimated": true,
+                "source": "none"
+              }
+            },
+            "request": {
+              "method": "POST",
+              "url": "https://api.exa.ai/search",
+              "headers": {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "x-api-key": "[redacted]"
+              },
+              "body": {
+                "type": "auto",
+                "contents": {
+                  "highlights": true
+                },
+                "query": "q",
+                "numResults": 10
+              }
+            },
+            "response": {
+              "status": 503,
+              "headers": {},
+              "body": "",
+              "bodyBytes": 0,
+              "bodyTruncated": false
+            },
+            "paths": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "contents: per-source list, where and field resolution; skipped attempts are not reported but keep their index",
+      "call": "contents",
+      "urls": [
+        "https://example.com/a",
+        "https://example.com/b"
+      ],
+      "options": {
+        "provider": "brave",
+        "fallback": [
+          "exa"
+        ]
+      },
+      "client": {
+        "diagnostics": true
+      },
+      "responses": [
+        {
+          "status": 200,
+          "bodyText": "{\"results\":[{\"url\":\"https://example.com/a\",\"text\":\"A\"},{\"text\":\"no url\"}],\"statuses\":[{\"id\":\"https://example.com/b\",\"status\":\"error\",\"error\":{\"tag\":\"CRAWL_NOT_FOUND\"}},{\"id\":\"https://example.com/a\",\"status\":\"success\"}]}"
+        }
+      ],
+      "expect": {
+        "responseIncludes": {
+          "warnings": [
+            {
+              "code": "fallback_used",
+              "provider": "exa"
+            },
+            {
+              "code": "invalid_rows_dropped",
+              "provider": "exa",
+              "count": 1
+            }
+          ]
+        },
+        "diagnostics": [
+          {
+            "index": 1,
+            "kind": "contents",
+            "attempt": {
+              "provider": "exa",
+              "outcome": "ok",
+              "status": 200,
+              "startMs": 0,
+              "durationMs": 0,
+              "billed": "yes",
+              "cost": {
+                "usd": 0.002,
+                "estimated": true,
+                "source": "computed"
+              }
+            },
+            "request": {
+              "method": "POST",
+              "url": "https://api.exa.ai/contents",
+              "headers": {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "x-api-key": "[redacted]"
+              },
+              "body": {
+                "text": true,
+                "urls": [
+                  "https://example.com/a",
+                  "https://example.com/b"
+                ]
+              }
+            },
+            "response": {
+              "status": 200,
+              "headers": {},
+              "body": "{\"results\":[{\"url\":\"https://example.com/a\",\"text\":\"A\"},{\"text\":\"no url\"}],\"statuses\":[{\"id\":\"https://example.com/b\",\"status\":\"error\",\"error\":{\"tag\":\"CRAWL_NOT_FOUND\"}},{\"id\":\"https://example.com/a\",\"status\":\"success\"}]}",
+              "bodyBytes": 219,
+              "bodyTruncated": false
+            },
+            "paths": [
+              {
+                "role": "pages.0",
+                "path": "results",
+                "found": 1,
+                "missing": 0
+              },
+              {
+                "role": "pages.0.url",
+                "path": "url",
+                "found": 1,
+                "missing": 1
+              },
+              {
+                "role": "pages.0.title",
+                "path": "title",
+                "found": 0,
+                "missing": 2
+              },
+              {
+                "role": "pages.0.content",
+                "path": "text",
+                "found": 2,
+                "missing": 0
+              },
+              {
+                "role": "pages.0.publishedAt",
+                "path": "publishedDate",
+                "found": 0,
+                "missing": 2
+              },
+              {
+                "role": "pages.0.author",
+                "path": "author",
+                "found": 0,
+                "missing": 2
+              },
+              {
+                "role": "pages.1",
+                "path": "statuses",
+                "found": 1,
+                "missing": 0
+              },
+              {
+                "role": "pages.1.where",
+                "path": "status",
+                "found": 1,
+                "missing": 1
+              },
+              {
+                "role": "pages.1.url",
+                "path": "id",
+                "found": 1,
+                "missing": 0
+              },
+              {
+                "role": "pages.1.errorCode",
+                "path": "error.tag",
+                "found": 1,
+                "missing": 0
+              },
+              {
+                "role": "cost",
+                "path": "costDollars.total",
+                "found": 0,
+                "missing": 1
+              },
+              {
+                "role": "requestId",
+                "path": "requestId",
+                "found": 0,
+                "missing": 1
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

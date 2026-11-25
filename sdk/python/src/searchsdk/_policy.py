@@ -262,6 +262,24 @@ def call_settings(kind: str, o: Mapping[str, Any], c: Mapping[str, Any]) -> Call
     return CallSettings(timeout, attempt, retries, limit, cancel)
 
 
+def check_client_config(registry: Registry, c: Mapping[str, Any]) -> None:
+    """Checks client-level settings when the client is created, in policy order:
+    call settings, then provider, then fallback. Both are optional here; a call
+    may still name its own provider."""
+    call_settings("search", {}, c)
+    provider = c.get("provider")
+    if provider is not None and (not isinstance(provider, str) or provider not in registry):
+        _configuration("provider")
+    fallback = c.get("fallback")
+    if fallback is not None and (
+        isinstance(fallback, str) or not isinstance(fallback, Sequence) or not all(isinstance(i, str) and i in registry for i in fallback)
+    ):
+        _configuration("fallback")
+    diagnostics = c.get("diagnostics")
+    if diagnostics is not None and not callable(diagnostics):
+        _configuration("diagnostics")
+
+
 def provider_chain(registry: Registry, o: Mapping[str, Any], c: Mapping[str, Any]) -> list[str]:
     primary = o.get("provider") if o.get("provider") is not None else c.get("provider")
     if not isinstance(primary, str) or primary not in registry:

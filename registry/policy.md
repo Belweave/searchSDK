@@ -107,6 +107,12 @@ boolean.
   reject only when it is a single integer.
 - Status codes map through provider `errors` rules (status, then JSON equality
   at `bodyPath` when given), then `policy.status`, then `statusDefault`.
+- A 2xx body that is not UTF-8 JSON, or not a JSON object, is
+  `invalid_response`. A JSON object without the list the spec reads (search
+  `results`, a contents page source's `from`) is `spec_mismatch`, and the
+  error's `path` names that list's path: the body is not the shape the spec
+  expects, which differs from a provider that found nothing. Both keep the
+  parsed body in the error's `raw`.
 - Search: the result list must be an array; with `resultsOptional`, absent or
   `null` counts as `[]`. Rows are read in order until `maxResults` results are
   kept; rows after that are not inspected. Rows without an `http(s)` URL are
@@ -115,12 +121,15 @@ boolean.
 - Request ids: the first rule giving a string that is not blank wins, with
   blank code points removed from both ends.
 - Warnings, in order: `fallback_used`, `fallback_key_missing`, the spec's
-  rules in order, then `invalid_rows_dropped` or `unmatched_pages`.
+  rules in order, then `invalid_rows_dropped`, then `unmatched_pages`.
 - `latencyMs` and each attempt's `startMs` count from the call start;
   `durationMs` is the attempt's own time (0 when skipped).
 - Contents: each page source reads its list (`$` is the body as one item). An
   absent or `null` list is `[]` when the source is `optional`, else
-  `invalid_response`. Items pass when the source's `where` holds. Pages match
+  `spec_mismatch`. Items pass when the source's `where` holds. An item that
+  passes without a string URL is dropped and counted in an
+  `invalid_rows_dropped` warning; one from a billable source still counts
+  toward the computed cost. Pages match
   requested URLs by URL key, first unused candidate wins; the rest are counted
   in an `unmatched_pages` warning. Unmatched URLs are `failed` with code
   `missing`.
@@ -171,9 +180,45 @@ sum over attempts billed `yes` or `possible`.
   `timeout` never proceeds because the call's budget is spent; `aborted` never
   proceeds. A search is a read, so a configured resilient result is preferred
   over avoiding a possible second charge, and the charge stays visible.
-- A 2xx that is unusable (`invalid_response`) or too large
+- A 2xx that is unusable (`invalid_response`, `spec_mismatch`) or too large
   (`response_too_large`) is never retried or sent to fallback.
 - The error thrown when the chain runs out is the last error from a provider
   that was sent a request, or, when none was, the last skip reason.
 - A successful response is never discarded for being slow. A stop (deadline
   or cancellation) and an arrival at the same moment: the stop wins.
+
+## Diagnostics
+A client may install a diagnostics hook (TypeScript `diagnostics`, Python
+`diagnostics=`). It is off by default and changes nothing about the call. It
+receives one event for every attempt that was sent, after the attempt is
+final and before any retry wait, fallback, return or throw; skipped attempts
+send no event. An exception or rejected promise from the hook is ignored.
+- `index` is the attempt's position in `attempts`; `kind` is `search` or
+  `contents`; `attempt` is a copy of that attempt.
+- `request`: `method`, `url`, `headers` (lowercase names) and `body` (the
+  text sent, or `null`). The key header's value and a query key's value are
+  replaced by `diagnostics.redacted`.
+- `response` is `null` when no status arrived. Otherwise `status`, `headers`
+  (lowercase names, sorted, duplicates joined with `, `, `set-cookie` left
+  out), `body`, `bodyBytes` and `bodyTruncated`. `body` is the bytes as
+  received decoded as UTF-8 (a byte order mark is kept; invalid sequences
+  become U+FFFD), with every occurrence of the key replaced by
+  `diagnostics.redacted`, then cut to at most `diagnostics.maxBodyBytes`
+  UTF-8 bytes at a character boundary (`bodyTruncated` says whether it was).
+  `bodyBytes` counts the bytes received. When the body was not read whole
+  (too large, broken off, stopped), `body` and `bodyBytes` are `null`.
+- `paths` reports, for a 2xx JSON object only (otherwise `[]`), how the
+  spec's paths resolved, in this order. Each entry is `{role, path, found,
+  missing}`.
+  - Search: `results` (found when the value is an array); then `url`,
+    `title`, `excerpts`, `publishedAt`, `author` and each
+    `providerFields.<name>`, as the spec defines them, over every row of the
+    list (found when the path, before steps, gives a value that is not null).
+  - Contents, for each page source *i*: `pages.i` (found when the list is an
+    array; `$` always is), `pages.i.where` when the source has one (the
+    paths of its predicates joined with `,`; found counts items that pass),
+    then `pages.i.url`, `finalUrl`, `title`, `content`, `publishedAt`,
+    `author`, `errorCode`, `errorMessage` as defined, over items that pass.
+  - Then `cost` for a reported cost path and `requestId` for each body-path
+    rule, each over the body.
+- No event carries a key; nothing else is redacted.

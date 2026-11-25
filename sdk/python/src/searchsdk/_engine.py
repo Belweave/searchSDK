@@ -110,7 +110,7 @@ def scalar_text(v: Any) -> str | None:
     return None
 
 
-def _encode(s: str) -> str:
+def encode(s: str) -> str:
     """Percent-encodes everything except RFC 3986 unreserved characters; spaces are %20."""
     return quote(s, safe="")
 
@@ -246,9 +246,9 @@ def build_request(spec: Mapping[str, Any], kind: Kind, n: Mapping[str, Any], opt
             s = scalar_text(v)
             if s is None:  # only a param can write a non-scalar here; fixed values and options are checked earlier
                 _unsupported(provider, written.get(k, k))
-            pairs.append(f"{_encode(k)}={_encode(str(s))}")
+            pairs.append(f"{encode(k)}={encode(str(s))}")
     if auth["in"] == "query":
-        pairs.append(f"{_encode(auth['name'])}={_encode(key)}")
+        pairs.append(f"{encode(auth['name'])}={encode(key)}")
     if pairs:
         url += ("&" if "?" in url else "?") + "&".join(pairs)
     return HttpRequest(request["method"], url, headers, body if request["method"] != "GET" else None)
@@ -364,6 +364,11 @@ def _invalid(provider: str, body: Any) -> NoReturn:
     raise SearchError("invalid_response", provider=provider, raw=body)
 
 
+def _mismatch(provider: str, path: str, body: Any) -> NoReturn:
+    """The body is JSON but lacks the list the spec reads: our spec and the provider disagree."""
+    raise SearchError("spec_mismatch", provider=provider, path=path, raw=body)
+
+
 def map_search(spec: Mapping[str, Any], n: Mapping[str, Any], body: Any, headers: Headers, now: int, options: Any) -> Mapped:
     provider: str = spec["id"]
     ep = endpoint(spec, "search")
@@ -373,7 +378,7 @@ def map_search(spec: Mapping[str, Any], n: Mapping[str, Any], body: Any, headers
     found = get_path(body, response["results"])
     rows = [] if found in (MISSING, None) and response.get("resultsOptional") else found
     if not is_array(rows):
-        _invalid(provider, body)
+        _mismatch(provider, response["results"], body)
     f = response["fields"]
     results: list[SearchResult] = []
     dropped = 0
@@ -419,6 +424,7 @@ def map_contents(spec: Mapping[str, Any], urls: list[str], body: Any, headers: H
     if not isinstance(body, Mapping):
         _invalid(provider, body)
     candidates: list[tuple[str, Page, bool]] = []
+    dropped = dropped_billable = 0
     for source in response["pages"]:
         if source["from"] == "$":
             items: Any = [body]
@@ -426,7 +432,7 @@ def map_contents(spec: Mapping[str, Any], urls: list[str], body: Any, headers: H
             found = get_path(body, source["from"])
             items = [] if found in (MISSING, None) and source.get("optional") else found
         if not is_array(items):
-            _invalid(provider, body)
+            _mismatch(provider, source["from"], body)
         f = source["fields"]
         ok = source["status"] == "ok"
         for item in items:
@@ -434,6 +440,10 @@ def map_contents(spec: Mapping[str, Any], urls: list[str], body: Any, headers: H
                 continue
             url = _field(item, f["url"], now)
             if not isinstance(url, str):
+                # A page without a URL cannot be matched, but a paid one was still paid for.
+                dropped += 1
+                if ok or source.get("billable") is True:
+                    dropped_billable += 1
                 continue
             page = Page(
                 url=url,
@@ -446,7 +456,7 @@ def map_contents(spec: Mapping[str, Any], urls: list[str], body: Any, headers: H
                 error=None if ok else PageError(_text(_field(item, f.get("errorCode"), now)), _text(_field(item, f.get("errorMessage"), now))),
             )
             candidates.append((url_key(url), page, ok or source.get("billable") is True))
-    billable = sum(1 for _, _, b in candidates if b)
+    billable = sum(1 for _, _, b in candidates if b) + dropped_billable
     pages: list[Page] = []
     for requested in urls:
         key = url_key(requested)
@@ -457,6 +467,8 @@ def map_contents(spec: Mapping[str, Any], urls: list[str], body: Any, headers: H
         _, hit, _ = candidates.pop(index)
         pages.append(Page(requested, hit.status, hit.final_url, hit.title, hit.content, hit.published_at, hit.author, hit.error))
     warnings = _warnings(provider, response.get("warnings"), body)
+    if dropped:
+        warnings.append(ResponseWarning("invalid_rows_dropped", provider, count=dropped))
     if candidates:
         warnings.append(ResponseWarning("unmatched_pages", provider, count=len(candidates)))
     cost = reported_cost(ep, body) or computed_cost(ep, billable, None, options)

@@ -149,9 +149,12 @@ export async function runCase(c: any, file: any = {}): Promise<void> {
   const randoms: number[] = c.random ?? [0.5];
   let ri = 0;
   const ids = Object.keys(file.providers ?? registry);
+  const clientConfig = { ...expand(c.client ?? {}) };
+  const events: unknown[] = [];
+  if (clientConfig.diagnostics === true) clientConfig.diagnostics = (event: unknown) => { events.push(structuredClone(event)); };
   const client = createClient({
     keys: keysFor(ids), env: {}, ...(file.providers ? { registry: file.providers } : {}),
-    ...expand(c.client ?? {}), fetch, clock, random: () => randoms[Math.min(ri++, randoms.length - 1)]!,
+    ...clientConfig, fetch, clock, random: () => randoms[Math.min(ri++, randoms.length - 1)]!,
   });
   const options = mergeOptions(defaults.options, c.options);
   const controller = new AbortController();
@@ -174,6 +177,11 @@ export async function runCase(c: any, file: any = {}): Promise<void> {
   if (e.requests) {
     assert.equal(requests.length, e.requests.length, "request count");
     e.requests.forEach((exp: any, i: number) => checkRequest(requests[i], exp, `request ${i}`));
+  }
+  if (e.diagnostics) {
+    const actual = events.map((ev: any) => ({ ...ev, request: { ...ev.request, body: ev.request.body === null ? null : JSON.parse(ev.request.body) } }));
+    const expected = e.diagnostics.map((ev: any) => (ev.response ? { ...ev, response: { ...ev.response, body: expand(ev.response.body) } } : ev));
+    assert.deepEqual(actual, expected, "diagnostics");
   }
   if (e.error) {
     if (!error) assert.fail(`Expected error ${e.error.code}, got a response`);

@@ -146,7 +146,7 @@ test("the embedded registry holds exactly the spec files", () => {
 test("policy error messages cover exactly the error codes", () => {
   assert.deepEqual(Object.keys(policy.errors).sort(), [
     "aborted", "attempt_timeout", "auth", "configuration", "forbidden", "invalid_request", "invalid_response",
-    "network", "provider_error", "quota", "rate_limit", "response_too_large", "timeout", "unavailable", "unsupported",
+    "network", "provider_error", "quota", "rate_limit", "response_too_large", "spec_mismatch", "timeout", "unavailable", "unsupported",
   ]);
   for (const code of [...policy.transient, ...policy.fallbackOn, ...policy.billing.possible]) assert.ok(code in policy.errors, code);
 });

@@ -36,7 +36,7 @@ runtime should be able to produce.
   "query": "…",                 // search; or {"$repeat": s, "count": n, "prefix"?, "suffix"?}
   "urls": ["…"] | "…",          // contents; or {"$urls": n} for n generated URLs
   "options": { … },             // merged over the file's defaults.options; null removes a key
-  "client": { "keys": …, "env": …, "maxRetries": … },  // client config overrides
+  "client": { "keys": …, "env": …, "maxRetries": …, "diagnostics": true },  // client config overrides; diagnostics true installs a collecting hook
   "now": "2026-11-24T12:00:00.000Z",   // default
   "random": [0.5],              // jitter source, last value repeats; default [0.5]
   "abortAt": 100 | "before",    // virtual ms from call start
@@ -50,7 +50,8 @@ runtime should be able to produce.
     "requests": [{ "method", "url", "headers" (exact set), "body" (parsed JSON, null = none), "bodyIncludes" }],
     "response": { … },          // everything except raw; raw must equal the last scripted body
     "responseIncludes": { … },  // listed top-level keys only
-    "error": { … },             // listed keys; null means absent
+    "error": { … },             // listed keys (code, provider, status, field, path, raw, attempts…); null means absent
+    "diagnostics": [ … ],       // every diagnostics event, exactly; request.body compared parsed; response.body may use $repeat
     "secretAbsent": "…"         // must not appear in the error's text
   }
 }

@@ -211,6 +211,78 @@ class Registry(unittest.TestCase):
             self.assertEqual((caught.exception.code, caught.exception.field), ("configuration", "registry"))
 
 
+class Packaging(unittest.TestCase):
+    def test_the_version_matches_pyproject(self) -> None:
+        import re
+        from pathlib import Path
+
+        text = (Path(__file__).resolve().parent.parent / "pyproject.toml").read_text(encoding="utf-8")
+        match = re.search(r'^version = "([^"]+)"$', text, re.MULTILINE)
+        assert match is not None
+        self.assertEqual(searchsdk.__version__, match.group(1))
+
+
+class ClientSettings(unittest.TestCase):
+    def test_settings_are_checked_when_the_client_is_created(self) -> None:
+        from searchsdk._json import thaw
+
+        cases: list[tuple[dict[str, Any], tuple[str, str] | None]] = [
+            ({"provider": "nope"}, ("configuration", "provider")),
+            ({"provider": "__class__"}, ("configuration", "provider")),
+            ({"provider": 5}, ("configuration", "provider")),
+            ({"provider": "exa", "fallback": ["nope"]}, ("configuration", "fallback")),
+            ({"fallback": "exa"}, ("configuration", "fallback")),
+            ({"timeout_ms": 0}, ("invalid_request", "timeout_ms")),
+            ({"max_retries": 9}, ("invalid_request", "max_retries")),
+            ({"max_response_bytes": 1}, ("invalid_request", "max_response_bytes")),
+            ({"provider": "nope", "timeout_ms": 0}, ("invalid_request", "timeout_ms")),  # policy order: settings, provider, fallback
+            ({}, None),
+            ({"provider": "exa", "fallback": ["tavily"], "timeout_ms": 1000}, None),
+            ({"fallback": ["tavily"]}, None),
+        ]
+        mine = {**thaw(searchsdk.registry["exa"]), "id": "mine"}
+        cases += [({"registry": {"mine": mine}, "provider": "mine"}, None), ({"registry": {"mine": mine}, "provider": "exa"}, ("configuration", "provider"))]
+        for cls in (Client, AsyncClient):
+            for config, expected in cases:
+                with self.subTest(cls=cls.__name__, config=config):
+                    try:
+                        cls(**config)
+                        got = None
+                    except SearchError as e:
+                        got = (e.code, e.field)
+                    self.assertEqual(got, expected)
+
+
+class Diagnostics(unittest.TestCase):
+    def test_the_hook_must_be_callable(self) -> None:
+        with self.assertRaises(SearchError) as caught:
+            Client(diagnostics="yes")  # type: ignore[arg-type]
+        self.assertEqual((caught.exception.code, caught.exception.field), ("configuration", "diagnostics"))
+
+    def test_a_hook_that_raises_never_changes_the_call(self) -> None:
+        seen: list[int] = []
+
+        def hook(event: searchsdk.AttemptDiagnostics) -> None:
+            seen.append(event.index)
+            raise RuntimeError("hook bug")
+
+        client = Client(keys={"exa": "k"}, transport=Fixed({"results": []}), diagnostics=hook)
+        self.assertEqual(client.search("q", provider="exa").provider, "exa")
+        aclient = AsyncClient(keys={"exa": "k"}, transport=AsyncFixed({"results": []}), diagnostics=hook)
+        self.assertEqual(asyncio.run(aclient.search("q", provider="exa")).provider, "exa")
+        self.assertEqual(seen, [0, 0])
+
+    def test_diagnostics_never_carry_the_key(self) -> None:
+        key = "sk-test-secret-never-printed"
+        events: list[searchsdk.AttemptDiagnostics] = []
+        client = Client(keys={"exa": key}, transport=Fixed({"results": [], "note": f"key {key}"}), diagnostics=events.append)
+        client.search("q", provider="exa")
+        self.assertEqual(len(events), 1)
+        text = json.dumps([e.to_json() for e in events]) + repr(events)
+        self.assertNotIn(key, text)
+        self.assertIn("[redacted]", text)
+
+
 class PythonInputs(unittest.TestCase):
     def client(self) -> tuple[Client, Fixed]:
         transport = Fixed({"results": []})

@@ -252,6 +252,18 @@ export function callSettings(kind: "search" | "contents", o: Record<string, unkn
   return { timeoutMs, attemptTimeoutMs, maxRetries, maxResponseBytes, signal: signal as AbortSignal | undefined };
 }
 
+/**
+ * Checks client-level settings when the client is created, in policy order:
+ * call settings, then provider, then fallback. Both are optional here; a call
+ * may still name its own provider.
+ */
+export function checkClientConfig(registry: Registry, c: Record<string, unknown>): void {
+  callSettings("search", {}, c);
+  if (c.provider !== undefined && !isProviderId(registry, c.provider)) configuration("provider");
+  if (c.fallback !== undefined && (!Array.isArray(c.fallback) || !c.fallback.every((id) => isProviderId(registry, id)))) configuration("fallback");
+  if (c.diagnostics !== undefined && typeof c.diagnostics !== "function") configuration("diagnostics");
+}
+
 export function providerChain(registry: Registry, o: Record<string, unknown>, c: Record<string, unknown>): ProviderId[] {
   const primary = o.provider ?? c.provider;
   if (primary === undefined) return configuration("provider");

@@ -128,7 +128,8 @@
       "perRequestUsd": 0,
       "extraBlock": { "items": 1, "usd": 0.002 },
       "ceiling": { "extraBlockUsd": 0.003, "note": "Developer overage is $3 per 1,000 credits, above the plan's $2 per 1,000." },
-      "note": "1 credit per scrape when at least one output succeeds; a target 404 is still charged."
+      "costOptions": { "sharedParams": "unknown" },
+      "note": "1 credit per scrape when at least one output succeeds; a target 404 is still charged. Browser actions make it 2."
     },
     "rateLimits": [
       { "plan": "Free", "limit": 2, "unit": "requests", "per": "concurrent", "scope": "organization" },
@@ -151,6 +152,8 @@
     { "pointer": "/search/cost/reported", "reason": "key_metadata is optional in the 200 schema; when absent, cost is computed from pricing." },
     { "pointer": "/contents/response/pages/0/fields/url", "reason": "Live check 2026-11-25: top-level url echoed the requested URL and metadata.sourceUrl was absent. Whether url is the requested or the post-redirect URL is untested." },
     { "pointer": "/contents/pricing/creditUsd", "reason": "Credit price depends on plan; the Developer list price is used." },
+    { "pointer": "/contents/pricing/costOptions/sharedParams", "reason": "Credits docs (read 2026-11-25) charge 2 credits for a scrape with browser actions; which option object carries them is not stated, so sharedParams makes the price unknown." },
+    { "pointer": "/contents/response/pages/1", "reason": "Credits docs charge a target 404; whether it arrives as markdown.success false (mapped failed, not billable) is not stated. The reported credits_consumed still gives the real cost when present." },
     { "pointer": "/terms", "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec." }
   ]
 }
