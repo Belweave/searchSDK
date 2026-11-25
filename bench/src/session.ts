@@ -149,7 +149,8 @@ export function openSession(o: {
   const budget = new Budget({
     ledgerPath: o.ledger ?? (o.mode === "fixture" ? join(dir, "fixture-ledger.jsonl") : ledgerPath()),
     runId, runCapUsd: config.capUsd, monthlyCapUsd: method.budget.monthlyCapUsd,
-    ...(config.creditsUsd ? { creditsUsd: config.creditsUsd } : {}), now,
+    ...(config.creditsUsd ? { creditsUsd: config.creditsUsd } : {}),
+    ...(config.providerLimits ? { providerLimits: config.providerLimits } : {}), now,
   });
   if (!o.runId) {
     writeJson(runPaths(dir).run, { runId, mode: o.mode, config, method, planHash: hash, createdAt, judge: judge?.info ?? null, checkJudge: checkJudge?.info ?? null } satisfies RunMeta, 0o600);

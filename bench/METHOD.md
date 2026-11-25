@@ -328,6 +328,16 @@ usable-response floor.
 - **Starting a live run.** `BENCH_ALLOW_LIVE=1`, every key present, no `CI`,
   the printed plan, and `--confirm-spend` equal to the cap.
 - **Credits.** Free credit per account (`creditsUsd`) is spent before cash.
+- **Provider limits.** A run config may give a provider a hard account limit
+  in the provider's own credits or in calls (`providerLimits`, with a
+  `since` date). It counts every ledger line for that provider since the
+  date: smoke checks, earlier runs and resumed attempts alike. Each call
+  reserves its credits (the list price for the results asked for, in
+  credits) and commits the credits the provider reported, else its computed
+  price in credits. The call that could pass the limit is not sent and that
+  provider stops; the other providers finish the run. Its missing items then
+  drop out of the paired comparison for everyone (section 9), so a limit is
+  set with room for the whole run, never to give one provider fewer passes.
 
 ## 11. Outputs
 

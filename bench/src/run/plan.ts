@@ -9,7 +9,7 @@ import type { ProviderSpec } from "../sdk.ts";
 import { BENCH_DIR, canonical, rng, seedOf, sha256, shuffle, storeDir, usd } from "../util/core.ts";
 import type { JudgePricing, Method, RunConfig, Settings } from "./config.ts";
 import { paceFor, type Pace, type RateLimit } from "./pacer.ts";
-import { reservation, type Reservation } from "./pricing.ts";
+import { creditReservation, reservation, type Reservation } from "./pricing.ts";
 
 export interface ProviderPlan {
   id: string;
@@ -17,6 +17,8 @@ export interface ProviderPlan {
   profiles: { profile: string; settings: Settings; reservation: Reservation; calls: number; maxUsd: number }[];
   pace: Pace;
   terms: { benchmarkPublication: string; rawResponseStorage: string } | null;
+  /** Provider credits for credit-priced or limited providers: per search call, planned for this run, and the account limit. */
+  credits: { perCall: number | null; planned: number | null; limit?: number; callLimit?: number; since?: string } | null;
   warnings: string[];
 }
 
@@ -117,12 +119,27 @@ export function makePlan(o: {
     if (allowance && allowance.unit === "requests" && perDayCalls > allowance.limit) {
       pw.push(`plans ${perDayCalls} calls, above the free allowance of ${allowance.limit} per ${allowance.per}; past it calls are ${allowance.beyond.billing === "opt-in" ? "refused unless paid use is on" : "billed"}`);
     }
+    const limit = config.providerLimits?.[id];
+    const perCall = profiles.length ? creditReservation(spec, "search", method.search.maxResults, profiles[0]!.settings) : null;
+    if (limit?.credits !== undefined && profiles.some((p) => creditReservation(spec, "search", method.search.maxResults, p.settings) === null)) {
+      throw new Error(`${id}: providerLimits sets a credit limit, but ${id} is not priced in credits (or an option makes its credits unknown)`);
+    }
+    const planned = perCall === null ? null : profiles.reduce((a, p) => a + p.calls * creditReservation(spec, "search", method.search.maxResults, p.settings)!, 0);
+    const since = limit?.since ? ` since ${limit.since}` : "";
+    if (limit?.credits !== undefined && planned !== null && planned > limit.credits) pw.push(`plans ${planned} credits, above its limit of ${limit.credits}${since}; it stops when the limit is reached and the others continue`);
+    if (limit?.calls !== undefined && perDayCalls > limit.calls) pw.push(`plans ${perDayCalls} calls, above its limit of ${limit.calls} calls${since}; it stops when the limit is reached and the others continue`);
+    const credits: ProviderPlan["credits"] = perCall === null && !limit ? null : {
+      perCall, planned,
+      ...(limit?.credits !== undefined ? { limit: limit.credits } : {}),
+      ...(limit?.calls !== undefined ? { callLimit: limit.calls } : {}),
+      ...(limit?.since ? { since: limit.since } : {}),
+    };
     const terms = (spec as { terms?: { benchmarkPublication: string; rawResponseStorage: string } }).terms ?? null;
     if (terms && (terms.benchmarkPublication === "restricted" || terms.rawResponseStorage === "restricted")) {
       pw.push(`terms restrict benchmarking or storing results (publication: ${terms.benchmarkPublication}, storage: ${terms.rawResponseStorage}); owner decided to publish regardless`);
     }
     for (const p of profiles) { searchCalls += p.calls; searchUsd += p.maxUsd; }
-    providers.push({ id, name: spec.name, profiles, pace, terms, warnings: pw });
+    providers.push({ id, name: spec.name, profiles, pace, terms, credits, warnings: pw });
   }
 
   // Worst case: every search in a page pass returns a full list and no URL repeats.
@@ -184,7 +201,7 @@ const pad = (s: string, n: number) => s.padEnd(n);
 const lpad = (s: string, n: number) => s.padStart(n);
 const money = (x: number, d = 2) => `$${x.toFixed(d)}`;
 
-export function formatPlan(plan: Plan, extra: { mode: string; monthCashUsd?: number; monthlyCapUsd: number; credits?: Record<string, number> }): string {
+export function formatPlan(plan: Plan, extra: { mode: string; monthCashUsd?: number; monthlyCapUsd: number; credits?: Record<string, number>; creditsUsed?: Record<string, number> }): string {
   const L: string[] = [];
   const counts = plan.items.reduce<Record<string, number>>((m, i) => ((m[i.class] = (m[i.class] ?? 0) + 1), m), {});
   L.push(`searchSDK Benchmarks spend plan (dry run: nothing is sent)`);
@@ -198,6 +215,21 @@ export function formatPlan(plan: Plan, extra: { mode: string; monthCashUsd?: num
     }
   }
   L.push(`${pad("search subtotal", 26)}${lpad(String(plan.search.calls), 7)}  ${pad("", 36)}${lpad(money(plan.search.maxUsd), 9)}`);
+  const credited = plan.providers.filter((p) => p.credits);
+  if (credited.length) {
+    L.push("");
+    L.push("provider credits (the provider's own units; limits count every run and smoke check in the ledger):");
+    for (const p of credited) {
+      const c = p.credits!;
+      const calls = p.profiles.reduce((a, x) => a + x.calls, 0);
+      const used = extra.creditsUsed?.[p.id];
+      const head = c.perCall === null ? `${calls} calls (not priced in credits)` : `${c.perCall} per call x ${calls} calls = ${c.planned} credits`;
+      const lim = c.limit !== undefined
+        ? `; limit ${c.limit}${c.since ? ` since ${c.since}` : ""}${used !== undefined ? `, ${used} used, ${c.limit - used - (c.planned ?? 0)} to spare` : ""}`
+        : c.callLimit !== undefined ? `; limit ${c.callLimit} calls${c.since ? ` since ${c.since}` : ""}` : "";
+      L.push(`  ${pad(p.id, 10)}${head}${lim}`);
+    }
+  }
   if (plan.judge?.pricing === "list-price") {
     const j = plan.judge;
     L.push("");

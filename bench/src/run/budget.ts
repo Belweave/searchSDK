@@ -3,6 +3,10 @@
 // A call is refused when the reservation could take the run past its cap or
 // the month past the monthly cap. Unknown actual costs keep the reservation.
 // An actual cost above its reservation halts the run: the price data is wrong.
+// Separately, a provider may have a hard account limit in credits or calls
+// (providerLimits). It counts every ledger line for that provider since a
+// date, across runs, smoke checks and resumes, and refuses the call that
+// could pass it; the runner then stops that provider alone.
 import { randomUUID } from "node:crypto";
 import { appendJsonl, monthOf, readJsonl } from "../util/core.ts";
 
@@ -18,6 +22,8 @@ export interface LedgerLine {
   kind: SpendKind;
   usd: number;
   at: string;
+  /** Provider credits reserved (reserve) or used (commit), for providers priced in credits. */
+  credits?: number;
   /** commit only: true when the actual was unknown and the reservation was kept. */
   assumed?: boolean;
   overrun?: boolean;
@@ -28,6 +34,33 @@ export interface Hold {
   account: string;
   kind: SpendKind;
   usd: number;
+  credits?: number;
+}
+
+/** A hard limit on one provider account: credits and/or calls, counted from `since` (YYYY-MM-DD, UTC), or from the start of the ledger. */
+export interface ProviderLimit {
+  credits?: number;
+  calls?: number;
+  since?: string;
+}
+
+/** Credits and calls one account has used since a date: committed credits, open reservations in full, one call per reservation. */
+export function poolUsage(ledgerPath: string, account: string, since?: string): { credits: number; calls: number } {
+  const from = since ? Date.parse(`${since}T00:00:00Z`) : -Infinity;
+  const reserves = new Map<string, LedgerLine>();
+  const commits = new Map<string, LedgerLine>();
+  for (const l of readJsonl<LedgerLine>(ledgerPath)) {
+    if (l.account !== account) continue;
+    (l.t === "reserve" ? reserves : commits).set(l.id, l);
+  }
+  let credits = 0;
+  let calls = 0;
+  for (const [id, r] of reserves) {
+    if (!(Date.parse(r.at) >= from)) continue;
+    calls++;
+    credits += commits.get(id)?.credits ?? r.credits ?? 0;
+  }
+  return { credits, calls };
 }
 
 export interface BudgetOptions {
@@ -36,6 +69,8 @@ export interface BudgetOptions {
   runCapUsd: number;
   monthlyCapUsd: number;
   creditsUsd?: Record<string, number>;
+  /** Hard per-provider limits in credits or calls, across runs (see ProviderLimit). */
+  providerLimits?: Record<string, ProviderLimit>;
   now?: () => number;
 }
 
@@ -54,6 +89,8 @@ export class Budget {
   private readonly runSpend = new Map<string, number>();
   private readonly open = new Map<string, Hold>();
   private readonly cashAtStart: number;
+  /** Credits and calls used against each limited provider's limit, kept current as calls are reserved and committed. */
+  private readonly pools = new Map<string, { credits: number; calls: number }>();
 
   constructor(o: BudgetOptions) {
     if (!(o.runCapUsd > 0)) throw new BudgetError("a run needs a positive spend cap");
@@ -76,6 +113,24 @@ export class Budget {
     }
     // A resumed run starts from the month's cash before this run's own earlier spend.
     this.cashAtStart = this.cash(this.subtract(this.monthSpend, this.runSpend));
+    for (const [account, limit] of Object.entries(o.providerLimits ?? {})) this.pools.set(account, poolUsage(o.ledgerPath, account, limit.since));
+  }
+
+  /**
+   * Why a provider's next call must not be sent under its own limit, or null.
+   * `credits` is the call's credit reservation; null means it cannot be counted in credits.
+   */
+  providerRefusal(account: string, credits: number | null): string | null {
+    const limit = this.o.providerLimits?.[account];
+    const used = this.pools.get(account);
+    if (!limit || !used) return null;
+    const since = limit.since ? ` since ${limit.since}` : "";
+    if (limit.calls !== undefined && used.calls + 1 > limit.calls) return `${account}: ${used.calls} of ${limit.calls} calls used${since}; the call limit stops it`;
+    if (limit.credits !== undefined) {
+      if (credits === null) return `${account}: this call's credits cannot be bounded, so the ${limit.credits}-credit limit stops it`;
+      if (used.credits + credits > limit.credits + 1e-9) return `${account}: ${used.credits} of ${limit.credits} credits used${since}; a ${credits}-credit call would pass the limit`;
+    }
+    return null;
   }
 
   private add(m: Map<string, number>, k: string, v: number) {
@@ -115,8 +170,8 @@ export class Budget {
     return Math.min(this.runCapUsd - this.runCashUsd(), this.monthlyCapUsd - this.monthCashUsd());
   }
 
-  /** Reserves `usd` for one call, or returns null when the call could break a cap. */
-  reserve(account: string, kind: SpendKind, usd: number): Hold | null {
+  /** Reserves `usd` (and `credits`, for a credit-priced provider) for one call, or returns null when the call could break a cap. */
+  reserve(account: string, kind: SpendKind, usd: number, credits?: number | null): Hold | null {
     if (this.halted) return null;
     if (!(usd >= 0) || !Number.isFinite(usd)) throw new BudgetError(`invalid reservation ${usd}`);
     const next = new Map(this.monthSpend);
@@ -124,23 +179,28 @@ export class Budget {
     const monthCash = this.cash(next);
     if (monthCash - this.cashAtStart > this.runCapUsd + 1e-12) return null;
     if (monthCash > this.monthlyCapUsd + 1e-12) return null;
-    const hold: Hold = { id: randomUUID(), account, kind, usd };
-    appendJsonl(this.o.ledgerPath, this.line("reserve", hold, usd));
+    const hold: Hold = { id: randomUUID(), account, kind, usd, ...(typeof credits === "number" ? { credits } : {}) };
+    appendJsonl(this.o.ledgerPath, { ...this.line("reserve", hold, usd), ...(hold.credits !== undefined ? { credits: hold.credits } : {}) });
+    const pool = this.pools.get(account);
+    if (pool) { pool.calls++; pool.credits += hold.credits ?? 0; }
     this.monthSpend.set(account, next.get(account)!);
     this.add(this.runSpend, account, usd);
     this.open.set(hold.id, hold);
     return hold;
   }
 
-  /** Records the actual cost. `null` (unknown) keeps the reservation. Returns true on an overrun. */
-  commit(hold: Hold, actualUsd: number | null): boolean {
+  /** Records the actual cost (and credits). `null` (unknown) keeps the reservation. Returns true on an overrun. */
+  commit(hold: Hold, actualUsd: number | null, actualCredits?: number | null): boolean {
     if (!this.open.delete(hold.id)) throw new BudgetError("commit without an open reservation");
     const assumed = actualUsd === null || !Number.isFinite(actualUsd) || actualUsd < 0;
     const usd = assumed ? hold.usd : actualUsd;
     const overrun = usd > hold.usd + 1e-12;
     this.add(this.monthSpend, hold.account, usd - hold.usd);
     this.add(this.runSpend, hold.account, usd - hold.usd);
-    appendJsonl(this.o.ledgerPath, { ...this.line("commit", hold, usd), ...(assumed ? { assumed: true } : {}), ...(overrun ? { overrun: true } : {}) });
+    const credits = hold.credits === undefined ? undefined : typeof actualCredits === "number" && Number.isFinite(actualCredits) && actualCredits >= 0 ? actualCredits : hold.credits;
+    const pool = this.pools.get(hold.account);
+    if (pool && credits !== undefined) pool.credits += credits - hold.credits!;
+    appendJsonl(this.o.ledgerPath, { ...this.line("commit", hold, usd), ...(credits !== undefined ? { credits } : {}), ...(assumed ? { assumed: true } : {}), ...(overrun ? { overrun: true } : {}) });
     if (overrun) this.halted = `${hold.account} ${hold.kind} cost $${usd.toFixed(6)}, above its reservation of $${hold.usd.toFixed(6)}; registry price data is wrong`;
     return overrun;
   }

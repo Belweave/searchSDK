@@ -37,6 +37,8 @@ export interface AttemptRecord {
   costSource: string;
   costEstimated: boolean;
   reservedUsd: number;
+  /** Provider credits used, for providers priced in credits; null when unknown (the reservation was kept). */
+  credits?: number | null;
   resultCount: number;
   /** Result URLs in rank order (at most maxResults). */
   urls: string[];

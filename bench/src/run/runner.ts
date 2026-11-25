@@ -14,7 +14,7 @@ import type { Budget } from "./budget.ts";
 import type { Method, RunConfig } from "./config.ts";
 import { Pacer, realTimer, type Timer } from "./pacer.ts";
 import { hasProfile, settingsFor, type Plan } from "./plan.ts";
-import { reservation } from "./pricing.ts";
+import { attemptsCredits, creditReservation, reservation } from "./pricing.ts";
 import {
   judgePairIdOf, runPaths, urlKey, type AttemptRecord, type EventRecord, type JudgmentRecord, type Outcome, type PageRecord,
 } from "./records.ts";
@@ -105,7 +105,18 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
         const spec = registry[provider]!;
         const settings = settingsFor(config, profile, provider);
         const res = reservation(spec, "search", method.search.maxResults, settings, method);
-        const hold = budget.reserve(provider, "search", res.usd);
+        const credits = creditReservation(spec, "search", method.search.maxResults, settings);
+        // A provider's own account limit (credits or calls) stops that provider alone, before the call that could pass it.
+        const refusal = budget.providerRefusal(provider, credits);
+        if (refusal) {
+          if (!disabled.has(provider)) {
+            disabled.set(provider, "limit");
+            event(dir, { event: "provider-stopped", provider, detail: `${refusal}; the other providers continue` });
+            ctx.log?.(`${refusal}; stopping ${provider}, the other providers continue`);
+          }
+          return;
+        }
+        const hold = budget.reserve(provider, "search", res.usd, credits);
         if (!hold) return halt(budget.halted ? "overrun" : "budget");
         const release = await pacers.get(provider)!.acquire();
         const startedAt = new Date().toISOString();
@@ -139,7 +150,8 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
         else { outcome = "harness_error"; code = error instanceof Error ? error.name : "unknown"; }
         // Nothing sent (validation or a skipped provider) costs nothing; otherwise the SDK's per-attempt costs.
         const cost = sent.length ? attemptsCost(sent) : 0;
-        if (budget.commit(hold, cost)) halt("overrun");
+        const creditsUsed = credits === null ? null : sent.length ? attemptsCredits(spec, "search", sent) : 0;
+        if (budget.commit(hold, cost, creditsUsed)) halt("overrun");
         const results = response?.results ?? [];
         const rec: AttemptRecord = {
           key, pass, itemId: item.id, provider, profile, startedAt, outcome,
@@ -151,6 +163,7 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
           costSource: last?.cost.source ?? "none",
           costEstimated: last?.cost.estimated ?? false,
           reservedUsd: res.usd,
+          ...(credits !== null ? { credits: creditsUsed } : {}),
           resultCount: results.length,
           urls: results.map((r) => r.url),
           resultHashes: results.map((r) => sha256(JSON.stringify([r.title, r.excerpts]))),

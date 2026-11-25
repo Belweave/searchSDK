@@ -9,7 +9,7 @@ import { FIXTURE_PROVIDERS } from "./fixtures.ts";
 import { labelSession } from "./human.ts";
 import { createJudge, loadJudgeConfig } from "./judge/judge.ts";
 import { writeOutputs } from "./publish/publish.ts";
-import { Budget } from "./run/budget.ts";
+import { Budget, poolUsage } from "./run/budget.ts";
 import { loadMethod, loadRunConfig, type RunConfig } from "./run/config.ts";
 import { formatPlan, loadRunItems, makePlan, runsDir } from "./run/plan.ts";
 import { runPaths } from "./run/records.ts";
@@ -74,6 +74,11 @@ async function confirmSpend(cap: number, f: Record<string, string | true>, maxUs
   return Number(a.trim()) === cap;
 }
 
+/** Credits each limited provider has already used in the ledger (smoke checks and earlier runs included). */
+function creditsUsed(config: RunConfig): Record<string, number> {
+  return Object.fromEntries(Object.entries(config.providerLimits ?? {}).map(([id, l]) => [id, poolUsage(ledgerPath(), id, l.since).credits]));
+}
+
 /** The primary and check judges a run uses, or nulls when it judges nothing. */
 function judgesFor(config: RunConfig, method: ReturnType<typeof loadMethod>, opts: { fetch: typeof fetch; env: Record<string, string | undefined> }) {
   if (config.judgeItems <= 0) return { judge: null, checkJudge: null };
@@ -93,7 +98,7 @@ async function prepareLive(config: RunConfig, f: Record<string, string | true>):
   const { judge, checkJudge } = judgesFor(config, method, { fetch: globalThis.fetch, env: process.env });
   const plan = makePlan({ config, method, items, registry: builtInRegistry as unknown as Record<string, ProviderSpec>, judge, checkJudge });
   const month = new Budget({ ledgerPath: ledgerPath(), runId: "plan", runCapUsd: config.capUsd, monthlyCapUsd: method.budget.monthlyCapUsd, ...(config.creditsUsd ? { creditsUsd: config.creditsUsd } : {}) });
-  console.log(formatPlan(plan, { mode: "live", monthCashUsd: month.monthCashUsd(), monthlyCapUsd: method.budget.monthlyCapUsd, ...(config.creditsUsd ? { credits: config.creditsUsd } : {}) }));
+  console.log(formatPlan(plan, { mode: "live", monthCashUsd: month.monthCashUsd(), monthlyCapUsd: method.budget.monthlyCapUsd, creditsUsed: creditsUsed(config), ...(config.creditsUsd ? { credits: config.creditsUsd } : {}) }));
   if (!(await confirmSpend(config.capUsd, f, plan.maxUsd))) throw new Error(`not confirmed: pass --confirm-spend ${config.capUsd} to accept the cap`);
 }
 
@@ -172,7 +177,7 @@ async function main(): Promise<void> {
       const items = loadRunItems(config);
       const { judge, checkJudge } = judgesFor(config, method, { fetch: () => Promise.reject(new Error("plan sends nothing")), env: {} });
       const plan = makePlan({ config, method, items, registry: builtInRegistry as unknown as Record<string, ProviderSpec>, judge, checkJudge });
-      const text = formatPlan(plan, { mode: "live", monthlyCapUsd: method.budget.monthlyCapUsd, ...(config.creditsUsd ? { credits: config.creditsUsd } : {}) });
+      const text = formatPlan(plan, { mode: "live", monthlyCapUsd: method.budget.monthlyCapUsd, creditsUsed: creditsUsed(config), ...(config.creditsUsd ? { credits: config.creditsUsd } : {}) });
       if (flags.quiet !== true) console.log(text);
       if (plan.maxUsd > method.budget.monthlyCapUsd && flags.quiet === true) throw new Error("plan exceeds the monthly cap");
       return;

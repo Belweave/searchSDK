@@ -65,6 +65,12 @@ export interface RunConfig {
   capUsd: number;
   /** Free credit per provider, in USD, which spend uses before the cash caps. */
   creditsUsd?: Record<string, number>;
+  /**
+   * Hard per-provider account limits, in provider credits and/or calls, counted in the
+   * month-wide ledger across every run and smoke check since `since`. When the next call
+   * could pass a limit, that provider stops; the others carry on. The USD caps still apply.
+   */
+  providerLimits?: Record<string, { credits?: number; calls?: number; since?: string }>;
   /** Rate-limit plan name per provider, matched against the registry's rateLimits; default is the most restrictive. */
   rateLimitPlans?: Record<string, string>;
   seed: number;
@@ -92,6 +98,12 @@ export function loadRunConfig(path: string): RunConfig {
   if (c.judgePricing !== undefined && c.judgePricing !== "covered-by-plan" && c.judgePricing !== "list-price") problems.push("judgePricing: covered-by-plan or list-price");
   if (typeof c.capUsd !== "number" || !(c.capUsd > 0)) problems.push("capUsd: a positive number");
   if (!Number.isInteger(c.seed)) problems.push("seed: an integer");
+  for (const [id, l] of Object.entries(c.providerLimits ?? {})) {
+    if (l.credits !== undefined && !(Number.isFinite(l.credits) && l.credits > 0)) problems.push(`providerLimits.${id}.credits: a positive number`);
+    if (l.calls !== undefined && !(Number.isInteger(l.calls) && l.calls > 0)) problems.push(`providerLimits.${id}.calls: a positive whole number`);
+    if (l.since !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(l.since)) problems.push(`providerLimits.${id}.since: YYYY-MM-DD`);
+    if (l.credits === undefined && l.calls === undefined) problems.push(`providerLimits.${id}: credits or calls`);
+  }
   if (problems.length) throw new Error(`${path}:\n  ${problems.join("\n  ")}`);
   return c;
 }
