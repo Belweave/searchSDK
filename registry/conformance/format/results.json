@@ -1,5 +1,5 @@
 {
-  "description": "Optional result lists (schema: response.resultsOptional). When resultsOptional is true, an absent or null result list is an empty success. A present value that is not an array is still invalid_response.",
+  "description": "Optional result lists (schema: response.resultsOptional). When resultsOptional is true, an absent or null result list is an empty success. A present value that is not an array is still spec_mismatch.",
   "synthetic": "Synthetic: format vectors use invented specs and bodies; no provider is described.",
   "providers": {
     "optional-results": {
@@ -127,7 +127,7 @@
       }
     },
     {
-      "name": "an optional result list that is not an array is invalid_response",
+      "name": "an optional result list that is not an array is spec_mismatch",
       "call": "search",
       "query": "q",
       "options": {
@@ -145,7 +145,8 @@
       ],
       "expect": {
         "error": {
-          "code": "invalid_response",
+          "code": "spec_mismatch",
+          "path": "data.web",
           "status": 200
         }
       }

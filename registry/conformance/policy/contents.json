@@ -62,15 +62,15 @@
       } }
     },
     {
-      "name": "a 2xx contents body without the required list is invalid_response and keeps the paid body",
+      "name": "a 2xx contents body without the required list is spec_mismatch naming the path, and keeps the paid body",
       "call": "contents", "urls": ["https://example.com/a"], "options": { "provider": "exa", "fallback": ["tavily"] },
       "responses": [{ "status": 200, "body": { "error": "upstream exploded" } }],
       "expect": {
         "requestCount": 1,
         "error": {
-          "code": "invalid_response", "provider": "exa", "status": 200,
+          "code": "spec_mismatch", "provider": "exa", "status": 200, "path": "results",
           "raw": { "error": "upstream exploded" },
-          "attempts": [{ "provider": "exa", "outcome": "error", "code": "invalid_response", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.001, "estimated": true, "source": "computed" } }]
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "spec_mismatch", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.001, "estimated": true, "source": "computed" } }]
         }
       }
     },
@@ -81,10 +81,26 @@
       "expect": { "responseIncludes": { "warnings": [] } }
     },
     {
-      "name": "a required list that is not an array is invalid_response",
+      "name": "a required list that is not an array is spec_mismatch",
       "call": "contents", "urls": ["https://example.com/a"],
       "responses": [{ "status": 200, "body": { "results": {}, "errors": [] } }],
-      "expect": { "error": { "code": "invalid_response", "status": 200 } }
+      "expect": { "error": { "code": "spec_mismatch", "status": 200, "path": "results" } }
+    },
+    {
+      "name": "a required list after an optional one is checked too, and the first failing path is named",
+      "call": "contents", "urls": ["https://example.com/a"], "options": { "provider": "tinyfish" },
+      "responses": [{ "status": 200, "body": { "results": [{ "url": "https://example.com/a", "text": "A" }], "errors": "none" } }],
+      "expect": { "error": { "code": "spec_mismatch", "status": 200, "path": "errors" } }
+    },
+    {
+      "name": "items without a URL are dropped with one warning across all page sources",
+      "call": "contents", "urls": ["https://example.com/a"], "options": { "provider": "tavily" },
+      "responses": [{ "status": 200, "body": { "results": [{ "raw_content": "lost" }, { "url": "https://example.com/a", "raw_content": "A" }], "failed_results": [{ "error": "no url" }] } }],
+      "expect": { "responseIncludes": {
+        "pages": [{ "url": "https://example.com/a", "status": "ok", "finalUrl": null, "title": null, "content": "A", "publishedAt": null, "author": null, "error": null }],
+        "warnings": [{ "code": "invalid_rows_dropped", "provider": "tavily", "count": 2 }],
+        "cost": { "usd": 0.008, "estimated": true, "source": "computed" }
+      } }
     },
     {
       "name": "a 2xx body that is not a JSON object is invalid_response",

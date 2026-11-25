@@ -242,6 +242,36 @@ class ClientSettings(unittest.TestCase):
                     self.assertEqual(got, expected)
 
 
+class Diagnostics(unittest.TestCase):
+    def test_the_hook_must_be_callable(self) -> None:
+        with self.assertRaises(SearchError) as caught:
+            Client(diagnostics="yes")  # type: ignore[arg-type]
+        self.assertEqual((caught.exception.code, caught.exception.field), ("configuration", "diagnostics"))
+
+    def test_a_hook_that_raises_never_changes_the_call(self) -> None:
+        seen: list[int] = []
+
+        def hook(event: searchsdk.AttemptDiagnostics) -> None:
+            seen.append(event.index)
+            raise RuntimeError("hook bug")
+
+        client = Client(keys={"exa": "k"}, transport=Fixed({"results": []}), diagnostics=hook)
+        self.assertEqual(client.search("q", provider="exa").provider, "exa")
+        aclient = AsyncClient(keys={"exa": "k"}, transport=AsyncFixed({"results": []}), diagnostics=hook)
+        self.assertEqual(asyncio.run(aclient.search("q", provider="exa")).provider, "exa")
+        self.assertEqual(seen, [0, 0])
+
+    def test_diagnostics_never_carry_the_key(self) -> None:
+        key = "sk-test-secret-never-printed"
+        events: list[searchsdk.AttemptDiagnostics] = []
+        client = Client(keys={"exa": key}, transport=Fixed({"results": [], "note": f"key {key}"}), diagnostics=events.append)
+        client.search("q", provider="exa")
+        self.assertEqual(len(events), 1)
+        text = json.dumps([e.to_json() for e in events]) + repr(events)
+        self.assertNotIn(key, text)
+        self.assertIn("[redacted]", text)
+
+
 class PythonInputs(unittest.TestCase):
     def client(self) -> tuple[Client, Fixed]:
         transport = Fixed({"results": []})

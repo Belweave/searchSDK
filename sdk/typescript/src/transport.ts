@@ -10,7 +10,8 @@ export const systemClock: Clock = {
   clearTimeout: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
 };
 
-export interface Reply { status: number; headers: Headers; body: unknown }
+/** A reply as received. `bytes` is null when a non-2xx body could not be read; parsing is the caller's. */
+export interface Reply { status: number; headers: Headers; bytes: Uint8Array | null }
 
 export interface SendOptions {
   provider: ProviderId;
@@ -19,6 +20,8 @@ export interface SendOptions {
   attemptDeadline: number;
   signal: AbortSignal | undefined;
   maxBytes: number;
+  /** Called once when the status and headers arrive, before the body is read. */
+  onHead?: (status: number, headers: Headers) => void;
 }
 
 /**
@@ -57,7 +60,8 @@ async function readBytes(res: Response, maxBytes: number, stopped: Promise<never
   return out;
 }
 
-function parseJson(bytes: Uint8Array): unknown {
+/** Parses a UTF-8 JSON body; throws on anything else. */
+export function parseJson(bytes: Uint8Array): unknown {
   return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
 }
 
@@ -89,21 +93,17 @@ export async function send(fetchFn: typeof globalThis.fetch, req: HttpRequest, o
       if (e instanceof SearchError) throw e;
       throw new SearchError(reason ?? "network", { provider });
     }
+    o.onHead?.(res.status, res.headers);
     const ok = res.status >= 200 && res.status < 300;
     if (!ok) {
       // The status decides the error. A body that is too large or breaks off is ignored, unless the call was stopped.
-      let body: unknown;
-      try { body = parseJson(await readBytes(res, o.maxBytes, stopped, provider, () => reason)); } catch {
+      let bytes: Uint8Array | null = null;
+      try { bytes = await readBytes(res, o.maxBytes, stopped, provider, () => reason); } catch {
         if (reason) throw new SearchError(reason, { provider, status: res.status });
       }
-      return { status: res.status, headers: res.headers, body };
+      return { status: res.status, headers: res.headers, bytes };
     }
-    const bytes = await readBytes(res, o.maxBytes, stopped, provider, () => reason);
-    try {
-      return { status: res.status, headers: res.headers, body: parseJson(bytes) };
-    } catch {
-      throw new SearchError("invalid_response", { provider, status: res.status });
-    }
+    return { status: res.status, headers: res.headers, bytes: await readBytes(res, o.maxBytes, stopped, provider, () => reason) };
   } finally {
     clock.clearTimeout(timer);
     o.signal?.removeEventListener("abort", onAbort);

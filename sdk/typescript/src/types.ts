@@ -5,7 +5,7 @@ export type { ContentsProviderOptions, ProviderId, SearchProviderOptions };
 export type ErrorCode =
   | "invalid_request" | "configuration" | "unsupported" | "auth" | "forbidden" | "quota"
   | "rate_limit" | "unavailable" | "provider_error" | "network" | "attempt_timeout"
-  | "timeout" | "aborted" | "invalid_response" | "response_too_large";
+  | "timeout" | "aborted" | "invalid_response" | "spec_mismatch" | "response_too_large";
 
 export type Recency = "day" | "week" | "month" | "year";
 export type Depth = "fast" | "standard" | "deep";
@@ -39,6 +39,12 @@ export interface ClientConfig<Id extends string = ProviderId> {
   clock?: Clock;
   /** Uniform random source in [0, 1) for retry jitter. */
   random?: () => number;
+  /**
+   * Opt-in hook called once per sent attempt with its redacted request, raw
+   * status, headers and bounded body, and how the spec's paths resolved
+   * (registry/policy.md, Diagnostics). Keys never appear. Errors it throws are ignored.
+   */
+  diagnostics?: (event: AttemptDiagnostics<NoInfer<Id>>) => void;
   /**
    * Provider specs to use instead of the built-in registry, keyed by id. They
    * are validated against the schema and copied, so later edits have no effect.
@@ -151,6 +157,36 @@ interface ResponseBase<Id extends string> {
   attempts: Attempt<Id>[];
   /** The provider's parsed JSON body. */
   raw: unknown;
+}
+
+/** How one spec path resolved: `found` and `missing` count the items it was read from. */
+export interface PathReport {
+  /** What the path is for: `results`, `title`, `providerFields.id`, `pages.0.content`, `cost`, `requestId` and so on. */
+  role: string;
+  path: string;
+  found: number;
+  missing: number;
+}
+
+/** One sent attempt, for smoke checks and debugging specs (registry/policy.md, Diagnostics). */
+export interface AttemptDiagnostics<Id extends string = ProviderId> {
+  /** The attempt's position in `attempts`. */
+  index: number;
+  kind: "search" | "contents";
+  attempt: Attempt<Id>;
+  /** The request as sent, with the key replaced by "[redacted]". */
+  request: { method: "GET" | "POST"; url: string; headers: Record<string, string>; body: string | null };
+  /** Null when no status arrived. */
+  response: {
+    status: number;
+    headers: Record<string, string>;
+    /** UTF-8 text, key redacted, at most policy.diagnostics.maxBodyBytes bytes; null when the body was not read whole. */
+    body: string | null;
+    bodyBytes: number | null;
+    bodyTruncated: boolean;
+  } | null;
+  /** For a 2xx JSON object: which spec paths resolved; otherwise empty. */
+  paths: PathReport[];
 }
 
 export interface SearchResponse<Id extends string = ProviderId> extends ResponseBase<Id> { results: SearchResult[] }

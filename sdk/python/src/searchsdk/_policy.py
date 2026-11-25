@@ -275,6 +275,9 @@ def check_client_config(registry: Registry, c: Mapping[str, Any]) -> None:
         isinstance(fallback, str) or not isinstance(fallback, Sequence) or not all(isinstance(i, str) and i in registry for i in fallback)
     ):
         _configuration("fallback")
+    diagnostics = c.get("diagnostics")
+    if diagnostics is not None and not callable(diagnostics):
+        _configuration("diagnostics")
 
 
 def provider_chain(registry: Registry, o: Mapping[str, Any], c: Mapping[str, Any]) -> list[str]:

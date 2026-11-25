@@ -8,10 +8,11 @@ asynchronous driver performs them, so both APIs run this same code.
 from __future__ import annotations
 
 from collections.abc import Callable, Generator, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Union
 
 from ._clock import CancelToken, Clock
+from ._diagnostics import path_report, redacted_request, response_record
 from ._engine import HttpRequest, Kind, attempt_cost, build_request, header, map_contents, map_search
 from ._errors import SearchError
 from ._json import MISSING, JsonError, get_path, parse_json
@@ -25,7 +26,7 @@ from ._policy import (
     status_code,
 )
 from ._registry import POLICY, Registry
-from ._types import Attempt, Billed, ContentsResponse, Cost, ResponseWarning, SearchResponse
+from ._types import Attempt, AttemptDiagnostics, Billed, ContentsResponse, Cost, ResponseWarning, SearchResponse
 
 NOT_SENT = Cost(0, False, "none")
 REJECTED = Cost(0, True, "none")
@@ -41,6 +42,8 @@ class Send:
     attempt_deadline: int
     max_bytes: int
     cancel: CancelToken | None
+    head: list[tuple[int, list[tuple[str, str]]]] = field(default_factory=list, compare=False)
+    """Filled by the driver with (status, headers) once they arrive, before the body is read."""
 
 
 @dataclass(frozen=True)
@@ -85,6 +88,7 @@ def run_call(
     keys: Mapping[str, str | None],
     clock: Clock,
     random: Callable[[], float],
+    diagnostics: Callable[[AttemptDiagnostics], Any] | None = None,
 ) -> Generator[Effect, Any, Response]:
     t0 = clock.monotonic()
     deadline = t0 + settings.timeout_ms
@@ -97,6 +101,25 @@ def run_call(
     def fail(e: SearchError) -> SearchError:
         e.attempts = list(attempts)
         return e
+
+    def report(send: Send, key: str, status: int | None, data: bytes | None, body: Any) -> None:
+        """Calls the diagnostics hook for the attempt just recorded; whatever it raises is ignored."""
+        if diagnostics is None:
+            return
+        spec = registry[send.provider]
+        head = send.head[0] if send.head and status is not None else None
+        event = AttemptDiagnostics(
+            index=len(attempts) - 1,
+            kind=kind,
+            attempt=attempts[-1],
+            request=redacted_request(spec, send.request, key),
+            response=None if head is None else response_record(head[0], head[1], data, key),
+            paths=path_report(spec, kind, body) if status is not None and 200 <= status < 300 and body is not MISSING else [],
+        )
+        try:
+            diagnostics(event)
+        except Exception:
+            pass
 
     def skip(provider: str, e: SearchError) -> None:
         nonlocal last_skip
@@ -128,14 +151,17 @@ def run_call(
                 raise fail(SearchError("timeout", provider=provider))
             status: int | None = None
             body: Any = MISSING
+            data: bytes | None = None
             retry_after: int | None = None
+            send = Send(request, provider, deadline, start + settings.attempt_timeout_ms, settings.max_response_bytes, cancel)
             try:
-                reply: Reply = yield Send(request, provider, deadline, start + settings.attempt_timeout_ms, settings.max_response_bytes, cancel)
+                reply: Reply = yield send
             except SearchError as e:
                 err = e
                 status = e.status
             else:
                 status = reply.status
+                data = reply.body
                 if 200 <= reply.status < 300:
                     try:
                         body = parse_json(reply.body or b"")
@@ -148,12 +174,16 @@ def run_call(
                                 mapped = map_search(spec, n, body, reply.headers, now, po)
                             else:
                                 mapped = map_contents(spec, list(n["urls"]), body, reply.headers, now, po)
-                        except Exception:
+                        except Exception as e:
                             # A paid reply that cannot be mapped is never resent; the body is kept for the caller.
-                            err = SearchError("invalid_response", provider=provider, status=status, raw=body)
+                            known = e if isinstance(e, SearchError) else None
+                            err = SearchError(
+                                known.code if known else "invalid_response", provider=provider, status=status, raw=body, path=known.path if known else None
+                            )
                         else:
                             billed = billed_for(status, "invalid_response")
                             attempts.append(Attempt(provider, "ok", None, status, start - t0, clock.monotonic() - start, None, billed, mapped.cost))
+                            report(send, key, status, data, body)
                             warnings = ([] if provider == chain[0] else [ResponseWarning("fallback_used", provider)]) + key_warnings + mapped.warnings
                             common: dict[str, Any] = dict(
                                 provider=provider,
@@ -187,6 +217,7 @@ def run_call(
             billed = billed_for(status, err.code)
             cost = REJECTED if billed == "no" else attempt_cost(spec, kind, n, body if 200 <= (status or 0) < 300 else MISSING, po)
             attempts.append(Attempt(provider, "error", err.code, status, start - t0, clock.monotonic() - start, retry_after, billed, cost))
+            report(send, key, status, data, body)
             last_sent = err
             if err.code in ("aborted", "timeout"):
                 raise fail(err)

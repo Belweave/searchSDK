@@ -26,16 +26,17 @@
     { "name": "200 with invalid UTF-8", "call": "search", "query": "q", "responses": [{ "status": 200, "bodyBase64": "eyJyZXN1bHRzIjpbXSwieCI6Iv8ifQ==" }], "expect": { "error": { "code": "invalid_response" } } },
     { "name": "200 with a UTF-8 byte order mark is accepted", "call": "search", "query": "q", "responses": [{ "status": 200, "bodyBase64": "77u/eyJyZXN1bHRzIjpbXX0=" }], "expect": { "responseIncludes": { "results": [] } } },
     {
-      "name": "200 without a results array is invalid and keeps the paid body",
+      "name": "200 without a results array is spec_mismatch naming the path, and keeps the paid body",
       "call": "search",
       "query": "q",
       "responses": [{ "status": 200, "body": { "results": null, "costDollars": { "total": 0.007 } } }],
       "expect": {
         "error": {
-          "code": "invalid_response",
+          "code": "spec_mismatch",
           "provider": "exa",
+          "path": "results",
           "raw": { "results": null, "costDollars": { "total": 0.007 } },
-          "attempts": [{ "provider": "exa", "outcome": "error", "code": "invalid_response", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "reported" } }]
+          "attempts": [{ "provider": "exa", "outcome": "error", "code": "spec_mismatch", "status": 200, "startMs": 0, "durationMs": 0, "billed": "yes", "cost": { "usd": 0.007, "estimated": true, "source": "reported" } }]
         }
       }
     },

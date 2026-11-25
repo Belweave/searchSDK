@@ -40,7 +40,7 @@ export function endpoint<K extends Kind>(spec: ProviderSpec, kind: K): K extends
 }
 
 /** Percent-encodes everything except RFC 3986 unreserved characters. */
-const encode = (s: string) => encodeURIComponent(s).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+export const encode = (s: string) => encodeURIComponent(s).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
 
 /** A scalar's query-string form: true/false, and ECMAScript Number-to-String for numbers. Anything else is null. */
 function scalarText(v: unknown): string | null {
@@ -244,6 +244,8 @@ export interface MapContext extends StepContext { options: unknown }
 export interface Mapped<T> { items: T; cost: Cost; requestId: string | null; warnings: Warning[] }
 
 const invalid = (provider: ProviderId, body: unknown): never => { throw new SearchError("invalid_response", { provider, raw: body }); };
+/** The body is JSON but lacks the list the spec reads: our spec and the provider disagree. */
+const mismatch = (provider: ProviderId, path: string, body: unknown): never => { throw new SearchError("spec_mismatch", { provider, path, raw: body }); };
 
 export function mapSearch(spec: ProviderSpec, input: NormalizedSearch, body: unknown, headers: Headers, ctx: MapContext): Mapped<SearchResult[]> {
   const provider = spec.id as ProviderId;
@@ -251,7 +253,7 @@ export function mapSearch(spec: ProviderSpec, input: NormalizedSearch, body: unk
   if (!isPlainObject(body)) invalid(provider, body);
   const found = getPath(body, ep.response.results);
   const rows = (found === undefined || found === null) && ep.response.resultsOptional ? [] : found;
-  if (!Array.isArray(rows)) return invalid(provider, body);
+  if (!Array.isArray(rows)) return mismatch(provider, ep.response.results, body);
   const f = ep.response.fields;
   const results: SearchResult[] = [];
   let dropped = 0;
@@ -286,16 +288,22 @@ export function mapContents(spec: ProviderSpec, urls: string[], body: unknown, h
   const ep = endpoint(spec, "contents");
   if (!isPlainObject(body)) invalid(provider, body);
   const candidates: { key: string; page: Page; billable: boolean }[] = [];
+  let dropped = 0, droppedBillable = 0;
   for (const source of ep.response.pages) {
     const raw = source.from === "$" ? body : getPath(body, source.from);
     const list = source.from === "$" ? [raw] : (raw === undefined || raw === null) && source.optional ? [] : raw;
-    if (!Array.isArray(list)) return invalid(provider, body);
+    if (!Array.isArray(list)) return mismatch(provider, source.from, body);
+    const ok = source.status === "ok";
     for (const item of list) {
       if (!allHold(item, source.where)) continue;
       const url = field(item, source.fields.url, ctx);
-      if (typeof url !== "string") continue;
+      if (typeof url !== "string") {
+        // A page without a URL cannot be matched, but a paid one was still paid for.
+        dropped++;
+        if (ok || source.billable === true) droppedBillable++;
+        continue;
+      }
       const f = source.fields;
-      const ok = source.status === "ok";
       candidates.push({
         key: urlKey(url),
         billable: ok || source.billable === true,
@@ -312,7 +320,7 @@ export function mapContents(spec: ProviderSpec, urls: string[], body: unknown, h
       });
     }
   }
-  const billableCount = candidates.filter((c) => c.billable).length;
+  const billableCount = candidates.filter((c) => c.billable).length + droppedBillable;
   const pages: Page[] = urls.map((url) => {
     const i = candidates.findIndex((c) => c.key === urlKey(url));
     if (i < 0) return { url, status: "failed", finalUrl: null, title: null, content: null, publishedAt: null, author: null, error: { code: "missing", message: null } };
@@ -320,6 +328,7 @@ export function mapContents(spec: ProviderSpec, urls: string[], body: unknown, h
     return { ...hit!.page, url };
   });
   const warns = warnings(provider, ep.response.warnings, body);
+  if (dropped) warns.push({ code: "invalid_rows_dropped", provider, count: dropped });
   if (candidates.length) warns.push({ code: "unmatched_pages", provider, count: candidates.length });
   const cost = reportedCost(ep, body) ?? computedCost(ep, billableCount, undefined, ctx.options);
   return { items: pages, cost, requestId: requestId(ep.response.requestId, body, headers), warnings: warns };

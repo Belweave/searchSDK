@@ -71,6 +71,12 @@
     "timeout": "The call exceeded its deadline.",
     "aborted": "The call was cancelled.",
     "invalid_response": "The provider returned an unusable response.",
+    "spec_mismatch": "The provider response does not have the shape its registry spec reads.",
     "response_too_large": "The provider response exceeded the size limit."
+  },
+  "diagnostics": {
+    "$comment": "The opt-in per-attempt diagnostics hook. Rules: registry/policy.md, Diagnostics.",
+    "maxBodyBytes": 65536,
+    "redacted": "[redacted]"
   }
 }

@@ -391,6 +391,9 @@ def run_case(case: dict[str, Any], file: dict[str, Any], mode: Mode) -> None:
     if "providers" in file:
         config["registry"] = file["providers"]
     config.update({python_name(k): v for k, v in expand(case.get("client") or {}).items()})
+    events: list[Any] = []
+    if config.get("diagnostics") is True:
+        config["diagnostics"] = lambda event: events.append(event.to_json())
     options = {python_name(k): v for k, v in merge_options(defaults.get("options"), case.get("options")).items()}
     abort_at = case.get("abortAt")
     if abort_at is not None:
@@ -432,6 +435,12 @@ def run_case(case: dict[str, Any], file: dict[str, Any], mode: Mode) -> None:
         assert_json(len(script.requests), len(expect["requests"]), "request count")
         for i, exp in enumerate(expect["requests"]):
             check_request(script.requests[i], exp, f"request {i}")
+    if "diagnostics" in expect:
+        actual_events = [{**ev, "request": {**ev["request"], "body": None if ev["request"]["body"] is None else json.loads(ev["request"]["body"])}} for ev in events]
+        expected_events = [
+            {**ev, "response": {**ev["response"], "body": expand(ev["response"]["body"])}} if ev.get("response") else ev for ev in expect["diagnostics"]
+        ]
+        assert_json(actual_events, expected_events, "diagnostics")
     if "error" in expect:
         if error is None:
             raise AssertionError(f"Expected error {expect['error'].get('code')}, got a response")

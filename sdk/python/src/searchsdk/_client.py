@@ -19,7 +19,7 @@ from ._generated import ContentsProviderOptions, ProviderId, SearchProviderOptio
 from ._policy import call_settings, check_client_config, normalize_search, normalize_urls, provider_chain
 from ._registry import BUILT_IN, Registry, load_registry
 from ._transport import AsyncResponse, AsyncStdlibTransport, AsyncTransport, Response, StdlibTransport, Transport
-from ._types import ContentsResponse, Depth, Recency, SearchResponse
+from ._types import AttemptDiagnostics, ContentsResponse, Depth, Recency, SearchResponse
 
 if TYPE_CHECKING:
     from typing_extensions import TypeVar as _DefaultTypeVar
@@ -133,6 +133,7 @@ class _Base(Generic[P]):
         registry: Mapping[P, Any] | None = None,
         clock: Clock | None = None,
         random: Callable[[], float] | None = None,
+        diagnostics: Callable[[AttemptDiagnostics], Any] | None = None,
     ) -> None:
         self._registry: Registry = BUILT_IN if registry is None else load_registry(registry)
         self._config: dict[str, Any] = {
@@ -142,12 +143,14 @@ class _Base(Generic[P]):
             "attempt_timeout_ms": attempt_timeout_ms,
             "max_retries": max_retries,
             "max_response_bytes": max_response_bytes,
+            "diagnostics": diagnostics,
         }
         check_client_config(self._registry, self._config)  # a misconfigured client fails here, not at its first call
         self._keys = _Keys(keys)
         self._env = env
         self._clock: Clock = clock or SYSTEM_CLOCK
         self._random = random or _random.random
+        self._diagnostics = diagnostics
 
     def __repr__(self) -> str:
         provider = self._config["provider"]
@@ -190,6 +193,7 @@ class _Base(Generic[P]):
             keys=keys,
             clock=self._clock,
             random=self._random,
+            diagnostics=self._diagnostics,
         )
 
 
@@ -246,6 +250,7 @@ def _send_sync(effect: Send, transport: Transport, clock: Clock) -> Reply:
             if reason:
                 raise SearchError(reason, provider=provider)
             status, headers = response.status, list(response.headers)
+            effect.head.append((status, headers))
             ok = 200 <= status < 300
             try:
                 if _too_long(headers, effect.max_bytes):
@@ -388,6 +393,7 @@ async def _send_async(effect: Send, transport: AsyncTransport, clock: Clock) -> 
         except Exception as e:
             raise SearchError(deadline_code if isinstance(e, TimeoutError) else "network", provider=provider) from None
         status, headers = response.status, list(response.headers)
+        effect.head.append((status, headers))
         ok = 200 <= status < 300
         try:
             if _too_long(headers, effect.max_bytes):
@@ -481,7 +487,10 @@ class Client(_Base[P]):
 
     Keys come from ``keys`` or each provider's documented environment
     variables (``EXA_API_KEY`` and so on). ``registry`` replaces the built-in
-    provider specs; it is validated and copied. ``clock`` and ``random`` are
+    provider specs; it is validated and copied. ``diagnostics`` is an opt-in
+    hook called once per sent attempt with an AttemptDiagnostics (redacted
+    request, raw status, headers and bounded body, and which spec paths
+    resolved); exceptions it raises are ignored. ``clock`` and ``random`` are
     for tests.
     """
 
@@ -500,11 +509,12 @@ class Client(_Base[P]):
         registry: Mapping[P, Any] | None = None,
         clock: Clock | None = None,
         random: Callable[[], float] | None = None,
+        diagnostics: Callable[[AttemptDiagnostics], Any] | None = None,
     ) -> None:
         super().__init__(
             provider=provider, fallback=fallback, keys=keys, env=env, timeout_ms=timeout_ms,
             attempt_timeout_ms=attempt_timeout_ms, max_retries=max_retries, max_response_bytes=max_response_bytes,
-            registry=registry, clock=clock, random=random,
+            registry=registry, clock=clock, random=random, diagnostics=diagnostics,
         )
         self._transport: Transport = transport or StdlibTransport()
 
@@ -579,11 +589,12 @@ class AsyncClient(_Base[P]):
         registry: Mapping[P, Any] | None = None,
         clock: Clock | None = None,
         random: Callable[[], float] | None = None,
+        diagnostics: Callable[[AttemptDiagnostics], Any] | None = None,
     ) -> None:
         super().__init__(
             provider=provider, fallback=fallback, keys=keys, env=env, timeout_ms=timeout_ms,
             attempt_timeout_ms=attempt_timeout_ms, max_retries=max_retries, max_response_bytes=max_response_bytes,
-            registry=registry, clock=clock, random=random,
+            registry=registry, clock=clock, random=random, diagnostics=diagnostics,
         )
         self._transport: AsyncTransport = transport or AsyncStdlibTransport()
 
