@@ -127,10 +127,14 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
   };
   let lostToOutage = 0;
 
+  // lostToOutage counts this sweep's probe-confirmed losses (for the log); the next sweep re-reads the records.
   for (let sweep = 0; sweep <= LOCAL_RETRY_SWEEPS && !stop; sweep++) {
   if (sweep > 0) {
-    if (!lostToOutage) break;
-    ctx.log?.(`retrying ${lostToOutage} calls lost to our own connection (sweep ${sweep})`);
+    // Re-read: a failure shared with another provider is only known to be ours once both are recorded.
+    const lost = readAttempts(paths.attempts).filter((a) => RETRIED_OUTCOMES.includes(a.outcome) && a.outcome !== "aborted");
+    if (!lost.length) break;
+    for (const a of lost) done.delete(a.key);
+    ctx.log?.(`retrying ${lost.length} calls lost to our own connection (sweep ${sweep})`);
   }
   lostToOutage = 0;
   for (let pass = 1; pass <= config.passes && !stop; pass++) {
