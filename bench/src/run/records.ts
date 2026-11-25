@@ -60,18 +60,17 @@ export const LOCAL_OUTAGE_WINDOW_MS = 10_000;
 
 /**
  * Reclassifies network failures that were our own connection's (section 4).
- * A network_error whose probe found us offline is local. One recorded without
- * a probe is local when a different provider also had a network_error starting
- * within LOCAL_OUTAGE_WINDOW_MS: two independent services failing to connect
- * in the same seconds points at our side. A provider's lone network_error, or
- * one the probe saw while we were online, stays the provider's.
+ * A network_error is local when the probe found us offline, or when a
+ * different provider also had a network_error starting within
+ * LOCAL_OUTAGE_WINDOW_MS: two independent services failing to connect in the
+ * same seconds points at our side, even when the connection was back by the
+ * time the probe ran. A provider's lone network_error stays the provider's.
  */
 export function reclassifyLocalOutages(attempts: readonly AttemptRecord[]): AttemptRecord[] {
-  const net = attempts.filter((a) => a.outcome === "network_error" && a.probeOnline === undefined).map((a) => ({ a, t: Date.parse(a.startedAt) }));
+  const net = attempts.filter((a) => a.outcome === "network_error").map((a) => ({ a, t: Date.parse(a.startedAt) }));
   return attempts.map((a) => {
     if (a.outcome !== "network_error") return a;
     if (a.probeOnline === false) return { ...a, outcome: "local_network" };
-    if (a.probeOnline === true) return a;
     const t = Date.parse(a.startedAt);
     const local = net.some((o) => o.a.provider !== a.provider && Math.abs(o.t - t) <= LOCAL_OUTAGE_WINDOW_MS);
     return local ? { ...a, outcome: "local_network", code: a.code ?? "network" } : a;

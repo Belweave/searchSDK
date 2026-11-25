@@ -241,12 +241,12 @@ After every `network_error` the runner probes the internet without touching
 any ranked provider: a TCP connect to two public anycast resolvers (1.1.1.1
 and 9.9.9.9) and a DNS lookup. If the probe fails, the call is
 `local_network`. No new call starts until the probe succeeds again, and every
-lost call is retried after the pass, up to three sweeps. A record written
-before the probe existed has no probe result. It is `local_network` when a
-different provider also had a `network_error` starting within 10 seconds:
-two independent services failing to connect in the same seconds points at
-our side. A provider's lone network failure, or one the probe saw while we
-were online, counts against it. Results publish every record, the
+lost call is retried after the pass, up to three sweeps. A `network_error`
+is also `local_network` when a different provider had a `network_error`
+starting within 10 seconds, whatever the probe saw: two independent services
+failing to connect in the same seconds points at our side, and a short drop
+can end before the probe runs. A provider's lone network failure counts
+against it. Results publish every record, the
 reclassified ones included, and the count of retried calls per provider.
 
 Empty results, errors, timeouts and rate limits all score zero. The old

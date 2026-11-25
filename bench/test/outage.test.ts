@@ -27,13 +27,14 @@ test("network failures of two providers within seconds are ours; a lone one is t
   assert.deepEqual(out.map((a) => a.outcome), ["local_network", "local_network", "network_error", "ok_nonempty"]);
 });
 
-test("a probe result overrides the time rule", () => {
+test("an offline probe makes a lone failure ours; an online probe does not clear a shared one", () => {
   const out = reclassifyLocalOutages([
     rec("a", "2026-11-25T21:05:39.000Z", { probeOnline: true }),
-    rec("b", "2026-11-25T21:05:40.000Z", { probeOnline: true }),
+    rec("b", "2026-11-25T21:05:41.000Z", { probeOnline: true }),
     rec("c", "2026-11-25T22:00:00.000Z", { probeOnline: false }),
+    rec("a", "2026-11-25T23:00:00.000Z", { probeOnline: true }),
   ]);
-  assert.deepEqual(out.map((a) => a.outcome), ["network_error", "network_error", "local_network"]);
+  assert.deepEqual(out.map((a) => a.outcome), ["local_network", "local_network", "local_network", "network_error"]);
 });
 
 test("calls lost to our own outage wait for the connection and are retried, never scored", async () => {
