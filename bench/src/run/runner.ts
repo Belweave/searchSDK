@@ -9,6 +9,7 @@ import { selectPassage, type Judge, type JudgeVerdict, JudgeError } from "../jud
 import type { FetchedPage } from "../pages/fetcher.ts";
 import { SearchError, type Attempt, type Client, type ErrorCode, type ProviderSpec, type SearchResponse } from "../sdk.ts";
 import type { PageFetcher } from "../session.ts";
+import { emptyDetail, withCapture } from "./capture.ts";
 import type { Connectivity } from "./connectivity.ts";
 import { appendJsonl, readJsonl, rng, seedOf, sha256, shuffle, writeJson } from "../util/core.ts";
 import type { Budget } from "./budget.ts";
@@ -164,8 +165,9 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
         const t0 = performance.now();
         let response: SearchResponse<string> | null = null;
         let error: unknown = null;
+        const failure = emptyDetail();
         try {
-          response = await client.search(item.query, {
+          response = await withCapture(failure, () => client.search(item.query, {
             provider,
             fallback: [],
             maxResults: method.search.maxResults,
@@ -175,7 +177,7 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
             ...(settings.country ? { country: settings.country } : {}),
             ...(settings.providerOptions ? { providerOptions: { [provider]: settings.providerOptions } } : {}),
             ...(ctx.signal ? { signal: ctx.signal } : {}),
-          });
+          }));
         } catch (e) {
           error = e;
         } finally {
@@ -223,6 +225,8 @@ export async function runSearch(ctx: RunContext): Promise<StopReason> {
           key, query: item.query, outcome, code: code ?? null,
           results: results.map((r) => ({ rank: r.rank, url: r.url, title: r.title, excerpts: r.excerpts, publishedAt: r.publishedAt })),
           raw: response?.raw ?? (error instanceof SearchError ? (error.raw ?? null) : null),
+          // What the provider said, or why the connection failed: local only, never published.
+          ...(response ? {} : { failure: { message: error instanceof Error ? error.message : String(error), ...failure, ...(probeOnline !== undefined ? { probeOnline } : {}) } }),
         }, 0o600);
         appendJsonl(paths.attempts, rec);
         if (outcome === "local_network") {

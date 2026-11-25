@@ -1,6 +1,7 @@
 // Opens a run (new or resumed) in live or fixture mode and wires the SDK
 // client, judge, budget and plan together. Live mode is refused unless every
 // guard passes; fixture mode never touches the network.
+import { capturingFetch } from "./run/capture.ts";
 import { liveConnectivity, type Connectivity } from "./run/connectivity.ts";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -131,7 +132,7 @@ export function openSession(o: {
     registry = builtInRegistry as unknown as Record<string, ProviderSpec>;
     judge = o.judge === undefined ? (judging ? createJudge(method.judge.id, method.judge.rubric, { fetch: globalThis.fetch, env }) : null) : o.judge;
     checkJudge = o.checkJudge === undefined ? (judging && method.judge.checkId ? createJudge(method.judge.checkId, method.judge.rubric, { fetch: globalThis.fetch, env }) : null) : o.checkJudge;
-    client = createClient<string>({ env });
+    client = createClient<string>({ env, fetch: capturingFetch(globalThis.fetch) });
     pageFetcher = livePageFetcher(method);
   }
   const plan = makePlan({ config, method, items, registry, judge, checkJudge, checkCommitted: o.mode === "live" });

@@ -1,7 +1,9 @@
 // Our own connection failing is not the provider's failure (METHOD section 4).
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { readFileSync } from "node:fs";
 import { fixtureFetch } from "../src/fixtures.ts";
+import { capturingFetch } from "../src/run/capture.ts";
 import { reclassifyLocalOutages, readAttemptLog, readAttempts, runPaths, type AttemptRecord } from "../src/run/records.ts";
 import { runSearch } from "../src/run/runner.ts";
 import { loadRunItems } from "../src/run/plan.ts";
@@ -57,4 +59,17 @@ test("calls lost to our own outage wait for the connection and are retried, neve
   assert.equal(current.length, s.plan.search.calls);
   const scores = scoreRun(s.dir, { config: s.config, method: s.method, items: s.items, judgeItemIds: s.plan.judgeItemIds });
   for (const p of scores.profiles) assert.equal(p.reliability.rates["local_network"], undefined);
+});
+
+test("a failed call keeps the provider's error reply in the local raw file only", async () => {
+  tempStore();
+  const config = fixtureConfig();
+  const s = openSession({ config, mode: "fixture", fetch: capturingFetch(fixtureFetch(loadRunItems(config))) });
+  assert.equal(await runSearch(s), "done");
+  const failed = readAttempts(runPaths(s.dir).attempts).find((a) => a.outcome === "server_error")!;
+  assert.ok(failed, "the flaky fixture provider returns 503s");
+  const raw = JSON.parse(readFileSync(runPaths(s.dir).rawSearch(failed.pass, failed.provider, failed.profile, failed.itemId), "utf8"));
+  assert.equal(raw.failure.replies[0].status, 503);
+  assert.match(raw.failure.replies[0].body, /synthetic outage/);
+  assert.equal(JSON.stringify(failed).includes("synthetic outage"), false, "attempt records never hold reply text");
 });
