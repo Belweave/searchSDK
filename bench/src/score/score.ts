@@ -40,6 +40,8 @@ export interface ProfileScore {
   knownAnswer: Interval;
   components: { snippet: number; page: number; nav: number | null };
   judged: (Interval & { n: number; pageShare: number }) | null;
+  /** The same judged score under the check judge's grades (a different vendor), shown beside the primary's; never the rank. */
+  judgedCheck: (Interval & { n: number }) | null;
   reliability: Reliability;
   latencyMs: Latency;
   cost: CostSummary;
@@ -73,6 +75,8 @@ export interface JudgeAgreement {
   judged: number;
   unresolved: number;
   self: { n: number; kappa: Interval | null };
+  /** The check judge against the primary on the same pairs (quadratic weighted kappa). */
+  cross: { judge: string; n: number; kappa: Interval | null; exact: number | null } | null;
   human: { n: number; kappa: Interval | null; exact: number | null };
   publishJudged: boolean;
   gateReason: string;
@@ -193,7 +197,7 @@ export function ndcg(grades: readonly number[], pool: readonly number[], k: numb
   return dcg(grades) / ideal;
 }
 
-export function scoreRun(dir: string, o: { config: RunConfig; method: Method; items: Item[]; judgeItemIds: string[] }): Scores {
+export function scoreRun(dir: string, o: { config: RunConfig; method: Method; items: Item[]; judgeItemIds: string[]; judges?: { primary: string | null; check: string | null } }): Scores {
   const { config, method } = o;
   const paths = runPaths(dir);
   const conf = method.stats.confidence;
@@ -220,13 +224,23 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
   const pairOf = (itemId: string, url: string, provider: string) => judgePairIdOf(itemId, urlKey(url), provider, readKeys.has(urlKey(url)));
   const noPages = (): string | null => null;
 
-  // Judged pool: grades from repeat 0 per pair; repeats feed self-consistency.
+  // Judged pool: the primary judge's grades from repeat 0 per pair; its repeats feed self-consistency.
+  // The check judge's grades feed cross-judge agreement and a judged score shown beside the primary's.
+  const meta = readRaw<{ judge?: { id: string } | null; checkJudge?: { id: string } | null }>(paths.run);
+  const primaryId = o.judges ? o.judges.primary : (meta?.judge?.id ?? null);
+  const checkId = o.judges ? o.judges.check : (meta?.checkJudge?.id ?? null);
   const judgments = readJsonl<JudgmentRecord>(paths.judgments);
   const grade0 = new Map<string, number>();
   const grade1 = new Map<string, number>();
+  const gradeCheck = new Map<string, number>();
   const judgedPairs = new Set<string>();
   const pageSourced = new Set<string>();
   for (const j of judgments) {
+    if (checkId !== null && j.judge === checkId) {
+      if (j.grade !== null && j.repeat === 0) gradeCheck.set(j.pairId, j.grade);
+      continue;
+    }
+    if (primaryId !== null && j.judge !== primaryId) continue;
     judgedPairs.add(j.pairId);
     if (j.grade === null) continue;
     (j.repeat === 0 ? grade0 : grade1).set(j.pairId, j.grade);
@@ -240,14 +254,20 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
     const humanIds = [...human.keys()].filter((k) => grade0.has(k));
     const selfK = selfIds.length >= 2 ? kappaInterval(selfIds.map((k) => grade0.get(k)!), selfIds.map((k) => grade1.get(k)!), method.stats.bootstrap, seedOf(method.stats.seed, "self"), conf) : null;
     const humanK = humanIds.length >= 2 ? kappaInterval(humanIds.map((k) => grade0.get(k)!), humanIds.map((k) => human.get(k)!), method.stats.bootstrap, seedOf(method.stats.seed, "human"), conf) : null;
+    const crossIds = [...gradeCheck.keys()].filter((k) => grade0.has(k));
+    const crossK = crossIds.length >= 2 ? kappaInterval(crossIds.map((k) => grade0.get(k)!), crossIds.map((k) => gradeCheck.get(k)!), method.stats.bootstrap, seedOf(method.stats.seed, "cross"), conf) : null;
     const g = method.gate;
     const reasons: string[] = [];
     if (humanIds.length < g.minHumanLabels) reasons.push(`${humanIds.length} human labels, need ${g.minHumanLabels}`);
     if (!humanK || !(humanK.mean >= g.minJudgeHumanKappa)) reasons.push(`judge-human weighted kappa ${humanK ? humanK.mean.toFixed(2) : "n/a"} below ${g.minJudgeHumanKappa}`);
     if (!selfK || !(selfK.mean >= g.minSelfKappa)) reasons.push(`judge self-consistency kappa ${selfK ? selfK.mean.toFixed(2) : "n/a"} below ${g.minSelfKappa}`);
+    if (checkId !== null && g.minCrossKappa !== undefined && (!crossK || !(crossK.mean >= g.minCrossKappa))) {
+      reasons.push(`cross-judge weighted kappa ${crossK ? crossK.mean.toFixed(2) : "n/a"} (${checkId}) below ${g.minCrossKappa}`);
+    }
     agreement = {
       pairs: judgedPairs.size, judged: grade0.size, unresolved: judgedPairs.size - grade0.size,
       self: { n: selfIds.length, kappa: selfK },
+      cross: checkId === null ? null : { judge: checkId, n: crossIds.length, kappa: crossK, exact: crossIds.length ? crossIds.filter((k) => grade0.get(k) === gradeCheck.get(k)).length / crossIds.length : null },
       human: { n: humanIds.length, kappa: humanK, exact: humanIds.length ? humanIds.filter((k) => grade0.get(k) === human.get(k)).length / humanIds.length : null },
       publishJudged: reasons.length === 0,
       gateReason: reasons.length ? reasons.join("; ") : "passed",
@@ -296,14 +316,15 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
     for (const p of complete) ka[p] = paired.map((i) => rows.get(p)!.per.get(i.id)!.score);
     const boot = pairedBootstrap(ka, method.stats.bootstrap, seedOf(method.stats.seed, profile), conf);
 
-    // Judged nDCG@k on judged items, default profile only, where every pair in the pool has a grade.
-    const judgedScores: Record<string, number[]> = {};
-    const judgedItems: Item[] = [];
-    if (profile === "default" && agreement) {
+    // Judged nDCG@k on judged items, default profile only, where every pair in the pool has a grade from that judge.
+    const judgedUnder = (grades: Map<string, number>) => {
+      const scores: Record<string, number[]> = {};
+      const used: Item[] = [];
+      if (profile !== "default" || !agreement) return { scores, used };
       const usableItems = paired.filter((i) => judgedSet.has(i.id)).filter((i) => {
         return complete.every((p) => {
           const a = rows.get(p)!.a1.get(i.id)!;
-          return a.outcome !== "ok_nonempty" || a.urls.slice(0, method.judge.topK).every((u) => grade0.has(pairOf(i.id, u, p)));
+          return a.outcome !== "ok_nonempty" || a.urls.slice(0, method.judge.topK).every((u) => grades.has(pairOf(i.id, u, p)));
         });
       });
       for (const i of usableItems) {
@@ -311,18 +332,22 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
         const distinct = new Map<string, number>();
         for (const p of complete) {
           const a = rows.get(p)!.a1.get(i.id)!;
-          if (a.outcome === "ok_nonempty") for (const u of a.urls.slice(0, method.judge.topK)) distinct.set(urlKey(u), Math.max(distinct.get(urlKey(u)) ?? 0, grade0.get(pairOf(i.id, u, p))!));
+          if (a.outcome === "ok_nonempty") for (const u of a.urls.slice(0, method.judge.topK)) distinct.set(urlKey(u), Math.max(distinct.get(urlKey(u)) ?? 0, grades.get(pairOf(i.id, u, p))!));
         }
         if (ndcg([], [...distinct.values()], method.judge.topK) === null) continue;
-        judgedItems.push(i);
+        used.push(i);
         for (const p of complete) {
           const a = rows.get(p)!.a1.get(i.id)!;
-          const grades = a.outcome === "ok_nonempty" ? a.urls.slice(0, method.judge.topK).map((u) => grade0.get(pairOf(i.id, u, p))!) : [];
-          (judgedScores[p] ??= []).push(ndcg(grades, [...distinct.values()], method.judge.topK)!);
+          const g = a.outcome === "ok_nonempty" ? a.urls.slice(0, method.judge.topK).map((u) => grades.get(pairOf(i.id, u, p))!) : [];
+          (scores[p] ??= []).push(ndcg(g, [...distinct.values()], method.judge.topK)!);
         }
       }
-    }
+      return { scores, used };
+    };
+    const { scores: judgedScores, used: judgedItems } = judgedUnder(grade0);
     const judgedBoot = Object.keys(judgedScores).length ? pairedBootstrap(judgedScores, method.stats.bootstrap, seedOf(method.stats.seed, "judged"), conf) : null;
+    const { scores: checkScores } = checkId !== null ? judgedUnder(gradeCheck) : { scores: {} as Record<string, number[]> };
+    const checkBoot = Object.keys(checkScores).length ? pairedBootstrap(checkScores, method.stats.bootstrap, seedOf(method.stats.seed, "judged-check"), conf) : null;
 
     const inputs = complete.map((p) => {
       const r = reliability(rows.get(p)!.list, conf);
@@ -375,6 +400,7 @@ export function scoreRun(dir: string, o: { config: RunConfig; method: Method; it
           nav: navs.length ? round(mean(navs.map(([, x]) => x.score))) : null,
         },
         judged: jb ? { ...jb, n: judgedScores[provider]!.length, pageShare: 0 } : null,
+        judgedCheck: checkBoot?.each[provider] ? { ...checkBoot.each[provider]!, n: checkScores[provider]!.length } : null,
         reliability: reliability(list, conf),
         latencyMs: latency(list, method.search.timeoutMs),
         cost: cost(list, correct),

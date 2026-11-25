@@ -140,11 +140,11 @@ export function fixtureFetch(items: readonly Item[], providers: Record<string, F
 }
 
 /** A synthetic judge: grade 3 when the passage states the item's answer, else 0 or 1, with a little seeded noise. */
-export function fixtureJudge(items: readonly Item[], noise = 0.1): Judge {
+export function fixtureJudge(items: readonly Item[], noise = 0.1, id = "fixture-judge"): Judge {
   const byQuery = new Map(items.map((i) => [i.query, i]));
   let calls = 0;
   return {
-    info: { id: "fixture-judge", label: "Synthetic fixture judge", model: "none", rubric: "rubric/relevance-1.0.0.md", rubricSha256: "fixture", promptSha256: "fixture", params: {} },
+    info: { id, label: "Synthetic fixture judge", model: "none", rubric: "rubric/relevance-1.0.0.md", rubricSha256: "fixture", promptSha256: "fixture", params: {} },
     maxCallCostUsd: () => 0.001,
     cooldownMs: () => 0,
     async grade(input: JudgeInput): Promise<JudgeVerdict> {
@@ -152,7 +152,7 @@ export function fixtureJudge(items: readonly Item[], noise = 0.1): Judge {
       const item = byQuery.get(input.query);
       const has = item ? textHasAnswer(input.passage, item) : false;
       let grade: 0 | 1 | 2 | 3 = has ? 3 : input.passage.includes("Synthetic page about") ? 0 : 1;
-      if (rng(seedOf("judge-noise", input.query, input.url, calls))() < noise) grade = (grade === 3 ? 2 : grade + 1) as 0 | 1 | 2 | 3;
+      if (rng(seedOf("judge-noise", ...(id === "fixture-judge" ? [] : [id]), input.query, input.url, calls))() < noise) grade = (grade === 3 ? 2 : grade + 1) as 0 | 1 | 2 | 3;
       return { grade, rationale: "synthetic", inputTokens: 100, outputTokens: 20, costUsd: 0.0005, chargedUsd: null, model: "fixture", raw: { synthetic: true } };
     },
   };

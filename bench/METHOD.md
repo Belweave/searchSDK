@@ -197,23 +197,45 @@ each provider's score.
   once, at its best grade). Items where nobody returned anything
   relevant are dropped. A failed or empty response scores 0. Items with any
   unresolved pair are left out, and the count is published.
-- **Judge.** Kimi K3.1 Pro (`morph-kimik31`) through Morph's
-  OpenAI-compatible endpoint, with `reasoning_effort` low, at most 600 output
-  tokens, and JSON-schema output. Temperature and top_p are not sent: the
-  host fixes them. Judges are pluggable (`config/judges.json`).
-- **Self-consistency.** 15% of pairs, chosen by seed, are judged twice. The
-  quadratic-weighted kappa between the two passes is published.
+- **Judges.** Two judges from different vendors, both through Morph's
+  OpenAI-compatible endpoint, both blind, with the same rubric and the same
+  user message:
+  - **Primary:** Kimi K3.1 Pro (`morph-kimik31`), `reasoning_effort` low, at
+    most 600 output tokens, JSON-schema output. Its grades are the judged
+    score.
+  - **Check:** DeepSeek V4.1 Flash (`morph-dsv41flash`; not the abliterated
+    variant), at most 600 output tokens, JSON-schema output (which, per
+    Morph, turns its reasoning off, so it reasons only in the written
+    rationale). It grades every pair once.
+  Temperature and top_p are not sent to either. Judges are pluggable
+  (`config/judges.json`; `judge.id` and `judge.checkId` in the method).
+- **Which score is published.** The primary judge's grades, gated (below).
+  The check judge is a gate and a published comparison, not half of an
+  average: the human check validates one grader on the exact pairs it
+  graded, and an average of two judges would be a third grader nobody
+  checked; averaging also mixes a smaller "Flash" model into the stronger
+  judge's grades and hides disagreement that should block publication. The
+  cross-judge weighted kappa must reach 0.60 for judged scores to publish,
+  and each provider's judged score under the check judge is published next
+  to the primary's, so a ranking that depends on the judge is visible.
+- **Self-consistency.** 15% of pairs, chosen by seed, are judged twice by
+  the primary judge. The quadratic-weighted kappa between the two passes is
+  published.
+- **Cross-judge agreement.** The quadratic-weighted kappa between the check
+  judge and the primary on every pair both graded, with a bootstrap
+  interval and the exact-agreement rate.
 - **Human check.** `bench label` shows a seeded sample of judged pairs, one at
   a time. It shows the same passage the judge saw, with no provider and no
   judge grade, and records 0 to 3. Judge-human agreement is the quadratic
   weighted kappa with a bootstrap interval, plus the exact-agreement rate.
 - **Gate.** Judged scores are published only with at least 100 human labels,
-  judge-human kappa ≥ 0.60 and self-consistency kappa ≥ 0.80. Otherwise the
-  judged columns are withheld with the reason. The known-answer score,
+  judge-human kappa ≥ 0.60, self-consistency kappa ≥ 0.80 and cross-judge
+  kappa ≥ 0.60. Otherwise the judged columns are withheld with the reason. The known-answer score,
   reliability, latency and cost are published either way.
 
-One judge model means there is no cross-vendor check. That is why the
-objective score alone decides rank (section 9), and why the gate exists.
+Two judges from two vendors share a host (Morph) and a rubric, so a fault in
+either is not fully independent. The objective score alone decides rank
+(section 9), and the gate decides whether judged scores appear at all.
 
 ## 7. Reliability, latency, cost
 
@@ -396,8 +418,9 @@ Residual biases, not removed:
 - **Specs.** A wrong registry field path counts as the provider's failure
   (`invalid_response` or missing excerpts). `bench smoke` checks the paths
   against live responses before a full run.
-- **Judges.** Large language model judges have their own preferences; see
-  section 6 for the second judge and the human gate.
+- **Judges.** Language model judges have their own preferences. The second
+  judge is from another vendor but the same host and rubric; both are gated
+  by human labels and agreement (section 6). Judged scores never set rank.
 - **Location.** One region per run (`BENCH_REGION`); providers that localize
   results may do better or worse elsewhere.
 

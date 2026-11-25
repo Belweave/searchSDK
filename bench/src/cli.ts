@@ -74,14 +74,24 @@ async function confirmSpend(cap: number, f: Record<string, string | true>, maxUs
   return Number(a.trim()) === cap;
 }
 
+/** The primary and check judges a run uses, or nulls when it judges nothing. */
+function judgesFor(config: RunConfig, method: ReturnType<typeof loadMethod>, opts: { fetch: typeof fetch; env: Record<string, string | undefined> }) {
+  if (config.judgeItems <= 0) return { judge: null, checkJudge: null };
+  return {
+    judge: createJudge(method.judge.id, method.judge.rubric, opts),
+    checkJudge: method.judge.checkId ? createJudge(method.judge.checkId, method.judge.rubric, opts) : null,
+  };
+}
+
 async function prepareLive(config: RunConfig, f: Record<string, string | true>): Promise<void> {
   const method = loadMethod();
   const judgeKey = config.judgeItems > 0 ? loadJudgeConfig(method.judge.id).keyEnv : null;
-  const problems = liveGuards({ env: process.env, registry: builtInRegistry as unknown as Record<string, ProviderSpec>, config, method, judgeKeyEnv: judgeKey });
+  const checkKey = config.judgeItems > 0 && method.judge.checkId ? loadJudgeConfig(method.judge.checkId).keyEnv : null;
+  const problems = liveGuards({ env: process.env, registry: builtInRegistry as unknown as Record<string, ProviderSpec>, config, method, judgeKeyEnv: judgeKey, checkJudgeKeyEnv: checkKey });
   if (problems.length) throw new Error(`live run refused:\n  ${problems.join("\n  ")}`);
   const items = loadRunItems(config);
-  const judge = config.judgeItems > 0 ? createJudge(method.judge.id, method.judge.rubric, { fetch: globalThis.fetch, env: process.env }) : null;
-  const plan = makePlan({ config, method, items, registry: builtInRegistry as unknown as Record<string, ProviderSpec>, judge });
+  const { judge, checkJudge } = judgesFor(config, method, { fetch: globalThis.fetch, env: process.env });
+  const plan = makePlan({ config, method, items, registry: builtInRegistry as unknown as Record<string, ProviderSpec>, judge, checkJudge });
   const month = new Budget({ ledgerPath: ledgerPath(), runId: "plan", runCapUsd: config.capUsd, monthlyCapUsd: method.budget.monthlyCapUsd, ...(config.creditsUsd ? { creditsUsd: config.creditsUsd } : {}) });
   console.log(formatPlan(plan, { mode: "live", monthCashUsd: month.monthCashUsd(), monthlyCapUsd: method.budget.monthlyCapUsd, ...(config.creditsUsd ? { credits: config.creditsUsd } : {}) }));
   if (!(await confirmSpend(config.capUsd, f, plan.maxUsd))) throw new Error(`not confirmed: pass --confirm-spend ${config.capUsd} to accept the cap`);
@@ -145,6 +155,10 @@ function report(scores: Scores): string {
   if (scores.agreement) {
     const a = scores.agreement;
     L.push(`judge: ${a.judged}/${a.pairs} pairs graded; self-consistency kappa ${a.self.kappa ? f(a.self.kappa.mean) : "n/a"} (n ${a.self.n}); judge-human kappa ${a.human.kappa ? f(a.human.kappa.mean) : "n/a"} (n ${a.human.n}); judged scores ${a.publishJudged ? "publishable" : `withheld: ${a.gateReason}`}`);
+    if (a.cross) {
+      const checks = scores.profiles.filter((p) => p.profile === "default" && p.judgedCheck).map((p) => `${p.provider} ${f(p.judgedCheck!.mean)}`).join(", ");
+      L.push(`check judge ${a.cross.judge}: cross-judge kappa ${a.cross.kappa ? f(a.cross.kappa.mean) : "n/a"} (n ${a.cross.n}); judged under it: ${checks || "n/a"}`);
+    }
   }
   return L.join("\n");
 }
@@ -156,8 +170,8 @@ async function main(): Promise<void> {
       const config = configFrom(flags);
       const method = loadMethod();
       const items = loadRunItems(config);
-      const judge = config.judgeItems > 0 ? createJudge(method.judge.id, method.judge.rubric, { fetch: () => Promise.reject(new Error("plan sends nothing")), env: {} }) : null;
-      const plan = makePlan({ config, method, items, registry: builtInRegistry as unknown as Record<string, ProviderSpec>, judge });
+      const { judge, checkJudge } = judgesFor(config, method, { fetch: () => Promise.reject(new Error("plan sends nothing")), env: {} });
+      const plan = makePlan({ config, method, items, registry: builtInRegistry as unknown as Record<string, ProviderSpec>, judge, checkJudge });
       const text = formatPlan(plan, { mode: "live", monthlyCapUsd: method.budget.monthlyCapUsd, ...(config.creditsUsd ? { credits: config.creditsUsd } : {}) });
       if (flags.quiet !== true) console.log(text);
       if (plan.maxUsd > method.budget.monthlyCapUsd && flags.quiet === true) throw new Error("plan exceeds the monthly cap");
@@ -190,7 +204,7 @@ async function main(): Promise<void> {
       const rl = createInterface({ input: process.stdin, output: process.stdout });
       const r = await labelSession({
         dir, config: meta.config, method: meta.method, plan: s.plan, items, target: Number(str(flags, "n") ?? meta.method.gate.minHumanLabels + 20),
-        labeller: str(flags, "labeller") ?? "owner", io: { ask: (p) => rl.question(p), say: (t) => console.log(t) },
+        labeller: str(flags, "labeller") ?? "owner", judgeId: meta.judge?.id ?? null, io: { ask: (p) => rl.question(p), say: (t) => console.log(t) },
       });
       rl.close();
       console.log(`${r.labelled} labelled this session; ${r.total} in total.`);
@@ -202,7 +216,7 @@ async function main(): Promise<void> {
       const scores = scoreRun(dir, { config: meta.config, method: meta.method, items, judgeItemIds: s.plan.judgeItemIds });
       const out = resolve(str(flags, "out") ?? runPaths(dir).publish);
       const { files } = writeOutputs({
-        dir, mode: meta.mode, runId, config: meta.config, method: meta.method, items, registry: s.registry, judge: meta.judge,
+        dir, mode: meta.mode, runId, config: meta.config, method: meta.method, items, registry: s.registry, judge: meta.judge, checkJudge: meta.checkJudge ?? null,
         scores, startedAt: meta.createdAt, finishedAt: new Date().toISOString(),
       }, out);
       console.log(`wrote ${files.join(", ")}${meta.mode === "fixture" ? "\nFIXTURE run: synthetic providers; never present these as live results." : ""}`);

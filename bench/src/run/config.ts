@@ -13,8 +13,9 @@ export interface Method {
     userAgent: string; robotsToken: string; maxStoredChars: number;
   };
   knownAnswer: { snippetTopK: number; pageTopK: number; navTopK: number };
-  judge: { id: string; topK: number; passageMaxBytes: number; selfConsistencyShare: number; rubric: string };
-  gate: { minHumanLabels: number; minJudgeHumanKappa: number; minSelfKappa: number };
+  /** id: the primary judge, whose grades are the judged score. checkId: a second judge from another vendor, a blind cross-check. */
+  judge: { id: string; checkId?: string; topK: number; passageMaxBytes: number; selfConsistencyShare: number; rubric: string };
+  gate: { minHumanLabels: number; minJudgeHumanKappa: number; minSelfKappa: number; minCrossKappa?: number };
   stats: { bootstrap: number; seed: number; confidence: number; minSeparation: number };
   reliability: { floor: number };
   /** unknownPriceUsd is reserved only when the SDK's cost bound is unknown; known bounds are reserved as they are. */

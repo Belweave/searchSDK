@@ -29,6 +29,8 @@ export interface RunContext {
   client: Client<string>;
   pageFetcher: PageFetcher;
   judge: Judge | null;
+  /** A second, different-vendor judge that grades every pair once, as a blind cross-check. */
+  checkJudge?: Judge | null;
   budget: Budget;
   timer?: Timer;
   log?: (line: string) => void;
@@ -331,16 +333,29 @@ export function passageFor(dir: string, pair: JudgePair, query: string, maxBytes
   return { passage: selectPassage([pair.title ?? "", ...pair.excerpts].join("\n\n"), query, maxBytes), source: "snippet" };
 }
 
-/** Judge phase: every pair once, a seeded share twice for self-consistency, in a seeded order, blind to provider. */
+/**
+ * Judge phase: the primary judge grades every pair once and a seeded share twice
+ * (self-consistency); the check judge grades every pair once. Both run at the
+ * same time, each paced to its own limits, each in its own seeded order, both
+ * blind to provider.
+ */
 export async function runJudge(ctx: RunContext): Promise<StopReason> {
-  const { judge, budget, dir, method } = ctx;
-  if (!judge || !ctx.plan.judgeItemIds.length) return "done";
+  if (!ctx.judge || !ctx.plan.judgeItemIds.length) return "done";
+  const pairs = judgePairs(ctx);
+  const loops = [judgeLoop(ctx, ctx.judge, pairs, true), ...(ctx.checkJudge ? [judgeLoop(ctx, ctx.checkJudge, pairs, false)] : [])];
+  const results = await Promise.all(loops);
+  for (const r of ["overrun", "budget", "aborted"] as const) if (results.includes(r)) return r;
+  return "done";
+}
+
+async function judgeLoop(ctx: RunContext, judge: Judge, pairs: JudgePair[], primary: boolean): Promise<StopReason> {
+  const { budget, dir, method } = ctx;
   const paths = runPaths(dir);
   const items = new Map(ctx.items.map((i) => [i.id, i]));
-  const pairs = judgePairs(ctx);
-  const repeatIds = new Set(shuffle(pairs.map((p) => p.pairId), rng(seedOf(ctx.config.seed, "repeat"))).slice(0, Math.ceil(pairs.length * method.judge.selfConsistencyShare)));
-  const tasks = shuffle(pairs.flatMap((p) => (repeatIds.has(p.pairId) ? [{ p, repeat: 0 }, { p, repeat: 1 }] : [{ p, repeat: 0 }])), rng(seedOf(ctx.config.seed, "judge-order")));
-  const done = new Set(readJsonl<JudgmentRecord>(paths.judgments).filter((j) => j.grade !== null).map((j) => `${j.pairId}|${j.repeat}`));
+  const repeatIds = primary ? new Set(shuffle(pairs.map((p) => p.pairId), rng(seedOf(ctx.config.seed, "repeat"))).slice(0, Math.ceil(pairs.length * method.judge.selfConsistencyShare))) : new Set<string>();
+  const orderSeed = primary ? seedOf(ctx.config.seed, "judge-order") : seedOf(ctx.config.seed, "judge-order", judge.info.id);
+  const tasks = shuffle(pairs.flatMap((p) => (repeatIds.has(p.pairId) ? [{ p, repeat: 0 }, { p, repeat: 1 }] : [{ p, repeat: 0 }])), rng(orderSeed));
+  const done = new Set(readJsonl<JudgmentRecord>(paths.judgments).filter((j) => j.grade !== null && j.judge === judge.info.id).map((j) => `${j.pairId}|${j.repeat}`));
   const timer = ctx.timer ?? realTimer;
   const account = `judge:${judge.info.id}`;
   // Covered by a plan: nothing is reserved, and any charge the judge reports halts the run.
@@ -381,14 +396,15 @@ export async function runJudge(ctx: RunContext): Promise<StopReason> {
       costUsd: verdict ? (covered ? (verdict.chargedUsd ?? 0) : (verdict.chargedUsd ?? verdict.costUsd)) : null,
       rationaleSha256: verdict ? sha256(verdict.rationale) : null, at: new Date().toISOString(),
     };
-    if (verdict) writeJson(paths.rawJudge(p.pairId, repeat), { rationale: verdict.rationale, model: verdict.model, raw: verdict.raw }, 0o600);
+    if (verdict) writeJson(paths.rawJudge(p.pairId, repeat, primary ? null : judge.info.id), { rationale: verdict.rationale, model: verdict.model, raw: verdict.raw }, 0o600);
     appendJsonl(paths.judgments, rec);
     if (failures >= 20 && failures > tasks.length * 0.2) {
-      event(dir, { event: "judge-stopped", detail: `${failures} failed calls` });
+      event(dir, { event: "judge-stopped", detail: `${judge.info.id}: ${failures} failed calls` });
       return "done";
     }
     const cool = Math.max(wait, judge.cooldownMs(verdict, input));
     if (cool > 0) await timer.sleep(cool);
+    if (budget.halted) return "overrun";
   }
   return "done";
 }

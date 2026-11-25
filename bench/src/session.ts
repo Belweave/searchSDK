@@ -51,6 +51,8 @@ export interface Session {
   client: Client<string>;
   pageFetcher: PageFetcher;
   judge: Judge | null;
+  /** The second, different-vendor judge: a blind cross-check of the primary's grades. */
+  checkJudge: Judge | null;
   budget: Budget;
   createdAt: string;
 }
@@ -63,10 +65,11 @@ export interface RunMeta {
   planHash: string;
   createdAt: string;
   judge: Judge["info"] | null;
+  checkJudge?: Judge["info"] | null;
 }
 
 /** Reasons live mode must not start. Empty means every guard passed. */
-export function liveGuards(o: { env: Record<string, string | undefined>; registry: Readonly<Record<string, ProviderSpec>>; config: RunConfig; method: Method; judgeKeyEnv: string | null }): string[] {
+export function liveGuards(o: { env: Record<string, string | undefined>; registry: Readonly<Record<string, ProviderSpec>>; config: RunConfig; method: Method; judgeKeyEnv: string | null; checkJudgeKeyEnv?: string | null }): string[] {
   const out: string[] = [];
   if (o.env.CI) out.push("CI is set: live runs never start from automated CI");
   if (o.env.BENCH_TEST) out.push("BENCH_TEST is set: tests never run live");
@@ -77,6 +80,7 @@ export function liveGuards(o: { env: Record<string, string | undefined>; registr
     if (!env.some((n) => (o.env[n] ?? "") !== "")) out.push(`${id}: no key in ${env.join(" or ")}`);
   }
   if (o.config.judgeItems > 0 && o.judgeKeyEnv && !o.env[o.judgeKeyEnv]) out.push(`judge: ${o.judgeKeyEnv} is not set`);
+  else if (o.config.judgeItems > 0 && o.checkJudgeKeyEnv && !o.env[o.checkJudgeKeyEnv]) out.push(`check judge: ${o.checkJudgeKeyEnv} is not set`);
   return out;
 }
 
@@ -93,6 +97,7 @@ export function openSession(o: {
   /** Fixture mode only: replaces the synthetic fetch (tests count calls with it). */
   fetch?: typeof fetch;
   judge?: Judge | null;
+  checkJudge?: Judge | null;
   now?: () => number;
   ledger?: string;
   /** Fixture registry behaviours (tests). */
@@ -106,6 +111,8 @@ export function openSession(o: {
   let client: Client<string>;
   let pageFetcher: PageFetcher;
   let judge: Judge | null;
+  let checkJudge: Judge | null;
+  const judging = config.judgeItems > 0;
   if (o.mode === "fixture") {
     const reg = fixtureRegistry(o.fixtureProviders);
     registry = reg as unknown as Record<string, ProviderSpec>;
@@ -115,13 +122,15 @@ export function openSession(o: {
     client = createClient({ registry: reg, keys: fixtureKeys(reg), fetch: fx });
     pageFetcher = pageFetcherFor(method, fx);
     judge = o.judge === undefined ? fixtureJudge(items) : o.judge;
+    checkJudge = o.checkJudge === undefined ? (judging && method.judge.checkId ? fixtureJudge(items, 0.2, "fixture-check-judge") : null) : o.checkJudge;
   } else {
     registry = builtInRegistry as unknown as Record<string, ProviderSpec>;
-    judge = o.judge === undefined ? (config.judgeItems > 0 ? createJudge(method.judge.id, method.judge.rubric, { fetch: globalThis.fetch, env }) : null) : o.judge;
+    judge = o.judge === undefined ? (judging ? createJudge(method.judge.id, method.judge.rubric, { fetch: globalThis.fetch, env }) : null) : o.judge;
+    checkJudge = o.checkJudge === undefined ? (judging && method.judge.checkId ? createJudge(method.judge.checkId, method.judge.rubric, { fetch: globalThis.fetch, env }) : null) : o.checkJudge;
     client = createClient<string>({ env });
     pageFetcher = livePageFetcher(method);
   }
-  const plan = makePlan({ config, method, items, registry, judge, checkCommitted: o.mode === "live" });
+  const plan = makePlan({ config, method, items, registry, judge, checkJudge, checkCommitted: o.mode === "live" });
   const hash = planHash(plan, config);
   const now = o.now ?? Date.now;
   let runId = o.runId;
@@ -143,7 +152,7 @@ export function openSession(o: {
     ...(config.creditsUsd ? { creditsUsd: config.creditsUsd } : {}), now,
   });
   if (!o.runId) {
-    writeJson(runPaths(dir).run, { runId, mode: o.mode, config, method, planHash: hash, createdAt, judge: judge?.info ?? null } satisfies RunMeta, 0o600);
+    writeJson(runPaths(dir).run, { runId, mode: o.mode, config, method, planHash: hash, createdAt, judge: judge?.info ?? null, checkJudge: checkJudge?.info ?? null } satisfies RunMeta, 0o600);
   }
-  return { runId, dir, mode: o.mode, config, method, items, plan, registry, client, pageFetcher, judge, budget, createdAt };
+  return { runId, dir, mode: o.mode, config, method, items, plan, registry, client, pageFetcher, judge, checkJudge, budget, createdAt };
 }

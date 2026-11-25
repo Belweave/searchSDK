@@ -32,6 +32,8 @@ export interface Plan {
   pages: { fetcher: string; maxUrls: number; maxInFlight: number; perHostIntervalMs: number };
   /** maxUsd is 0 when the judge is covered by a plan; the cap then counts provider calls only. */
   judge: { id: string; pricing: JudgePricing; maxPairs: number; maxRepeats: number; perCallMaxUsd: number; maxUsd: number } | null;
+  /** The cross-check judge grades every pair once (no repeats), under the same pricing. */
+  checkJudge: { id: string; pricing: JudgePricing; maxPairs: number; perCallMaxUsd: number; maxUsd: number } | null;
   maxUsd: number;
   capUsd: number;
   warnings: string[];
@@ -82,6 +84,7 @@ export function makePlan(o: {
   items: Item[];
   registry: Readonly<Record<string, ProviderSpec>>;
   judge: Judge | null;
+  checkJudge?: Judge | null;
   checkCommitted?: boolean;
 }): Plan {
   const { config, method, items, registry } = o;
@@ -128,6 +131,7 @@ export function makePlan(o: {
 
   const judgeItems = config.judgeItems > 0 ? stratifiedSample(items, config.judgeItems, seedOf(config.seed, "judge")) : [];
   let judge: Plan["judge"] = null;
+  let checkJudge: Plan["checkJudge"] = null;
   if (judgeItems.length) {
     if (!o.judge) throw new Error("judgeItems is set but no judge is configured");
     const pricing: JudgePricing = config.judgePricing ?? "list-price";
@@ -135,14 +139,19 @@ export function makePlan(o: {
     const maxRepeats = Math.ceil(maxPairs * method.judge.selfConsistencyShare);
     // The longest possible input: the longest judged query, a full passage, a 300-byte URL and a 200-byte title.
     const longest = judgeItems.reduce((a, b) => (Buffer.byteLength(b.query) > Buffer.byteLength(a.query) ? b : a));
-    const perCall = o.judge.maxCallCostUsd({
+    const worst = {
       query: longest.query, url: `https://${"x".repeat(292)}`, title: "x".repeat(200),
       passage: selectPassage("\u{10FFFF}".repeat(method.judge.passageMaxBytes), longest.query, method.judge.passageMaxBytes),
-    });
+    };
+    const perCall = o.judge.maxCallCostUsd(worst);
     const covered = pricing === "covered-by-plan";
     judge = { id: o.judge.info.id, pricing, maxPairs, maxRepeats, perCallMaxUsd: covered ? 0 : perCall, maxUsd: covered ? 0 : (maxPairs + maxRepeats) * perCall };
+    if (o.checkJudge) {
+      const perCheck = o.checkJudge.maxCallCostUsd(worst);
+      checkJudge = { id: o.checkJudge.info.id, pricing, maxPairs, perCallMaxUsd: covered ? 0 : perCheck, maxUsd: covered ? 0 : maxPairs * perCheck };
+    }
   }
-  const maxUsd = searchUsd + (judge?.maxUsd ?? 0);
+  const maxUsd = searchUsd + (judge?.maxUsd ?? 0) + (checkJudge?.maxUsd ?? 0);
   if (maxUsd > config.capUsd) warnings.push(`the worst case (${usd(maxUsd)}) exceeds the cap (${usd(config.capUsd)}); the run stops when the cap is reached`);
   if (config.capUsd > method.budget.monthlyCapUsd) warnings.push(`the run cap is above the monthly cap (${usd(method.budget.monthlyCapUsd)}); the monthly cap applies`);
   return {
@@ -155,6 +164,7 @@ export function makePlan(o: {
     search: { calls: searchCalls, maxUsd: searchUsd },
     pages: { fetcher: method.pages.fetcher, maxUrls, maxInFlight: method.pages.maxInFlight, perHostIntervalMs: method.pages.perHostIntervalMs },
     judge,
+    checkJudge,
     maxUsd,
     capUsd: config.capUsd,
     warnings,
@@ -192,6 +202,8 @@ export function formatPlan(plan: Plan, extra: { mode: string; monthCashUsd?: num
     const j = plan.judge;
     L.push("");
     L.push(`judge ${j.id}: (${j.maxPairs} pairs + ${j.maxRepeats} repeats) x ${money(j.perCallMaxUsd, 4)} max per call${lpad(money(j.maxUsd), 9)}`);
+    const c = plan.checkJudge;
+    if (c) L.push(`check judge ${c.id}: ${c.maxPairs} pairs x ${money(c.perCallMaxUsd, 4)} max per call${lpad(money(c.maxUsd), 9)}`);
   }
   L.push("");
   L.push("not charged (outside the spend total):");
@@ -200,6 +212,8 @@ export function formatPlan(plan: Plan, extra: { mode: string; monthCashUsd?: num
   if (plan.judge?.pricing === "covered-by-plan") {
     const j = plan.judge;
     L.push(`  judge ${j.id}: ${j.maxPairs} pairs + ${j.maxRepeats} repeats, covered by plan; any charge the judge reports halts the run`);
+    const c = plan.checkJudge;
+    if (c) L.push(`  check judge ${c.id}: ${c.maxPairs} pairs, covered by plan; same halt rule`);
   } else if (!plan.judge) L.push("  judge: off");
   L.push("");
   L.push(`maximum possible spend ${money(plan.maxUsd)}; run cap ${money(plan.capUsd)}; monthly cap ${money(extra.monthlyCapUsd)}${extra.monthCashUsd !== undefined ? ` (${money(extra.monthCashUsd)} already spent this month)` : ""}`);

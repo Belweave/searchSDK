@@ -33,6 +33,7 @@ interface Ctx {
   items: Item[];
   registry: Readonly<Record<string, ProviderSpec>>;
   judge: JudgeInfo | null;
+  checkJudge?: JudgeInfo | null;
   scores: Scores;
   startedAt: string;
   finishedAt: string;
@@ -71,6 +72,7 @@ export function buildOutputs(c: Ctx) {
     knownAnswer: interval(p.knownAnswer),
     components: p.components,
     judged: publishJudged && p.judged ? { ...interval(p.judged), n: p.judged.n, pageShare: p.judged.pageShare } : null,
+    judgedCheck: publishJudged && p.judgedCheck ? { ...interval(p.judgedCheck), n: p.judgedCheck.n } : null,
     reliability: { usableRate: round(p.reliability.usableRate), ci95: [round(p.reliability.ci[0]), round(p.reliability.ci[1])], attempts: p.reliability.attempts, rates: p.reliability.rates },
     latencyMs: p.latencyMs,
     cost: p.cost,
@@ -96,6 +98,7 @@ export function buildOutputs(c: Ctx) {
     privateSet: config.privateDatasets?.length && privateManifest ? { version: privateManifest.version, count: privateManifest.count } : null,
     registry: config.providers.map((p) => ({ provider: p, specVersion: spec(p) })),
     judge: c.judge ? { id: c.judge.id, model: c.judge.model, rubric: c.judge.rubric, rubricSha256: c.judge.rubricSha256, promptSha256: c.judge.promptSha256, params: c.judge.params } : null,
+    checkJudge: c.checkJudge ? { id: c.checkJudge.id, model: c.checkJudge.model, rubric: c.checkJudge.rubric, rubricSha256: c.checkJudge.rubricSha256, promptSha256: c.checkJudge.promptSha256, params: c.checkJudge.params } : null,
     conditions: {
       maxResults: method.search.maxResults, timeoutMs: method.search.timeoutMs, retries: method.search.maxRetries, fallback: "none",
       pageFetcher: method.pages.fetcher, pageUserAgent: method.pages.userAgent, pageTopK: method.pages.topK, snippetTopK: method.knownAnswer.snippetTopK, navTopK: method.knownAnswer.navTopK,
@@ -104,6 +107,7 @@ export function buildOutputs(c: Ctx) {
     agreement: scores.agreement ? {
       pairs: scores.agreement.pairs, judged: scores.agreement.judged, unresolved: scores.agreement.unresolved,
       selfKappa: scores.agreement.self.kappa ? { n: scores.agreement.self.n, ...interval(scores.agreement.self.kappa) } : null,
+      crossKappa: scores.agreement.cross?.kappa ? { judge: scores.agreement.cross.judge, n: scores.agreement.cross.n, ...interval(scores.agreement.cross.kappa) } : null,
       humanKappa: scores.agreement.human.kappa ? { n: scores.agreement.human.n, ...interval(scores.agreement.human.kappa) } : null,
       humanExact: scores.agreement.human.exact === null ? null : round(scores.agreement.human.exact),
       judgedPublished: publishJudged, gate: scores.agreement.gateReason,

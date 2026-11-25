@@ -22,5 +22,26 @@
       "The usage field names (prompt_tokens, completion_tokens) are the OpenAI convention; Morph's pages do not show a Kimi response body.",
       "Under the Ultra plan the marginal cost is $0, so the owner's configs set judgePricing covered-by-plan. Morph's pages do not show how a charge would be reported; the judge reads usage.cost and usage.total_cost and treats a 402 as a charge, and either halts a covered run."
     ]
+  },
+  "morph-deepseek-v4.1-flash": {
+    "type": "openai-chat",
+    "label": "DeepSeek V4.1 Flash via Morph",
+    "baseUrl": "https://api.morphllm.com/v1",
+    "model": "morph-dsv41flash",
+    "keyEnv": "MORPH_API_KEY",
+    "maxTokens": 600,
+    "jsonSchema": true,
+    "priceUsdPerMTok": { "input": 0.12, "output": 0.8 },
+    "rateLimit": { "inputTokensPerMinute": 400000, "outputTokensPerMinute": 70000 },
+    "sources": [
+      { "url": "https://docs.morphllm.com/sdk/components/fast-models", "readOn": "2026-11-25", "covers": "model id morph-dsv41flash (not the gated morph-dsv41flash-abliterated); reasoning on by default; JSON schema requests disable reasoning; reasoning_effort values" },
+      { "url": "https://docs.morphllm.com/ultra-plan", "readOn": "2026-11-25", "covers": "Ultra covers morph-dsv41flash with no token meter; 400,000 input and 70,000 output tokens per minute" },
+      { "url": "https://www.morphllm.com/pricing", "readOn": "2026-11-25", "covers": "list prices $0.12 input, $0.80 output per million tokens" }
+    ],
+    "unverified": [
+      "Whether the host fixes temperature and top_p for this model; they are not sent, so the host default applies to both judges alike.",
+      "Morph documents that JSON schema output disables reasoning for DeepSeek, so this judge reasons only in its written rationale; no reasoning_effort is sent.",
+      "The usage field names and charge reporting are assumed to match the primary judge's; any reported charge or a 402 halts a covered run."
+    ]
   }
 }

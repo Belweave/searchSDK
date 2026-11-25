@@ -116,6 +116,7 @@ export function runPaths(dir: string) {
     publish: join(dir, "publish"),
     rawSearch: (pass: number, provider: string, profile: string, itemId: string) => join(dir, "raw", "search", `p${pass}`, provider, profile, `${itemId}.json`),
     rawPage: (key: string) => join(dir, "raw", "pages", `${sha256(key).slice(0, 32)}.json`),
-    rawJudge: (pairId: string, repeat: number) => join(dir, "raw", "judge", `${pairId}-${repeat}.json`),
+    /** The primary judge's raw replies keep their original names; a check judge's carry its id. */
+    rawJudge: (pairId: string, repeat: number, judge: string | null = null) => join(dir, "raw", "judge", judge ? `${pairId}-${repeat}-${judge.replace(/[^a-z0-9.-]/gi, "_")}.json` : `${pairId}-${repeat}.json`),
   };
 }
