@@ -145,10 +145,10 @@
         {
           "status": 200,
           "body": {
-            "url": "https://example.com/",
+            "url": "https://example.com",
             "html": { "requested": false, "success": null, "data": null },
             "markdown": { "requested": true, "success": true, "data": "# Example Domain" },
-            "metadata": { "sourceUrl": "https://example.com", "finalUrl": "https://example.com/", "title": "Example Domain" },
+            "metadata": { "title": "Example Domain", "canonicalUrl": "https://example.com/" },
             "request_id": "d7aa1c3a-38d2-4fb5-92c8-0f0cac3efa37",
             "cache_metadata": { "status": "miss", "age_ms": 0 },
             "key_metadata": { "credits_consumed": 1, "credits_remaining": 999 }
@@ -170,7 +170,7 @@
             {
               "url": "https://example.com",
               "status": "ok",
-              "finalUrl": "https://example.com/",
+              "finalUrl": null,
               "title": "Example Domain",
               "content": "# Example Domain",
               "publishedAt": null,
@@ -197,7 +197,7 @@
           "body": {
             "url": "https://example.org/blocked",
             "markdown": { "requested": true, "success": false, "data": null, "error_code": "WEBSITE_BLOCKED", "message": "Synthetic block." },
-            "metadata": { "sourceUrl": "https://example.org/blocked", "publishedTime": "2026-02-03T04:05:06+01:00", "author": "Someone" },
+            "metadata": { "publishedTime": "2026-02-03T04:05:06+01:00", "author": "Someone" },
             "isPartial": true,
             "request_id": "synthetic-context-3"
           }
