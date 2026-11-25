@@ -3214,7 +3214,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
     "formatVersion": 1,
     "id": "firecrawl",
     "name": "Firecrawl",
-    "specVersion": "2026-11-24",
+    "specVersion": "2026-11-25",
     "sources": [
       {
         "url": "https://docs.firecrawl.dev/api-reference/endpoint/search.md",
@@ -3240,6 +3240,21 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         "url": "https://www.firecrawl.dev/pricing",
         "retrievedOn": "2026-11-24",
         "covers": "plan prices, credits and concurrency"
+      },
+      {
+        "url": "https://docs.firecrawl.dev/rate-limits.md",
+        "retrievedOn": "2026-11-25",
+        "covers": "requests per minute and concurrent browsers per plan, the same for /scrape and /search; no rate-limit response headers are documented"
+      },
+      {
+        "url": "https://docs.firecrawl.dev/api-reference/endpoint/queue-status.md",
+        "retrievedOn": "2026-11-25",
+        "covers": "GET /v2/team/queue-status: maxConcurrency for the team's plan"
+      },
+      {
+        "url": "https://docs.firecrawl.dev/api-reference/endpoint/credit-usage.md",
+        "retrievedOn": "2026-11-25",
+        "covers": "GET /v2/team/credit-usage: planCredits exclude coupon and pay-as-you-go credits"
       }
     ],
     "auth": {
@@ -3272,7 +3287,13 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
     "errors": [],
     "search": {
       "verification": {
-        "status": "unverified"
+        "status": "verified",
+        "on": "2026-11-25",
+        "runtimes": [
+          "typescript",
+          "python"
+        ],
+        "note": "Every replayable vector passed live in both runtimes (registry/conformance/live/firecrawl-2026-11-25.json); the 402 and 500 vectors cannot be produced on demand and stay offline. Seen live: a search with no rows returns data.web as [] and reports creditsUsed 0; with scrapeOptions creditsUsed is still reported (3 for one result); zero-padded cd_min and cd_max dates are accepted. No rate-limit headers are sent."
       },
       "request": {
         "method": "POST",
@@ -3411,7 +3432,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
           "scrapeOptions": "unknown",
           "categories": "unknown"
         },
-        "note": "2 credits per 10 results, rounded up. Hobby is $19 for 5,000 credits; Standard is about $0.001 per credit. Scraping results adds scrape credits; the gov category adds none."
+        "note": "2 credits per 10 results, rounded up; a search with no results reported 0 credits live (2026-11-25). Hobby is $19 for 5,000 credits; Standard is about $0.001 per credit. Scraping results adds scrape credits; the gov category adds none."
       },
       "rateLimits": [
         {
@@ -3430,9 +3451,23 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         },
         {
           "plan": "Hobby",
+          "limit": 100,
+          "unit": "requests",
+          "per": "minute",
+          "scope": "team"
+        },
+        {
+          "plan": "Hobby",
           "limit": 5,
           "unit": "requests",
           "per": "concurrent",
+          "scope": "team"
+        },
+        {
+          "plan": "Standard",
+          "limit": 500,
+          "unit": "requests",
+          "per": "minute",
           "scope": "team"
         },
         {
@@ -3444,9 +3479,23 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         },
         {
           "plan": "Growth",
+          "limit": 5000,
+          "unit": "requests",
+          "per": "minute",
+          "scope": "team"
+        },
+        {
+          "plan": "Growth",
           "limit": 50,
           "unit": "requests",
           "per": "concurrent",
+          "scope": "team"
+        },
+        {
+          "plan": "Scale",
+          "limit": 10000,
+          "unit": "requests",
+          "per": "minute",
           "scope": "team"
         },
         {
@@ -3493,7 +3542,13 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
     },
     "contents": {
       "verification": {
-        "status": "unverified"
+        "status": "verified",
+        "on": "2026-11-25",
+        "runtimes": [
+          "typescript",
+          "python"
+        ],
+        "note": "Every replayable vector passed live in both runtimes (registry/conformance/live/firecrawl-2026-11-25.json); the 402 and 500 vectors stay offline. Seen live: data.metadata.creditsUsed and data.metadata.scrapeId on every scrape, a target 404 as statusCode 404 charged 1 credit."
       },
       "request": {
         "method": "POST",
@@ -3578,6 +3633,11 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
             }
           }
         ],
+        "requestId": [
+          {
+            "path": "data.metadata.scrapeId"
+          }
+        ],
         "warnings": [
           {
             "where": [
@@ -3590,6 +3650,12 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
             "messageField": "data.warning"
           }
         ]
+      },
+      "cost": {
+        "reported": {
+          "path": "data.metadata.creditsUsed",
+          "unit": "credit"
+        }
       },
       "pricing": {
         "plan": "Hobby (monthly billing)",
@@ -3605,7 +3671,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
           "extraBlockUsd": 0.005,
           "note": "Hobby extra credits cost $5 per 1,000 ($0.005 each), above the plan's $0.0038."
         },
-        "note": "1 credit per returned document, including target 403 and 404 pages; a scrape that returns no document is free."
+        "note": "1 credit per returned document, including target 403 and 404 pages; a scrape that returns no document is free. PDF parsing, on by default, adds 1 credit per PDF page; the bound covers one credit per URL."
       },
       "rateLimits": [
         {
@@ -3616,8 +3682,64 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
           "scope": "team"
         },
         {
+          "plan": "Free",
+          "limit": 2,
+          "unit": "requests",
+          "per": "concurrent",
+          "scope": "team"
+        },
+        {
+          "plan": "Hobby",
+          "limit": 100,
+          "unit": "requests",
+          "per": "minute",
+          "scope": "team"
+        },
+        {
           "plan": "Hobby",
           "limit": 5,
+          "unit": "requests",
+          "per": "concurrent",
+          "scope": "team"
+        },
+        {
+          "plan": "Standard",
+          "limit": 500,
+          "unit": "requests",
+          "per": "minute",
+          "scope": "team"
+        },
+        {
+          "plan": "Standard",
+          "limit": 25,
+          "unit": "requests",
+          "per": "concurrent",
+          "scope": "team"
+        },
+        {
+          "plan": "Growth",
+          "limit": 5000,
+          "unit": "requests",
+          "per": "minute",
+          "scope": "team"
+        },
+        {
+          "plan": "Growth",
+          "limit": 50,
+          "unit": "requests",
+          "per": "concurrent",
+          "scope": "team"
+        },
+        {
+          "plan": "Scale",
+          "limit": 10000,
+          "unit": "requests",
+          "per": "minute",
+          "scope": "team"
+        },
+        {
+          "plan": "Scale",
+          "limit": 100,
           "unit": "requests",
           "per": "concurrent",
           "scope": "team"
@@ -3649,7 +3771,7 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
     "unverified": [
       {
         "pointer": "/search/request/compose/0",
-        "reason": "Docs show unpadded dates (12/1/2024) in cd_min and cd_max; zero-padded dates are sent. Whether the range is inclusive is not stated."
+        "reason": "Docs show unpadded dates (12/1/2024) in cd_min and cd_max; zero-padded dates are sent. Live 2026-11-25: accepted (HTTP 200), but the replay returned no rows, so whether the range is applied and inclusive is still untested."
       },
       {
         "pointer": "/search/request/params/country",
@@ -3664,12 +3786,8 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
         "reason": "No domain-list limit is documented; 100 is SDK policy."
       },
       {
-        "pointer": "/search/response/resultsOptional",
-        "reason": "The arrays in data depend on the sources requested; whether web is present when it is empty is not stated."
-      },
-      {
-        "pointer": "/search/pricing/extraBlock",
-        "reason": "Docs give 2 credits for 1 to 10 results; whether a search with no results is charged is not stated."
+        "pointer": "/search/rateLimits",
+        "reason": "Kept 2026-11-25. The account's credit-usage shows planCredits 1000 (the Free plan's monthly credits; coupon credits are excluded) and queue-status shows maxConcurrency 250, a team-specific concurrency above every plan's. Responses carry no rate-limit headers and the per-minute limit is not exposed, so it was not probed. Consumers obey the strictest documented limit (Free: 10 a minute, 2 concurrent)."
       },
       {
         "pointer": "/search/pricing/creditUsd",
@@ -3677,7 +3795,15 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       },
       {
         "pointer": "/contents/response/pages/1",
-        "reason": "A target 403 or 404 comes back as a document with metadata.statusCode and is charged; it is reported failed and billable. A document without statusCode is treated the same way."
+        "reason": "A target 403 or 404 comes back as a document with metadata.statusCode and is charged; it is reported failed and billable (a 404 charged 1 credit live on 2026-11-25). A document without statusCode is treated the same way."
+      },
+      {
+        "pointer": "/contents/cost/reported",
+        "reason": "Resolved 2026-11-25: the scrape reference documents no credit count or request id, but every live scrape carried data.metadata.creditsUsed and data.metadata.scrapeId (smoke check and live conformance). Both are read; they stay listed here because they are undocumented."
+      },
+      {
+        "pointer": "/contents/pricing/extraBlock",
+        "reason": "Billing docs (read 2026-11-25): PDF parsing, on by default, adds 1 credit per PDF page. The bound counts one credit per URL, so a PDF's reported credits can exceed it; callers that reserve spend must scale for documents."
       },
       {
         "pointer": "/contents/pricing/creditUsd",

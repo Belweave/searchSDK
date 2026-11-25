@@ -22,7 +22,9 @@ import { shapeFetch } from "./smoke-fixtures.ts";
 import { ledgerPath, liveGuards, openSession, type RunMeta, type Session } from "./session.ts";
 import { formatTuningPlan, limitProblems, loadTuning, resolveTuned, select, splitMissing, TUNING_PATH, tuningRunConfig, withTunedWorstCase, type Selection } from "./tune.ts";
 import { creditReservation } from "./run/pricing.ts";
-import { BENCH_DIR, canonical, isoDate, readJson, sha256, storeDir, usd, writeJson, writeJsonl } from "./util/core.ts";
+import { formatVerify, liveExecutor, publicSummary, runVerify, verifyPlan, RUNTIMES, type LiveOverride, type Runtime, type VectorCase } from "./verify/verify.ts";
+import { paceFor, type RateLimit } from "./run/pacer.ts";
+import { appendJsonl, BENCH_DIR, REPO_DIR, canonical, isoDate, readJson, sha256, storeDir, usd, writeJson, writeJsonl } from "./util/core.ts";
 
 const HELP = `searchSDK Benchmarks
 
@@ -38,6 +40,9 @@ const HELP = `searchSDK Benchmarks
   tune     --config <run.json> [--tuning config/tuning.json] [--live --confirm-spend <tuning cap>]
            plan by default: the split, each provider's candidates, and the spend and credits of tuning, the main run and its tuned condition.
            --live tunes on the split and writes a selection; pass it to run with --tuned.
+  verify   --provider <id> [--kinds search,contents] [--runtimes typescript,python] [--config <run.json>] [--cap 0.5] [--max-credits 200]
+           [--interval-ms 30000] [--out <summary.json>] [--live --confirm-spend <cap>]
+           live conformance: replays the provider's conformance vectors against the live API in each runtime (registry/README.md)
   dataset  validate | build --spec <spec.json> | review --spec <spec.json> | private --from <file> --version <v>
 
 Without --live, runs use synthetic fixture providers and a synthetic judge, and every output is marked "fixture".
@@ -306,6 +311,50 @@ async function tune(flags: Record<string, string | true>): Promise<void> {
   console.log(`\nselection: ${path}\nNext: bench run --config <run.json> --tuned ${path} --live --confirm-spend <cap>`);
 }
 
+/** `bench verify`: live conformance for one provider's endpoints; the dry run lists the vectors and what replaying them reserves. */
+async function verify(flags: Record<string, string | true>): Promise<void> {
+  const method = loadMethod();
+  const reg = builtInRegistry as unknown as Record<string, ProviderSpec>;
+  const id = need(flags, "provider");
+  const spec = reg[id];
+  if (!spec) throw new Error(`verify: ${id} is not a registry provider`);
+  const kinds = (str(flags, "kinds") ?? "search,contents").split(",").map((k) => k.trim()).filter((k): k is "search" | "contents" => (k === "search" || k === "contents") && !!spec[k]);
+  const runtimes = (str(flags, "runtimes") ?? RUNTIMES.join(",")).split(",").map((r) => r.trim()) as Runtime[];
+  for (const r of runtimes) if (!RUNTIMES.includes(r)) throw new Error(`--runtimes: ${RUNTIMES.join(", ")}`);
+  const vectors = readJson<{ cases: VectorCase[] }>(join(REPO_DIR, "registry", "conformance", "providers", `${id}.json`)).cases;
+  const overrides = readJson<{ providers: Record<string, Record<string, LiveOverride>> }>(join(REPO_DIR, "registry", "conformance", "live", "overrides.json")).providers[id] ?? {};
+  const cap = Number(str(flags, "cap") ?? 0.5);
+  if (!(cap > 0) || cap > 2) throw new Error("--cap: above $0 and at most $2");
+  const maxCredits = Number(str(flags, "max-credits") ?? 200);
+  // Never faster than half the strictest documented limit, and by default no more than one call each 30 s, beside any run on the same account.
+  const pace = Math.max(...kinds.map((k) => paceFor(spec[k]!.rateLimits as RateLimit[], undefined, method.pacing.shareOfLimit, 1).intervalMs));
+  const intervalMs = Math.max(pace, Number(str(flags, "interval-ms") ?? 30_000));
+  const plan = verifyPlan(spec, vectors, overrides, kinds, runtimes, method);
+  console.log(`live conformance plan for ${id} (${kinds.join(", ")}; ${runtimes.join(", ")}); calls ${intervalMs} ms apart, one at a time`);
+  for (const r of plan.rows) console.log(`  ${r.kind.padEnd(9)} ${r.cls.padEnd(16)} ${r.name}${r.calls ? `: ${r.calls} calls, reserve $${r.usd.toFixed(4)}, ${r.credits ?? "unbounded"} credits` : ` (${r.reason})`}`);
+  console.log(`${plan.calls} live calls; reserve at most $${plan.usd.toFixed(4)} and ${plan.credits ?? "unbounded"} credits; cap $${cap}, ${maxCredits} credits`);
+  if (flags.live !== true) return;
+  const config = str(flags, "config") ? loadRunConfig(need(flags, "config")) : null;
+  const problems = liveGuards({ env: process.env, registry: reg, config: { providers: [id], judgeItems: 0 } as unknown as RunConfig, method, judgeKeyEnv: null });
+  if (problems.length) throw new Error(`live verification refused:\n  ${problems.join("\n  ")}`);
+  if (!(await confirmSpend(cap, flags, plan.usd))) throw new Error(`not confirmed: pass --confirm-spend ${cap}`);
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\..*$/, "").replace("T", "-");
+  const budget = new Budget({
+    ledgerPath: ledgerPath(), runId: `verify-${id}-${stamp}`, runCapUsd: cap, monthlyCapUsd: method.budget.monthlyCapUsd,
+    ...(config?.creditsUsd ? { creditsUsd: config.creditsUsd } : {}), ...(config?.providerLimits ? { providerLimits: config.providerLimits } : {}),
+  });
+  const report = await runVerify({
+    mode: "live", spec, vectors, overrides, kinds, runtimes, execute: liveExecutor(process.env), budget, method, maxCredits, intervalMs,
+    log: (l) => console.error(l),
+    onOutcome: (x) => appendJsonl(join(storeDir(), "verify", `${id}-${stamp}-outcomes.jsonl`), x),
+  });
+  writeJson(join(storeDir(), "verify", `${id}-${stamp}.json`), report, 0o600);
+  console.log(formatVerify(report));
+  const out = str(flags, "out");
+  if (out) { writeJson(resolve(out), publicSummary(report)); console.log(`summary: ${out}`); }
+  if (report.endpoints.some((e) => !e.verified)) process.exitCode = 2;
+}
+
 async function main(): Promise<void> {
   const { cmd, sub, flags } = args(process.argv.slice(2));
   switch (cmd) {
@@ -384,6 +433,10 @@ async function main(): Promise<void> {
     }
     case "tune": {
       await tune(flags);
+      return;
+    }
+    case "verify": {
+      await verify(flags);
       return;
     }
     case "dataset": {
