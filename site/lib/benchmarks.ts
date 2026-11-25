@@ -8,6 +8,10 @@ import { getRegistry } from "./registry";
  *  2. Within each group, quality decides. A provider within `tieBand` points of its band's leader
  *     shares the leader's rank (shown as tied).
  * Latency and cost are reported, never ranked. Cost is not an input to anything here.
+ * Equal rows keep registry order (alphabetical by name): the sorts are stable.
+ *
+ * While the file is `pending`, every provider has the same placeholder row, so all share one rank;
+ * the board and table show no figures or rank numbers for them.
  */
 
 export type BenchmarkRow = {
@@ -21,6 +25,8 @@ export type BenchmarkRow = {
 export type RankedRow = BenchmarkRow & { rank: number; tied: boolean; dependable: boolean };
 
 export type Leaderboard = {
+  /** Placeholder rows, the same for every provider: show them as pending, never as figures or ranks. */
+  pending: boolean;
   run: { id: string; date: string | null; queries: number | null };
   method: { tieBand: number; minReliability: number };
   rows: RankedRow[];
@@ -65,7 +71,7 @@ function load(): Dataset<Leaderboard> {
   const rows = ids.flatMap((id) => (scores[id] ? [{ provider: id, ...scores[id] }] : []));
   return toDataset(
     file,
-    { run, method, rows: rankRows(rows, method.tieBand, method.minReliability), notRun: ids.filter((id) => !scores[id]) },
+    { pending: file.pending === true, run, method, rows: rankRows(rows, method.tieBand, method.minReliability), notRun: ids.filter((id) => !scores[id]) },
     "data/benchmarks.sample.json",
   );
 }

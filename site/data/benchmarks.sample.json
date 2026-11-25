@@ -1,8 +1,9 @@
 {
   "sample": true,
-  "label": "Sample data, not measured.",
+  "pending": true,
+  "label": "Results pending",
   "run": {
-    "id": "sample",
+    "id": "pending",
     "date": null,
     "queries": null
   },
@@ -10,50 +11,50 @@
     "tieBand": 6,
     "minReliability": 0.95,
     "qualityScale": "0–100",
-    "note": "Placeholder scores for layout only. The first measured run replaces this file."
+    "note": "Placeholder, not measured. The first benchmark run is in progress. Every provider has the same values so the leaderboard can draw; while pending is true the site shows them as pending, never as figures, and lists providers alphabetically as tied. The first published run replaces this file."
   },
   "rows": {
-    "exa": {
-      "quality": 74,
-      "reliability": 0.99,
-      "latencyP50Ms": 820,
-      "costUsdPer1k": 5
-    },
-    "tavily": {
-      "quality": 71.5,
-      "reliability": 0.98,
-      "latencyP50Ms": 1140,
-      "costUsdPer1k": 8
-    },
-    "perplexity": {
-      "quality": 70.4,
-      "reliability": 0.91,
-      "latencyP50Ms": 1630,
-      "costUsdPer1k": 5
+    "brave": {
+      "quality": 50,
+      "reliability": 1,
+      "latencyP50Ms": 1000,
+      "costUsdPer1k": 1
     },
     "context": {
-      "quality": 66.2,
-      "reliability": 0.97,
-      "latencyP50Ms": 950,
-      "costUsdPer1k": 4
+      "quality": 50,
+      "reliability": 1,
+      "latencyP50Ms": 1000,
+      "costUsdPer1k": 1
     },
-    "tinyfish": {
-      "quality": 63,
-      "reliability": 0.99,
-      "latencyP50Ms": 1320,
-      "costUsdPer1k": 6
+    "exa": {
+      "quality": 50,
+      "reliability": 1,
+      "latencyP50Ms": 1000,
+      "costUsdPer1k": 1
     },
     "firecrawl": {
-      "quality": 61.7,
-      "reliability": 0.96,
-      "latencyP50Ms": 1810,
-      "costUsdPer1k": 7
+      "quality": 50,
+      "reliability": 1,
+      "latencyP50Ms": 1000,
+      "costUsdPer1k": 1
     },
-    "brave": {
-      "quality": 58.1,
-      "reliability": 0.995,
-      "latencyP50Ms": 610,
-      "costUsdPer1k": 5
+    "perplexity": {
+      "quality": 50,
+      "reliability": 1,
+      "latencyP50Ms": 1000,
+      "costUsdPer1k": 1
+    },
+    "tavily": {
+      "quality": 50,
+      "reliability": 1,
+      "latencyP50Ms": 1000,
+      "costUsdPer1k": 1
+    },
+    "tinyfish": {
+      "quality": 50,
+      "reliability": 1,
+      "latencyP50Ms": 1000,
+      "costUsdPer1k": 1
     }
   }
 }

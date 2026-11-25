@@ -6,11 +6,10 @@ import type { ProviderBrand } from "@/lib/provider-assets";
 import { useInView, useSettledNumber } from "@/lib/motion";
 
 /**
- * Honest cost, as a receipt that prints attempt by attempt. Amounts are list prices from the
- * registry; where each figure comes from in a real run (reported by the API, reported in credits,
- * computed from the list price, or unknown) is the registry's too. The visitor picks how the
- * second call's first attempt fails and watches billing follow the policy: a timeout or a network
- * failure may have been billed and is counted; a 429 was not.
+ * Honest cost, as a receipt that prints attempt by attempt. The lines are example providers with a
+ * placeholder price (components/home/sections.tsx), so no real provider is shown failing. The
+ * visitor picks how the failing line's attempt fails and watches billing follow the policy: a
+ * timeout or a network failure may have been billed and is counted; a 429 was not.
  */
 export type ReceiptLine = {
   key: string;
@@ -38,7 +37,7 @@ function Total({ value, start }: { value: number; start: boolean }) {
   return <>{money(v)}</>;
 }
 
-export function Receipt({ lines, retrievedOn }: { lines: ReceiptLine[]; retrievedOn: string }) {
+export function Receipt({ lines, note }: { lines: ReceiptLine[]; note: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const seen = useInView(ref, { once: true, threshold: 0.35 });
   const [failure, setFailure] = useState<Failure>("attempt_timeout");
@@ -55,10 +54,11 @@ export function Receipt({ lines, retrievedOn }: { lines: ReceiptLine[]; retrieve
   const total = rows.reduce((s, r) => s + (r.counted ?? 0), 0);
   const possible = rows.filter((r) => r.billed === "possible").reduce((s, r) => s + (r.counted ?? 0), 0);
   const unknown = rows.filter((r) => r.counted === null).length;
+  const failingName = lines.find((l) => l.role === "failing")?.brand.name ?? "first";
 
   return (
     <div ref={ref} className="receipt" data-seen={seen ? "" : undefined} data-words="data">
-      <div className="receipt-keys" role="group" aria-label="How the Perplexity attempt fails">
+      <div className="receipt-keys" role="group" aria-label={`How the ${failingName} attempt fails`}>
         {FAILURES.map((x) => (
           <button key={x.id} type="button" className={`key key-sm ${failure === x.id ? "key-lit" : ""}`} aria-pressed={failure === x.id} onClick={() => setFailure(x.id)}>
             <span className="key-face">{x.label}</span>
@@ -105,7 +105,7 @@ export function Receipt({ lines, retrievedOn }: { lines: ReceiptLine[]; retrieve
           <span className="receipt-notes type-label">
             {possible > 0 ? <span>incl. {money(possible)} possibly billed</span> : null}
             {unknown ? <span>{unknown} unknown, never $0</span> : null}
-            <span>list prices, read {retrievedOn}</span>
+            <span>{note}</span>
           </span>
         </div>
       </div>

@@ -2,9 +2,10 @@
 //   node checks/site.mjs http://localhost:3210
 // Fails (exit 1) on: broken internal links, missing or out-of-range titles and descriptions,
 // pages or regions over their word cap, sample data without its label or outside a labelled
-// region, banned words, misspelt product name, repeated disclaimers, missing trademark line,
-// third-party resources, credential-like strings, provider logos without a reserved box, alt text,
-// SVG type or a recorded source, and stubs that answer anything but 501. Brand rules
+// region, pending placeholder data that differs between providers, banned words, misspelt
+// product name, repeated disclaimers, missing trademark line, third-party resources,
+// credential-like strings, provider logos without a reserved box, alt text, SVG type or a
+// recorded source, and stubs that answer anything but 501. Brand rules
 // (brand/GUIDELINES.md): the name spelt searchSDK everywhere a reader or a crawler sees it; every
 // page carries the lockup at or above its minimum size, drawn only with the brand's own paths and
 // colours; no provider logo taller than searchSDK's mark; at most one apricot primary key per
@@ -24,6 +25,7 @@ import {
   REQUIRED_FILES,
   REQUIRED_HEAD,
   REQUIRED_ON_EVERY_PAGE,
+  SAMPLE_LABEL,
   STUBS,
   TITLE_RANGE,
 } from "./config.mjs";
@@ -82,6 +84,8 @@ export async function checkSite(base, { log = console.log } = {}) {
 
   // Strings from sample files that would identify sample data if they leaked outside a region.
   const sampleStrings = await sampleFingerprints();
+  // Pending placeholders must treat every provider the same.
+  for (const problem of await pendingProblems()) fail("data", problem);
 
   const brandShapes = await brandSvgParts();
   const headAssets = new Set();
@@ -135,7 +139,7 @@ export async function checkSite(base, { log = console.log } = {}) {
     for (const region of sampleRegions) {
       const label = findFirst(region, (n) => hasAttr(n, "data-sample-label"));
       const labelText = label ? textNodes(label).map((t) => t.text).join(" ") : "";
-      if (!/sample/i.test(labelText)) fail(p, "a sample data region has no visible label containing “sample”");
+      if (!SAMPLE_LABEL.re.test(labelText)) fail(p, `a sample data region has no visible label saying “${SAMPLE_LABEL.says}”`);
     }
     const outside = textNodes(findFirst(doc, byTag("body")))
       .filter((t) => !t.inSample)
@@ -328,6 +332,29 @@ async function sampleFingerprints() {
     visit(json);
   }
   return [...out];
+}
+
+/**
+ * A data/*.sample.json file marked `pending` holds placeholders until results are published. It may
+ * not favour any provider: every benchmark row is identical, and in every stage preset each lane
+ * has the same timing, cost and results and no attempt fails.
+ */
+async function pendingProblems() {
+  const dir = path.join(ROOT, "data");
+  const problems = [];
+  const same = (values) => values.every((v) => JSON.stringify(v) === JSON.stringify(values[0]));
+  for (const file of await readdir(dir)) {
+    if (!file.endsWith(".sample.json")) continue;
+    const json = JSON.parse(await readFile(path.join(dir, file), "utf8"));
+    if (json.pending !== true) continue;
+    if (json.rows && !same(Object.values(json.rows))) problems.push(`${file} is pending but its rows differ between providers`);
+    for (const preset of json.presets ?? []) {
+      if (preset.fails) problems.push(`${file} is pending but preset "${preset.id}" has a failing provider`);
+      if (!same(Object.values(preset.lanes ?? {}))) problems.push(`${file} is pending but preset "${preset.id}" has lanes that differ between providers`);
+    }
+    if (json.fallback) problems.push(`${file} is pending but names a fallback provider`);
+  }
+  return problems;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

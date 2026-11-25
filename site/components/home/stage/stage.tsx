@@ -11,7 +11,8 @@ import "./stage.css";
 /**
  * The home page stage: searchSDK working end to end as a scripted story that starts by itself
  * and that the visitor can take over. Lanes, request and response shapes come from the registry;
- * timings, results and costs are labelled sample data.
+ * timings, results and costs are labelled placeholder data. While it is pending, every provider has
+ * the same values, the lanes move in lockstep and no per-provider time or cost is printed.
  *
  * Visitor controls: preset queries, providers on and off, Pause, Replay, a scrubber over the
  * whole story, and hovering or focusing a lane to read that provider's raw response beside the
@@ -52,11 +53,8 @@ export function Stage({ stage, template, sampleTag, loader }: Props) {
   const pointerRef = useRef<HTMLDivElement>(null);
   const inView = useInView(rootRef, { threshold: 0.25 });
 
-  // The call's provider order: the contents() provider first (the story opens its top result), then the lanes in order.
-  const allIds = useMemo(() => {
-    const ids = stage.lanes.map((l) => l.brand.id);
-    return ids.includes(stage.contents.id) ? [stage.contents.id, ...ids.filter((x) => x !== stage.contents.id)] : ids;
-  }, [stage.lanes, stage.contents.id]);
+  // The call's provider order: the lanes in order (alphabetical by name). The story opens the first one's top result.
+  const allIds = useMemo(() => stage.lanes.map((l) => l.brand.id), [stage.lanes]);
   const [presetIndex, setPresetIndex] = useState(0);
   const [enabled, setEnabled] = useState<string[]>(allIds);
   const [takenOver, setTakenOver] = useState(false);
@@ -315,10 +313,14 @@ export function Stage({ stage, template, sampleTag, loader }: Props) {
         aria-describedby="stage-description"
       >
         <p id="stage-description" className="sr-only">
-          A query is typed into searchSDK&apos;s search call and sent to {activeLanes.length} providers at once. Each answers at its
-          own speed. One attempt fails and the configured fallback, {stage.fallback.name}, answers instead. The raw response of one
-          provider is shown beside the normalized result, contents() fetches the top result&apos;s page as clean text, and every
-          response arrives in the same shape with the total cost. Sample data.
+          A query is typed into searchSDK&apos;s search call and sent to {activeLanes.length} providers at once.{" "}
+          {stage.pending
+            ? "Every provider runs on the same placeholder timing and results."
+            : "Each answers at its own speed."}{" "}
+          {failing ? `One attempt fails and the configured fallback, ${stage.fallback.name}, answers instead. ` : null}The raw
+          response of one provider is shown beside the normalized result, contents() fetches the top result&apos;s page as clean
+          text, and every response arrives in the same shape{stage.pending ? "" : " with the total cost"}.{" "}
+          {stage.pending ? "Results pending: the first benchmark run is in progress." : null}
         </p>
         <div ref={sceneRef} className="stage-scene" onPointerDown={(e) => {
           if ((e.target as Element).closest("button, a, input")) return;
@@ -501,7 +503,7 @@ export function Stage({ stage, template, sampleTag, loader }: Props) {
                         <span className="stage-readout figures">
                           {status === "off" ? (
                             <span className="tag">off</span>
-                          ) : lf && lf.phase !== "idle" ? (
+                          ) : lf && lf.phase !== "idle" && !stage.pending ? (
                             `${Math.round(lf.elapsedMs)} ms`
                           ) : (
                             "–"
@@ -612,10 +614,10 @@ export function Stage({ stage, template, sampleTag, loader }: Props) {
                   </code>
                 </pre>
                 <div className="stage-cost">
-                  <span className="stage-cost-total figures">{usd(known)}</span>
+                  <span className="stage-cost-total figures">{stage.pending ? "–" : usd(known)}</span>
                   <span className="stage-cost-meta type-label">
-                    {attempts.length} attempts{possible ? ` · ${possible} possibly billed` : ""}
-                    {unknown ? ` · ${unknown} price unknown` : ""}
+                    {attempts.length} attempts
+                    {stage.pending ? " · cost pending" : `${possible ? ` · ${possible} possibly billed` : ""}${unknown ? ` · ${unknown} price unknown` : ""}`}
                   </span>
                 </div>
               </div>

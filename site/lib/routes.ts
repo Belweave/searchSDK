@@ -7,7 +7,7 @@ export type SiteRoute = { path: string; title: string; description: string };
 const pages: SiteRoute[] = [
   { path: "/", title: "Home", description: "One interface for AI apps and agents to many web search providers." },
   { path: "/providers", title: "Providers", description: "What each provider supports through searchSDK, what it costs and its limits, from the registry." },
-  { path: "/benchmarks", title: "Benchmarks", description: "The leaderboard: quality first, then reliability." },
+  { path: "/benchmarks", title: "Benchmarks", description: "The open benchmark: quality first, then reliability. Results pending; the first run is in progress." },
 ];
 
 export function siteRoutes(): SiteRoute[] {

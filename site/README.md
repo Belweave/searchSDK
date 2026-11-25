@@ -16,7 +16,7 @@ npm run dev        # http://localhost:3210
 npm run check
 ```
 
-Checks that the site's copies of `../brand` are current, typechecks, typechecks every TypeScript example (docs code blocks and `content/examples/*.ts`) against `../sdk/typescript/src` (`npm run check:examples` alone), scans for colours, fonts and durations outside the token files and for the brand's mechanical "never" rules (no redefined brand token, no blended brand colours, no effects on the mark, no provider hue as decoration, the name spelt `searchSDK`), builds, serves on a free local port and crawls every page. The crawl fails on broken links, missing titles or descriptions, word caps (home 150, hero 30, docs page 300, outside code and navigation), sample data without its label, provider logos that are not this site's SVGs with a reserved box, alt text and a recorded source or that stand taller than searchSDK's mark, the name written any other way, a missing or undersized lockup, a mark path or fill not in the brand files, more than one apricot primary key in a section, and missing icons, manifest or social images. Rules: `checks/config.mjs`. No provider call, no network beyond localhost.
+Checks that the site's copies of `../brand` are current, typechecks, typechecks every TypeScript example (docs code blocks and `content/examples/*.ts`) against `../sdk/typescript/src` (`npm run check:examples` alone), scans for colours, fonts and durations outside the token files and for the brand's mechanical "never" rules (no redefined brand token, no blended brand colours, no effects on the mark, no provider hue as decoration, the name spelt `searchSDK`), builds, serves on a free local port and crawls every page. The crawl fails on broken links, missing titles or descriptions, word caps (home 150, hero 30, docs page 300, outside code and navigation), sample data without its "Results pending" label, pending placeholder data that differs between providers, provider logos that are not this site's SVGs with a reserved box, alt text and a recorded source or that stand taller than searchSDK's mark, the name written any other way, a missing or undersized lockup, a mark path or fill not in the brand files, more than one apricot primary key in a section, and missing icons, manifest or social images. Rules: `checks/config.mjs`. No provider call, no network beyond localhost.
 
 While the dev server runs, build the check elsewhere so it never touches `.next/`:
 `NEXT_DIST_DIR=.cache/next-check npm run check` (Next adds that directory to `tsconfig.json`; do not commit that line).
@@ -35,13 +35,13 @@ searchSDK's mark and lockup render only through `components/brand/searchsdk.tsx`
 
 ## Home page
 
-The stage (`components/home/stage/`) plays a scripted, deterministic story: state is a pure function of time (`story.ts`), so play, pause, scrub and replay are one operation. The code it shows is `content/examples/stage.ts` with the visitor's query and providers substituted. Below it: `switch.tsx`, `board.tsx`, `receipt.tsx` and `spec-feed.tsx`, each reading the registry; only the stage timings and the leaderboard are sample data.
+The stage (`components/home/stage/`) plays a scripted, deterministic story: state is a pure function of time (`story.ts`), so play, pause, scrub and replay are one operation. The code it shows is `content/examples/stage.ts` with the visitor's query and providers substituted. Below it: `switch.tsx`, `board.tsx`, `receipt.tsx` and `spec-feed.tsx`. The switch and spec feed read the registry; the stage timings and the leaderboard are placeholder data; the receipt uses example providers ("Provider A" to "D") and one placeholder price, so no real provider is shown failing.
 
 ## Data
 
 Providers come from the registry: `lib/registry.ts` reads `../registry/providers/*.json` at build time and is the only module that does. A new spec is a new provider on every page. The site therefore builds from a full checkout of the repository, not from `site/` alone.
 
-Placeholders, labelled on every page: `data/*.sample.json` (race and benchmark numbers, keyed by provider id). Each has one loader in `lib/`. Render sample data only through `DataRegion`.
+Placeholders, labelled "Results pending" on every page: `data/*.sample.json` (race and benchmark numbers, keyed by provider id). Each has one loader in `lib/`. Render sample data only through `DataRegion`. While a file says `"pending": true`, every provider has identical values (the check enforces it), providers are listed alphabetically and tied, and the site prints "–" instead of any per-provider figure or rank; bars and lanes still animate, in lockstep. The first published run replaces the files.
 
 Home page code lives in `content/examples/` so the check can typecheck it.
 

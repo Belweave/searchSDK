@@ -5,8 +5,8 @@ import type { ReactNode } from "react";
 import { DataRegion } from "@/components/data/data-region";
 import { Reveal } from "@/components/motion/reveal";
 import { getLeaderboard } from "@/lib/benchmarks";
-import { allBrands, providerBrand } from "@/lib/provider-assets";
-import { conformanceCases, getRegistry, listPriceUsd, type Provider } from "@/lib/registry";
+import { allBrands, type ProviderBrand, providerBrand } from "@/lib/provider-assets";
+import { conformanceCases, getRegistry, type Provider } from "@/lib/registry";
 import { Board } from "./board";
 import { Receipt, type ReceiptLine } from "./receipt";
 import { SpecFeed, type FeedProvider } from "./spec-feed";
@@ -14,7 +14,9 @@ import { ProviderSwitch } from "./switch";
 
 /**
  * The instruments below the stage. Each is a heading, at most one line, and something to touch.
- * Everything shown comes from the registry, except the leaderboard, which is labelled sample data.
+ * Everything shown comes from the registry, except the leaderboard, which is a labelled placeholder
+ * (the same for every provider until results are published), and the receipt, which uses example
+ * providers so that no real provider is shown failing.
  */
 
 function Section({ id, title, line, children, layout = "split" }: { id: string; title: string; line: ReactNode; children: ReactNode; layout?: "split" | "wide" }) {
@@ -62,35 +64,33 @@ function excerpt(p: Provider): unknown {
   };
 }
 
-function receiptLines(): { lines: ReceiptLine[]; retrievedOn: string } | null {
-  const reg = getRegistry();
-  const get = (id: string) => reg.providers.find((p) => p.id === id);
-  // A short agent session: Exa searches; Perplexity's attempt fails and Brave Search takes over;
-  // TinyFish searches; Tavily extracts one page. Every figure is that provider's list price.
-  const plan: { id: string; call: "search" | "contents"; role?: ReceiptLine["role"] }[] = [
-    { id: "exa", call: "search" },
-    { id: "perplexity", call: "search", role: "failing" },
-    { id: "brave", call: "search", role: "fallback" },
-    { id: "tinyfish", call: "search" },
-    { id: "tavily", call: "contents" },
+/** A stand-in provider for the receipt: a neutral monogram, no real name, logo or hue. */
+function exampleProvider(letter: string): ProviderBrand {
+  return { id: `example-${letter.toLowerCase()}`, name: `Provider ${letter}`, hue: "var(--fg-subtle)", mark: null, logo: null, monogram: letter };
+}
+
+/**
+ * The receipt illustrates the billing policy, not an event: a short agent session with example
+ * providers and one placeholder price. Provider B's attempt fails (the visitor picks how) and
+ * Provider C takes over; Provider D has no public price. No real provider is shown failing.
+ */
+function receiptLines(): ReceiptLine[] {
+  const PRICE_USD = 0.005;
+  const plan: { letter: string; call: "search" | "contents"; role?: ReceiptLine["role"]; usd: number | null }[] = [
+    { letter: "A", call: "search", usd: PRICE_USD },
+    { letter: "B", call: "search", role: "failing", usd: PRICE_USD },
+    { letter: "C", call: "search", role: "fallback", usd: PRICE_USD },
+    { letter: "D", call: "search", usd: null },
+    { letter: "A", call: "contents", usd: PRICE_USD },
   ];
-  const lines: ReceiptLine[] = [];
-  const dates: string[] = [];
-  for (const step of plan) {
-    const ep = get(step.id)?.[step.call];
-    if (!ep) return null; // a provider left the registry: drop the section rather than invent a line
-    const usd = listPriceUsd(ep.price, step.call === "search" ? 10 : 1);
-    dates.push(ep.pricing.retrievedOn);
-    lines.push({
-      key: `${step.id}-${step.call}`,
-      brand: providerBrand(step.id),
-      call: step.call,
-      source: usd === null ? "unknown" : ep.cost.source === "reported" || ep.cost.source === "reported-credits" ? ep.cost.source : ep.cost.source === "unknown" ? "unknown" : "computed",
-      usd,
-      role: step.role,
-    });
-  }
-  return { lines, retrievedOn: dates.sort()[0] ?? "" };
+  return plan.map((step) => ({
+    key: `${step.letter}-${step.call}`,
+    brand: exampleProvider(step.letter),
+    call: step.call,
+    source: step.usd === null ? "unknown" : "computed",
+    usd: step.usd,
+    role: step.role,
+  }));
 }
 
 export function HomeSections() {
@@ -118,10 +118,11 @@ export function HomeSections() {
       <Section
         id="ranked"
         layout="wide"
-        title="Ranked by quality, then reliability"
+        title="Quality first, then reliability"
         line={
           <>
-            Scores within {board.data.method.tieBand} points share a rank. Latency and cost are shown, never scored.{" "}
+            Results pending. The first benchmark run is in progress; every provider shows the same placeholder until it is published.
+            Then scores within {board.data.method.tieBand} points share a rank; latency and cost are shown, never scored.{" "}
             <Link href="/docs/benchmarks-method" className="prose-link">
               Method
             </Link>
@@ -133,11 +134,9 @@ export function HomeSections() {
         </DataRegion>
       </Section>
 
-      {receipt ? (
-        <Section id="cost" title="Every attempt has a price" line="An attempt that may have been billed is counted. An unknown price stays unknown.">
-          <Receipt lines={receipt.lines} retrievedOn={receipt.retrievedOn} />
-        </Section>
-      ) : null}
+      <Section id="cost" title="Every attempt has a price" line="An attempt that may have been billed is counted. An unknown price stays unknown.">
+        <Receipt lines={receipt} note="example providers, placeholder price" />
+      </Section>
 
       <Section
         id="registry"
@@ -161,7 +160,7 @@ export function HomeSections() {
           <Reveal className="home-instrument" index={1}>
             <pre className="home-shell">
               <code>
-                {["git clone https://github.com/Belweave/searchSDK", "cd searchSDK/sdk/typescript && npm ci && npm pack --ignore-scripts=false", "cd your-app && npm install ../searchSDK/sdk/typescript/searchsdk-0.0.0.tgz"].map((l) => (
+                {["git clone https://github.com/Belweave/searchSDK", "(cd searchSDK/sdk/typescript && npm ci && npm pack --ignore-scripts=false)", "cd your-app && npm install ../searchSDK/sdk/typescript/searchsdk-0.1.0.tgz"].map((l) => (
                   <span key={l} className="code-line">
                     <span className="home-prompt" aria-hidden="true">
                       ${" "}

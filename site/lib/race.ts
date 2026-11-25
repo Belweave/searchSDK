@@ -1,14 +1,36 @@
-import file from "@/data/race.sample.json";
+import raw from "@/data/race.sample.json";
 import { type Dataset, toDataset } from "./dataset";
 import { type ProviderBrand, providerBrand } from "./provider-assets";
 import { type CostSource, getRegistry, listPriceUsd, type Wire } from "./registry";
 
 /**
- * Data for the home page stage. Lanes are the registry's search providers, in registry order.
- * Request and response shapes come from each spec (lib/registry.ts, Wire); timings, results, costs
- * and page text are placeholders (data/race.sample.json) until the benchmark harness records real
- * runs. A provider with no placeholder entry gets a lane with no run.
+ * Data for the home page stage. Lanes are the registry's search providers, in registry order
+ * (alphabetical by name). Request and response shapes come from each spec (lib/registry.ts, Wire);
+ * timings, results, costs and page text are placeholders (data/race.sample.json) until the benchmark
+ * harness records real runs. A provider with no placeholder entry gets a lane with no run.
+ *
+ * While the file is `pending`, every provider has the same placeholder values: the lanes move in
+ * lockstep and the stage shows no per-provider figures.
  */
+
+type RaceFile = {
+  sample?: boolean;
+  pending?: boolean;
+  label?: string;
+  /** The provider that takes over when a preset's attempt fails; required only if one does. */
+  fallback?: string;
+  attemptTimeoutMs: number;
+  presets: {
+    id: string;
+    query: string;
+    fails: { provider: string; code: string } | null;
+    docs: Doc[];
+    lanes: Record<string, { latencyMs: number; costUsd: number | null; picks: number[] }>;
+    page: { title: string; lines: string[] };
+  }[];
+};
+
+const file = raw as RaceFile;
 
 export type Doc = { title: string; url: string; excerpt: string };
 export type Normalized = { url: string; title: string; excerpts: string[]; publishedAt: null; author: null; rank: number; providerFields: Record<string, never> };
@@ -39,6 +61,8 @@ export type StagePreset = {
 };
 
 export type Stage = {
+  /** Placeholder values that are the same for every provider: show no per-provider timing or cost. */
+  pending: boolean;
   lanes: StageLane[];
   presets: StagePreset[];
   fallback: ProviderBrand;
@@ -116,13 +140,18 @@ function load(): Dataset<Stage> {
 
   const first = providers[0];
   if (!first) throw new Error("The registry has no search provider for the stage.");
-  const contentsId = ["exa", ...providers.map((p) => p.id)].find((id) => getRegistry().providers.find((p) => p.id === id)?.contents) ?? first.id;
-  const fallbackId = ids.has(file.fallback) ? file.fallback : first.id;
+  // contents() goes to the first search provider, alphabetically, that has a contents endpoint
+  // (content/examples/stage.ts names the same one).
+  const contentsId = providers.find((p) => p.contents)?.id ?? first.id;
+  if (presets.some((p) => p.fails) && !(file.fallback && ids.has(file.fallback))) {
+    throw new Error("data/race.sample.json has a preset whose attempt fails but no registry search provider as `fallback`.");
+  }
+  const fallbackId = file.fallback && ids.has(file.fallback) ? file.fallback : first.id;
   const contentsSpec = getRegistry().providers.find((p) => p.id === contentsId)?.contents;
   const contentsCost = contentsSpec ? { usd: listPriceUsd(contentsSpec.price, 1), source: contentsSpec.cost.source } : { usd: null, source: "unknown" as const };
   return toDataset(
     file,
-    { lanes, presets, fallback: providerBrand(fallbackId), attemptTimeoutMs: file.attemptTimeoutMs, contents: providerBrand(contentsId), contentsCost },
+    { pending: file.pending === true, lanes, presets, fallback: providerBrand(fallbackId), attemptTimeoutMs: file.attemptTimeoutMs, contents: providerBrand(contentsId), contentsCost },
     "data/race.sample.json",
   );
 }

@@ -1,30 +1,110 @@
 {
   "sample": true,
-  "label": "Sample data",
-  "note": "Placeholder timings, results and costs for the home page stage. Response shapes come from the registry; every value here is invented. The benchmark harness replaces this file with recorded runs.",
-  "fallback": "brave",
+  "pending": true,
+  "label": "Results pending",
+  "note": "Placeholder, not measured. Every provider gets the same timing, the same results and no cost, so the stage animates in lockstep and no provider is faster, cheaper or better than another; while pending is true the stage shows no per-provider figures. Response shapes come from the registry; the documents are invented and live on example domains. No attempt fails in this story. Recorded benchmark runs replace this file.",
   "attemptTimeoutMs": 1500,
   "presets": [
     {
       "id": "vectors",
       "query": "how do vector databases index embeddings",
-      "fails": { "provider": "perplexity", "code": "attempt_timeout" },
+      "fails": null,
       "docs": [
-        { "title": "Approximate nearest neighbour indexes explained", "url": "https://docs.example.com/ann-indexes", "excerpt": "An index trades a little recall for a large cut in search time by visiting only part of the graph." },
-        { "title": "HNSW graphs from first principles", "url": "https://example.org/hnsw", "excerpt": "Each layer of the graph links a node to its nearest neighbours; search descends from the sparsest layer." },
-        { "title": "Choosing an index for embeddings", "url": "https://example.net/choosing-an-index", "excerpt": "Flat indexes are exact and slow; IVF and HNSW are approximate and fast at different memory costs." },
-        { "title": "Product quantization in practice", "url": "https://example.org/pq", "excerpt": "Splitting each vector into sub-vectors and coding them shrinks memory by an order of magnitude." },
-        { "title": "Inverted file indexes for vectors", "url": "https://docs.example.com/ivf", "excerpt": "Vectors are bucketed by their nearest centroid, and a query scans only the closest buckets." },
-        { "title": "Recall versus latency trade-offs", "url": "https://example.net/recall-latency", "excerpt": "Raising the search breadth improves recall until the index degenerates into a full scan." }
+        {
+          "title": "Approximate nearest neighbour indexes explained",
+          "url": "https://docs.example.com/ann-indexes",
+          "excerpt": "An index trades a little recall for a large cut in search time by visiting only part of the graph."
+        },
+        {
+          "title": "HNSW graphs from first principles",
+          "url": "https://example.org/hnsw",
+          "excerpt": "Each layer of the graph links a node to its nearest neighbours; search descends from the sparsest layer."
+        },
+        {
+          "title": "Choosing an index for embeddings",
+          "url": "https://example.net/choosing-an-index",
+          "excerpt": "Flat indexes are exact and slow; IVF and HNSW are approximate and fast at different memory costs."
+        },
+        {
+          "title": "Product quantization in practice",
+          "url": "https://example.org/pq",
+          "excerpt": "Splitting each vector into sub-vectors and coding them shrinks memory by an order of magnitude."
+        },
+        {
+          "title": "Inverted file indexes for vectors",
+          "url": "https://docs.example.com/ivf",
+          "excerpt": "Vectors are bucketed by their nearest centroid, and a query scans only the closest buckets."
+        },
+        {
+          "title": "Recall versus latency trade-offs",
+          "url": "https://example.net/recall-latency",
+          "excerpt": "Raising the search breadth improves recall until the index degenerates into a full scan."
+        }
       ],
       "lanes": {
-        "exa": { "latencyMs": 820, "costUsd": 0.007, "picks": [0, 1, 2] },
-        "tavily": { "latencyMs": 1140, "costUsd": 0.008, "picks": [2, 3, 1] },
-        "context": { "latencyMs": 950, "costUsd": 0.002, "picks": [2, 4, 0] },
-        "tinyfish": { "latencyMs": 1320, "costUsd": null, "picks": [4, 2, 5] },
-        "brave": { "latencyMs": 610, "costUsd": 0.005, "picks": [5, 2, 0] },
-        "perplexity": { "latencyMs": 1630, "costUsd": 0.005, "picks": [1, 0, 3] },
-        "firecrawl": { "latencyMs": 1810, "costUsd": 0.0076, "picks": [5, 4, 2] }
+        "brave": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "context": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "exa": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "firecrawl": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "perplexity": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "tavily": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "tinyfish": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        }
       },
       "page": {
         "title": "Approximate nearest neighbour indexes explained",
@@ -41,22 +121,98 @@
     {
       "id": "node",
       "query": "node.js lts release schedule",
-      "fails": { "provider": "firecrawl", "code": "rate_limit" },
+      "fails": null,
       "docs": [
-        { "title": "Release schedule and support phases", "url": "https://docs.example.com/node-releases", "excerpt": "Even-numbered majors enter long-term support in October and receive fixes for thirty months." },
-        { "title": "Choosing a runtime version for production", "url": "https://example.org/runtime-versions", "excerpt": "Pin the active LTS line and move when the next one has had its first few patch releases." },
-        { "title": "What changes between LTS lines", "url": "https://example.net/lts-changes", "excerpt": "Each LTS line freezes its API surface, so upgrades are planned once a year instead of continuously." },
-        { "title": "Maintenance mode explained", "url": "https://example.org/maintenance-mode", "excerpt": "In maintenance a line receives only critical security fixes until its end-of-life date." },
-        { "title": "Upgrading across two LTS lines", "url": "https://docs.example.com/upgrade-guide", "excerpt": "Run the test suite on the intermediate line first; most breaks come from removed deprecations." }
+        {
+          "title": "Release schedule and support phases",
+          "url": "https://docs.example.com/node-releases",
+          "excerpt": "Even-numbered majors enter long-term support in October and receive fixes for thirty months."
+        },
+        {
+          "title": "Choosing a runtime version for production",
+          "url": "https://example.org/runtime-versions",
+          "excerpt": "Pin the active LTS line and move when the next one has had its first few patch releases."
+        },
+        {
+          "title": "What changes between LTS lines",
+          "url": "https://example.net/lts-changes",
+          "excerpt": "Each LTS line freezes its API surface, so upgrades are planned once a year instead of continuously."
+        },
+        {
+          "title": "Maintenance mode explained",
+          "url": "https://example.org/maintenance-mode",
+          "excerpt": "In maintenance a line receives only critical security fixes until its end-of-life date."
+        },
+        {
+          "title": "Upgrading across two LTS lines",
+          "url": "https://docs.example.com/upgrade-guide",
+          "excerpt": "Run the test suite on the intermediate line first; most breaks come from removed deprecations."
+        }
       ],
       "lanes": {
-        "exa": { "latencyMs": 760, "costUsd": 0.007, "picks": [0, 2, 1] },
-        "tavily": { "latencyMs": 1060, "costUsd": 0.008, "picks": [0, 1, 3] },
-        "context": { "latencyMs": 880, "costUsd": 0.002, "picks": [1, 0, 4] },
-        "tinyfish": { "latencyMs": 1250, "costUsd": null, "picks": [3, 0, 2] },
-        "brave": { "latencyMs": 540, "costUsd": 0.005, "picks": [0, 3, 1] },
-        "perplexity": { "latencyMs": 1420, "costUsd": 0.005, "picks": [2, 0, 4] },
-        "firecrawl": { "latencyMs": 380, "costUsd": 0.0076, "picks": [1, 4, 0] }
+        "brave": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "context": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "exa": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "firecrawl": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "perplexity": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "tavily": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "tinyfish": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        }
       },
       "page": {
         "title": "Release schedule and support phases",
@@ -73,22 +229,98 @@
     {
       "id": "rls",
       "query": "postgres row level security examples",
-      "fails": { "provider": "tinyfish", "code": "network" },
+      "fails": null,
       "docs": [
-        { "title": "Row level security by example", "url": "https://docs.example.com/rls-examples", "excerpt": "A policy is a boolean expression evaluated per row; rows where it is false are invisible to the query." },
-        { "title": "Policies for multi-tenant tables", "url": "https://example.org/tenant-policies", "excerpt": "Key every table by tenant and compare it with a setting that the connection pool sets per request." },
-        { "title": "Testing policies before you ship", "url": "https://example.net/testing-policies", "excerpt": "Switch roles inside a transaction and assert which rows each role can read and write." },
-        { "title": "Performance of security policies", "url": "https://example.org/policy-performance", "excerpt": "Policies become part of the plan; an index on the tenant column keeps them cheap." },
-        { "title": "Bypassing policies safely", "url": "https://docs.example.com/bypass", "excerpt": "Only table owners and roles with the bypass attribute skip policies, so keep those roles out of the app." }
+        {
+          "title": "Row level security by example",
+          "url": "https://docs.example.com/rls-examples",
+          "excerpt": "A policy is a boolean expression evaluated per row; rows where it is false are invisible to the query."
+        },
+        {
+          "title": "Policies for multi-tenant tables",
+          "url": "https://example.org/tenant-policies",
+          "excerpt": "Key every table by tenant and compare it with a setting that the connection pool sets per request."
+        },
+        {
+          "title": "Testing policies before you ship",
+          "url": "https://example.net/testing-policies",
+          "excerpt": "Switch roles inside a transaction and assert which rows each role can read and write."
+        },
+        {
+          "title": "Performance of security policies",
+          "url": "https://example.org/policy-performance",
+          "excerpt": "Policies become part of the plan; an index on the tenant column keeps them cheap."
+        },
+        {
+          "title": "Bypassing policies safely",
+          "url": "https://docs.example.com/bypass",
+          "excerpt": "Only table owners and roles with the bypass attribute skip policies, so keep those roles out of the app."
+        }
       ],
       "lanes": {
-        "exa": { "latencyMs": 900, "costUsd": 0.007, "picks": [0, 1, 2] },
-        "tavily": { "latencyMs": 1190, "costUsd": 0.008, "picks": [1, 0, 3] },
-        "context": { "latencyMs": 1010, "costUsd": 0.002, "picks": [0, 2, 4] },
-        "tinyfish": { "latencyMs": 420, "costUsd": null, "picks": [2, 0, 1] },
-        "brave": { "latencyMs": 650, "costUsd": 0.005, "picks": [0, 3, 1] },
-        "perplexity": { "latencyMs": 1510, "costUsd": 0.005, "picks": [1, 2, 0] },
-        "firecrawl": { "latencyMs": 1720, "costUsd": 0.0076, "picks": [3, 0, 4] }
+        "brave": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "context": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "exa": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "firecrawl": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "perplexity": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "tavily": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        },
+        "tinyfish": {
+          "latencyMs": 1000,
+          "costUsd": null,
+          "picks": [
+            0,
+            1,
+            2
+          ]
+        }
       },
       "page": {
         "title": "Row level security by example",

@@ -11,6 +11,8 @@ import { useInView, useSettledNumber } from "@/lib/motion";
  * reliability, latency or cost and the rows travel to their new places (transform only). Rank is
  * always quality first, then reliability; sorting by another column moves rows, never ranks.
  * Ties (within the tie band) share a bracket; unreliable providers carry a tag and rank last.
+ * While results are pending, every row has the same placeholder value: the bars still race in, in
+ * lockstep, and every rank and figure reads "–".
  */
 type Metric = "quality" | "reliability" | "latency" | "cost";
 
@@ -22,6 +24,7 @@ const METRICS: { id: Metric; label: string; better: "high" | "low" }[] = [
 ];
 
 const value = (r: RankedRow, m: Metric) => (m === "quality" ? r.quality : m === "reliability" ? r.reliability * 100 : m === "latency" ? r.latencyP50Ms : r.costUsdPer1k);
+const PENDING = "–";
 const format = (v: number, m: Metric) => (m === "quality" ? v.toFixed(1) : m === "reliability" ? `${v.toFixed(1)}%` : m === "latency" ? `${Math.round(v)} ms` : `$${v.toFixed(2)}`);
 
 function Figure({ v, m, start }: { v: number; m: Metric; start: boolean }) {
@@ -85,7 +88,7 @@ export function Board({ board, brands, sampleTag }: { board: Leaderboard; brands
               data-unreliable={r.dependable ? undefined : ""}
               style={{ "--i": i, "--lane": brand.hue, "--w": Math.max(0.02, (v - floor) / span), "--d": board.rows.indexOf(r) } as CSSProperties}
             >
-              <span className="board-rank figures">{r.tied ? `=${r.rank}` : r.rank}</span>
+              <span className="board-rank figures">{board.pending ? PENDING : r.tied ? `=${r.rank}` : r.rank}</span>
               <span className="board-name">
                 <ProviderMark brand={brand} size={20} />
                 <span>{brand.name}</span>
@@ -99,7 +102,7 @@ export function Board({ board, brands, sampleTag }: { board: Leaderboard; brands
                 <span className="board-bar" />
               </span>
               <span className="board-value figures">
-                <Figure v={v} m={metric} start={seen} />
+                {board.pending ? PENDING : <Figure v={v} m={metric} start={seen} />}
               </span>
             </div>
           );

@@ -12,7 +12,7 @@ import "@/components/site/pages.css";
 export const metadata: Metadata = pageMetadata({
   path: "/benchmarks",
   title: "Benchmarks",
-  description: "searchSDK benchmarks every web search provider end to end. Ranked by answer quality, then reliability; latency and cost reported.",
+  description: "searchSDK's open benchmark of web search providers: quality first, then reliability, with latency and cost. Results pending; the first run is in progress.",
 });
 
 export default function BenchmarksPage() {
@@ -23,8 +23,9 @@ export default function BenchmarksPage() {
       <div className="page-head">
         <h1 className="type-h2">Benchmarks</h1>
         <p className="page-line">
-          Ranked by quality, then reliability. Scores within {leaderboard.data.method.tieBand} points are a tie. Latency and cost never
-          change rank.{" "}
+          Results pending. The first benchmark run is in progress; every provider shows the same placeholder until it is published.
+          Then rank is quality first, then reliability: scores within {leaderboard.data.method.tieBand} points tie, and latency and
+          cost never change rank.{" "}
           <Link href="/docs/benchmarks-method" className="prose-link">
             Method
           </Link>
@@ -49,17 +50,28 @@ export default function BenchmarksPage() {
                 <tbody>
                   {board.rows.map((row) => (
                     <tr key={row.provider} data-unreliable={row.dependable ? undefined : ""}>
-                      <td className="figures bench-left">{row.tied ? `=${row.rank}` : row.rank}</td>
+                      <td className="figures bench-left">{board.pending ? "–" : row.tied ? `=${row.rank}` : row.rank}</td>
                       <th scope="row">
                         <Link href={`/providers/${row.provider}`} className="bench-name">
                           <ProviderMark brand={providerBrand(row.provider)} size={18} />
                           {providerBrand(row.provider).name}
                         </Link>
                       </th>
-                      <td className="figures">{row.quality.toFixed(1)}</td>
-                      <td className="figures">{(row.reliability * 100).toFixed(1)}%</td>
-                      <td className="figures">{row.latencyP50Ms} ms</td>
-                      <td className="figures">${row.costUsdPer1k.toFixed(2)}</td>
+                      {board.pending ? (
+                        <>
+                          <td className="figures">–</td>
+                          <td className="figures">–</td>
+                          <td className="figures">–</td>
+                          <td className="figures">–</td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="figures">{row.quality.toFixed(1)}</td>
+                          <td className="figures">{(row.reliability * 100).toFixed(1)}%</td>
+                          <td className="figures">{row.latencyP50Ms} ms</td>
+                          <td className="figures">${row.costUsdPer1k.toFixed(2)}</td>
+                        </>
+                      )}
                     </tr>
                   ))}
                   {board.notRun.map((id) => (

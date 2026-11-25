@@ -43,6 +43,12 @@ export const REQUIRED_HEAD = [
   { name: "Twitter card image", test: (n, attr) => n.tagName === "meta" && attr(n, "name") === "twitter:image" },
 ];
 
+/**
+ * The visible label every placeholder-data region carries (components/data/data-region.tsx). The
+ * data files are placeholders until the first benchmark run is published, so the label says so.
+ */
+export const SAMPLE_LABEL = { re: /\bresults pending\b/i, says: "Results pending" };
+
 /** A disclaimer said once: at most this many pages may carry each phrase. */
 export const ONCE_ONLY = [{ phrase: /provisional/i, pages: 1 }];
 
