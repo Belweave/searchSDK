@@ -1,0 +1,32 @@
+{
+  "name": "fresh",
+  "version": "2026-12",
+  "split": "fresh",
+  "seed": 20261201,
+  "builtOn": "2026-11-25",
+  "idPrefix": "2612",
+  "exclude": [
+    "datasets/public/seed-0.1.0.jsonl",
+    "datasets/fresh/fresh-2026-11.jsonl",
+    "datasets/public/public-1.0.0.jsonl"
+  ],
+  "maxPerAnswer": 1,
+  "templates": [
+    {
+      "id": "eol-release",
+      "count": 19
+    },
+    {
+      "id": "kev-recent",
+      "count": 15
+    },
+    {
+      "id": "arxiv-first-author",
+      "count": 16
+    },
+    {
+      "id": "software-version-asof",
+      "count": 16
+    }
+  ]
+}
