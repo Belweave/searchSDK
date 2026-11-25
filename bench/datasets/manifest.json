@@ -15,6 +15,24 @@
       }
     },
     {
+      "name": "public",
+      "version": "1.0.0",
+      "file": "datasets/public/public-1.0.0.jsonl",
+      "sha256": "c1fa82f05c549396f1347a6a1ffd2dedeb46397a3f82c16f59bc2879ed1c0241",
+      "count": 252,
+      "classes": {
+        "fact.head": 42,
+        "fact.tail": 42,
+        "multihop": 42,
+        "tech": 42,
+        "nav": 42,
+        "nonen": 42
+      },
+      "licences": {
+        "CC0-1.0": 252
+      }
+    },
+    {
       "name": "seed",
       "version": "0.1.0",
       "file": "datasets/public/seed-0.1.0.jsonl",
