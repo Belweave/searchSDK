@@ -211,6 +211,17 @@ class Registry(unittest.TestCase):
             self.assertEqual((caught.exception.code, caught.exception.field), ("configuration", "registry"))
 
 
+class Packaging(unittest.TestCase):
+    def test_the_version_matches_pyproject(self) -> None:
+        import re
+        from pathlib import Path
+
+        text = (Path(__file__).resolve().parent.parent / "pyproject.toml").read_text(encoding="utf-8")
+        match = re.search(r'^version = "([^"]+)"$', text, re.MULTILINE)
+        assert match is not None
+        self.assertEqual(searchsdk.__version__, match.group(1))
+
+
 class ClientSettings(unittest.TestCase):
     def test_settings_are_checked_when_the_client_is_created(self) -> None:
         from searchsdk._json import thaw

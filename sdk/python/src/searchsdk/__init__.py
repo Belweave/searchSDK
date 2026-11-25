@@ -52,7 +52,7 @@ from ._types import (
     SearchResult,
 )
 
-__version__ = "0.0.0"
+__version__ = "0.1.0"
 
 registry: Mapping[str, Mapping[str, Any]] = BUILT_IN
 """The embedded provider specs, read-only (mappings and tuples). For routers, benchmarks and docs."""

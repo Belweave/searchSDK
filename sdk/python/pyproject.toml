@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "searchsdk"
-version = "0.0.0"
+version = "0.1.0"
 description = "One interface to many web search providers, driven by a shared provider registry."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -20,7 +20,7 @@ classifiers = [
 Source = "https://github.com/Belweave/searchSDK/tree/main/sdk/python"
 
 [tool.flit.sdist]
-include = ["tests/", "scripts/", "requirements-dev.txt"]
+include = ["tests/", "scripts/", "requirements-dev.txt", "CHANGELOG.md"]
 
 [tool.mypy]
 strict = true

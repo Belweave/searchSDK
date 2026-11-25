@@ -14,7 +14,7 @@ Nothing is published to npm yet. Build a package from the repository:
 ```sh
 git clone https://github.com/Belweave/searchSDK
 cd searchSDK/sdk/typescript && npm ci && npm pack --ignore-scripts=false
-cd your-app && npm install ../searchSDK/sdk/typescript/searchsdk-0.0.0.tgz
+cd your-app && npm install ../searchSDK/sdk/typescript/searchsdk-0.1.0.tgz
 ```
 
 ## Use
