@@ -15,6 +15,20 @@
       }
     },
     {
+      "name": "fresh",
+      "version": "2026-12",
+      "file": "datasets/fresh/fresh-2026-12.jsonl",
+      "sha256": "10eff9f541c8306a2c88a7e550b1d94479e5a59e9a419d156364be79e84cd8f1",
+      "count": 50,
+      "classes": {
+        "fresh": 50
+      },
+      "licences": {
+        "MIT": 15,
+        "CC0-1.0": 35
+      }
+    },
+    {
       "name": "public",
       "version": "1.0.0",
       "file": "datasets/public/public-1.0.0.jsonl",
