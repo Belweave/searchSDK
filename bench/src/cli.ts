@@ -24,12 +24,13 @@ import { formatTuningPlan, limitProblems, loadTuning, resolveTuned, select, spli
 import { creditReservation } from "./run/pricing.ts";
 import { formatVerify, liveExecutor, publicSummary, runVerify, verifyPlan, RUNTIMES, type LiveOverride, type Runtime, type VectorCase } from "./verify/verify.ts";
 import { paceFor, type RateLimit } from "./run/pacer.ts";
+import { contentsCommand } from "./contents/cli.ts";
 import { appendJsonl, BENCH_DIR, REPO_DIR, canonical, isoDate, readJson, sha256, storeDir, usd, writeJson, writeJsonl } from "./util/core.ts";
 
 const HELP = `searchSDK Benchmarks
 
   keys     --config <run.json> | --providers a,b [--no-judge] [--file <keys.env>]   which key variables are present; names only
-  smoke    --config <run.json> | --providers a,b [--searches 2] [--cap 0.10] [--live --confirm-spend <cap>]
+  smoke    --config <run.json> | --providers a,b [--searches 2] [--contents-url <url>] [--cap 0.10] [--live --confirm-spend <cap>]
            2 or 3 searches and 1 contents call per provider: status, latency, fields found per spec path, cost vs bound
   plan     --config <run.json> [--tuned <selection.json> | --no-tuned] [--no-judge]   print the calls and the maximum spend; sends nothing
   pilot    --config <run.json> [--tuned <sel> | --no-tuned] [--no-judge] [--live --confirm-spend <cap>]   plan, confirm, search, fetch pages, judge, score
@@ -40,6 +41,9 @@ const HELP = `searchSDK Benchmarks
   tune     --config <run.json> [--tuning config/tuning.json] [--live --confirm-spend <tuning cap>]
            plan by default: the split, each provider's candidates, and the spend and credits of tuning, the main run and its tuned condition.
            --live tunes on the split and writes a selection; pass it to run with --tuned.
+  contents plan --config <contents.json> | run --config <contents.json> [--live --confirm-spend <cap>] [--resume <runId>]
+           | score --run <runId> | publish --run <runId> [--out <dir>] | build --spec <url-spec.json> [--provisional] | validate [--config <contents.json>]
+           the page-reading track (METHOD-contents.md): one default contents call per URL and provider, three passes, seeded, paced and capped
   verify   --provider <id> [--kinds search,contents] [--runtimes typescript,python] [--config <run.json>] [--cap 0.5] [--max-credits 200]
            [--interval-ms 30000] [--out <summary.json>] [--live --confirm-spend <cap>]
            live conformance: replays the provider's conformance vectors against the live API in each runtime (registry/README.md)
@@ -204,7 +208,9 @@ async function smoke(flags: Record<string, string | true>): Promise<void> {
   const reg = builtInRegistry as unknown as Record<string, ProviderSpec>;
   for (const p of providers) if (!reg[p]?.search) throw new Error(`smoke: ${p} is not a registry provider with search`);
   const searches = Number(str(flags, "searches") ?? 2);
-  if (!Number.isInteger(searches) || searches < 1 || searches > 3) throw new Error("--searches: 1 to 3");
+  if (!Number.isInteger(searches) || searches < 0 || searches > 3) throw new Error("--searches: 0 to 3");
+  const contentsUrl = str(flags, "contents-url");
+  if (contentsUrl !== undefined && !/^https?:\/\//.test(contentsUrl)) throw new Error("--contents-url: an http(s) URL");
   const cap = Number(str(flags, "cap") ?? 0.1);
   if (!(cap > 0) || cap > 1) throw new Error("--cap: a smoke cap above $0 and at most $1");
   const plan = smokePlan(reg, providers, searches, method);
@@ -226,7 +232,7 @@ async function smoke(flags: Record<string, string | true>): Promise<void> {
   const client = live
     ? createClient<string>({ env: process.env })
     : createClient<string>({ keys: Object.fromEntries(providers.map((p) => [p, "fixture-key"])), fetch: shapeFetch() });
-  const report = await runSmoke({ mode: live ? "live" : "fixture", providers, registry: reg, client, budget, method, dir, searches });
+  const report = await runSmoke({ mode: live ? "live" : "fixture", providers, registry: reg, client, budget, method, dir, searches, ...(contentsUrl ? { contentsUrl } : {}) });
   console.log(formatSmoke(report));
   console.log(live
     ? `\nspent ${usd(budget.runCashUsd(), 4)} of the ${usd(cap)} smoke cap`
@@ -437,6 +443,10 @@ async function main(): Promise<void> {
     }
     case "verify": {
       await verify(flags);
+      return;
+    }
+    case "contents": {
+      await contentsCommand(sub, flags);
       return;
     }
     case "dataset": {

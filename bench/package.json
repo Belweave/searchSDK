@@ -10,7 +10,7 @@
     "bench": "node src/cli.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "node --test --test-concurrency=1 --import ./test/guard.ts \"test/**/*.test.ts\"",
-    "check": "tsc -p tsconfig.json && npm test && node src/cli.ts dataset validate && node src/cli.ts plan --config config/pilot.json --quiet",
+    "check": "tsc -p tsconfig.json && npm test && node src/cli.ts dataset validate && node src/cli.ts plan --config config/pilot.json --quiet && node src/cli.ts contents validate --config config/contents-2026-12.json && node src/cli.ts contents plan --config config/contents-2026-12.json --quiet",
     "pilot:plan": "node src/cli.ts plan --config config/pilot.json",
     "pilot": "node src/cli.ts pilot --config config/pilot.json"
   },

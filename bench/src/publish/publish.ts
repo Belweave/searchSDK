@@ -248,6 +248,9 @@ export function sensitiveStrings(dir: string, items: readonly Item[], min = 24):
   walk(join(dir, "raw", "search"), (j) => { for (const r of j.results ?? []) { add(r.title); for (const x of r.excerpts ?? []) add(x); } });
   walk(join(dir, "raw", "pages"), (j) => { add(j.content); add(j.title); });
   walk(join(dir, "raw", "judge"), (j) => add(j.rationale));
+  // The contents track's raw files: what each provider returned, and the harness's own probe text.
+  walk(join(dir, "raw", "contents"), (j) => { add(j.content); add(j.title); });
+  walk(join(dir, "raw", "probes"), (j) => add(j.text));
   for (const i of items) {
     if (i.split !== "private") continue;
     out.add(i.query);

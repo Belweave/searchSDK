@@ -1,0 +1,13 @@
+{
+  "name": "contents-2026-12",
+  "description": "First contents (page-reading) run: the default contents call of Exa, Context.dev, Firecrawl and TinyFish on the contents-urls-0.1.0 set (five strata of up to 60 URLs), three passes, seeded order, neutral pacing. Firecrawl credits are a sponsor grant, declared as credit and held to the same account limit as its search run. Build the URL set after the full search runs have read their pages, so the pooled stratum can draw equally from all four providers.",
+  "track": "contents",
+  "providers": ["exa", "context", "firecrawl", "tinyfish"],
+  "urlSet": "datasets/contents/contents-urls-0.1.0.jsonl",
+  "urlSpec": "datasets/specs/contents-urls-0.1.0.json",
+  "passes": 3,
+  "capUsd": 6,
+  "creditsUsd": { "firecrawl": 100 },
+  "providerLimits": { "firecrawl": { "credits": 20000, "since": "2026-11-25" } },
+  "seed": 20261126
+}

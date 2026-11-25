@@ -50,11 +50,37 @@ See [PILOT.md](PILOT.md) for the first run: Exa, Context.dev, Firecrawl and
 TinyFish, three passes, at most $5.76 under a $7 cap, with the full command
 sequence.
 
+## Contents track
+
+The page-reading track ([METHOD-contents.md](METHOD-contents.md)) measures
+each provider's default `contents` call on a fixed URL set: fidelity (does the
+text hold the page's known answer), reliability, completeness and noise
+against the harness's own read, latency and cost, per stratum (`reference`,
+`pooled`, `long`, `js`, `pdf`).
+
+```sh
+node src/cli.ts contents plan --config config/contents-2026-12.json      # calls, credits, maximum spend, duration
+node src/cli.ts contents run --config config/contents-2026-12.json       # fixture run: synthetic providers and pages
+node src/cli.ts contents build --spec datasets/specs/contents-urls-0.1.0.json   # the URL set (reads the web, no provider)
+BENCH_ALLOW_LIVE=1 node --env-file=$K src/cli.ts contents run --config config/contents-2026-12.json --live --confirm-spend 6
+node src/cli.ts contents publish --run <runId>
+```
+
+Build the URL set only after the search runs named in the spec's `runs` have
+read their pages, so the pooled stratum draws equally from every provider.
+
+## Live conformance
+
+`node src/cli.ts verify --provider <id>` prints which registry vectors would
+be replayed against the live API; with `--live --confirm-spend <cap>` it
+replays them through the TypeScript and Python runtimes under the same ledger
+(registry/README.md, Live conformance).
+
 ## Where things live
 
 | Path | Contents |
 | --- | --- |
-| `datasets/` | Public and fresh items (Wikidata, CC0), reviews, manifest, private-set hashes |
+| `datasets/` | Public and fresh items (Wikidata, CC0), reviews, manifest, private-set hashes; `contents/` holds the contents track's URL sets |
 | `config/` | Method, runs, judges, tuning |
 | `rubric/` | The judge's relevance rubric |
 | `schemas/` | Items and the three published outputs |

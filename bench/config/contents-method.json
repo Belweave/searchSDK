@@ -1,0 +1,13 @@
+{
+  "$comment": "Fixed conditions of the contents track (METHOD-contents.md). Changing any value is a new contents method version.",
+  "method": "contents-0.1.0",
+  "call": { "timeoutMs": 30000, "maxRetries": 0, "urlsPerCall": 1 },
+  "match": { "fields": ["content", "title"] },
+  "completeness": { "shingleWords": 4, "passageChars": 400, "minHarnessChars": 500 },
+  "documents": { "reservePerPage": 1 },
+  "reporting": { "minStratumN": 30 },
+  "stats": { "bootstrap": 2000, "seed": 20261124, "confidence": 0.95, "minSeparation": 0.06 },
+  "reliability": { "floor": 0.95 },
+  "budget": { "monthlyCapUsd": 100, "unknownPriceUsd": 0.05 },
+  "pacing": { "shareOfLimit": 0.5, "maxInFlightPerProvider": 2, "itemWindow": 4, "rateLimitPauseMs": 30000 }
+}

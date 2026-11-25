@@ -8,6 +8,7 @@
 // Host names are resolved before each hop and refused when any address is
 // local or private; the live transport (address.ts) pins the connection to
 // checked addresses, so DNS rebinding cannot reach a private address either.
+import { inflateSync } from "node:zlib";
 import { blockedHost, isBlockedAddressError, resolvePublic, type Resolver } from "./address.ts";
 
 export interface FetcherOptions {
@@ -34,6 +35,11 @@ export interface FetcherOptions {
 
 export type UnreadableReason =
   | "blocked-url" | "robots" | "status" | "redirects" | "content-type" | "timeout" | "network" | "empty" | "aborted";
+
+/** A PDF read by the harness for the contents track: its bytes (up to maxBytes) and page count, never its text. */
+export type FetchedDocument =
+  | { status: "ok"; url: string; finalUrl: string; httpStatus: number; mime: string; bytes: number; truncated: boolean; pages: number | null }
+  | { status: "unreadable"; url: string; reason: UnreadableReason; httpStatus?: number; detail?: string };
 
 export type FetchedPage =
   | { status: "ok"; url: string; finalUrl: string; httpStatus: number; title: string | null; text: string; truncated: boolean }
@@ -269,6 +275,48 @@ async function readCapped(res: Response, max: number): Promise<{ bytes: Uint8Arr
   return { bytes, truncated };
 }
 
+// ---- PDF page count ----
+
+/**
+ * The page count of a PDF: the largest /Count of a /Type /Pages node, read
+ * from the file and from its compressed object streams. Null when none is
+ * found. It can only overcount (an outline /Count in the same stream), never
+ * undercount a well-formed file, so reservations built on it stay safe.
+ */
+export function pdfPageCount(bytes: Uint8Array): number | null {
+  const buf = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const s = buf.toString("latin1");
+  if (!s.startsWith("%PDF-")) return null;
+  const counts: number[] = [];
+  const scan = (t: string) => {
+    for (const m of t.matchAll(/<<(?:(?!<<|>>)[^])*?\/Type\s*\/Pages\b(?:(?!<<|>>)[^])*?>>/g)) {
+      const c = /\/Count\s+(\d+)/.exec(m[0]);
+      if (c) counts.push(Number(c[1]));
+    }
+  };
+  scan(s);
+  const re = /stream\r?\n/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(s))) {
+    const start = m.index + m[0].length;
+    const end = s.indexOf("endstream", start);
+    if (end < 0) break;
+    try {
+      const t = inflateSync(buf.subarray(start, end)).toString("latin1");
+      if (/\/Type\s*\/Pages\b/.test(t)) {
+        const before = counts.length;
+        scan(t);
+        // Object streams hold bare objects without << >> around the stream; fall back to every /Count in them.
+        if (counts.length === before) for (const c of t.matchAll(/\/Count\s+(\d+)/g)) counts.push(Number(c[1]));
+      }
+    } catch {
+      // Not a Flate stream (images, fonts): nothing to read.
+    }
+    re.lastIndex = end;
+  }
+  return counts.length ? Math.max(...counts) : null;
+}
+
 // ---- The fetcher ----
 
 export class PlainFetcher {
@@ -342,6 +390,15 @@ export class PlainFetcher {
   }
 
   async fetchPage(url: string, outer?: AbortSignal): Promise<FetchedPage> {
+    return this.read(url, outer, false) as Promise<FetchedPage>;
+  }
+
+  /** Reads a PDF under the same rules as a page (robots, hosts, redirects, deadline, byte limit) and counts its pages. */
+  async fetchDocument(url: string, outer?: AbortSignal): Promise<FetchedDocument> {
+    return this.read(url, outer, true) as Promise<FetchedDocument>;
+  }
+
+  private async read(url: string, outer: AbortSignal | undefined, pdf: boolean): Promise<FetchedPage | FetchedDocument> {
     const deadline = AbortSignal.timeout(this.o.timeoutMs);
     const signal = outer ? AbortSignal.any([outer, deadline]) : deadline;
     try {
@@ -366,6 +423,14 @@ export class PlainFetcher {
         }
         const contentType = res.headers.get("content-type");
         const mime = (contentType ?? "text/html").split(";")[0]!.trim().toLowerCase();
+        if (pdf) {
+          if (mime !== "application/pdf") {
+            await res.body?.cancel().catch(() => {});
+            throw new Unreadable("content-type", res.status, mime);
+          }
+          const { bytes, truncated } = await readCapped(res, this.o.maxBytes);
+          return { status: "ok", url, finalUrl: target.href, httpStatus: res.status, mime, bytes: bytes.byteLength, truncated, pages: truncated ? null : pdfPageCount(bytes) };
+        }
         if (!TEXT_TYPES.has(mime)) {
           await res.body?.cancel().catch(() => {});
           throw new Unreadable("content-type", res.status, mime);
