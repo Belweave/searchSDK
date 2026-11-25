@@ -6,6 +6,7 @@ import { join } from "node:path";
 import type { Item } from "./dataset/items.ts";
 import { fixtureFetch, fixtureJudge, fixtureKeys, fixtureRegistry } from "./fixtures.ts";
 import { createJudge, type Judge } from "./judge/judge.ts";
+import { pinnedFetch, systemResolver, type Resolver } from "./pages/address.ts";
 import { PlainFetcher, type FetchedPage } from "./pages/fetcher.ts";
 import { Budget } from "./run/budget.ts";
 import { loadMethod, type Method, type RunConfig } from "./run/config.ts";
@@ -23,13 +24,19 @@ export interface PageFetcher {
   crawlDelayMs(url: string): Promise<number>;
 }
 
-/** The harness's own fetcher with the method's limits and user agent, on the given fetch. */
-export function pageFetcherFor(method: Method, fetchFn: typeof fetch): PageFetcher {
+/** The harness's own fetcher with the method's limits and user agent, on the given fetch (and resolver, when names are real). */
+export function pageFetcherFor(method: Method, fetchFn: typeof fetch, resolve?: Resolver): PageFetcher {
   const p = method.pages;
   return new PlainFetcher({
     fetch: fetchFn, userAgent: p.userAgent, robotsToken: p.robotsToken, timeoutMs: p.timeoutMs,
     maxBytes: p.maxBytes, maxRedirects: p.maxRedirects, maxCrawlDelayMs: p.maxCrawlDelayMs,
+    ...(resolve ? { resolve } : {}),
   });
+}
+
+/** Live page reads: names resolved and checked before each hop, sockets pinned to checked addresses. */
+export function livePageFetcher(method: Method): PageFetcher {
+  return pageFetcherFor(method, pinnedFetch({ resolve: systemResolver }), systemResolver);
 }
 
 export interface Session {
@@ -112,7 +119,7 @@ export function openSession(o: {
     registry = builtInRegistry as unknown as Record<string, ProviderSpec>;
     judge = o.judge === undefined ? (config.judgeItems > 0 ? createJudge(method.judge.id, method.judge.rubric, { fetch: globalThis.fetch, env }) : null) : o.judge;
     client = createClient<string>({ env });
-    pageFetcher = pageFetcherFor(method, globalThis.fetch);
+    pageFetcher = livePageFetcher(method);
   }
   const plan = makePlan({ config, method, items, registry, judge, checkCommitted: o.mode === "live" });
   const hash = planHash(plan, config);

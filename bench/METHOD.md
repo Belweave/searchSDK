@@ -141,7 +141,12 @@ is fetched once per run:
   seconds is honoured; a longer one makes the host unreadable;
 - one request per host at a time, at least one second apart, four in flight;
 - at most 5 redirects, each hop checked again (scheme, host, robots.txt);
-  local, private and link-local addresses are refused;
+- before each hop (robots.txt included) the host name is resolved and refused
+  when any of its addresses is loopback, private, link-local, cloud metadata,
+  multicast or otherwise reserved, in IPv4 or IPv6, including IPv4 embedded
+  in IPv6 (mapped, compatible, NAT64, 6to4). The connection then goes only to
+  an address that passed the same check at connect time, so a name that
+  re-resolves to a private address (DNS rebinding) is refused too;
 - a 20-second deadline per page; the first 5 MiB of the body is read;
 - only `text/html`, `application/xhtml+xml` and `text/plain`; the charset
   comes from the header, a byte order mark or a `<meta>` tag; scripts,
@@ -334,8 +339,6 @@ as provider measurements.
   JavaScript, PDFs, paywalls and sites that refuse unknown crawlers are
   unreadable for every provider. A provider whose results lean towards such
   pages gets less page credit; the per-provider unreadable share shows it.
-- The fetcher refuses private addresses by name and IP literal; it does not
-  resolve hostnames first.
 - Freshness rests on software release data alone, and Wikidata can lag the
   real release.
 - Ties need both statistical separation and 6 points, so close providers
