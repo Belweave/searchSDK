@@ -16,9 +16,19 @@ test("committed datasets are valid, versioned, licensed and free of private item
   for (const d of manifest.datasets) {
     const items = loadItems(join(BENCH_DIR, d.file));
     assert.equal(items.length, d.count);
+    // Each source has one licence and one kind of URL.
+    const sources: Record<string, { licence: string; url: RegExp }> = {
+      wikidata: { licence: "CC0-1.0", url: /^https:\/\/www\.wikidata\.org\/wiki\/Q\d+(#P\d+)?$/ },
+      pep: { licence: "CC0-1.0", url: /^https:\/\/peps\.python\.org\/pep-\d{4}\/$/ },
+      "cisa-kev": { licence: "CC0-1.0", url: /^https:\/\/www\.cve\.org\/CVERecord\?id=CVE-\d{4}-\d+$/ },
+      "endoflife-date": { licence: "MIT", url: /^https:\/\/endoflife\.date\/[a-z0-9-]+$/ },
+      arxiv: { licence: "CC0-1.0", url: /^https:\/\/arxiv\.org\/abs\/\d{4}\.\d{4,5}$/ },
+    };
     for (const i of items) {
-      assert.equal(i.licence, "CC0-1.0");
-      assert.match(i.source.url, /^https:\/\/www\.wikidata\.org\/wiki\/Q\d+#P\d+$/);
+      const src = sources[i.source.name];
+      assert.ok(src, `unknown source ${i.source.name}`);
+      assert.equal(i.licence, src.licence);
+      assert.match(i.source.url, src.url);
       assert.notEqual(i.split, "private");
       assert.equal(i.nonce, undefined);
     }

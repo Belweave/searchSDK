@@ -63,6 +63,24 @@
       "licences": {
         "CC0-1.0": 86
       }
+    },
+    {
+      "name": "tuning",
+      "version": "0.1.0",
+      "file": "datasets/public/tuning-0.1.0.jsonl",
+      "sha256": "5757ca3c4461c6f2d49ebaaf2ae0794741a6b31882fd05c31bc6abff36e1ea81",
+      "count": 24,
+      "classes": {
+        "fact.head": 4,
+        "fact.tail": 4,
+        "multihop": 4,
+        "tech": 4,
+        "nav": 4,
+        "nonen": 4
+      },
+      "licences": {
+        "CC0-1.0": 24
+      }
     }
   ]
 }

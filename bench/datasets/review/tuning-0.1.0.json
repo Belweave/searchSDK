@@ -1,0 +1,79 @@
+{
+  "for": "tuning-0.1.0",
+  "reviewedOn": "2026-11-25",
+  "status": "agent-reviewed",
+  "note": "Reviewed by an AI agent (the harness author) against the cited source; awaiting the owner's spot check.",
+  "take": {
+    "capital-en-head": 1,
+    "nobel-work-author": 1,
+    "painting-artist-head": 1,
+    "company-headquarters": 1,
+    "small-language-work-author": 1,
+    "small-industry-film-director": 1,
+    "painting-artist-tail": 1,
+    "building-architect-tail": 1,
+    "nobel-work-author-birthplace": 1,
+    "painting-artist-birthplace": 1,
+    "small-film-director-birthplace": 1,
+    "building-architect-birthplace": 1,
+    "language-designer": 1,
+    "file-format-developer": 1,
+    "pep-author": 1,
+    "kev-product": 1,
+    "university-website": 1,
+    "software-website": 1,
+    "agency-website": 1,
+    "museum-website": 1,
+    "capital-es": 1,
+    "work-author-ru": 1,
+    "film-director-it": 1,
+    "film-director-zh": 1
+  },
+  "drop": {
+    "t1-company-headquarters-001": "the answer (Purchase) is a common word that matches unrelated text",
+    "t1-small-language-work-author-001": "no year, and the title (Kirke) names other works",
+    "t1-painting-artist-tail-001": "generic title (Bus)",
+    "t1-museum-website-001": "ambiguous name: several cathedrals are called Alexander Nevsky Cathedral",
+    "t1-capital-es-001": "the capital of the Republic of China is politically contested"
+  },
+  "answers": {
+    "t1-nobel-work-author-birthplace-001": [
+      "Al-Jamāliyah",
+      "Gamaleya",
+      "Cairo"
+    ],
+    "t1-kev-product-001": [
+      "Array Networks ArrayOS AG",
+      "ArrayOS AG",
+      "ArrayOS"
+    ]
+  },
+  "unchecked": [
+    "t1-building-architect-birthplace-001"
+  ],
+  "notes": {
+    "t1-capital-en-head-001": "Answer also found in https://en.wikipedia.org/wiki/Montenegro.",
+    "t1-nobel-work-author-001": "Answer also found in https://en.wikipedia.org/wiki/Elizabeth%3A_Almost_by_Chance_a_Woman.",
+    "t1-painting-artist-head-001": "Answer also found in https://en.wikipedia.org/wiki/The_Starry_Night.",
+    "t1-company-headquarters-002": "Answer also found in https://en.wikipedia.org/wiki/Adidas.",
+    "t1-small-language-work-author-002": "Answer also found in https://sl.wikipedia.org/wiki/Veriga_(Fin%C5%BEgar).",
+    "t1-small-industry-film-director-001": "Answer also found in https://cy.wikipedia.org/wiki/Frondoso_Ed%C3%A9n_Del_Coraz%C3%B3n.",
+    "t1-painting-artist-tail-002": "Answer also found in https://avk.wikipedia.org/wiki/Varenne-Saint-Hilaire_male_Champigny_(trutca_ke_Pissarro).",
+    "t1-painting-artist-birthplace-001": "Answer also found in https://en.wikipedia.org/wiki/Paul_%C3%89mile_Chabas.",
+    "t1-small-film-director-birthplace-001": "Answer also found in https://en.wikipedia.org/wiki/Dejan_%C5%A0orak.",
+    "t1-language-designer-001": "Answer also found in https://en.wikipedia.org/wiki/Rexx.",
+    "t1-file-format-developer-001": "Answer also found in https://en.wikipedia.org/wiki/Lossless_JPEG.",
+    "t1-pep-author-001": "Checked against the PEP header.",
+    "t1-kev-product-001": "Answer also found in https://www.cve.org/CVERecord?id=CVE-2025-66644.",
+    "t1-university-website-001": "Host checked: the URL is the root of the owner's own site.",
+    "t1-software-website-001": "Host checked: the URL is the root of the owner's own site.",
+    "t1-agency-website-001": "Host checked: the URL is the root of the owner's own site.",
+    "t1-museum-website-002": "Host checked: the URL is the root of the owner's own site.",
+    "t1-capital-es-002": "Answer also found in https://es.wikipedia.org/wiki/Dominica.",
+    "t1-work-author-ru-001": "Answer also found in https://ru.wikipedia.org/wiki/%D0%9F%D0%B5%D1%82%D0%B5%D1%80_%D0%9A%D0%B0%D0%BC%D0%B5%D0%BD%D1%86%D0%B8%D0%BD%D0%B4.",
+    "t1-film-director-it-001": "Answer also found in https://it.wikipedia.org/wiki/La_notte_del_piacere.",
+    "t1-nobel-work-author-birthplace-001": "Answer confirmed from the reviewer's general knowledge; the automatic second-source check did not find it.",
+    "t1-film-director-zh-001": "Answer confirmed from the reviewer's general knowledge; the automatic second-source check did not find it.",
+    "t1-building-architect-tail-001": "Answer confirmed from the reviewer's general knowledge; the automatic second-source check did not find it."
+  }
+}

@@ -141,13 +141,25 @@ export function committedProblems(): string[] {
   const out = [...manifestProblems()];
   const manifest = existsSync(MANIFEST_PATH) ? readJson<{ datasets: ManifestEntry[] }>(MANIFEST_PATH) : { datasets: [] };
   const all: Item[] = [];
+  const tuning: Item[] = [];
+  const others: Item[] = [];
   for (const entry of manifest.datasets) {
     const abs = resolve(BENCH_DIR, entry.file);
     if (!existsSync(abs)) continue;
     const items = loadItems(abs);
     out.push(...itemProblems(items, { committed: true }).map((e) => `${entry.file}: ${e}`));
     all.push(...items);
+    (entry.name === "tuning" ? tuning : others).push(...items);
   }
+  // The tuning set must share no id, query, statement or subject with any other set, so tuned settings
+  // are never scored on what they were chosen with.
+  const keysOf = (i: Item) => {
+    const st = i.source.statement?.toLowerCase();
+    return [`id:${i.id}`, `query:${normalize(i.query)}`, ...(i.source.entity ? [`subject:${i.source.entity}`] : []),
+      ...(st ? [`statement:${st}`, `subject:${st.split(/[-$]/)[0]!.toUpperCase()}`] : [])];
+  };
+  const taken = new Set(others.flatMap(keysOf));
+  for (const i of tuning) for (const k of keysOf(i)) if (taken.has(k)) out.push(`tuning item ${i.id} shares ${k} with another set`);
   // A later version of a set may carry an item forward unchanged; the same id with different content is an error.
   const ids = new Map<string, string>();
   for (const i of all) {

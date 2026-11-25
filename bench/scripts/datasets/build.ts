@@ -33,7 +33,7 @@ export interface Spec {
   idPrefix: string;
   /** Committed sets copied into this one unchanged, ahead of the new items. */
   carry?: string[];
-  /** Sets whose queries and subjects this build must not reuse (paths relative to bench/, or absolute). */
+  /** Sets whose queries and subjects this build must not reuse (paths relative to bench/, or `store:` paths in the local store). */
   exclude?: string[];
   maxPerAnswer?: number;
   /**
@@ -89,7 +89,8 @@ export function pruneAliases(answers: readonly string[]): string[] {
   return keep.slice(0, 8);
 }
 
-export const loadSet = (p: string): Item[] => loadItems(resolve(BENCH_DIR, p));
+/** A committed set (relative to bench/), or a local-store set written as `store:<path>` (for example `store:private/private-1.0.0.jsonl`). */
+export const loadSet = (p: string): Item[] => loadItems(p.startsWith("store:") ? resolve(storeDir(), p.slice(6)) : resolve(BENCH_DIR, p));
 
 async function main(): Promise<void> {
   if (process.env.BENCH_TEST) throw new Error("dataset builds fetch public sources; not in tests");
