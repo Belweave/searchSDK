@@ -32,7 +32,10 @@ export interface SourceTemplate {
 async function getJson<T>(ctx: SourceContext, url: string, init: RequestInit = {}): Promise<T> {
   for (let tries = 0; ; tries++) {
     const res = await ctx.fetch(url, { ...init, headers: { "user-agent": UA, accept: "application/json", ...(init.headers ?? {}) } });
-    if (res.ok) return (await res.json()) as T;
+    if (res.ok) {
+      // The query service can cut a response short when it times out; treat broken JSON as a retryable failure.
+      try { return JSON.parse(await res.text()) as T; } catch (e) { if (tries >= 5) throw e; await new Promise((r) => setTimeout(r, 10_000)); continue; }
+    }
     if (tries >= 5 || ![429, 500, 502, 503, 504].includes(res.status)) throw new Error(`${url} returned ${res.status}`);
     const after = Number(res.headers.get("retry-after"));
     await new Promise((r) => setTimeout(r, Number.isFinite(after) && after > 0 ? after * 1000 : 10_000 * (tries + 1)));
