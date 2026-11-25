@@ -2434,7 +2434,10 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
           "extraBlockUsd": 0.003,
           "note": "Developer overage is $3 per 1,000 credits, above the plan's $2 per 1,000."
         },
-        "note": "1 credit per 10 returned results, rounded up. Developer is $20 for 10,000 credits; overage is $3 per 1,000; larger plans cost less per credit."
+        "note": "1 credit per 10 returned results, rounded up. Developer is $20 for 10,000 credits; overage is $3 per 1,000; larger plans cost less per credit.",
+        "costOptions": {
+          "highlightsOptions": "unknown"
+        }
       },
       "rateLimits": [
         {
@@ -2705,6 +2708,10 @@ export const providers = deepFreeze<Readonly<Record<ProviderId, ProviderSpec>>>(
       {
         "pointer": "/contents/pricing/creditUsd",
         "reason": "Credit price depends on plan; the Developer list price is used."
+      },
+      {
+        "pointer": "/search/pricing/costOptions/highlightsOptions",
+        "reason": "The source schema says enabled highlights cost 1 extra credit per 10 results; the pricing page does not, so setting highlightsOptions makes a computed cost unknown."
       },
       {
         "pointer": "/contents/pricing/costOptions/sharedParams",
