@@ -8,7 +8,7 @@ description: Build searchSDK from source, set a provider key and run your first 
 `searchsdk` is not on npm yet, so `npm install searchsdk` does not work. Pack version 0.1.0 from the repository and install the tarball into an app beside the clone:
 
 ```sh
-git clone https://github.com/Belweave/searchSDK
+git clone -b v2/integration https://github.com/Belweave/searchSDK
 (cd searchSDK/sdk/typescript && npm ci && npm pack --ignore-scripts=false)
 cd your-app
 npm install ../searchSDK/sdk/typescript/searchsdk-0.1.0.tgz

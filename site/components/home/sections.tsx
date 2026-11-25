@@ -160,7 +160,7 @@ export function HomeSections() {
           <Reveal className="home-instrument" index={1}>
             <pre className="home-shell">
               <code>
-                {["git clone https://github.com/Belweave/searchSDK", "(cd searchSDK/sdk/typescript && npm ci && npm pack --ignore-scripts=false)", "cd your-app && npm install ../searchSDK/sdk/typescript/searchsdk-0.1.0.tgz"].map((l) => (
+                {["git clone -b v2/integration https://github.com/Belweave/searchSDK", "(cd searchSDK/sdk/typescript && npm ci && npm pack --ignore-scripts=false)", "cd your-app && npm install ../searchSDK/sdk/typescript/searchsdk-0.1.0.tgz"].map((l) => (
                   <span key={l} className="code-line">
                     <span className="home-prompt" aria-hidden="true">
                       ${" "}
