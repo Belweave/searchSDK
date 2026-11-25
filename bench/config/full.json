@@ -1,0 +1,15 @@
+{
+  "name": "full-2026-12",
+  "description": "First full run: Exa, Context.dev and TinyFish over the full 404-item set (public-1.0.0, private-1.0.0, fresh-2026-12), every item three times (every pass scored, pages read for every pass), both judges on every item under the owner's Morph Ultra plan with a 15% primary repeat, human check afterwards. Includes the tuned condition (METHOD §8). Firecrawl runs later on the same items with its own config once it has credits; its scores then come from a different week, which is noted beside them. Finish before 2026-12-09, when the Morph Ultra period ends; fresh-2026-12 expires 2026-12-25.",
+  "providers": ["exa", "context", "tinyfish"],
+  "datasets": ["datasets/public/public-1.0.0.jsonl", "datasets/fresh/fresh-2026-12.jsonl"],
+  "privateDatasets": ["private/private-1.0.0.jsonl"],
+  "passes": 3,
+  "profiles": ["default"],
+  "pagePasses": [1, 2, 3],
+  "judgeItems": 404,
+  "judgePricing": "covered-by-plan",
+  "capUsd": 15,
+  "tuning": "config/tuning.json",
+  "seed": 20261125
+}
