@@ -1,4 +1,4 @@
-# searchSDK Benchmarks: method 0.3.0
+# searchSDK Benchmarks: method 0.4.0
 
 Values in this document come from `config/method.json`. Changing any of them,
 the rubric or the scoring code is a new method version.
@@ -13,9 +13,11 @@ together, as users get them.
 
 Two profiles:
 
-- **default**: nothing set. This is the headline.
-- **tuned**: the best settings found by tuning (section 8), within a list-price
-  cap per call. Published beside the headline with its exact settings.
+- **default**: nothing set. This is the headline, and the only profile ranked.
+- **tuned**: each provider's setting chosen by tuning (section 8) on a
+  separate split, within the same cost cap per call for everyone. It is scored
+  in the same run on a seeded subset of the items and published beside the
+  headline with its exact settings and evidence. It never sets rank.
 
 ## 2. Items
 
@@ -95,6 +97,11 @@ The seed set holds 86 public and 10 fresh items. To reach the monthly 400:
   over the passes, and an item counts only when every pass scored it. The
   page check covers every pass or none. The first run uses three passes;
   monthly runs use one.
+- **Tuned condition.** When a run includes it (section 8), the tuned profile
+  runs on 32 items drawn by seed from the run's items, on pass 1, the same
+  items for every provider. Its calls are dispatched with the default calls
+  for the same item, in the same seeded provider order and under the same
+  pacing, page check and scoring.
 - **Where.** Runs are started by hand, never by CI, on the owner's machine
   or a VM. `BENCH_REGION` is recorded.
 
@@ -256,16 +263,130 @@ Cost and latency are columns. They never affect rank.
 
 ## 8. Tuning
 
-`bench tune` runs a seeded sample of 30 public items. It runs each provider's
-default and every candidate in `config/tuning.json`. Candidates use only
-documented options. A candidate runs only if the SDK can bound its cost per
-call (`costBound`) and the bound is at most $0.02. For each provider, the candidate with the best
-known-answer score wins. A tie goes to the cheaper option, then to default.
-Unreliable candidates cannot win.
+The headline is every provider with SDK defaults. The second column is each
+provider's best setting within a price cap, found by the same procedure for
+everyone. It is informational: it never sets rank and never replaces the
+headline. The rule's values are `tuning` in `config/method.json`; the search
+spaces are in `config/tuning.json`.
 
-The monthly run adds the `tuned` profile from the selection file. It scores
-that profile without the 30 tuning items, so the choice is not graded on the
-items it was chosen with. Tuning spend goes through the same ledger and caps.
+### The tuning split
+
+Settings are chosen on a split of their own, never on scored items.
+`split.datasets` (committed files) and `split.storeDatasets` (files in the
+local store) name it. It is built by the same Wikidata builders as the public
+set, under its own spec and seed. The method draws 16 items from it by seed
+(`split.seed`), proportionally within classes.
+
+Before tuning, and again when a run takes a selection, every item in the
+split files is compared with every item the run could score: all of its
+public, private and fresh files, before any limit is applied. Two items
+overlap when they share an item id, a normalized query, a Wikidata statement
+or a Wikidata subject (the same subject asked in another language or through
+another property still leaks it). Any overlap stops the command. The
+selection keeps the split's keys (ids, query hashes, statements, subjects),
+so the run that uses it checks against its own items.
+
+### Search spaces
+
+Every provider has exactly 2 candidates besides its default, picked by one
+rule from options its registry spec documents, in this order:
+
+1. `depth` values the spec maps, other than the default;
+2. the provider's own options that change ranking or the excerpt text the
+   scorer reads;
+3. a region hint, `country: "US"` (with the provider's paired `location`
+   option where its docs ask for both).
+
+The first two in that order are the candidates. Left out for every provider:
+domain, date and recency filters and the result-language filter (each removes
+answers some class needs), the result count (fixed at 10 by the method),
+safety filters, pagination, and any option whose price the registry does not
+model. Every other documented option is listed in `config/tuning.json` with
+the reason it is not a candidate. `tune` refuses a space with an option the
+spec does not document, a value outside the option's schema, an empty
+candidate (that is the default), a duplicate, more or fewer than 2
+candidates, or a documented option that is neither a candidate nor excluded
+with a reason.
+
+| Provider | Candidate 1 | Candidate 2 | Cost bound per call |
+| --- | --- | --- | --- |
+| Exa | `depth: fast` (`type: lite`) | `depth: deep` | $0.004, $0.015 |
+| Context.dev | `descriptionMaxCharacters: 2000` | `country: US` | $0.003, $0.003 |
+| Firecrawl | `highlights: false` (default true) | `country: US`, `location: United States` | $0.01, $0.01 |
+| TinyFish | `purpose`: "Find a web page that states the factual answer to this question." | `country: US` | $0, $0 |
+| Brave | `extra_snippets: true` | `country: US` | (pilot only) |
+| Perplexity | `depth: fast` | `country: US` | (pilot only) |
+| Tavily | `depth: fast` | `depth: deep` | (pilot only) |
+
+### Price cap
+
+The same cap for everyone: the SDK's cost bound for the call (`costBound`,
+section 10) must be at most $0.02. A candidate without a bound, or above the
+cap, is excluded before any call and listed with the reason. The bound of the
+chosen setting is published next to the cap.
+
+### Equal budget
+
+Every provider runs its default and its 2 candidates on the same 16 split
+items, once each: 48 calls, in the same seeded order, under the same pacing,
+deadline, result count and page check as the headline. Judges are off for
+tuning: selection uses known-answer scores only, which costs nothing beyond
+the searches.
+
+### Selection
+
+For each provider, on the split:
+
+- A candidate is eligible only when it was scored on every split item (as was
+  the default) and its usable-response rate is not confidently below 0.95.
+- It replaces the default only when it is clearly better: a known-answer gain
+  of at least 6 points, and a 95% paired-bootstrap interval of the gain
+  (2,000 replicates, the method's seed) above zero. With 16 items that means
+  about four more items answered, net.
+- Among clear winners the higher score wins; an exact tie goes to the lower
+  cost bound, then to the order in the space. Otherwise the default stays.
+
+Cost never enters a score: a cheaper candidate that only matches the default
+does not replace it. A small split can only detect large gains; a kept
+default is the safe outcome and costs nothing more in the main run.
+
+### The tuned condition
+
+A run config with `"tuning": "config/tuning.json"` includes it. The run then
+needs `--tuned <selection.json>` from `bench tune`, or `--no-tuned` for the
+headline alone; with neither it refuses. The plan, before any selection,
+shows each provider's dearest candidate as the worst case.
+
+In the run, the `tuned` profile scores each provider's chosen setting on 32
+items drawn by seed (proportionally within classes) from the run's items, on
+pass 1, the same items for every provider. It is dispatched, paced, page
+checked and scored like the default (section 3). A provider whose selection
+kept its default sends no extra calls: its tuned score comes from its default
+calls on those items and that pass.
+
+Published per provider (`results.json`, `tuning`): the headline default
+score; the tuned score; the default's score on the same 32 items and pass,
+with the paired gain and its interval; the exact settings; the cost bound per
+call against the cap; and the evidence: every configuration tried, its score
+on the split with an interval, its gain over the default with an interval,
+its usable rate and why it was or was not eligible, plus any candidate
+rejected before a call. The leaderboard shows the tuned score beside the
+headline, with the same-items default.
+
+### Why 32 items on one pass
+
+Running the tuned condition like the headline (every item, three passes)
+would add 288 calls per provider, and Firecrawl 576 credits: more than the
+roughly 219 its 800-credit limit leaves after the headline and the smoke
+check. Every item on one pass (96 calls, 192 Firecrawl credits) would leave
+nothing for tuning. A seeded subset of 32 items on pass 1, for every provider,
+costs Firecrawl 64 credits, and the comparison stays like for like: the tuned
+setting against the default's own pass 1 on the same items. Items differ more
+from one another than one pass differs from the next, so for the same calls
+more items on one pass give a tighter interval than fewer items on three.
+
+Tuning spend goes through the same ledger, caps and provider limits as any
+run (section 10).
 
 ## 9. Statistics and ranking
 
@@ -338,6 +459,10 @@ usable-response floor.
   provider stops; the other providers finish the run. Its missing items then
   drop out of the paired comparison for everyone (section 9), so a limit is
   set with room for the whole run, never to give one provider fewer passes.
+- **Tuning.** `bench tune` counts in the same ledger and limits. It refuses
+  to start when what a limited provider has used, plus tuning, plus the main
+  run with its tuned condition at the worst case, would pass that provider's
+  limit, so tuning can never take a provider's main-run calls.
 
 ## 11. Outputs
 
@@ -367,7 +492,10 @@ as provider measurements.
 
 ## 12. Versions
 
-- **Method:** semver in `config/method.json`. 0.3.0 scores every pass,
+- **Method:** semver in `config/method.json`. 0.4.0 adds the tuned column:
+  a disjoint tuning split, equal search spaces and selection rule, and the
+  tuned condition on a seeded subset in the main run; only the default
+  profile is ranked. 0.3.0 scores every pass,
   judges unreadable pages per provider, titles read pages from the harness,
   and resolves page hosts before fetching. Major means scores are not
   comparable across versions; minor adds metrics, classes or providers;
@@ -411,6 +539,17 @@ Controlled:
 - **Several samples.** Each item is scored as the mean over its passes, and
   pass-to-pass change is published, so one noisy reply does not decide an
   item.
+- **Tuning never sees scored items** (`test/tuning.test.ts`). The split is
+  checked against every scored item by id, query, Wikidata statement and
+  subject; any overlap stops tuning and any run that takes the selection.
+- **Same tuning budget and rule** (`test/tuning.test.ts`). Every provider gets
+  exactly 2 documented candidates under one cost cap, the same 16 items and
+  one pass; the same selection rule; the same 32-item subset and pass for
+  the tuned condition. The plan prints each provider's tuning calls and
+  credits.
+- **The tuned column never ranks** (`test/tuning.test.ts`). Only the default
+  is ranked; the tuned score is shown beside it with the default on the
+  same items, and cost only breaks an exact tie between clear winners.
 
 Residual biases, not removed:
 
@@ -433,6 +572,13 @@ Residual biases, not removed:
   by human labels and agreement (section 6). Judged scores never set rank.
 - **Location.** One region per run (`BENCH_REGION`); providers that localize
   results may do better or worse elsewhere.
+- **Search spaces.** The order of the rule is fixed, but whether a provider's
+  option changes ranking or excerpt text is a reading of its docs. A
+  provider with more useful documented options has more chances to gain.
+  Every option left out is published with its reason.
+- **Small tuning split.** 16 items detect only large gains; a smaller real
+  gain is missed and the default is kept. The tuned score itself (32 items,
+  one pass) has wider intervals than the headline.
 
 ## 14. Known limits
 
