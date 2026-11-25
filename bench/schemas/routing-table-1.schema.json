@@ -112,6 +112,10 @@
                   "deep"
                 ]
               },
+              "country": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
               "providerOptions": {
                 "type": "object"
               }

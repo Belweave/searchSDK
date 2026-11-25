@@ -10,7 +10,7 @@ import { execFileSync } from "node:child_process";
 import { itemHash, MANIFEST_PATH, PRIVATE_MANIFEST_PATH, type Item } from "../dataset/items.ts";
 import type { JudgeInfo } from "../judge/judge.ts";
 import type { Method, RunConfig, Settings } from "../run/config.ts";
-import { settingsFor } from "../run/plan.ts";
+import { scopeOf, settingsFor } from "../run/plan.ts";
 import { runPaths, type AttemptRecord } from "../run/records.ts";
 import type { ProviderSpec } from "../sdk.ts";
 import type { Scores } from "../score/score.ts";
@@ -39,7 +39,6 @@ interface Ctx {
   finishedAt: string;
 }
 
-const ref = (i: Item) => (i.split === "private" ? `sha256:${itemHash(i)}` : i.id);
 
 function gitSha(): string | null {
   try {
@@ -50,6 +49,48 @@ function gitSha(): string | null {
 }
 
 const interval = (x: { mean: number; lo: number; hi: number }) => ({ mean: round(x.mean), ci95: [round(x.lo), round(x.hi)] as [number, number] });
+const maybe = (x: { mean: number; lo: number; hi: number } | null | undefined) => (x && Number.isFinite(x.mean) ? interval(x) : null);
+
+/**
+ * The tuned column's record (METHOD §8): per provider, the headline default, the tuned score on its
+ * subset beside the default on the same items and passes, the exact settings, the cost bound per
+ * call against the cap, and the tuning evidence. Null when the run has no tuned condition.
+ */
+function tuningBlock(c: Ctx, providers: { provider: string; profile: string; n: number; knownAnswer: { mean: number; ci95: [number, number] } }[]) {
+  const src = c.config.tuned;
+  if (!src || src.status !== "selected" || !c.config.profiles.includes("tuned")) return null;
+  const sel = src.selection;
+  const scope = scopeOf(c.config, "tuned", c.items);
+  return {
+    status: "selected" as const,
+    selection: { runId: sel.runId, mode: sel.mode, createdAt: sel.createdAt, sha256: src.selectionSha256, tuningConfigSha256: sel.tuningConfigSha256 },
+    rule: sel.rule,
+    split: { files: sel.split.files, seed: sel.split.seed, n: sel.split.n, itemsSha256: sel.split.itemsSha256, disjointFromScored: true },
+    condition: { items: scope.items.map(ref), passes: scope.passes },
+    providers: c.config.providers.map((p) => {
+      const pick = sel.providers[p]!;
+      const def = providers.find((x) => x.provider === p && x.profile === "default");
+      const tuned = c.scores.profiles.find((x) => x.provider === p && x.profile === "tuned");
+      return {
+        provider: p, chosen: pick.chosen, settings: pick.settings, reason: pick.reason,
+        costBoundUsd: pick.boundUsd, capUsd: sel.rule.maxCostPerCallUsd,
+        default: def ? { ...def.knownAnswer, n: def.n } : null,
+        tuned: tuned && Number.isFinite(tuned.knownAnswer.mean) ? { ...interval(tuned.knownAnswer), n: tuned.n } : null,
+        sameItemsDefault: tuned?.vsDefault ? { ...interval(tuned.vsDefault.default), n: tuned.vsDefault.n } : null,
+        gain: maybe(tuned?.vsDefault?.diff),
+        evidence: pick.evidence.map((e) => ({
+          profile: e.profile, settings: e.settings, costBoundUsd: e.boundUsd, n: e.n, knownAnswer: maybe(e.knownAnswer), gain: maybe(e.gain),
+          usableRate: round(e.usableRate), eligible: e.eligible, reason: e.reason,
+        })),
+        rejected: pick.rejected.map((x) => ({ settings: x.settings, reason: x.reason })),
+      };
+    }),
+  };
+}
+
+function ref(i: Item): string {
+  return i.split === "private" ? `sha256:${itemHash(i)}` : i.id;
+}
 
 export function buildOutputs(c: Ctx) {
   const { scores, method, config } = c;
@@ -116,6 +157,7 @@ export function buildOutputs(c: Ctx) {
     ranking: { rule: RANK_RULE, floor: method.reliability.floor, minSeparation: method.stats.minSeparation, pairedItems: scores.pairedN, droppedItems: scores.droppedItems },
     pages: scores.pages,
     providers,
+    tuning: tuningBlock(c, providers),
     items: c.items.map((i) => ({ ref: ref(i), class: i.class, split: i.split })),
   };
 
@@ -147,11 +189,13 @@ export function buildOutputs(c: Ctx) {
     rule: "Quality first, then reliability; tied when not statistically separable. Cost and latency are shown, never ranked.",
     providers: profile("default").filter((p) => p.rank).sort((a, b) => a.rank!.position - b.rank!.position).map((p) => {
       const tuned = providers.find((t) => t.provider === p.provider && t.profile === "tuned");
+      const tb = results.tuning?.providers.find((t) => t.provider === p.provider);
       return {
         id: p.provider, name: p.name, group: p.rank!.group, tied: p.rank!.tied, reliable: p.rank!.reliable,
         knownAnswer: p.knownAnswer, judged: p.judged ? { mean: p.judged.mean, ci95: p.judged.ci95 } : null,
         usableRate: p.reliability.usableRate, latencyP50Ms: p.latencyMs.p50, costPerQueryUsd: p.cost.perQueryUsd, costKnown: p.cost.known,
-        tuned: tuned ? { knownAnswer: tuned.knownAnswer, settings: tuned.settings } : null,
+        // Informational, beside the headline: never the rank. Compared with the default on the same items and passes.
+        tuned: tuned && tb ? { knownAnswer: tuned.knownAnswer, n: tuned.n, settings: tb.settings, sameItemsDefault: tb.sameItemsDefault, costBoundUsd: tb.costBoundUsd } : null,
       };
     }),
     notRanked: profile("default").filter((p) => !p.rank).map((p) => ({ id: p.provider, reason: p.status })),

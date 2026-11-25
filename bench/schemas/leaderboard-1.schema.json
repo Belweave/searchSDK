@@ -147,14 +147,21 @@
               },
               {
                 "type": "object",
+                "additionalProperties": false,
                 "required": [
                   "knownAnswer",
-                  "settings"
+                  "n",
+                  "settings",
+                  "sameItemsDefault",
+                  "costBoundUsd"
                 ],
-                "additionalProperties": false,
+                "$comment": "Informational: the selected setting on the tuned condition's items, beside the default on the same items and passes. Never the rank.",
                 "properties": {
                   "knownAnswer": {
                     "$ref": "#/$defs/interval"
+                  },
+                  "n": {
+                    "type": "integer"
                   },
                   "settings": {
                     "type": "object",
@@ -167,10 +174,52 @@
                           "deep"
                         ]
                       },
+                      "country": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}$"
+                      },
                       "providerOptions": {
                         "type": "object"
                       }
                     }
+                  },
+                  "sameItemsDefault": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "mean",
+                          "ci95",
+                          "n"
+                        ],
+                        "properties": {
+                          "mean": {
+                            "type": "number"
+                          },
+                          "ci95": {
+                            "type": "array",
+                            "minItems": 2,
+                            "maxItems": 2,
+                            "items": {
+                              "type": "number"
+                            }
+                          },
+                          "n": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "costBoundUsd": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
                   }
                 }
               }

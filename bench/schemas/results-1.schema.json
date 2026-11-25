@@ -24,6 +24,7 @@
     "ranking",
     "pages",
     "providers",
+    "tuning",
     "items"
   ],
   "$defs": {
@@ -45,6 +46,51 @@
           "items": {
             "type": "number"
           }
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "depth": {
+          "enum": [
+            "fast",
+            "standard",
+            "deep"
+          ]
+        },
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "providerOptions": {
+          "type": "object"
+        }
+      }
+    },
+    "intervalN": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mean",
+        "ci95",
+        "n"
+      ],
+      "properties": {
+        "mean": {
+          "type": "number"
+        },
+        "ci95": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number"
+          }
+        },
+        "n": {
+          "type": "integer"
         }
       }
     }
@@ -437,20 +483,7 @@
             "type": "string"
           },
           "settings": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "depth": {
-                "enum": [
-                  "fast",
-                  "standard",
-                  "deep"
-                ]
-              },
-              "providerOptions": {
-                "type": "object"
-              }
-            }
+            "$ref": "#/$defs/settings"
           },
           "status": {
             "enum": [
@@ -801,6 +834,329 @@
           }
         }
       }
+    },
+    "tuning": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "selection",
+            "rule",
+            "split",
+            "condition",
+            "providers"
+          ],
+          "$comment": "The tuned column (METHOD §8): informational, beside the default headline; never the rank.",
+          "properties": {
+            "status": {
+              "const": "selected"
+            },
+            "selection": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "runId",
+                "mode",
+                "createdAt",
+                "sha256",
+                "tuningConfigSha256"
+              ],
+              "properties": {
+                "runId": {
+                  "type": "string"
+                },
+                "mode": {
+                  "enum": [
+                    "live",
+                    "fixture"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "sha256": {
+                  "type": "string"
+                },
+                "tuningConfigSha256": {
+                  "type": "string"
+                }
+              }
+            },
+            "rule": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "splitItems",
+                "passes",
+                "maxCandidates",
+                "maxCostPerCallUsd",
+                "minGain",
+                "requireSeparation",
+                "judged",
+                "conditionItems",
+                "conditionPasses"
+              ],
+              "properties": {
+                "splitItems": {
+                  "type": "integer"
+                },
+                "passes": {
+                  "type": "integer"
+                },
+                "maxCandidates": {
+                  "type": "integer"
+                },
+                "maxCostPerCallUsd": {
+                  "type": "number"
+                },
+                "minGain": {
+                  "type": "number"
+                },
+                "requireSeparation": {
+                  "type": "boolean"
+                },
+                "judged": {
+                  "const": false
+                },
+                "conditionItems": {
+                  "type": "integer"
+                },
+                "conditionPasses": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "split": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "files",
+                "seed",
+                "n",
+                "itemsSha256",
+                "disjointFromScored"
+              ],
+              "properties": {
+                "files": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "seed": {
+                  "type": "integer"
+                },
+                "n": {
+                  "type": "integer"
+                },
+                "itemsSha256": {
+                  "type": "string"
+                },
+                "disjointFromScored": {
+                  "const": true
+                }
+              }
+            },
+            "condition": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "items",
+                "passes"
+              ],
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "passes": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "providers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "provider",
+                  "chosen",
+                  "settings",
+                  "reason",
+                  "costBoundUsd",
+                  "capUsd",
+                  "default",
+                  "tuned",
+                  "sameItemsDefault",
+                  "gain",
+                  "evidence",
+                  "rejected"
+                ],
+                "properties": {
+                  "provider": {
+                    "type": "string"
+                  },
+                  "chosen": {
+                    "type": "string"
+                  },
+                  "settings": {
+                    "$ref": "#/$defs/settings"
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "costBoundUsd": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "capUsd": {
+                    "type": "number"
+                  },
+                  "default": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$ref": "#/$defs/intervalN"
+                      }
+                    ]
+                  },
+                  "tuned": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$ref": "#/$defs/intervalN"
+                      }
+                    ]
+                  },
+                  "sameItemsDefault": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$ref": "#/$defs/intervalN"
+                      }
+                    ]
+                  },
+                  "gain": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$ref": "#/$defs/interval"
+                      }
+                    ]
+                  },
+                  "evidence": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "profile",
+                        "settings",
+                        "costBoundUsd",
+                        "n",
+                        "knownAnswer",
+                        "gain",
+                        "usableRate",
+                        "eligible",
+                        "reason"
+                      ],
+                      "properties": {
+                        "profile": {
+                          "type": "string"
+                        },
+                        "settings": {
+                          "$ref": "#/$defs/settings"
+                        },
+                        "costBoundUsd": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "n": {
+                          "type": "integer"
+                        },
+                        "knownAnswer": {
+                          "anyOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "$ref": "#/$defs/interval"
+                            }
+                          ]
+                        },
+                        "gain": {
+                          "anyOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "$ref": "#/$defs/interval"
+                            }
+                          ]
+                        },
+                        "usableRate": {
+                          "type": "number"
+                        },
+                        "eligible": {
+                          "type": "boolean"
+                        },
+                        "reason": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "rejected": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "settings",
+                        "reason"
+                      ],
+                      "properties": {
+                        "settings": {
+                          "$ref": "#/$defs/settings"
+                        },
+                        "reason": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
