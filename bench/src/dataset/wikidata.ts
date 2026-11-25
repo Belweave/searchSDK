@@ -27,10 +27,10 @@ export interface Template {
   expiresInDays?: number;
 }
 
-const label = (lang: string) => `SERVICE wikibase:label { bd:serviceParam wikibase:language "${lang}". }`;
-const alts = (v: string, lang: string) => `OPTIONAL { ?${v} skos:altLabel ?alt . FILTER(LANG(?alt) = "${lang}") }`;
-const group = "GROUP BY ?s ?sLabel ?o ?oLabel ?st ?sl ?year ?extra";
-const head = `SELECT ?s ?sLabel ?o ?oLabel ?st ?sl ?year ?extra (GROUP_CONCAT(DISTINCT ?alt; separator="|") AS ?alts) WHERE {`;
+export const label = (lang: string) => `SERVICE wikibase:label { bd:serviceParam wikibase:language "${lang}". }`;
+export const alts = (v: string, lang: string) => `OPTIONAL { ?${v} skos:altLabel ?alt . FILTER(LANG(?alt) = "${lang}") }`;
+export const group = "GROUP BY ?s ?sLabel ?o ?oLabel ?st ?sl ?year ?extra";
+export const head = `SELECT ?s ?sLabel ?o ?oLabel ?st ?sl ?year ?extra (GROUP_CONCAT(DISTINCT ?alt; separator="|") AS ?alts) WHERE {`;
 
 function capital(id: string, cls: QueryClass, lang: string, minSl: number, maxSl: number, ask: (country: string) => string): Template {
   return {
@@ -150,7 +150,7 @@ function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function aliasesFor(labelText: string, altText: string | undefined): string[] {
+export function aliasesFor(labelText: string, altText: string | undefined): string[] {
   const out = [labelText];
   for (const a of (altText ?? "").split("|")) {
     const t = a.trim();
@@ -250,6 +250,10 @@ export interface BuildOptions {
   idPrefix: string;
   /** Normalized queries already used elsewhere, so sets never overlap. */
   exclude?: Set<string>;
+  /** Subjects already used elsewhere, as `entity:property` (for example `Q42:P50`), so sets never share a subject. */
+  excludeEntities?: Set<string>;
+  /** Templates to draw from; defaults to TEMPLATES. */
+  catalog?: readonly Template[];
   log?: (line: string) => void;
 }
 
@@ -257,9 +261,9 @@ export interface BuildOptions {
 export async function buildFromWikidata(o: BuildOptions): Promise<Item[]> {
   const items: Item[] = [];
   const used = new Set(o.exclude ?? []);
-  const entities = new Set<string>();
+  const entities = new Set<string>(o.excludeEntities ?? []);
   for (const want of o.templates) {
-    const t = TEMPLATES.find((x) => x.id === want.id);
+    const t = (o.catalog ?? TEMPLATES).find((x) => x.id === want.id);
     if (!t) throw new Error(`unknown template ${want.id}`);
     let res: Response | null = null;
     for (let tries = 0; tries < 4; tries++) {

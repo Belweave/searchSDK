@@ -15,6 +15,38 @@
       }
     },
     {
+      "name": "fresh",
+      "version": "2026-12",
+      "file": "datasets/fresh/fresh-2026-12.jsonl",
+      "sha256": "10eff9f541c8306a2c88a7e550b1d94479e5a59e9a419d156364be79e84cd8f1",
+      "count": 50,
+      "classes": {
+        "fresh": 50
+      },
+      "licences": {
+        "MIT": 15,
+        "CC0-1.0": 35
+      }
+    },
+    {
+      "name": "public",
+      "version": "1.0.0",
+      "file": "datasets/public/public-1.0.0.jsonl",
+      "sha256": "96361379f72435be9932fef7d06c9f1e73ee9336b29c8c8a440ead72d1e8b447",
+      "count": 252,
+      "classes": {
+        "fact.head": 42,
+        "fact.tail": 42,
+        "multihop": 42,
+        "tech": 42,
+        "nav": 42,
+        "nonen": 42
+      },
+      "licences": {
+        "CC0-1.0": 252
+      }
+    },
+    {
       "name": "seed",
       "version": "0.1.0",
       "file": "datasets/public/seed-0.1.0.jsonl",
@@ -30,6 +62,24 @@
       },
       "licences": {
         "CC0-1.0": 86
+      }
+    },
+    {
+      "name": "tuning",
+      "version": "0.1.0",
+      "file": "datasets/public/tuning-0.1.0.jsonl",
+      "sha256": "5757ca3c4461c6f2d49ebaaf2ae0794741a6b31882fd05c31bc6abff36e1ea81",
+      "count": 24,
+      "classes": {
+        "fact.head": 4,
+        "fact.tail": 4,
+        "multihop": 4,
+        "tech": 4,
+        "nav": 4,
+        "nonen": 4
+      },
+      "licences": {
+        "CC0-1.0": 24
       }
     }
   ]

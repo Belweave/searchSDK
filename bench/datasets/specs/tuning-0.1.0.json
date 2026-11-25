@@ -1,0 +1,25 @@
+{
+  "name": "tuning",
+  "version": "0.1.0",
+  "split": "public",
+  "seed": 20261126,
+  "builtOn": "2026-11-25",
+  "idPrefix": "t1",
+  "exclude": [
+    "datasets/public/seed-0.1.0.jsonl",
+    "datasets/public/public-1.0.0.jsonl",
+    "datasets/fresh/fresh-2026-11.jsonl",
+    "datasets/fresh/fresh-2026-12.jsonl",
+    "store:private/private-1.0.0.jsonl"
+  ],
+  "maxPerAnswer": 1,
+  "uniqueHolders": true,
+  "templates": [
+    { "id": "capital-en-head", "count": 2 }, { "id": "nobel-work-author", "count": 2 }, { "id": "painting-artist-head", "count": 2 }, { "id": "company-headquarters", "count": 2 },
+    { "id": "small-language-work-author", "count": 2 }, { "id": "small-industry-film-director", "count": 2 }, { "id": "painting-artist-tail", "count": 2 }, { "id": "building-architect-tail", "count": 2 },
+    { "id": "nobel-work-author-birthplace", "count": 2 }, { "id": "painting-artist-birthplace", "count": 2 }, { "id": "small-film-director-birthplace", "count": 2 }, { "id": "building-architect-birthplace", "count": 2 },
+    { "id": "language-designer", "count": 2 }, { "id": "file-format-developer", "count": 2 }, { "id": "pep-author", "count": 2 }, { "id": "kev-product", "count": 2 },
+    { "id": "university-website", "count": 2 }, { "id": "software-website", "count": 2 }, { "id": "agency-website", "count": 2 }, { "id": "museum-website", "count": 2 },
+    { "id": "capital-es", "count": 2 }, { "id": "work-author-ru", "count": 2 }, { "id": "film-director-it", "count": 2 }, { "id": "film-director-zh", "count": 2 }
+  ]
+}

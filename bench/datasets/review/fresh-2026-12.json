@@ -1,0 +1,94 @@
+{
+  "for": "fresh-2026-12",
+  "reviewedOn": "2026-11-25",
+  "status": "agent-reviewed",
+  "note": "Reviewed by an AI agent (the harness author) against the cited source; awaiting the owner's spot check.",
+  "take": {
+    "eol-release": 15,
+    "kev-recent": 11,
+    "arxiv-first-author": 12,
+    "software-version-asof": 12
+  },
+  "drop": {
+    "2612-software-version-asof-013": "26.11.80 is a KDE beta number (x.y.80), not a stable release"
+  },
+  "answers": {
+    "2612-kev-recent-002": [
+      "SiteGuard Server Edition",
+      "SiteGuard"
+    ],
+    "2612-kev-recent-003": [
+      "REDCap",
+      "Research Electronic Data Capture"
+    ],
+    "2612-kev-recent-004": [
+      "GitLab"
+    ],
+    "2612-kev-recent-007": [
+      "VMware vCenter",
+      "vCenter Server"
+    ],
+    "2612-kev-recent-009": [
+      "Adobe Commerce",
+      "Magento"
+    ],
+    "2612-kev-recent-011": [
+      "Drupal core",
+      "Drupal"
+    ]
+  },
+  "unchecked": [
+    "2612-eol-release-009",
+    "2612-kev-recent-011",
+    "2612-software-version-asof-001",
+    "2612-software-version-asof-002",
+    "2612-software-version-asof-003",
+    "2612-software-version-asof-004",
+    "2612-software-version-asof-005",
+    "2612-software-version-asof-006",
+    "2612-software-version-asof-007",
+    "2612-software-version-asof-008",
+    "2612-software-version-asof-009",
+    "2612-software-version-asof-010",
+    "2612-software-version-asof-011",
+    "2612-software-version-asof-012"
+  ],
+  "notes": {
+    "2612-eol-release-001": "Version also found on the release page https://github.com/goharbor/harbor/releases/tag/v2.15.5.",
+    "2612-eol-release-002": "Version also found on the release page https://github.com/DependencyTrack/dependency-track/releases/tag/5.2.2.",
+    "2612-eol-release-003": "Version also found on the release page https://github.com/contao/contao/blob/6.0.6/CHANGELOG.md.",
+    "2612-eol-release-004": "Version also found on the release page https://docs.saltproject.io/en/3006/topics/releases/3006.30.html.",
+    "2612-eol-release-005": "Version also found on the release page https://github.com/jenkinsci/jenkins/releases/tag/jenkins-2.592.",
+    "2612-eol-release-006": "Version also found on the release page https://github.com/fluent/fluent-bit/releases/tag/v5.1.5.",
+    "2612-eol-release-007": "Version also found on the release page https://github.com/hashicorp/vault/releases/tag/v2.2.2.",
+    "2612-eol-release-008": "Version also found on the release page https://releases.discourse.org/changelog/v2026.10.3.",
+    "2612-eol-release-010": "Version also found on the release page https://mariadb.com/docs/release-notes/community-server/changelogs/13.1/13.1.2.",
+    "2612-eol-release-011": "Version also found on the release page https://www.wireshark.org/docs/relnotes/wireshark-4.4.20.html.",
+    "2612-eol-release-012": "Version also found on the release page https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/10/html/10.3_release_notes/index.",
+    "2612-eol-release-013": "Version also found on the release page https://metallb.io/release-notes/#version-0162.",
+    "2612-eol-release-014": "Version also found on the release page https://github.com/gravitational/teleport/releases/tag/v18.11.10.",
+    "2612-eol-release-015": "Version also found on the release page https://github.com/micronaut-projects/micronaut-core/releases/tag/v5.2.26.",
+    "2612-kev-recent-001": "Product checked against the KEV entry and https://www.cve.org/CVERecord?id=CVE-2026-96652.",
+    "2612-kev-recent-002": "Answer set rewritten to the product's usual name; checked against the KEV entry and https://www.cve.org/CVERecord?id=CVE-2026-106931.",
+    "2612-kev-recent-003": "Product checked against the KEV entry and https://www.cve.org/CVERecord?id=CVE-2026-90817.",
+    "2612-kev-recent-004": "Answer set rewritten to the product's usual name; checked against the KEV entry and https://www.cve.org/CVERecord?id=CVE-2026-97229.",
+    "2612-kev-recent-005": "Product checked against the KEV entry and https://www.cve.org/CVERecord?id=CVE-2026-116779.",
+    "2612-kev-recent-006": "Product checked against the KEV entry and https://www.cve.org/CVERecord?id=CVE-2026-104935.",
+    "2612-kev-recent-007": "Answer set rewritten to the product's usual name; checked against the KEV entry and https://www.cve.org/CVERecord?id=CVE-2026-123890.",
+    "2612-kev-recent-008": "Product checked against the KEV entry and https://www.cve.org/CVERecord?id=CVE-2026-0322.",
+    "2612-kev-recent-009": "Answer set rewritten to the product's usual name; checked against the KEV entry and https://www.cve.org/CVERecord?id=CVE-2026-48356.",
+    "2612-kev-recent-010": "Product checked against the KEV entry and https://www.cve.org/CVERecord?id=CVE-2026-102764.",
+    "2612-arxiv-first-author-001": "First author checked on the paper's arXiv abstract page.",
+    "2612-arxiv-first-author-002": "First author checked on the paper's arXiv abstract page.",
+    "2612-arxiv-first-author-003": "First author checked on the paper's arXiv abstract page.",
+    "2612-arxiv-first-author-004": "First author checked on the paper's arXiv abstract page.",
+    "2612-arxiv-first-author-005": "First author checked on the paper's arXiv abstract page.",
+    "2612-arxiv-first-author-006": "First author checked on the paper's arXiv abstract page.",
+    "2612-arxiv-first-author-007": "First author checked on the paper's arXiv abstract page.",
+    "2612-arxiv-first-author-008": "First author checked on the paper's arXiv abstract page.",
+    "2612-arxiv-first-author-009": "First author checked on the paper's arXiv abstract page.",
+    "2612-arxiv-first-author-010": "First author checked on the paper's arXiv abstract page.",
+    "2612-arxiv-first-author-011": "First author checked on the paper's arXiv abstract page.",
+    "2612-arxiv-first-author-012": "First author checked on the paper's arXiv abstract page."
+  }
+}

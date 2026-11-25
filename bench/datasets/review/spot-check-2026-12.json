@@ -1,0 +1,660 @@
+{
+  "note": "Seeded 10% sample per split, round-robin across classes, and across templates within a class. Set ownerCheck to ok, wrong or ambiguous after checking each answer against its source.",
+  "seed": 20261125,
+  "drawnOn": "2026-11-25",
+  "splits": {
+    "public": {
+      "file": "datasets/public/public-1.0.0.jsonl",
+      "of": 252,
+      "items": [
+        {
+          "id": "pub-nobel-work-author-004",
+          "class": "fact.head",
+          "lang": "en",
+          "query": "Who wrote The Wardrobe (1899)?",
+          "answers": [
+            "Thomas Mann"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q1121205#P50",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-painting-artist-tail-002",
+          "class": "fact.tail",
+          "lang": "en",
+          "query": "Who painted Contrapunctus (1960)?",
+          "answers": [
+            "Sam Vanni",
+            "Samuel Vanni"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q11855505#P170",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-nobel-work-author-birthplace-002",
+          "class": "multihop",
+          "lang": "en",
+          "query": "Where was the author of The Master of Hestviken (1925) born?",
+          "answers": [
+            "Kalundborg"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q7750617#P50",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-university-website-012",
+          "class": "nav",
+          "lang": "en",
+          "query": "Official website of University of Amsterdam",
+          "answers": [],
+          "answerPatterns": [],
+          "answerUrls": [
+            "https://www.uva.nl/"
+          ],
+          "source": "https://www.wikidata.org/wiki/Q214341#P856",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-film-director-zh-003",
+          "class": "nonen",
+          "lang": "zh",
+          "query": "电影《坎特伯雷故事集》（1972年）的导演是谁？",
+          "answers": [
+            "皮埃尔·保罗·帕索里尼"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q858047#P57",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-software-developer-002",
+          "class": "tech",
+          "lang": "en",
+          "query": "Which organization or person develops the software Bada?",
+          "answers": [
+            "Samsung"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q242157#P178",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-capital-en-head-004",
+          "class": "fact.head",
+          "lang": "en",
+          "query": "What is the capital city of Saint Lucia?",
+          "answers": [
+            "Castries"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q760#P36",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-small-industry-film-director-003",
+          "class": "fact.tail",
+          "lang": "en",
+          "query": "Who directed the film Pororoca (2017)?",
+          "answers": [
+            "Constantin Popescu"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q44871737#P57",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-best-picture-director-birthplace-004",
+          "class": "multihop",
+          "lang": "en",
+          "query": "In which city was the director of the film All Quiet on the Western Front (1930) born?",
+          "answers": [
+            "Chișinău",
+            "Kischinew",
+            "Kishinev",
+            "Chisnau",
+            "Keshenev",
+            "Keshinov",
+            "Khisinau",
+            "Kischiniov"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q272599#P57",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-software-website-011",
+          "class": "nav",
+          "lang": "en",
+          "query": "Official website of VSCO",
+          "answers": [],
+          "answerPatterns": [],
+          "answerUrls": [
+            "https://vsco.co/"
+          ],
+          "source": "https://www.wikidata.org/wiki/Q29364760#P856",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-work-author-fr-001",
+          "class": "nonen",
+          "lang": "fr",
+          "query": "Qui est l'auteur de « Averno » (2006) ?",
+          "answers": [
+            "Louise Glück"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q4828328#P50",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-file-format-developer-002",
+          "class": "tech",
+          "lang": "en",
+          "query": "Which organization or person developed the Maildir file format?",
+          "answers": [
+            "Daniel J. Bernstein",
+            "Dan Bernstein",
+            "Daniel Bernstein",
+            "D. J. Bernstein",
+            "Dan J. Bernstein",
+            "Daniel Julius Bernstein"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q1246497#P178",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-painting-artist-head-005",
+          "class": "fact.head",
+          "lang": "en",
+          "query": "Who painted The Triumph of Death (1560)?",
+          "answers": [
+            "Pieter Bruegel the Elder",
+            "Peasant Bruegel",
+            "Peasant Brueghel Bruegel",
+            "Peeter Brueghel the Elder",
+            "Peter Bruegel the Elder",
+            "Peter Brueghel the Elder",
+            "Pierre Bruegel",
+            "Pieter Breughel the Elder"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q644856#P170",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-building-architect-tail-001",
+          "class": "fact.tail",
+          "lang": "en",
+          "query": "Who was the architect of 1101 New York Avenue (2007)?",
+          "answers": [
+            "Kevin Roche"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q4547248#P84",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-building-architect-birthplace-006",
+          "class": "multihop",
+          "lang": "en",
+          "query": "Where was the architect of Danube Palace (1897) born?",
+          "answers": [
+            "Paks"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q18150365#P84",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-museum-website-003",
+          "class": "nav",
+          "lang": "en",
+          "query": "Official website of Florence Cathedral",
+          "answers": [],
+          "answerPatterns": [],
+          "answerUrls": [
+            "https://www.duomofirenze.it/"
+          ],
+          "source": "https://www.wikidata.org/wiki/Q191739#P856",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-work-author-ru-004",
+          "class": "nonen",
+          "lang": "ru",
+          "query": "Кто автор произведения «Земля» (1931)?",
+          "answers": [
+            "Перл Бак",
+            "Бак Перл",
+            "Перл Бак Сайденстрикер",
+            "Сайденстрикер, Перл Бак"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q1218608#P50",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-kev-product-005",
+          "class": "tech",
+          "lang": "en",
+          "query": "Which product is affected by CVE-2019-19356?",
+          "answers": [
+            "WF2419",
+            "Netis WF2419"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.cve.org/CVERecord?id=CVE-2019-19356",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-company-headquarters-001",
+          "class": "fact.head",
+          "lang": "en",
+          "query": "In which city is the company Tata Motors Limited headquartered?",
+          "answers": [
+            "Mumbai",
+            "Bombay"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q188514#P159",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-small-language-work-author-009",
+          "class": "fact.tail",
+          "lang": "en",
+          "query": "Who is the author of Two Upbuilding Discourses, 1844 (1844)?",
+          "answers": [
+            "Søren Kierkegaard",
+            "Kierkegaard"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q7859317#P50",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-small-film-director-birthplace-006",
+          "class": "multihop",
+          "lang": "en",
+          "query": "In which town or city was the director of the film The Last Autumn of Childhood (1977) born?",
+          "answers": [
+            "Kaunas",
+            "Kauen",
+            "Kovna",
+            "Kovne",
+            "Kovno",
+            "Kowno"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q16459724#P57",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-intl-org-website-002",
+          "class": "nav",
+          "lang": "en",
+          "query": "Official website of Organisation of Eastern Caribbean States",
+          "answers": [],
+          "answerPatterns": [],
+          "answerUrls": [
+            "http://www.oecs.org/"
+          ],
+          "source": "https://www.wikidata.org/wiki/Q392770#P856",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-capital-de-001",
+          "class": "nonen",
+          "lang": "de",
+          "query": "Was ist die Hauptstadt von Mauretanien?",
+          "answers": [
+            "Nouakchott"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q1025#P36",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-language-designer-005",
+          "class": "tech",
+          "lang": "en",
+          "query": "Who designed the A+ programming language?",
+          "answers": [
+            "Arthur Whitney"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q277710#P287",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-best-picture-director-001",
+          "class": "fact.head",
+          "lang": "en",
+          "query": "Who directed the film Grand Hotel (1932)?",
+          "answers": [
+            "Edmund Goulding",
+            "Edmund George Goulding"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q246656#P57",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-p1-painting-artist-tail-008",
+          "class": "fact.tail",
+          "lang": "en",
+          "query": "Who painted Granada Landscape (1871)?",
+          "answers": [
+            "Mariano Fortuny Marsal",
+            "Carbo Mariano Fortuny",
+            "Fortuny y Carbo",
+            "M. de Fortuny",
+            "M. Fortuny",
+            "Maria Fortuny",
+            "Maria Fortuny i Marsal",
+            "Maria Fortuny Marsal"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q23936287#P170",
+          "review": "builder-checked",
+          "ownerCheck": null,
+          "ownerNote": ""
+        }
+      ]
+    },
+    "fresh": {
+      "file": "datasets/fresh/fresh-2026-12.jsonl",
+      "of": 50,
+      "items": [
+        {
+          "id": "fresh-2612-kev-recent-002",
+          "class": "fresh",
+          "lang": "en",
+          "query": "Which product is affected by CVE-2026-106931?",
+          "answers": [
+            "SiteGuard Server Edition",
+            "SiteGuard"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.cve.org/CVERecord?id=CVE-2026-106931",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "fresh-2612-arxiv-first-author-006",
+          "class": "fresh",
+          "lang": "en",
+          "query": "Who is the first author of the arXiv paper \"Efficient estimation of measures of functional dependence\"?",
+          "answers": [
+            "Holger Dette"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://arxiv.org/abs/2610.25421",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "fresh-2612-eol-release-012",
+          "class": "fresh",
+          "lang": "en",
+          "query": "What was the latest Red Hat Enterprise Linux 10 release as of 25 November 2026?",
+          "answers": [],
+          "answerPatterns": [
+            "(?<![\\w.])v?10\\.3(?![\\w]|\\.\\d)"
+          ],
+          "answerUrls": [],
+          "source": "https://endoflife.date/rhel",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "fresh-2612-software-version-asof-004",
+          "class": "fresh",
+          "lang": "en",
+          "query": "What was the latest stable version of Clojure as of 25 November 2026?",
+          "answers": [],
+          "answerPatterns": [
+            "(?<![\\w.])v?1\\.12\\.7(?![\\w]|\\.\\d)"
+          ],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q51798#P348",
+          "review": "builder-checked",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "fresh-2612-kev-recent-001",
+          "class": "fresh",
+          "lang": "en",
+          "query": "Which product is affected by CVE-2026-96652?",
+          "answers": [
+            "Plex Media Server"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.cve.org/CVERecord?id=CVE-2026-96652",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        }
+      ]
+    },
+    "tuning": {
+      "file": "datasets/public/tuning-0.1.0.jsonl",
+      "of": 24,
+      "items": [
+        {
+          "id": "pub-t1-company-headquarters-002",
+          "class": "fact.head",
+          "lang": "en",
+          "query": "In which city is the company Adidas AG headquartered?",
+          "answers": [
+            "Herzogenaurach"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q3895#P159",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-t1-small-industry-film-director-001",
+          "class": "fact.tail",
+          "lang": "en",
+          "query": "Who directed the film Frondoso edén del corazón (2015)?",
+          "answers": [
+            "Juma Fodde"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q18695680#P57",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "pub-t1-nobel-work-author-birthplace-001",
+          "class": "multihop",
+          "lang": "en",
+          "query": "Where was the author of The Harafish (1977) born?",
+          "answers": [
+            "Al-Jamāliyah",
+            "Gamaleya",
+            "Cairo"
+          ],
+          "answerPatterns": [],
+          "answerUrls": [],
+          "source": "https://www.wikidata.org/wiki/Q7738834#P50",
+          "review": "agent-reviewed",
+          "ownerCheck": null,
+          "ownerNote": ""
+        }
+      ]
+    },
+    "private": {
+      "file": "<store>/private/private-1.0.0.jsonl",
+      "of": 102,
+      "items": [
+        {
+          "id": "priv-70a0d9acef16",
+          "class": "fact.head",
+          "hash": "44f842b8ef5d91aec64de32b9b06f16740566a5bdc8af788a3187a790cde6f4f",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "priv-9fd652c99853",
+          "class": "fact.tail",
+          "hash": "8561690bbd31bc9d6c4f066491d444d7481972c4ca9d9110a6ec3b16584251f4",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "priv-228741f35fae",
+          "class": "multihop",
+          "hash": "30d416d9af05879977fc34a431dea5eb02f4a75cac3f1bacfed44cae72415b35",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "priv-ff33ec6c639f",
+          "class": "nav",
+          "hash": "d91ce01def544f806bb438d7a1883ba4f3cfe008ab885e065811fda1aedb2ff3",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "priv-47f3aef76fd7",
+          "class": "nonen",
+          "hash": "bd194da6a325878a29b285055c939aa624cfc83f98d6ea3e05f207496fe83832",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "priv-1a764190c7b0",
+          "class": "tech",
+          "hash": "4690d7df1b9f5ee36fe2c2c20926c93b6b5157721a7d1c61476cea5564ca595d",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "priv-69f50cc3032e",
+          "class": "fact.head",
+          "hash": "9aeeee3211d12d1baf4d7334b3c45a238f389fa13d5bb32930b989e4c498660d",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "priv-e119dddc2c19",
+          "class": "fact.tail",
+          "hash": "7dfd1d936157afc78cb79be5042c61215888aaa203c2c4a754b7e6a1899f30d8",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "priv-1298e208aa19",
+          "class": "multihop",
+          "hash": "ff33c1b0650238ba726c88c886fffdf8ea3d5b40818c911a2fa1fdd9d82417d3",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "priv-e415d43236a1",
+          "class": "nav",
+          "hash": "94b9b055733cec227cf6bf53f5079f12e0a14cccf0d6753fe26e75b11716cc62",
+          "ownerCheck": null,
+          "ownerNote": ""
+        },
+        {
+          "id": "priv-429c46b97898",
+          "class": "nonen",
+          "hash": "5a1d12dbf40e9ab73b76a80320530d009275987f8f740e31323a3484dd3a0cca",
+          "ownerCheck": null,
+          "ownerNote": ""
+        }
+      ]
+    }
+  }
+}
