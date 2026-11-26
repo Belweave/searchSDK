@@ -4,9 +4,10 @@ metaTitle: "searchSDK changelog"
 description: Releases of the searchSDK TypeScript package, the MCP server and the documentation, newest first.
 ---
 
-## Unreleased
+## 2026-11-25
 
-- `@searchsdk/mcp` 0.1.0, a local MCP server over stdio with the docs and registry tools plus `search` and `contents` through your own keys. Not on npm yet.
+- `@searchsdk/sdk` 0.1.1: the first correct build. 0.1.0 was packed from a stale build that lacked the `spec_mismatch` error and rejected the current registry; it is deprecated. No API changed.
+- `@searchsdk/mcp` 0.1.0 on npm: a local MCP server over stdio with the docs and registry tools plus `search` and `contents` through your own keys (`npx -y @searchsdk/mcp`).
 - A public docs MCP server at `https://searchsdk.dev/mcp`, on MCP revision 2026-07-28.
 - An [agent skill](/docs/agent-skill), guides for fallback, budgets, agent tools, errors and migration, and reference pages generated from the SDK source and the registry.
 - Docs pages can be copied as Markdown or opened in an AI assistant.

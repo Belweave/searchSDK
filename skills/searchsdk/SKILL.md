@@ -78,7 +78,7 @@ Return compact results (title, url, date, first excerpt) and return `{ error: e.
 ## MCP server
 
 - Public, free, keyless, docs and registry only: `claude mcp add --transport http searchsdk https://searchsdk.dev/mcp`. Tools: `search_docs`, `get_doc`, `list_providers`, `get_provider`, `estimate_cost`, `validate_options`, `get_example`. Use them to confirm an option or price before writing code.
-- Local `@searchsdk/mcp` (stdio) adds real `search` and `contents` with the user's keys. It is not on npm yet; it builds from `sdk/mcp` in the repository.
+- Local `@searchsdk/mcp` (stdio) adds real `search` and `contents` with the user's keys. Run it with `npx -y @searchsdk/mcp`.
 
 ## Pitfalls
 

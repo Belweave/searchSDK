@@ -7,8 +7,7 @@ plus real web `search` and page `contents` through
 provider keys. Runs over stdio, on MCP revision 2026-07-28, and answers
 2025-era clients too. MIT licensed.
 
-**Not on npm yet.** Build it from this folder (below). Once it is published it
-runs with `npx -y @searchsdk/mcp`.
+Run it with `npx -y @searchsdk/mcp` (Node 24 or newer).
 
 **Not live-verified.** No provider is verified against its live API yet; the
 SDK maps each one from its public docs and is tested on synthetic fixtures.

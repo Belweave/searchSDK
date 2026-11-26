@@ -57,12 +57,10 @@ Gemini CLI (`.gemini/settings.json`):
 
 ## Run search locally
 
-`@searchsdk/mcp` adds `search` and `contents` tools that run through `@searchsdk/sdk` on your machine, over stdio, with your own provider keys from its environment. Keys are never logged or returned. It is not on npm yet; build it from [the repository](https://github.com/Belweave/searchSDK/tree/v2/integration/sdk/mcp):
+`@searchsdk/mcp` adds `search` and `contents` tools that run through `@searchsdk/sdk` on your machine, over stdio, with your own provider keys from its environment. Keys are never logged or returned. Source: [sdk/mcp](https://github.com/Belweave/searchSDK/tree/main/sdk/mcp).
 
 ```sh
-cd sdk/mcp && npm ci && npm pack --ignore-scripts=false
-npm install -g ./searchsdk-mcp-0.1.0.tgz
-claude mcp add --env EXA_API_KEY=your-key --transport stdio searchsdk-local -- searchsdk-mcp
+claude mcp add --env EXA_API_KEY=your-key --transport stdio searchsdk-local -- npx -y @searchsdk/mcp
 ```
 
 Optional variables: `SEARCHSDK_PROVIDER`, `SEARCHSDK_FALLBACK`, `SEARCHSDK_MAX_RETRIES`, `SEARCHSDK_TIMEOUT_MS` and `SEARCHSDK_MAX_CHARS`. Each `search` or `contents` call may be billed by the provider.
