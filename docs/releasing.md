@@ -1,84 +1,102 @@
-# Publishing SDK packages
+# Releasing
 
-The packages are source alphas; registry publication is not claimed. Each
-[package README](../packages/README.md) records its identity, version, build and
-consumer checks. Preparing an artifact does not publish it or deploy the website.
-The workspace root and website remain private npm packages.
+Three things ship from this repository, each by hand. A Git push publishes
+nothing and deploys nothing, and CI never publishes or deploys.
 
-The procedure below prepares the TypeScript package `@belweave/search-sdk`,
-currently `0.1.0-alpha.0`. A future publication uses the `alpha` dist-tag only
-after registry availability and permissions have been checked. Other SDKs need
-a deliberate release in their own ecosystem; the npm command does not publish them.
+| What | Where | How |
+| --- | --- | --- |
+| TypeScript SDK | npm, [`@searchsdk/sdk`](https://www.npmjs.com/package/@searchsdk/sdk) | a reviewed tarball, published from `sdk/typescript` |
+| Python SDK | not published yet | install from source (see `sdk/python/README.md`) |
+| Website | [searchsdk.dev](https://searchsdk.dev), on Vercel | a prebuilt deploy from `site/` |
 
-## Update npm and sign in
+Use the Node version in `.nvmrc`. Sign in to npm and Vercel in a browser.
+Never paste a password, token, recovery code or one-time code into a file,
+commit, issue or chat, and never commit an `.npmrc` with an auth token or the
+`site/.vercel/` link directory.
 
-Use the repository's Node version. With nvm installed, from the repository root:
+## Before any release
 
-```bash
-nvm use
-node --version
-npm install --global npm@latest
-npm --version
-npm login --auth-type=web --registry=https://registry.npmjs.org/
-npm whoami --registry=https://registry.npmjs.org/
+From the repository root, with every package installed (`npm run setup`):
+
+```sh
+npm run check
 ```
 
-Complete login and any two-factor verification in the browser opened by npm.
-Do not paste passwords, tokens, recovery codes, or one-time codes into an issue,
-chat, source file, or repository configuration. Updating npm affects the selected
-nvm Node installation. If the latest npm no longer supports the pinned Node
-version, follow npm's reported engine requirements before updating.
+This runs the public-tree guard, the registry drift checks, and the brand,
+TypeScript, Python, benchmark-fixture and site checks. The Python check needs
+mypy (`python -m pip install -r sdk/python/requirements-dev.txt`). None of
+it calls a provider or needs a key.
 
-The signed-in npm account must have permission to publish in the `@belweave`
-organization. Confirm that organization membership in npm before the first
-publication. GitHub organization access does not grant npm access.
+## Bump the version
 
-## Prepare and inspect
+Both runtimes embed `registry/`. A release ships the registry as committed,
+so sync it and bump the version in the same commit:
 
-```bash
+```sh
+cd sdk/typescript
+npm run sync                                  # re-embed ../../registry
+npm version <x.y.z> --no-git-tag-version      # package.json and package-lock.json
+cd ../python
+python scripts/sync_registry.py               # re-embed ../../registry
+# set the same version in pyproject.toml and src/searchsdk/__init__.py (__version__)
+```
+
+Bump Python with TypeScript until the two are released separately. Add the
+release to each `CHANGELOG.md`, run `npm run check` from the root again, and
+commit. npm versions are immutable: a published version can never be reused,
+even after `npm unpublish`.
+
+## Publish @searchsdk/sdk
+
+`sdk/typescript/.npmrc` disables lifecycle scripts, so the pack step turns
+them back on to build `dist/` first:
+
+```sh
+cd sdk/typescript
 npm ci
-npm run release:prepare
+npm test
+npm pack --ignore-scripts=false               # runs prepack (registry check + build); writes searchsdk-sdk-<x.y.z>.tgz
+tar -tzf searchsdk-sdk-<x.y.z>.tgz            # expect package/dist, README.md, CHANGELOG.md, LICENSE, package.json only
+shasum -a 256 searchsdk-sdk-<x.y.z>.tgz
 ```
 
-This runs all SDK, server, documentation, site, benchmark-fixture, and packed
-consumer checks. It then writes the tarball, file manifest, and SHA-256 checksum
-under `.local/releases/0.1.0-alpha.0/`. These local release artifacts are ignored
-by Git. Review the manifest: the package contains compiled SDK code and
-declarations, its README, license, and package metadata, with no site, test,
-credential, or research files.
+Check the file list: compiled `dist/` with declarations, the README,
+changelog, license and `package.json`; no `src/`, `test/`, `scripts/`, keys
+or local files. Then publish that exact file:
 
-```bash
-cd .local/releases/0.1.0-alpha.0
-shasum -a 256 -c SHA256SUMS
-npm publish ./belweave-search-sdk-0.1.0-alpha.0.tgz --dry-run --ignore-scripts --access=public --tag=alpha --registry=https://registry.npmjs.org/
+```sh
+npm login --auth-type=web --registry=https://registry.npmjs.org/
+npm whoami
+npm publish ./searchsdk-sdk-<x.y.z>.tgz --access public --dry-run
+npm publish ./searchsdk-sdk-<x.y.z>.tgz --access public
+npm view @searchsdk/sdk@<x.y.z> version dist.integrity
 ```
 
-Dry-run does not publish and does not establish organization permissions. Verify
-the exact version and intended tag before the actual publish. npm versions are
-immutable: an already-published name/version cannot be reused. If source changes
-after preparation, regenerate and recheck the artifact.
+Publishing a tarball runs no scripts and uploads exactly the reviewed bytes.
+`--access public` is required for a scoped package; the account must be able
+to publish under the `@searchsdk` scope. Without a dist-tag the version
+becomes `latest`. Afterwards, install it in an empty directory
+(`npm install @searchsdk/sdk@<x.y.z>`) and import it once. Delete the local
+`.tgz` (it is git-ignored). Publishing proves nothing about live providers.
 
-## Publish the reviewed artifact
+Optionally tag the release commit (`git tag -a sdk-v<x.y.z>`) and push the
+tag deliberately; never move or delete an existing tag.
 
-From the same release directory, when ready:
+## Deploy the site
 
-```bash
-npm publish ./belweave-search-sdk-0.1.0-alpha.0.tgz --ignore-scripts --access=public --tag=alpha --registry=https://registry.npmjs.org/
-npm view @belweave/search-sdk@0.1.0-alpha.0 version dist.integrity --registry=https://registry.npmjs.org/
-npm view @belweave/search-sdk dist-tags --json --registry=https://registry.npmjs.org/
+The Vercel project is not connected to Git. The site builds from a full
+checkout, because it reads `../registry`, `../sdk/typescript` and `../brand`:
+
+```sh
+cd site
+npm ci
+npm run check                                 # brand copies, typecheck, examples, build, crawl
+vercel link                                   # once per checkout; writes the git-ignored site/.vercel/
+vercel build --prod
+vercel deploy --prebuilt --prod
 ```
 
-Check the registry integrity against the prepared manifest and perform a fresh
-consumer installation from npm. Test the fixture quickstart without provider
-credentials. Do not treat publication, installation, or fixture checks as live
-provider verification. Keep the `latest` tag for a deliberate stable-channel
-decision; alpha publication does not move it.
-
-For later releases, update the SDK version and lockfile together, rerun checks,
-and use the resulting versioned directory and tarball. CI publishing and npm
-provenance should be configured through npm trusted publishing separately;
-local preparation does not claim provenance attestation.
-
-References: [npm login](https://docs.npmjs.com/cli/v11/commands/npm-login/),
-[npm publish](https://docs.npmjs.com/cli/v11/commands/npm-publish/), and
-[npm organization roles](https://docs.npmjs.com/about-organization-roles-and-permissions).
+`vercel build` writes `site/.vercel/output/` locally and `deploy --prebuilt`
+uploads only that output, so no environment file or key leaves the machine.
+Check https://searchsdk.dev afterwards. Use the Vercel CLI (`npm install
+--global vercel`, or prefix each command with `npx`).
