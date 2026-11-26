@@ -1,4 +1,4 @@
-# searchsdk
+# @searchsdk/sdk
 
 One interface to many web search providers, for AI apps and agents. Two
 calls: `search` and `contents`. Zero runtime dependencies. Written for any
@@ -7,20 +7,19 @@ runtime with standard `fetch`; tested on Node 24 only.
 **Not live-verified.** Providers are mapped from their public docs and tested
 against synthetic fixtures only.
 
-## Install from source
-
-Nothing is published to npm yet. Build a package from the repository:
+## Install
 
 ```sh
-git clone https://github.com/Belweave/searchSDK
-cd searchSDK/sdk/typescript && npm ci && npm pack --ignore-scripts=false
-cd your-app && npm install ../searchSDK/sdk/typescript/searchsdk-0.1.0.tgz
+npm install @searchsdk/sdk
 ```
+
+Docs: [searchsdk.dev](https://searchsdk.dev). Source:
+[github.com/Belweave/searchSDK](https://github.com/Belweave/searchSDK/tree/v2/integration/sdk/typescript).
 
 ## Use
 
 ```ts
-import { search } from "searchsdk";
+import { search } from "@searchsdk/sdk";
 
 const { results, cost } = await search("sqlite wal mode", { provider: "exa" });
 console.log(results[0]?.title, results[0]?.publishedAt, cost.usd);
@@ -32,7 +31,7 @@ Keys come from each provider's documented variable (`EXA_API_KEY`,
 logged. A fallback without a key is skipped with a warning.
 
 ```ts
-import { createClient } from "searchsdk";
+import { createClient } from "@searchsdk/sdk";
 
 const client = createClient({ provider: "tavily", fallback: ["exa"], maxRetries: 1 });
 const res = await client.search("eu ai act", {

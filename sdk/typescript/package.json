@@ -1,5 +1,5 @@
 {
-  "name": "searchsdk",
+  "name": "@searchsdk/sdk",
   "version": "0.1.0",
   "description": "One interface to many web search providers, driven by a shared provider registry.",
   "license": "MIT",
@@ -24,6 +24,9 @@
     "@types/node": "24.19.1",
     "typescript": "7.0.2"
   },
+  "publishConfig": { "access": "public" },
+  "homepage": "https://searchsdk.dev",
+  "keywords": ["search", "web search", "search api", "search sdk", "ai agents", "llm", "rag", "exa", "tavily", "brave search", "perplexity", "firecrawl"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Belweave/searchSDK.git",
