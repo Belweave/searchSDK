@@ -1,40 +1,21 @@
 {
-  "name": "searchsdk-workspace",
+  "name": "searchsdk-repository",
   "private": true,
+  "description": "Repository-level checks for searchSDK. Each of brand/, sdk/typescript/, bench/ and site/ is a standalone npm package with its own lockfile.",
   "type": "module",
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
   "engines": {
     "node": "^24.22.1 || ^26.12.1"
   },
   "scripts": {
-    "check:runtime": "node scripts/check-runtime.mjs",
-    "dev": "npm run dev -w @belweave/search-sdk-site",
-    "build:sdk": "npm run build -w @belweave/search-sdk",
-    "build:mobile": "npm run build -w @belweave/search-sdk-react-native && npm run build -w @belweave/search-sdk-expo",
-    "build": "npm run check:runtime && npm run build:sdk && npm run build -w @belweave/search-sdk-site",
-    "test": "npm run build:sdk && npm test -w @belweave/search-sdk && npm run check:contracts",
-    "check:contracts": "node scripts/generate-sdk-contract.mjs --check",
-    "test:mobile": "npm run build:mobile && npm test -w @belweave/search-sdk-react-native && npm test -w @belweave/search-sdk-expo && node --test --test-concurrency=1 sdk-contract/test/*.test.mjs",
-    "test:mobile:package": "npm run test:package -w @belweave/search-sdk-react-native && npm run prepare:reference -w @belweave/search-sdk-expo && npm run test:package -w @belweave/search-sdk-expo && npm run check:expo-types -w @belweave/search-sdk-expo && npm run check:expo-source -w @belweave/search-sdk-expo",
-    "test:package": "node scripts/verify-package.mjs",
-    "test:docs": "node apps/web/src/docs/verify-docs.mjs",
-    "test:site": "node scripts/verify-site.mjs",
-    "typecheck": "npm run typecheck -w @belweave/search-sdk-site",
-    "check": "npm run check:public && npm run check:generators && npm run test && npm run test:mobile && npm run typecheck && npm run build && npm run test:server && npm run test:docs && npm run test:site && npm run test:package && npm run test:mobile:package && npm run test:benchmarks",
-    "build:vercel": "npm run check && node scripts/vercel-output.mjs && node scripts/verify-vercel-output.mjs",
-    "release:prepare": "npm run check && node scripts/prepare-release.mjs",
-    "benchmark:plan": "node benchmarks/run.mjs --mode plan",
-    "benchmark:fixture": "node benchmarks/run.mjs --mode fixture",
-    "test:benchmarks": "node --test --test-concurrency=1 benchmarks/test/*.test.mjs",
+    "setup": "npm --prefix brand ci && npm --prefix sdk/typescript ci && npm --prefix bench ci && npm --prefix site ci",
     "check:public": "node scripts/verify-public-tree.mjs",
-    "check:generators": "python3 -B scripts/providers-a/generate.py --check && python3 -B scripts/providers-b/verify.py",
-    "test:server": "node --test --test-concurrency=1 apps/web/server/test/*.test.mjs"
-  },
-  "devDependencies": {
-    "typescript": "7.0.2"
+    "check:registry": "node sdk/typescript/scripts/sync-registry.mjs --check && python3 sdk/python/scripts/sync_registry.py --check",
+    "check:brand": "npm --prefix brand run check",
+    "check:typescript": "npm --prefix sdk/typescript test",
+    "check:python": "cd sdk/python && python3 scripts/check.py",
+    "check:bench": "npm --prefix bench run check",
+    "check:site": "npm --prefix site run check",
+    "check": "npm run check:public && npm run check:registry && npm run check:brand && npm run check:typescript && npm run check:python && npm run check:bench && npm run check:site"
   },
   "license": "MIT",
   "repository": {

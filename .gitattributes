@@ -1,2 +1,0 @@
-# Retain byte-identical public-source snapshots for provenance hashes.
-scripts/providers-b/snapshots/* -whitespace

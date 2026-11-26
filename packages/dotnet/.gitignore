@@ -1,5 +1,0 @@
-.local/
-**/bin/
-**/obj/
-*.nupkg
-*.snupkg

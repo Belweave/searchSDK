@@ -2,6 +2,3 @@
 node_modules
 .local
 .env*
-docs
-packages
-apps

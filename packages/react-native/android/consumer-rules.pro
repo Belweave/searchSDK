@@ -1,2 +1,0 @@
--keep class dev.belweave.searchsdk.SearchSDKPackage { *; }
--keep class dev.belweave.searchsdk.SearchSDKGatewayModule { *; }
