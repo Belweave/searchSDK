@@ -1,0 +1,56 @@
+---
+title: Cost and budgets
+metaTitle: "Budgets for search API spend in TypeScript"
+description: Reserve the most a call can cost before sending it, then record what each attempt cost, with unknown prices kept unknown.
+---
+
+searchSDK never guesses a price. A known cost is a number; an unknown one is `null`. A budget should treat `null` as "cannot approve", not as free.
+
+## Before the call
+
+`costBound` gives the most one request can cost at the highest documented rate. Reserve it for every attempt the call might make.
+
+```ts
+import { costBound, registry, type ProviderId } from "@searchsdk/sdk";
+
+const chain: ProviderId[] = ["exa", "tavily"];
+const attemptsPerProvider = 1 + 1; // the first try plus maxRetries: 1
+
+let reserve = 0;
+for (const id of chain) {
+  const bound = costBound(registry[id], "search", { maxResults: 10 });
+  if (bound.usd === null) throw new Error(`${id} cannot be bounded: ${bound.unknownBecause}`);
+  if (bound.requiresOverageOff) console.log(`${id}: holds only while paid overage is off`);
+  reserve += bound.usd * attemptsPerProvider;
+}
+console.log("reserve", reserve);
+```
+
+`unknownBecause` is `option` when a provider option has no public price, `count` when the billed count is unbounded, and `price` when the price is not public.
+
+## After the call
+
+Sum the attempts that may have been billed. Attempts with `billed: "no"` cost nothing.
+
+```ts
+import { createClient, SearchError, type Attempt } from "@searchsdk/sdk";
+
+function spent(attempts: readonly Attempt<string>[]): number | null {
+  let usd = 0;
+  for (const a of attempts.filter((x) => x.billed !== "no")) {
+    if (a.cost.usd === null) return null;
+    usd += a.cost.usd;
+  }
+  return usd;
+}
+
+const client = createClient({ provider: "exa", fallback: ["tavily"], maxRetries: 1 });
+try {
+  const res = await client.search("sqlite wal mode");
+  console.log(spent(res.attempts), res.cost.source);
+} catch (e) {
+  if (e instanceof SearchError) console.log("failed, spent", spent(e.attempts));
+}
+```
+
+`billed: "possible"` means the request may have reached the provider without an answer; count it to stay safe. A `reported` cost comes from the provider; `computed` is the registry's list price. Prices change: each [provider page](/providers) shows the date they were read.

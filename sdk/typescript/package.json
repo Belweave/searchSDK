@@ -1,6 +1,6 @@
 {
   "name": "@searchsdk/sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "One interface to many web search providers, driven by a shared provider registry.",
   "license": "MIT",
   "type": "module",

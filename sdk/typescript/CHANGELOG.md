@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1 (2026-11-25)
+
+The first correct build. 0.1.0 was packed from a stale `dist/` that predated
+the current registry and source: it lacked the `spec_mismatch` error and the
+diagnostics hook its README describes, and it rejected the current registry.
+0.1.0 is deprecated; no API changed between the two.
+
 ## 0.1.0 (2026-11-25)
 
 First release, published to npm as `@searchsdk/sdk` (npm does not allow the

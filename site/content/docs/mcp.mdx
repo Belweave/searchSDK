@@ -1,0 +1,66 @@
+---
+title: MCP server
+metaTitle: "searchSDK MCP server for coding agents"
+description: Connect Claude Code, Cursor, VS Code, Codex and other agents to the free searchSDK docs MCP server, or run search locally.
+---
+
+The public server at `https://searchsdk.dev/mcp` is free and needs no key. It serves the docs and the provider registry only: it never calls a provider, holds no key, fetches no URL and runs no code. It speaks Streamable HTTP, stateless, on MCP revision 2026-07-28, and answers 2025 clients too.
+
+## Tools
+
+| Tool | What it does |
+| --- | --- |
+| `search_docs` | Full-text search over every docs section |
+| `get_doc` | One docs page as Markdown |
+| `list_providers` | Every provider, its key variable and verification status |
+| `get_provider` | Options, limits, list prices, rate limits and sources |
+| `estimate_cost` | `costBound` and `listPrice` for a call; nothing is sent |
+| `validate_options` | Whether a provider can honour your options, checked by the SDK without sending |
+| `get_example` | Typechecked TypeScript examples for a task |
+
+Resources: every docs page, every provider spec, the shared policy and the [agent skill](/docs/agent-skill). Prompts: `integrate-searchsdk` and `choose-provider`.
+
+## Add it
+
+Claude Code:
+
+```sh
+claude mcp add --transport http searchsdk https://searchsdk.dev/mcp
+```
+
+Cursor (`.cursor/mcp.json`):
+
+```json
+{ "mcpServers": { "searchsdk": { "url": "https://searchsdk.dev/mcp" } } }
+```
+
+VS Code with Copilot and Claude Code projects (`.mcp.json` at the workspace root):
+
+```json
+{ "mcpServers": { "searchsdk": { "type": "http", "url": "https://searchsdk.dev/mcp" } } }
+```
+
+Codex (`~/.codex/config.toml`):
+
+```toml
+[mcp_servers.searchsdk]
+url = "https://searchsdk.dev/mcp"
+```
+
+Gemini CLI (`.gemini/settings.json`):
+
+```json
+{ "mcpServers": { "searchsdk": { "httpUrl": "https://searchsdk.dev/mcp" } } }
+```
+
+`/api/mcp` answers the same as `/mcp`.
+
+## Run search locally
+
+`@searchsdk/mcp` adds `search` and `contents` tools that run through `@searchsdk/sdk` on your machine, over stdio, with your own provider keys from its environment. Keys are never logged or returned. Source: [sdk/mcp](https://github.com/Belweave/searchSDK/tree/main/sdk/mcp).
+
+```sh
+claude mcp add --env EXA_API_KEY=your-key --transport stdio searchsdk-local -- npx -y @searchsdk/mcp
+```
+
+Optional variables: `SEARCHSDK_PROVIDER`, `SEARCHSDK_FALLBACK`, `SEARCHSDK_MAX_RETRIES`, `SEARCHSDK_TIMEOUT_MS` and `SEARCHSDK_MAX_CHARS`. Each `search` or `contents` call may be billed by the provider.
