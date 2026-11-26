@@ -1,9 +1,9 @@
 # Changelog
 
-## 0.1.0 (unreleased)
+## 0.1.0 (2026-11-25)
 
-First release candidate. Nothing is published to a registry, and no provider
-is live-verified: every spec is written from public docs and tested against
+First release, published to npm as `@searchsdk/sdk` (npm does not allow the
+unscoped name `searchsdk`). No provider is live-verified yet: every spec is written from public docs and tested against
 synthetic fixtures only.
 
 - `search` and `contents` over a shared, declarative provider registry: Exa,
@@ -11,7 +11,7 @@ synthetic fixtures only.
   Firecrawl.
 - Honest per-attempt cost: reported, computed from list prices, or unknown
   (never $0 for unknown). Every attempt records whether it was billed (`yes`,
-  `possible`, `no`). `costBound` give the most one request can
+  `possible`, `no`). `costBound` gives the most one request can
   cost before it is sent.
 - Retries (off by default), `Retry-After`, per-attempt and per-call
   deadlines, cancellation, response size limits and explicit fallback.
