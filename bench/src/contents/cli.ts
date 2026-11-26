@@ -224,7 +224,7 @@ function loadItemsJsonl(path: string): ContentsUrl[] {
 /** The builder's network side: the harness fetcher one request at a time per host, KEV and CVE records, arXiv metadata. */
 export function liveBuildIo(spec: UrlSpec, today: string): BuildIo {
   const method = loadMethod();
-  const fetcher = livePageFetcher(method) as ReturnType<typeof livePageFetcher> & { fetchDocument(url: string, signal?: AbortSignal, maxBytes?: number): Promise<import("../pages/fetcher.ts").FetchedDocument> };
+  const fetcher = livePageFetcher(method) as ReturnType<typeof livePageFetcher> & { fetchDocument(url: string, signal?: AbortSignal, maxBytes?: number): Promise<import("../pages/fetcher.ts").FetchedDocument>; fetchJsonText(url: string): Promise<import("../pages/fetcher.ts").FetchedPage> };
   const last = new Map<string, number>();
   const paced = async <T>(url: string, fn: () => Promise<T>): Promise<T> => {
     const host = (() => { try { return new URL(url).host; } catch { return url; } })();
@@ -260,8 +260,53 @@ export function liveBuildIo(spec: UrlSpec, today: string): BuildIo {
       // The fresh template's 35-day window, moved back so these papers share nothing with the fresh set.
       const [, far] = spec.extra.arxiv.windowDays;
       const all = await arxivFirstAuthor.candidates({ ...ctx, today: addDays(today, -(far - 40)) }, "fresh");
-      return shuffle(all.filter((c) => !exclude.has(urlKey(`https://arxiv.org/pdf/${c.source.path![0]}`))), rng(seedOf(spec.seed, "arxiv"))).slice(0, n)
-        .map((c) => ({ url: `https://arxiv.org/pdf/${c.source.path![0]}`, kind: "pdf" as const, origin: { kind: "arxiv" as const, subject: c.source.path![0]! }, answers: c.answers, answerPatterns: c.answerPatterns }));
+      const picked = shuffle(all.filter((c) => !exclude.has(urlKey(`https://arxiv.org/pdf/${c.source.path![0]}`))), rng(seedOf(spec.seed, "arxiv"))).slice(0, n);
+      // The papers' own comments ("12 pages, 5 figures"), from the arXiv API in batches, so long papers are never downloaded.
+      const stated = new Map<string, number>();
+      for (let i = 0; i < picked.length; i += 100) {
+        const ids = picked.slice(i, i + 100).map((c) => c.source.path![0]!);
+        const res = await globalThis.fetch(`https://export.arxiv.org/api/query?id_list=${ids.join(",")}&max_results=100`, { headers: { "user-agent": "open-benchmark-dataset-builder/1.0 (generic client)" } });
+        await new Promise((r) => setTimeout(r, 3500)); // arXiv asks for one request every three seconds.
+        if (!res.ok) continue;
+        for (const entry of (await res.text()).split("<entry>").slice(1)) {
+          const id = /<id>https?:\/\/arxiv\.org\/abs\/([^<]+?)(v\d+)?<\/id>/.exec(entry)?.[1];
+          const pages = /<arxiv:comment[^>]*>[^<]*?(\d+)\s*pages?/i.exec(entry)?.[1];
+          if (id && pages) stated.set(id, Number(pages));
+        }
+      }
+      return picked.map((c) => {
+        const id = c.source.path![0]!;
+        return { url: `https://arxiv.org/pdf/${id}`, kind: "pdf" as const, origin: { kind: "arxiv" as const, subject: id }, answers: c.answers, answerPatterns: c.answerPatterns, ...(stated.has(id) ? { statedPages: stated.get(id)! } : {}) };
+      });
+    },
+    async orcidCandidates(n, exclude) {
+      // Notable researchers (Nobel laureates in physics, chemistry, medicine or economics, and Fellows of the Royal Society, with an
+      // ORCID iD on Wikidata), in a seeded order. The answer is the
+      // name the profile's own public record gives (orcid.org/<id>/person.json, the data the client-rendered page shows), read by
+      // the harness fetcher under robots.txt; Wikidata only picks the profiles.
+      const q = "SELECT DISTINCT ?p ?orcid WHERE { VALUES ?award { wd:Q38104 wd:Q44585 wd:Q80061 wd:Q47170 wd:Q15631401 } ?p wdt:P166 ?award; wdt:P496 ?orcid. }";
+      const res = await globalThis.fetch(`https://query.wikidata.org/sparql?query=${encodeURIComponent(q)}`, { headers: { accept: "application/sparql-results+json", "user-agent": "open-benchmark-dataset-builder/1.0 (generic client)" } });
+      if (!res.ok) throw new Error(`Wikidata answered ${res.status}`);
+      const rows = ((await res.json()) as { results: { bindings: { p: { value: string }; orcid: { value: string } }[] } }).results.bindings
+        .map((b) => ({ q: b.p.value.replace(/^.*\//, ""), orcid: b.orcid.value }))
+        .filter((r) => /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/.test(r.orcid))
+        .sort((a, b) => a.orcid.localeCompare(b.orcid));
+      const seen = new Set<string>();
+      const out: Candidate[] = [];
+      for (const r of shuffle(rows, rng(seedOf(spec.seed, "orcid")))) {
+        if (out.length >= n) break;
+        const url = `https://orcid.org/${r.orcid}`;
+        if (seen.has(r.orcid) || exclude.has(urlKey(url))) continue;
+        seen.add(r.orcid);
+        const rec = await paced(url, () => fetcher.fetchJsonText(`${url}/person.json`));
+        if (rec.status !== "ok") continue;
+        let name = "";
+        try { name = String((JSON.parse(rec.text) as { displayName?: unknown }).displayName ?? "").trim(); } catch { continue; }
+        // A full name of at least two words and five letters, so it cannot match unrelated text.
+        if (name.split(/\s+/).length < 2 || name.replace(/[^\p{L}]/gu, "").length < 5) continue;
+        out.push({ url, kind: "js", origin: { kind: "orcid", subject: r.q }, answers: [name], answerPatterns: [] });
+      }
+      return out;
     },
   };
 }

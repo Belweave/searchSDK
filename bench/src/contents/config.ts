@@ -67,7 +67,7 @@ export interface ContentsUrl {
   url: string;
   stratum: Stratum;
   /** Where the URL came from. `pool` URLs were read by the harness in a search run, from `provider`'s top results. */
-  origin: { kind: "crosscheck" | "source" | "kev" | "arxiv" | "pool"; itemId?: string; provider?: string; runId?: string; subject?: string };
+  origin: { kind: "crosscheck" | "source" | "kev" | "orcid" | "arxiv" | "pool"; itemId?: string; provider?: string; runId?: string; subject?: string };
   answers: string[];
   answerPatterns: string[];
   /**
@@ -98,7 +98,7 @@ export interface UrlSpec {
   /** No more than this share of one stratum from one site (registrable domain), while other candidates remain. */
   maxSiteShare: number;
   /** Extra candidates beyond the datasets: KEV entries for the js stratum, arXiv papers for the pdf stratum. */
-  extra: { kev: number; arxiv: { count: number; windowDays: [number, number] } };
+  extra: { kev: number; orcid?: number; arxiv: { count: number; windowDays: [number, number] } };
 }
 
 export const CONTENTS_MANIFEST = join(BENCH_DIR, "datasets", "contents", "manifest.json");

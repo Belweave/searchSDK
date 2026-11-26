@@ -22,6 +22,10 @@ Firecrawl (`/v2/scrape`) and TinyFish (Fetch). Each spec's fixed request is
 part of what is measured (Firecrawl sends `onlyMainContent: true`; Exa sends
 `text: true`).
 
+The URL set names public figures only where a dataset or a source already
+does: answers from the datasets, first authors of arXiv papers, and ORCID
+profiles of Nobel laureates and Fellows of the Royal Society.
+
 ## 2. The URL set
 
 A URL set is a committed, versioned file (`datasets/contents/`), listed with
@@ -44,9 +48,15 @@ provider's search results.
   products, arXiv abstracts and PDFs, CVE records).
 - **Extra open records**, under the same licences as the datasets: KEV
   entries added before 2026 (CC0), each kept only when its CVE record's CNA
-  container (`cveawg.mitre.org`) states the answer; and arXiv papers (metadata
-  CC0) first posted 60 to 95 days before the build, so they share nothing with
-  the fresh set.
+  container (`cveawg.mitre.org`) states the answer; ORCID profiles of notable
+  researchers (Wikidata, CC0: Nobel laureates in physics, chemistry,
+  medicine or economics and Fellows of the Royal Society, with an ORCID iD),
+  whose answer is the name the profile's own public record gives
+  (`orcid.org/<id>/person.json`, the data the client-rendered page shows, read
+  by the harness fetcher under robots.txt; Wikidata only picks the profiles);
+  and arXiv papers (metadata CC0) first posted 60 to 95 days before the build,
+  every paper in that window, so they share nothing with the fresh set. A
+  paper whose arXiv comment states more than 10 pages is never downloaded.
 - **Pooled pages**: pages the harness's own fetcher read in finished search
   runs, from public and fresh items only, whose harness text holds the item's
   answer. Each provider in `pooledProviders` contributes the same number, from
@@ -66,11 +76,12 @@ score.
 | `reference` | dataset HTML pages under 30,000 characters of harness text | the harness text holds the answer |
 | `long` | dataset HTML pages of at least 30,000 characters | the harness text holds the answer |
 | `pooled` | search-run pages, the same count from each provider | the harness text holds the answer |
-| `js` | client-rendered pages: 2xx to the harness, but its plain GET does not show the answer (CVE records on cve.org) | the record states the answer (the dataset review or the CVE record's CNA data) |
+| `js` | client-rendered pages: 2xx to the harness, but its plain GET (title and text) does not show the answer: CVE records on cve.org and ORCID profiles on orcid.org | the record states the answer (the dataset review or the CVE record's CNA data; the ORCID public record) |
 | `pdf` | arXiv PDFs of at most 10 pages, counted by the harness from the file (read whole, up to 25 MiB, page trees in compressed object streams included) | the paper itself (its first author) |
 
 Selection within a stratum follows one seeded order. No site (registrable
-domain) supplies more than half of a stratum while other candidates remain.
+domain) supplies more than half of a stratum while other candidates remain
+(`reference`, `long` and `js`; `pdf` is one site by design).
 
 ### Robots.txt and unreadable pages
 
@@ -217,9 +228,9 @@ Residual biases, not removed:
   two days, Exa uses a cached copy of any age when it has one, Context.dev
   three days). That is their default behaviour and is measured as such; the
   per-pass truth check catches a page that changed.
-- **One site for `js`.** Client-rendered pages with independent known answers
-  are rare; the stratum is CVE records on cve.org, so it measures rendering
-  of one application.
+- **Two sites for `js`.** Client-rendered pages with independent known answers
+  are rare; the stratum is CVE records on cve.org and ORCID profiles, so it
+  measures the rendering of two applications, not of the web at large.
 - **`pdf` is arXiv papers of at most 10 pages**, chosen so per-page billing
   stays bounded; longer documents are not measured.
 - **Wikipedia is common** in `reference` and `long` (the cross-check reads

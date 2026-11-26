@@ -198,3 +198,36 @@ test("the PDF page count reads page trees inside compressed object streams, and 
   assert.equal(pdfPageCount(pdf), 11);
   assert.equal(pdfPageCount(Buffer.from("<html>not a pdf</html>")), null);
 });
+
+test("the js stratum keeps any one site to half while another site has candidates, and a PDF stated as long is never downloaded", async () => {
+  const reads: string[] = [];
+  const cve = (k: number): Candidate => ({ url: `https://www.cve.org/CVERecord?id=CVE-2025-${1000 + k}`, kind: "js", origin: { kind: "kev", subject: `CVE-2025-${1000 + k}` }, answers: [`Product ${k}`], answerPatterns: [] });
+  const orcid = (k: number): Candidate => ({ url: `https://orcid.org/0000-0000-0000-${String(k).padStart(4, "0")}`, kind: "js", origin: { kind: "orcid", subject: `Q${k}` }, answers: [`Person Name${k}`], answerPatterns: [] });
+  const io: BuildIo = {
+    async readPage(url): Promise<FetchedPage> { reads.push(url); return { status: "unreadable", url, reason: "empty", httpStatus: 200 }; },
+    async readDocument(url): Promise<FetchedDocument> { reads.push(url); return { status: "ok", url, finalUrl: url, httpStatus: 200, mime: "application/pdf", bytes: 1, truncated: false, pages: 4 }; },
+    async kevCandidates() { return Array.from({ length: 10 }, (_, k) => cve(k)); },
+    async orcidCandidates() { return Array.from({ length: 2 }, (_, k) => orcid(k)); },
+    async arxivCandidates() {
+      return [
+        { url: "https://arxiv.org/pdf/1", kind: "pdf", origin: { kind: "arxiv", subject: "1" }, answers: ["Ada Short"], answerPatterns: [], statedPages: 25 },
+        { url: "https://arxiv.org/pdf/2", kind: "pdf", origin: { kind: "arxiv", subject: "2" }, answers: ["Bo Brief"], answerPatterns: [] },
+      ];
+    },
+    log() {},
+  };
+  const spec: UrlSpec = { name: "t", version: "0", seed: 5, datasets: [], runs: [], quotas: { reference: 0, pooled: 0, long: 0, js: 6, pdf: 2 }, pooledProviders: [], longMinChars: 30_000, pdfMaxPages: 10, maxSiteShare: 0.5, extra: { kev: 10, orcid: 2, arxiv: { count: 2, windowDays: [60, 95] } } };
+  const r = await buildUrlSet(spec, [], new Map(), io, "2026-11-26");
+  const js = r.urls.filter((u) => u.stratum === "js");
+  assert.equal(js.length, 6);
+  // Only two ORCID candidates exist, so cve.org fills the rest after its cap of 3 is reached in the first pass.
+  assert.equal(js.filter((u) => u.origin.kind === "orcid").length, 2);
+  const firstThree = reads.filter((u) => u.includes("cve.org")).slice(0, 3);
+  assert.equal(firstThree.length, 3);
+  assert.ok(!reads.includes("https://arxiv.org/pdf/1"), "a paper stated as 25 pages is not downloaded");
+  assert.deepEqual(r.urls.filter((u) => u.stratum === "pdf").map((u) => u.url), ["https://arxiv.org/pdf/2"]);
+  const many = await buildUrlSet({ ...spec, extra: { ...spec.extra, orcid: 10 } }, [], new Map(), { ...io, async orcidCandidates() { return Array.from({ length: 10 }, (_, k) => orcid(k)); } }, "2026-11-26");
+  const sites = many.urls.filter((u) => u.stratum === "js").map((u) => siteOf(u.url));
+  assert.equal(sites.filter((s) => s === "cve.org").length, 3);
+  assert.equal(sites.filter((s) => s === "orcid.org").length, 3);
+});

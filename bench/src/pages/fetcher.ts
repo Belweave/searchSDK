@@ -391,15 +391,21 @@ export class PlainFetcher {
   }
 
   async fetchPage(url: string, outer?: AbortSignal): Promise<FetchedPage> {
-    return this.read(url, outer, false) as Promise<FetchedPage>;
+    return this.read(url, outer, "page") as Promise<FetchedPage>;
   }
 
   /** Reads a PDF under the same rules as a page (robots, hosts, redirects, deadline, byte limit) and counts its pages. */
   async fetchDocument(url: string, outer?: AbortSignal, maxBytes?: number): Promise<FetchedDocument> {
-    return this.read(url, outer, true, maxBytes) as Promise<FetchedDocument>;
+    return this.read(url, outer, "pdf", maxBytes) as Promise<FetchedDocument>;
   }
 
-  private async read(url: string, outer: AbortSignal | undefined, pdf: boolean, maxBytes = this.o.maxBytes): Promise<FetchedPage | FetchedDocument> {
+  /** Reads a JSON resource under the same rules as a page, as text (the contents builder's ground truth for client-rendered pages). */
+  async fetchJsonText(url: string, outer?: AbortSignal): Promise<FetchedPage> {
+    return this.read(url, outer, "json") as Promise<FetchedPage>;
+  }
+
+  private async read(url: string, outer: AbortSignal | undefined, kind: "page" | "pdf" | "json", maxBytes = this.o.maxBytes): Promise<FetchedPage | FetchedDocument> {
+    const pdf = kind === "pdf";
     const deadline = AbortSignal.timeout(this.o.timeoutMs);
     const signal = outer ? AbortSignal.any([outer, deadline]) : deadline;
     try {
@@ -424,6 +430,14 @@ export class PlainFetcher {
         }
         const contentType = res.headers.get("content-type");
         const mime = (contentType ?? "text/html").split(";")[0]!.trim().toLowerCase();
+        if (kind === "json") {
+          if (mime !== "application/json") {
+            await res.body?.cancel().catch(() => {});
+            throw new Unreadable("content-type", res.status, mime);
+          }
+          const { bytes, truncated } = await readCapped(res, maxBytes);
+          return { status: "ok", url, finalUrl: target.href, httpStatus: res.status, title: null, text: new TextDecoder("utf-8").decode(bytes), truncated };
+        }
         if (pdf) {
           if (mime !== "application/pdf") {
             await res.body?.cancel().catch(() => {});

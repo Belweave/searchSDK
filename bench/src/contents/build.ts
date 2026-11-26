@@ -23,6 +23,8 @@ export interface Candidate {
   answerPatterns: string[];
   /** Always empty: no candidate is a navigational item. Present so a candidate is an answer key. */
   answerUrls?: string[];
+  /** For a PDF: the page count its source metadata states (an arXiv comment such as "12 pages"), if any. */
+  statedPages?: number;
 }
 
 /** The answer key of a candidate, for the shared matcher. */
@@ -36,6 +38,8 @@ export interface BuildIo {
   readDocument(url: string): Promise<FetchedDocument>;
   /** Extra js candidates (KEV records whose answer the CVE record states); [] when spec.extra.kev is 0. */
   kevCandidates(n: number, exclude: Set<string>): Promise<Candidate[]>;
+  /** Extra js candidates on a second site (ORCID profiles, named by the profile's own public record); [] when spec.extra.orcid is 0 or absent. */
+  orcidCandidates?(n: number, exclude: Set<string>): Promise<Candidate[]>;
   /** Extra pdf candidates (arXiv papers); [] when spec.extra.arxiv.count is 0. */
   arxivCandidates(n: number, exclude: Set<string>): Promise<Candidate[]>;
   log(line: string): void;
@@ -162,7 +166,10 @@ export async function buildUrlSet(spec: UrlSpec, items: readonly Item[], pools: 
   const order = <T>(xs: readonly T[], tag: string) => shuffle(xs, rng(seedOf(spec.seed, tag)));
   const cands = datasetCandidates(items);
   for (const c of cands) taken.add(urlKey(c.url));
-  const extraJs = spec.extra.kev ? await io.kevCandidates(spec.extra.kev, new Set(taken)) : [];
+  const extraJs = [
+    ...(spec.extra.kev ? await io.kevCandidates(spec.extra.kev, new Set(taken)) : []),
+    ...(spec.extra.orcid && io.orcidCandidates ? await io.orcidCandidates(spec.extra.orcid, new Set(taken)) : []),
+  ];
   const extraPdf = spec.extra.arxiv.count ? await io.arxivCandidates(spec.extra.arxiv.count, new Set(taken)) : [];
   taken.clear();
 
@@ -202,19 +209,32 @@ export async function buildUrlSet(spec: UrlSpec, items: readonly Item[], pools: 
     }
   }
 
-  // Client-rendered pages: alive for the harness (2xx) but without the answer in its text; the cited record states it.
-  const js = order([...cands.filter((c) => c.kind === "js"), ...extraJs], "js");
-  for (const c of js) {
-    if (need("js") <= 0) break;
+  // Client-rendered pages: alive for the harness (2xx) but without the answer in its title or text; the cited record states it.
+  // Two passes in one seeded order: first no site past its cap; then, if the stratum is not full, the deferred ones fill it.
+  const jsOrder = order([...cands.filter((c) => c.kind === "js"), ...extraJs], "js");
+  const jsCap = Math.max(1, Math.floor(spec.quotas.js * spec.maxSiteShare));
+  const perSite = new Map<string, number>();
+  const tryJs = async (c: Candidate) => {
     const k = urlKey(c.url);
-    if (taken.has(k)) continue;
+    if (taken.has(k)) return;
     const page = await io.readPage(c.url);
-    const status = page.status === "ok" ? page.httpStatus : page.httpStatus;
+    const status = page.httpStatus;
     const alive = page.status === "ok" || ((page.reason === "empty" || page.reason === "content-type") && status !== undefined && status >= 200 && status < 300);
-    if (!alive) { dropped.push({ url: c.url, why: `unreadable (${page.status === "unreadable" ? page.reason : "?"})` }); continue; }
-    if (page.status === "ok" && textHasAnswer(page.text, keyOf(c))) { dropped.push({ url: c.url, why: "a plain GET already shows the answer (not client-rendered)" }); continue; }
+    if (!alive) { dropped.push({ url: c.url, why: `unreadable (${page.status === "unreadable" ? page.reason : "?"})` }); return; }
+    if (page.status === "ok" && textHasAnswer(`${page.title ?? ""}\n${page.text}`, keyOf(c))) { dropped.push({ url: c.url, why: "a plain GET already shows the answer (not client-rendered)" }); return; }
     taken.add(k);
+    perSite.set(siteOf(c.url), (perSite.get(siteOf(c.url)) ?? 0) + 1);
     picked.js.push(record(c, "js", { httpStatus: status!, mime: "text/html", text: page.status === "ok" ? page.text : null }, "source"));
+  };
+  const deferred: Candidate[] = [];
+  for (const c of jsOrder) {
+    if (need("js") <= 0) break;
+    if ((perSite.get(siteOf(c.url)) ?? 0) >= jsCap) { deferred.push(c); continue; }
+    await tryJs(c);
+  }
+  for (const c of deferred) {
+    if (need("js") <= 0) break;
+    await tryJs(c);
   }
 
   // PDFs: read whole (within the byte limit) to count pages; long documents are left out.
@@ -223,6 +243,8 @@ export async function buildUrlSet(spec: UrlSpec, items: readonly Item[], pools: 
     if (need("pdf") <= 0) break;
     const k = urlKey(c.url);
     if (taken.has(k)) continue;
+    // A paper whose metadata already states more pages than the cap is not downloaded at all.
+    if (c.statedPages !== undefined && c.statedPages > spec.pdfMaxPages) { dropped.push({ url: c.url, why: `its arXiv comment states ${c.statedPages} pages, above ${spec.pdfMaxPages}` }); continue; }
     const doc = await io.readDocument(c.url);
     if (doc.status !== "ok") { dropped.push({ url: c.url, why: `unreadable (${doc.reason})` }); continue; }
     if (doc.pages === null) { dropped.push({ url: c.url, why: doc.truncated ? "larger than the byte limit" : "page count unreadable" }); continue; }
