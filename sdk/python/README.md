@@ -1,7 +1,9 @@
 # searchsdk for Python
 
-One interface to many web search providers, for AI apps and agents. Two
-calls: `search` and `contents`. Python 3.10 or newer, no dependencies.
+searchSDK is an open-source, MIT-licensed SDK by Belweave that gives AI apps
+and agents one interface to many web search APIs, with explicit fallback,
+per-attempt cost and open benchmarks. This is the Python runtime: two calls,
+`search` and `contents`. Python 3.10 or newer, no dependencies.
 
 **Nothing here is live-verified.** Providers are mapped from their public
 docs and tested against synthetic fixtures only.
@@ -15,6 +17,19 @@ the `flit_core` build backend:
 git clone https://github.com/Belweave/searchSDK
 python -m pip install ./searchSDK/sdk/python
 ```
+
+Docs: [searchsdk.dev/docs](https://searchsdk.dev/docs). The TypeScript
+runtime is on npm as
+[`@searchsdk/sdk`](https://www.npmjs.com/package/@searchsdk/sdk).
+
+## Providers
+
+Brave Search (`brave`, search only), Context.dev (`context`), Exa (`exa`),
+Firecrawl (`firecrawl`), Perplexity (`perplexity`), Tavily (`tavily`) and
+TinyFish (`tinyfish`). Each is described in `../../registry` and embedded in
+this package; every endpoint is unverified against its live API today.
+Provider names are trademarks of their owners; searchSDK is not affiliated
+with any provider.
 
 ## Use
 
@@ -125,3 +140,8 @@ python scripts/sync_registry.py                 # after changing ../../registry
 Tests run every vector in `registry/conformance` through both clients on a
 virtual clock, plus the real transport against a loopback server. A guard
 fails any other network use.
+
+## License
+
+[MIT](LICENSE). Provider services, their content and their terms remain the
+providers' own.

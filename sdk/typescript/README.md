@@ -1,8 +1,10 @@
 # @searchsdk/sdk
 
-One interface to many web search providers, for AI apps and agents. Two
-calls: `search` and `contents`. Zero runtime dependencies. Written for any
-runtime with standard `fetch`; tested on Node 24 only.
+searchSDK is an open-source, MIT-licensed SDK by Belweave that gives AI apps
+and agents one interface to many web search APIs, with explicit fallback,
+per-attempt cost and open benchmarks. This is the TypeScript runtime: two
+calls, `search` and `contents`, and zero runtime dependencies. Written for
+any runtime with standard `fetch`; tested on Node 24 only.
 
 **Not live-verified.** Providers are mapped from their public docs and tested
 against synthetic fixtures only.
@@ -13,8 +15,20 @@ against synthetic fixtures only.
 npm install @searchsdk/sdk
 ```
 
-Docs: [searchsdk.dev](https://searchsdk.dev). Source:
-[github.com/Belweave/searchSDK](https://github.com/Belweave/searchSDK/tree/v2/integration/sdk/typescript).
+Docs: [searchsdk.dev/docs](https://searchsdk.dev/docs). Source:
+[github.com/Belweave/searchSDK](https://github.com/Belweave/searchSDK/tree/main/sdk/typescript).
+A Python runtime with the same behaviour is in
+[`sdk/python`](https://github.com/Belweave/searchSDK/tree/main/sdk/python).
+
+## Providers
+
+Brave Search (`brave`, search only), Context.dev (`context`), Exa (`exa`),
+Firecrawl (`firecrawl`), Perplexity (`perplexity`), Tavily (`tavily`) and
+TinyFish (`tinyfish`). Each is described in
+[`registry/`](https://github.com/Belweave/searchSDK/tree/main/registry) and
+embedded in this package; every endpoint is unverified against its live API
+today. Provider names are trademarks of their owners; searchSDK is not
+affiliated with any provider.
 
 ## Use
 
@@ -121,3 +135,8 @@ npm pack --ignore-scripts=false   # builds dist first; .npmrc disables lifecycle
 Tests run every vector in `registry/conformance` with an injected fetch,
 plus one local loopback test of the real fetch. Every test file installs a
 guard that fails any other network use.
+
+## License
+
+[MIT](https://github.com/Belweave/searchSDK/blob/main/LICENSE). Provider
+services, their content and their terms remain the providers' own.
