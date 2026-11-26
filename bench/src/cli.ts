@@ -41,7 +41,7 @@ const HELP = `searchSDK Benchmarks
   tune     --config <run.json> [--tuning config/tuning.json] [--live --confirm-spend <tuning cap>]
            plan by default: the split, each provider's candidates, and the spend and credits of tuning, the main run and its tuned condition.
            --live tunes on the split and writes a selection; pass it to run with --tuned.
-  contents plan --config <contents.json> | run --config <contents.json> [--live --confirm-spend <cap>] [--resume <runId>]
+  contents plan --config <contents.json> [--url-set <file>] | run --config <contents.json> [--live --confirm-spend <cap>] [--resume <runId>]
            | score --run <runId> | publish --run <runId> [--out <dir>] | build --spec <url-spec.json> [--provisional] | validate [--config <contents.json>]
            the page-reading track (METHOD-contents.md): one default contents call per URL and provider, three passes, seeded, paced and capped
   verify   --provider <id> [--kinds search,contents] [--runtimes typescript,python] [--config <run.json>] [--cap 0.5] [--max-credits 200]

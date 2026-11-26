@@ -119,7 +119,9 @@ export function contentsOutputs(dir: string, meta: ContentsRunMeta, urls: Conten
 
 export async function contentsCommand(sub: string | undefined, flags: Flags): Promise<void> {
   if (sub === "plan") {
-    const config = loadContentsConfig(need(flags, "config"));
+    const base = loadContentsConfig(need(flags, "config"));
+    // --url-set prices another set (a provisional build in the store) without changing the config.
+    const config = str(flags, "url-set") ? { ...base, urlSet: resolve(str(flags, "url-set")!) } : base;
     const method = loadContentsMethod();
     const { urls, planned } = urlsFor(config);
     const plan = makeContentsPlan({ config, method, urls, planned, registry: reg() });
@@ -222,7 +224,7 @@ function loadItemsJsonl(path: string): ContentsUrl[] {
 /** The builder's network side: the harness fetcher one request at a time per host, KEV and CVE records, arXiv metadata. */
 export function liveBuildIo(spec: UrlSpec, today: string): BuildIo {
   const method = loadMethod();
-  const fetcher = livePageFetcher(method) as ReturnType<typeof livePageFetcher> & { fetchDocument(url: string): Promise<import("../pages/fetcher.ts").FetchedDocument> };
+  const fetcher = livePageFetcher(method) as ReturnType<typeof livePageFetcher> & { fetchDocument(url: string, signal?: AbortSignal, maxBytes?: number): Promise<import("../pages/fetcher.ts").FetchedDocument> };
   const last = new Map<string, number>();
   const paced = async <T>(url: string, fn: () => Promise<T>): Promise<T> => {
     const host = (() => { try { return new URL(url).host; } catch { return url; } })();
@@ -234,7 +236,8 @@ export function liveBuildIo(spec: UrlSpec, today: string): BuildIo {
   const ctx: SourceContext = { today, fetch: globalThis.fetch, log: (l) => console.error(l) };
   return {
     readPage: (url) => paced(url, () => fetcher.fetchPage(url)),
-    readDocument: (url) => paced(url, () => fetcher.fetchDocument(url)),
+    // Whole documents are read to count their pages: up to 25 MiB, beyond the page check's limit.
+    readDocument: (url) => paced(url, () => fetcher.fetchDocument(url, undefined, 25 * 1024 * 1024)),
     log: (l) => console.error(l),
     async kevCandidates(n, exclude) {
       const all = await kevProduct.candidates(ctx, "public");

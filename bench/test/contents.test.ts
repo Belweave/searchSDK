@@ -188,3 +188,13 @@ test("contents tests run behind the network guard", () => {
   assert.equal(process.env.BENCH_TEST, "1");
   assert.match(readFileSync(join(import.meta.dirname, "../package.json"), "utf8"), /--import \.\/test\/guard\.ts/);
 });
+
+test("the PDF page count reads page trees inside compressed object streams, and skips endstream", async () => {
+  const { deflateSync } = await import("node:zlib");
+  const { pdfPageCount } = await import("../src/pages/fetcher.ts");
+  const img = deflateSync(Buffer.from("not a page tree"));
+  const objstm = deflateSync(Buffer.from("<< /Type /Font /Widths 1 0 R >>\n<< /Count 6 /Kids [ 1 0 R ] /Parent 9 0 R /Type /Pages >>\n<< /Count 11 /Kids [ 2 0 R 3 0 R ] /Type /Pages >>\n<< /Count -3 /Type /Outlines >>"));
+  const pdf = Buffer.concat([Buffer.from("%PDF-1.7\n1 0 obj\n<< /Length 5 >>\nstream\n"), img, Buffer.from("\nendstream\nendobj\n2 0 obj\n<< /Type /ObjStm /Filter /FlateDecode >>\nstream\n"), objstm, Buffer.from("\r\nendstream\nendobj\n%%EOF")]);
+  assert.equal(pdfPageCount(pdf), 11);
+  assert.equal(pdfPageCount(Buffer.from("<html>not a pdf</html>")), null);
+});

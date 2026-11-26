@@ -63,11 +63,11 @@ score.
 
 | Stratum | Pages | Truth |
 | --- | --- | --- |
-| `reference` | dataset HTML pages under 50,000 characters of harness text | the harness text holds the answer |
-| `long` | dataset HTML pages of at least 50,000 characters | the harness text holds the answer |
+| `reference` | dataset HTML pages under 30,000 characters of harness text | the harness text holds the answer |
+| `long` | dataset HTML pages of at least 30,000 characters | the harness text holds the answer |
 | `pooled` | search-run pages, the same count from each provider | the harness text holds the answer |
 | `js` | client-rendered pages: 2xx to the harness, but its plain GET does not show the answer (CVE records on cve.org) | the record states the answer (the dataset review or the CVE record's CNA data) |
-| `pdf` | arXiv PDFs of at most 10 pages, counted by the harness from the file | the paper itself (its first author) |
+| `pdf` | arXiv PDFs of at most 10 pages, counted by the harness from the file (read whole, up to 25 MiB, page trees in compressed object streams included) | the paper itself (its first author) |
 
 Selection within a stratum follows one seeded order. No site (registrable
 domain) supplies more than half of a stratum while other candidates remain.

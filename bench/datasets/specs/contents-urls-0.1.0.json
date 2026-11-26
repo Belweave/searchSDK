@@ -6,7 +6,7 @@
   "runs": [],
   "quotas": { "reference": 60, "pooled": 60, "long": 60, "js": 60, "pdf": 60 },
   "pooledProviders": ["exa", "context", "firecrawl", "tinyfish"],
-  "longMinChars": 50000,
+  "longMinChars": 30000,
   "pdfMaxPages": 10,
   "maxSiteShare": 0.5,
   "extra": { "kev": 50, "arxiv": { "count": 150, "windowDays": [60, 95] } }

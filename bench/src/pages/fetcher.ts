@@ -8,7 +8,7 @@
 // Host names are resolved before each hop and refused when any address is
 // local or private; the live transport (address.ts) pins the connection to
 // checked addresses, so DNS rebinding cannot reach a private address either.
-import { inflateSync } from "node:zlib";
+import { constants as zlibConstants, inflateSync } from "node:zlib";
 import { blockedHost, isBlockedAddressError, resolvePublic, type Resolver } from "./address.ts";
 
 export interface FetcherOptions {
@@ -295,14 +295,15 @@ export function pdfPageCount(bytes: Uint8Array): number | null {
     }
   };
   scan(s);
-  const re = /stream\r?\n/g;
+  const re = /(?<!end)stream\r?\n/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(s))) {
     const start = m.index + m[0].length;
     const end = s.indexOf("endstream", start);
     if (end < 0) break;
     try {
-      const t = inflateSync(buf.subarray(start, end)).toString("latin1");
+      // A sync flush tolerates the line break some writers leave before "endstream".
+      const t = inflateSync(buf.subarray(start, end), { finishFlush: zlibConstants.Z_SYNC_FLUSH }).toString("latin1");
       if (/\/Type\s*\/Pages\b/.test(t)) {
         const before = counts.length;
         scan(t);
@@ -312,7 +313,7 @@ export function pdfPageCount(bytes: Uint8Array): number | null {
     } catch {
       // Not a Flate stream (images, fonts): nothing to read.
     }
-    re.lastIndex = end;
+    re.lastIndex = end + "endstream".length;
   }
   return counts.length ? Math.max(...counts) : null;
 }
@@ -394,11 +395,11 @@ export class PlainFetcher {
   }
 
   /** Reads a PDF under the same rules as a page (robots, hosts, redirects, deadline, byte limit) and counts its pages. */
-  async fetchDocument(url: string, outer?: AbortSignal): Promise<FetchedDocument> {
-    return this.read(url, outer, true) as Promise<FetchedDocument>;
+  async fetchDocument(url: string, outer?: AbortSignal, maxBytes?: number): Promise<FetchedDocument> {
+    return this.read(url, outer, true, maxBytes) as Promise<FetchedDocument>;
   }
 
-  private async read(url: string, outer: AbortSignal | undefined, pdf: boolean): Promise<FetchedPage | FetchedDocument> {
+  private async read(url: string, outer: AbortSignal | undefined, pdf: boolean, maxBytes = this.o.maxBytes): Promise<FetchedPage | FetchedDocument> {
     const deadline = AbortSignal.timeout(this.o.timeoutMs);
     const signal = outer ? AbortSignal.any([outer, deadline]) : deadline;
     try {
@@ -428,7 +429,7 @@ export class PlainFetcher {
             await res.body?.cancel().catch(() => {});
             throw new Unreadable("content-type", res.status, mime);
           }
-          const { bytes, truncated } = await readCapped(res, this.o.maxBytes);
+          const { bytes, truncated } = await readCapped(res, maxBytes);
           return { status: "ok", url, finalUrl: target.href, httpStatus: res.status, mime, bytes: bytes.byteLength, truncated, pages: truncated ? null : pdfPageCount(bytes) };
         }
         if (!TEXT_TYPES.has(mime)) {
