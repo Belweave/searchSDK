@@ -1,4 +1,4 @@
-// npm run check: brand copies current → typecheck → examples against the SDK → token and brand-rule scan → production
+// npm run check: brand copies current → generated MCP corpus and reference pages current → typecheck → examples against the SDK → token and brand-rule scan → production
 // build → serve on a free port → crawl and check every page → stop. Exit 1 on any failure. Makes no network request
 // beyond localhost.
 //   node checks/run.mjs [--no-build]
@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { syncBrand } from "./brand.mjs";
 import { checkExamples } from "./examples.mjs";
+import { syncMcp } from "./mcp.mjs";
 import { checkSite } from "./site.mjs";
 import { checkSource } from "./source.mjs";
 
@@ -63,6 +64,16 @@ try {
   }
   console.log(`brand current (${brand.files} files match brand/)`);
   results.push(`brand ok (${brand.files} tokens, fonts, marks and icons match brand/)`);
+
+  // The MCP corpus and shared core, and the generated reference pages, must match their sources.
+  console.log("\n▸ generated");
+  const mcp = await syncMcp();
+  if (mcp.failures.length) {
+    for (const f of mcp.failures) console.error(`  ✗ ${f}`);
+    throw new Error("lib/mcp is stale; run `npm run mcp:sync`");
+  }
+  await run(process.execPath, [path.join(ROOT, "checks", "reference.mjs")], "reference pages");
+  results.push("generated files ok (lib/mcp matches sdk/mcp, reference pages match the SDK and registry)");
 
   await run(NEXT, ["typegen"], "typegen");
   await run(TSC, ["--noEmit"], "typecheck");

@@ -1,0 +1,113 @@
+---
+title: searchSDK as an agent tool
+metaTitle: "Web search as an agent tool: AI SDK, OpenAI"
+description: Wrap searchSDK search and contents as a tool for the Vercel AI SDK, OpenAI function calling, Anthropic tool use or MCP.
+---
+
+One tool function serves every framework: call searchSDK, return a compact result, and return the error code instead of throwing so the model can recover.
+
+```ts
+import { createClient, SearchError } from "@searchsdk/sdk";
+
+export const client = createClient({ provider: "exa", fallback: ["tavily"], maxRetries: 1 });
+
+export async function webSearch(query: string) {
+  try {
+    const res = await client.search(query, { maxResults: 5 });
+    return {
+      results: res.results.map((r) => ({ title: r.title, url: r.url, publishedAt: r.publishedAt, excerpt: r.excerpts[0] ?? null })),
+      provider: res.provider,
+      costUsd: res.cost.usd,
+    };
+  } catch (e) {
+    if (e instanceof SearchError) return { error: e.code };
+    throw e;
+  }
+}
+```
+
+Keep keys on the server, cap `maxResults`, and log `cost` and `attempts` for each call.
+
+## Vercel AI SDK
+
+Pass the tool in `tools` to `generateText` or `streamText`.
+
+```ts
+import { tool } from "ai";
+import { z } from "zod";
+import { search } from "@searchsdk/sdk";
+
+export const webSearch = tool({
+  description: "Search the web. Returns titles, URLs, dates and excerpts.",
+  inputSchema: z.object({ query: z.string().describe("The search query") }),
+  execute: async ({ query }) => {
+    const res = await search(query, { provider: "tavily", maxResults: 5 });
+    return res.results.map((r) => ({ title: r.title, url: r.url, excerpt: r.excerpts[0] ?? null }));
+  },
+});
+```
+
+## OpenAI function calling
+
+```ts
+import OpenAI from "openai";
+import { search } from "@searchsdk/sdk";
+
+const openai = new OpenAI();
+const model = process.env.OPENAI_MODEL ?? "your-model-id";
+const tools: OpenAI.Responses.Tool[] = [
+  {
+    type: "function",
+    name: "web_search",
+    description: "Search the web. Returns titles, URLs and excerpts.",
+    parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"], additionalProperties: false },
+    strict: true,
+  },
+];
+
+const first = await openai.responses.create({ model, tools, input: "What changed in SQLite this year?" });
+const outputs: OpenAI.Responses.ResponseInputItem[] = [];
+for (const item of first.output) {
+  if (item.type !== "function_call" || item.name !== "web_search") continue;
+  const { query } = JSON.parse(item.arguments) as { query: string };
+  const res = await search(query, { provider: "exa", maxResults: 5 });
+  outputs.push({ type: "function_call_output", call_id: item.call_id, output: JSON.stringify(res.results) });
+}
+const answer = await openai.responses.create({ model, tools, previous_response_id: first.id, input: outputs });
+console.log(answer.output_text);
+```
+
+## Anthropic tool use
+
+```ts
+import Anthropic from "@anthropic-ai/sdk";
+import { search } from "@searchsdk/sdk";
+
+const anthropic = new Anthropic();
+const tools: Anthropic.Tool[] = [
+  {
+    name: "web_search",
+    description: "Search the web. Returns titles, URLs and excerpts.",
+    input_schema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] },
+  },
+];
+const messages: Anthropic.MessageParam[] = [{ role: "user", content: "What changed in SQLite this year?" }];
+
+for (;;) {
+  const reply = await anthropic.messages.create({ model: "claude-opus-5-5", max_tokens: 16000, tools, messages });
+  messages.push({ role: "assistant", content: reply.content });
+  if (reply.stop_reason !== "tool_use") break;
+  const results: Anthropic.ToolResultBlockParam[] = [];
+  for (const block of reply.content) {
+    if (block.type !== "tool_use") continue;
+    const { query } = block.input as { query: string };
+    const res = await search(query, { provider: "exa", maxResults: 5 });
+    results.push({ type: "tool_result", tool_use_id: block.id, content: JSON.stringify(res.results) });
+  }
+  messages.push({ role: "user", content: results });
+}
+```
+
+## MCP
+
+Agents that speak MCP can use the [searchSDK MCP server](/docs/mcp): the local package runs `search` and `contents` with your keys, and the public endpoint serves the docs and registry.

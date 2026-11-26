@@ -1,8 +1,8 @@
 // Typecheck every TypeScript example the site shows against the real SDK source, so examples
 // cannot drift from the API.
 //   node checks/examples.mjs
-// Sources: ```ts blocks in content/docs/**/*.mdx (each block is a complete module) and
-// content/examples/*.ts (shown on the home page). "@searchsdk/sdk" resolves to
+// Sources: ```ts blocks in content/docs/**/*.mdx and in the agent skill, ../skills/**/*.md (each
+// block is a complete module), and content/examples/*.ts (shown on the home page). "@searchsdk/sdk" resolves to
 // ../sdk/typescript/src/index.ts under the SDK's own compiler options.
 import { spawn } from "node:child_process";
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
@@ -15,12 +15,12 @@ const OUT = path.join(ROOT, ".cache", "examples");
 const TSC = path.join(ROOT, "node_modules", ".bin", "tsc");
 const FENCE = /^```(ts|typescript)\b[^\n]*\n([\s\S]*?)^```$/gm;
 
-async function mdxFiles(dir) {
+async function mdxFiles(dir, ext = ".mdx") {
   const out = [];
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...(await mdxFiles(full)));
-    else if (entry.name.endsWith(".mdx")) out.push(full);
+    if (entry.isDirectory()) out.push(...(await mdxFiles(full, ext)));
+    else if (entry.name.endsWith(ext)) out.push(full);
   }
   return out;
 }
@@ -30,14 +30,15 @@ async function collect() {
   await rm(OUT, { recursive: true, force: true });
   await mkdir(OUT, { recursive: true });
   const origin = new Map();
-  for (const file of await mdxFiles(path.join(ROOT, "content", "docs"))) {
+  const sources = [...(await mdxFiles(path.join(ROOT, "content", "docs"))), ...(await mdxFiles(path.join(ROOT, "..", "skills"), ".md"))];
+  for (const file of sources) {
     const text = await readFile(file, "utf8");
     const rel = path.relative(ROOT, file);
     let n = 0;
     for (const m of text.matchAll(FENCE)) {
       n += 1;
       const fenceLine = text.slice(0, m.index).split("\n").length; // the ``` line
-      const name = `${rel.replace(/[\\/]/g, "__").replace(/\.mdx$/, "")}.${n}.ts`;
+      const name = `${rel.replace(/^\.\.[\\/]/, "").replace(/[\\/.]/g, "__").replace(/__mdx?$/, "")}.${n}.ts`;
       // export {} keeps every block in its own module scope.
       await writeFile(path.join(OUT, name), `${m[2]}\nexport {};\n`);
       origin.set(name, { source: rel, offset: fenceLine });

@@ -116,3 +116,34 @@
   text-decoration-color: var(--line-strong);
   text-underline-offset: 0.22em;
 }
+
+/* Page actions under the description: two fixed-width keys, so copying or opening never shifts the
+   page. The menu is a popover over the page, not in its flow. */
+.ssdk-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 1rem 0.5rem;
+  min-height: 2rem;
+}
+.ssdk-page-action {
+  height: 2rem;
+  justify-content: center;
+}
+.ssdk-copy {
+  width: 10.5rem;
+}
+.ssdk-open-in {
+  min-width: 11rem;
+}
+.ssdk-open-in-item {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--corner-sm);
+  font-size: var(--type-sm);
+  color: var(--fg);
+}
+.ssdk-open-in-item:hover,
+.ssdk-open-in-item:focus-visible {
+  background: var(--surface-2);
+}
