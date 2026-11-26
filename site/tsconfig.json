@@ -22,6 +22,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@searchsdk/sdk": [
+        "../sdk/typescript/src/index.ts"
       ]
     },
     "plugins": [
@@ -29,7 +32,8 @@
         "name": "next"
       }
     ],
-    "allowJs": true
+    "allowJs": true,
+    "allowImportingTsExtensions": true
   },
   "include": [
     "next-env.d.ts",

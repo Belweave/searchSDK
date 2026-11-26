@@ -1,0 +1,23 @@
+---
+title: Changelog
+metaTitle: "searchSDK changelog"
+description: Releases of the searchSDK TypeScript package, the MCP server and the documentation, newest first.
+---
+
+## Unreleased
+
+- `@searchsdk/mcp` 0.1.0, a local MCP server over stdio with the docs and registry tools plus `search` and `contents` through your own keys. Not on npm yet.
+- A public docs MCP server at `https://searchsdk.dev/mcp`, on MCP revision 2026-07-28.
+- An [agent skill](/docs/agent-skill), guides for fallback, budgets, agent tools, errors and migration, and reference pages generated from the SDK source and the registry.
+- Docs pages can be copied as Markdown or opened in an AI assistant.
+
+## @searchsdk/sdk 0.1.0 (2026-11-25)
+
+First release, on npm as `@searchsdk/sdk`. No provider is verified against its live API yet: every spec is written from public docs and tested against synthetic fixtures.
+
+- `search` and `contents` over a shared, declarative provider registry: <ProviderNames />. Brave has search only.
+- Per-attempt cost: reported, computed from list prices, or unknown (never $0 for unknown), and whether each attempt was billed. `costBound` and `listPrice` price a call before it is sent.
+- Retries (off by default), `Retry-After`, per-attempt and per-call deadlines, cancellation, response size limits and explicit fallback.
+- Fixed error codes on `SearchError`, including `spec_mismatch` with the failing path, and an opt-in diagnostics hook.
+
+The Python runtime in `sdk/python` is not on PyPI yet.

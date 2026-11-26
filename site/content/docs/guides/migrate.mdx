@@ -1,0 +1,44 @@
+---
+title: Migrate from a provider's API
+metaTitle: "Migrate from a search provider's API to searchSDK"
+description: Replace a direct call to a search provider with searchSDK, keep provider-only options, and map the response fields.
+---
+
+A direct call builds the provider's request, reads its own response shape and handles its own errors. With searchSDK, the request, the result shape and the error codes are the same for every provider.
+
+## Before
+
+```ts
+const response = await fetch("https://api.exa.ai/search", {
+  method: "POST",
+  headers: { "content-type": "application/json", "x-api-key": process.env.EXA_API_KEY ?? "" },
+  body: JSON.stringify({ query: "sqlite wal mode", numResults: 5, category: "news" }),
+});
+if (!response.ok) throw new Error(`Exa ${response.status}`);
+const body = (await response.json()) as { results: { url: string; title: string | null }[] };
+console.log(body.results.map((r) => r.url));
+```
+
+## After
+
+```ts
+import { search } from "@searchsdk/sdk";
+
+const res = await search("sqlite wal mode", {
+  provider: "exa",
+  maxResults: 5,
+  providerOptions: { exa: { category: "news" } },
+});
+console.log(res.results.map((r) => r.url), res.cost.usd);
+```
+
+## Step by step
+
+1. Install `@searchsdk/sdk` and keep the provider's key variable; searchSDK reads the same name.
+2. Map the parameters that have a common name (`maxResults`, domains, dates, `country`, `language`, `depth`). [Provider support](/docs/reference/provider-support) shows each provider's mapping.
+3. Move the rest under `providerOptions[id]`. They are validated before sending.
+4. Read `results`, or `pages` for contents. Fields with no common name stay in `providerFields`, and the provider's whole body stays in `raw`.
+5. Replace status checks with `SearchError` codes ([Errors](/docs/guides/errors)).
+6. Add a `fallback` when you want a second provider.
+
+Options a provider cannot honour fail as `unsupported` instead of being dropped, so a migrated call never silently changes meaning.

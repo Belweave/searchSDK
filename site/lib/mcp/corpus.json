@@ -1,0 +1,3777 @@
+{
+ "formatVersion": 1,
+ "siteUrl": "https://searchsdk.dev",
+ "sdkVersion": "0.1.0",
+ "docs": [
+  {
+   "path": "/docs/what-is-searchsdk",
+   "title": "What is searchSDK?",
+   "description": "searchSDK is an open-source SDK that gives AI apps and agents one interface to many web search APIs.",
+   "body": "searchSDK is an open-source, MIT-licensed SDK by Belweave. Your server makes one call; searchSDK sends it to the web search provider you name.\n\n## What is a web search API for AI agents?\n\nA web search API takes a query and returns results as data: URLs, titles, dates and excerpts. Agents use it to ground answers in current pages. Each provider has its own index, options, result fields, prices and limits.\n\n## What does searchSDK do?\n\n- Two calls, `search` and `contents`, with one result shape for every provider.\n- Switch providers by changing one id.\n- Fall back to other providers, in your order, only when you turn it on.\n- Report a cost on every response and attempt, and where it came from.\n\n## Which providers does it support?\n\nBrave Search, Context.dev, Exa, Firecrawl, Perplexity, Tavily and TinyFish. Each is mapped from its public docs; none is verified against its live API yet. [Each provider's page](https://searchsdk.dev/providers) lists what it supports.\n\n## Which languages does it support?\n\nTypeScript on Node 24 and Python 3.10 or newer, neither with runtime dependencies. TypeScript installs from npm as `@searchsdk/sdk` ([the quickstart](https://searchsdk.dev/docs)); Python is not on PyPI yet.\n\n## Where do calls go?\n\nFrom your server to the provider, with your key. No searchSDK service sits in between.\n\n## How are providers compared?\n\nAn [open benchmark](https://searchsdk.dev/docs/benchmarks-method) ranks quality first, then reliability. Results are pending; the first run is in progress."
+  },
+  {
+   "path": "/docs/vs-provider-apis",
+   "title": "searchSDK vs calling providers directly",
+   "description": "When to call a web search provider directly, and when searchSDK fits.",
+   "body": "Calling a provider directly means using its own API or SDK. searchSDK is one interface over many. Both call the provider from your server; the difference is what you write and maintain.\n\n| | Provider API or SDK | searchSDK |\n| --- | --- | --- |\n| Shape | The provider's own | One for every provider, its body in `raw` |\n| Switching | Rewrite the calls | Change the `provider` id |\n| Fallback | You write it | Opt-in, in your order, every attempt recorded |\n| Cost | From the provider's billing | On every response and attempt, with its source |\n| Features | All of them, as they ship | The options each [provider's spec](https://searchsdk.dev/providers) maps |\n| Status | Maintained by the provider | TypeScript on npm, Python from source; not verified against live APIs yet |\n\n## When should you call a provider directly?\n\n- You use one provider and do not plan to change.\n- You need an option searchSDK does not map yet.\n- You want a published package the provider supports.\n\n## When does searchSDK fit?\n\n- You call more than one provider, or want to try several with the same code.\n- You want fallback when a provider is down, rate limited or out of quota.\n- You want to know what each attempt cost, retries included.\n\n## Can you use both?\n\nYes. `raw` keeps the provider's response and `providerOptions` passes options only one provider understands. A provider's own SDK can sit beside searchSDK in one app."
+  },
+  {
+   "path": "/docs/alternatives",
+   "title": "Alternatives to searchSDK",
+   "description": "Other ways to give apps and agents web search, and when each one fits.",
+   "body": "searchSDK is one way to give an app or agent web search across providers. These are the others.\n\n## One provider's API or SDK\n\nThe plainest option when one provider covers your needs. You get every feature as it ships, in the provider's own shape. [The comparison](https://searchsdk.dev/docs/vs-provider-apis) covers the trade-offs.\n\n## Your own adapter layer\n\nFull control. You map each provider's options, fields, errors and prices yourself, and keep them current as the APIs change.\n\n## Search tools in an agent framework\n\nFrameworks such as LangChain and LlamaIndex include integrations for individual search providers. Each wraps one provider, so moving between providers means changing tools.\n\n## A provider's MCP server\n\nSeveral search providers publish MCP servers that let an agent call their API as a tool. Each server speaks for one provider.\n\n## Hosted aggregators\n\nHosted services put several providers behind one API of their own, so your queries pass through them. With searchSDK, calls go from your server to the provider, with your key.\n\n## How to compare them\n\n- Which providers each covers, and which of their options.\n- Whether cost is reported per attempt, retries and fallback included.\n- Whether fallback is explicit and recorded.\n- Where keys live, and which servers see your queries.\n- The license, and whether the code is open."
+  },
+  {
+   "path": "/docs/faq",
+   "title": "FAQ",
+   "description": "Short answers on searchSDK: providers, fallback, cost, benchmarks, status and license.",
+   "body": "## What is searchSDK?\n\nAn open-source SDK by Belweave that gives AI apps and agents one interface to many web search APIs. Your server calls `search` or `contents`; searchSDK calls the provider you name.\n\n## Which providers does it support?\n\nBrave Search, Context.dev, Exa, Firecrawl, Perplexity, Tavily and TinyFish. [Their pages](https://searchsdk.dev/providers) list options, prices and limits.\n\n## How does fallback work?\n\nOff unless you set it. A call whose provider times out, is down, rate limited, out of quota or cannot honour an option then tries the next provider in your list. Every attempt is recorded.\n\n## How is cost reported?\n\nEvery response and attempt carries a cost and its source: reported by the provider, computed from the list price, or unknown. An unknown price is `null`, never 0.\n\n## How does the benchmark work?\n\nThe same queries go to every provider. Known-answer tasks set the rank among dependable providers; latency and cost never change it. Results are pending. [Method](https://searchsdk.dev/docs/benchmarks-method).\n\n## How is it different from calling a provider directly?\n\nOne result shape, one id to change, explicit fallback and per-attempt cost. A direct call gets every provider feature first. [The comparison](https://searchsdk.dev/docs/vs-provider-apis).\n\n## Is it on npm or PyPI?\n\nTypeScript is on npm as [`@searchsdk/sdk`](https://www.npmjs.com/package/@searchsdk/sdk). Python is not on PyPI yet; build it from source with [its README](https://github.com/Belweave/searchSDK/tree/v2/integration/sdk/python). No provider is verified against its live API yet.\n\n## What license is it under?\n\nMIT. [Source on GitHub](https://github.com/Belweave/searchSDK)."
+  },
+  {
+   "path": "/docs/privacy",
+   "title": "Privacy",
+   "description": "How the searchSDK website counts visits without cookies, and why the SDK itself sends nothing.",
+   "body": "## The SDK\n\nThe SDK has no analytics and no telemetry. A call goes from your server to the provider you name, with your key, and nowhere else. Nothing reaches Belweave or this site.\n\n## This website\n\nThe site counts visits with PostHog in cookieless mode: no cookies, no local or session storage, no consent banner. PostHog derives a visitor hash on its servers that changes every day, so a visit cannot be linked to the next day's.\n\nIt measures:\n\n- pages viewed and left, and page load timings (Core Web Vitals);\n- clicks on links and buttons, the destination host of links to other sites, and which code blocks are copied;\n- the length of a docs search, never its text;\n- fetches of `llms.txt`, the Markdown copies, the sitemap and `robots.txt`: the path, the kind of client (a named crawler or agent, a browser or a tool), the referring host and the country.\n\nIt never records what you type, session replays, names or accounts, or a URL's query string. PostHog is set to discard IP addresses.\n\nA browser that sends Do Not Track or Global Privacy Control loads no analytics.\n\nEvents go to `/ingest` on this site, which forwards them to PostHog's US cloud.\n\n## Package statistics\n\nOnce a day the site records public figures: npm download counts, and the GitHub repository's stars, forks, watchers and release downloads."
+  },
+  {
+   "path": "/docs",
+   "title": "Quickstart",
+   "description": "Install searchSDK from npm, set a provider key and run your first web search from TypeScript.",
+   "body": "searchSDK gives AI apps and agents one interface to many web search APIs. This page installs it and runs a first search.\n\n## Install\n\n```sh\nnpm install @searchsdk/sdk\n```\n\nIt has no runtime dependencies and needs a standard `fetch`. Tested on Node 24.\n\n## Add a key\n\nEach provider reads its documented variable, such as `EXA_API_KEY`. Keys stay on your server and are never logged.\n\n```sh\nexport EXA_API_KEY=\"your-key\"\n```\n\n## Search\n\n```ts\nimport { search } from \"@searchsdk/sdk\";\n\nconst { results, cost } = await search(\"vector database indexing\", { provider: \"exa\", maxResults: 5 });\nfor (const r of results) console.log(r.title, r.url);\nconsole.log(cost.usd, cost.source);\n```\n\n## Fall back\n\nA client can try other providers, in order, when one is unavailable, rate limited, out of quota or cannot honour an option. Fallback and retries are off unless you set them.\n\n```ts\nimport { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({ provider: \"exa\", fallback: [\"tavily\"], maxRetries: 1 });\nconst res = await client.search(\"vector database indexing\");\nconsole.log(res.provider, res.attempts.length);\n```\n\n## Next\n\n- [Search](https://searchsdk.dev/docs/search): options, results and errors.\n- [Contents](https://searchsdk.dev/docs/contents): the text of pages.\n- [Providers](https://searchsdk.dev/docs/providers): ids, keys and provider options.\n- [Cost](https://searchsdk.dev/docs/cost): what each call cost."
+  },
+  {
+   "path": "/docs/search",
+   "title": "Search",
+   "description": "Search the web through one provider or a fallback chain, with filters, deadlines, retries and a cancel signal.",
+   "body": "`search(query, options)` uses keys from the environment. `createClient(config).search(query, options)` takes keys and defaults once.\n\n```ts\nimport { search } from \"@searchsdk/sdk\";\n\nconst controller = new AbortController();\nconst res = await search(\"postgres full text search\", {\n  provider: \"tavily\",\n  maxResults: 5,\n  recency: \"month\",\n  country: \"DE\",\n  timeoutMs: 10_000,\n  signal: controller.signal,\n});\n```\n\n## Options\n\n| Option | Meaning |\n| --- | --- |\n| `provider` | Provider id; required unless the client sets one |\n| `fallback` | Providers to try next, in order |\n| `maxResults` | 1 to 100; default 10 |\n| `includeDomains`, `excludeDomains` | Domain filters |\n| `recency` | `day`, `week`, `month` or `year` |\n| `startDate`, `endDate` | Inclusive `YYYY-MM-DD`, by publication date |\n| `country`, `language` | ISO 3166-1 and ISO 639-1 codes |\n| `depth` | `fast`, `standard` or `deep` |\n| `providerOptions` | Options one provider understands, keyed by id |\n| `timeoutMs` | Deadline for the whole call; default 30 s |\n| `attemptTimeoutMs` | Deadline for each attempt |\n| `maxRetries` | Retries of transient failures; default 0 |\n| `maxResponseBytes` | Largest response read |\n| `signal` | Cancels the call |\n\nAn option a provider cannot honour fails as `unsupported` before anything is sent. [Each provider's page](https://searchsdk.dev/providers) lists what it honours.\n\n## Results\n\n| Field | Meaning |\n| --- | --- |\n| `url` | Page address |\n| `title`, `author`, `publishedAt` | Or `null` when the provider has none |\n| `excerpts` | Text the provider matched |\n| `rank` | Position, from 1 |\n| `providerFields` | Provider-scoped values such as scores; not comparable across providers |\n\nThe response also carries `provider`, `cost`, `requestId`, `latencyMs`, `warnings`, `attempts` and `raw`, the provider's own body.\n\n## Errors\n\nFailures throw `SearchError` with a fixed `code` and the `attempts` made.\n\n```ts\nimport { search, SearchError } from \"@searchsdk/sdk\";\n\ntry {\n  await search(\"postgres full text search\", { provider: \"brave\", includeDomains: [\"postgresql.org\"] });\n} catch (e) {\n  if (e instanceof SearchError) console.log(e.code, e.field, e.attempts);\n}\n```"
+  },
+  {
+   "path": "/docs/contents",
+   "title": "Contents",
+   "description": "Fetch the readable text of web pages through a provider, one result per requested URL, with failures kept.",
+   "body": "`contents(urls, options)` returns one page per requested URL, in order.\n\n```ts\nimport { contents } from \"@searchsdk/sdk\";\n\nconst { pages, cost } = await contents([\"https://example.com/a\", \"https://example.com/b\"], { provider: \"exa\" });\nfor (const page of pages) {\n  if (page.status === \"ok\") console.log(page.title, page.content?.length);\n  else console.log(page.url, page.error?.code);\n}\nconsole.log(cost.usd);\n```\n\n## Options\n\nThe call options from [Search](https://searchsdk.dev/docs/search): `provider`, `fallback`, `providerOptions`, `timeoutMs`, `attemptTimeoutMs`, `maxRetries`, `maxResponseBytes` and `signal`. Each provider takes a limited number of URLs per call; [its page](https://searchsdk.dev/providers) says how many.\n\n## Pages\n\n| Field | Meaning |\n| --- | --- |\n| `url` | The URL as requested |\n| `status` | `ok` or `failed` |\n| `finalUrl` | Address after redirects, or `null` |\n| `title`, `author`, `publishedAt` | Or `null` |\n| `content` | Page text, Markdown or plain per provider |\n| `error` | Code and message for a failed page |\n\nA URL the provider did not return is `failed` with code `missing`. One failed page does not fail the call."
+  },
+  {
+   "path": "/docs/providers",
+   "title": "Providers",
+   "description": "How searchSDK names providers, finds their keys, passes provider-only options and keeps raw responses.",
+   "body": "A provider is a search API that searchSDK calls from your server. [Each provider's page](https://searchsdk.dev/providers) shows what it supports, its prices and limits, read from the registry.\n\n## Ids and keys\n\n| Provider | Id | Key variable | Calls |\n| --- | --- | --- | --- |\n| [Brave Search](https://searchsdk.dev/providers/brave) | `brave` | `BRAVE_API_KEY` | search |\n| [Context.dev](https://searchsdk.dev/providers/context) | `context` | `CONTEXT_DEV_API_KEY` | search, contents |\n| [Exa](https://searchsdk.dev/providers/exa) | `exa` | `EXA_API_KEY` | search, contents |\n| [Firecrawl](https://searchsdk.dev/providers/firecrawl) | `firecrawl` | `FIRECRAWL_API_KEY` | search, contents |\n| [Perplexity](https://searchsdk.dev/providers/perplexity) | `perplexity` | `PERPLEXITY_API_KEY` | search, contents |\n| [Tavily](https://searchsdk.dev/providers/tavily) | `tavily` | `TAVILY_API_KEY` | search, contents |\n| [TinyFish](https://searchsdk.dev/providers/tinyfish) | `tinyfish` | `TINYFISH_API_KEY` | search, contents |\n\nIds are lowercase and typed as `ProviderId`. Keys come from each provider's documented variable, or from `keys`:\n\n```ts\nimport { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({\n  provider: \"brave\",\n  fallback: [\"firecrawl\"],\n  keys: { brave: \"your-brave-key\", firecrawl: \"your-firecrawl-key\" },\n});\n```\n\nPass `env` instead to read variables from elsewhere, such as Worker bindings. A fallback without a key is skipped with a warning. Never ship a key to a browser or mobile app.\n\n## Provider options\n\nOptions only one provider understands go under its id, typed per provider and checked before sending.\n\n```ts\nimport { search } from \"@searchsdk/sdk\";\n\nconst res = await search(\"rust async runtimes\", {\n  provider: \"exa\",\n  providerOptions: { exa: { category: \"news\" } },\n});\n```\n\n## Raw responses\n\n`raw` is the provider's own parsed body, and `providerFields` keeps fields with no common name.\n\n```ts\nimport { search } from \"@searchsdk/sdk\";\n\nconst res = await search(\"rust async runtimes\", { provider: \"tavily\" });\nconsole.log(res.raw, res.results[0]?.providerFields);\n```\n\n## The registry\n\nProvider behaviour is data, one spec per provider. `registry` exports it; `createClient({ registry })` accepts edited copies and validates them."
+  },
+  {
+   "path": "/docs/cost",
+   "title": "Cost",
+   "description": "How searchSDK reports what each call cost, where the figure comes from, and how retries and fallback stay visible.",
+   "body": "Every response has a `cost`: `usd`, `estimated`, `source` and, for credit pricing, `credits`.\n\n| `source` | Meaning |\n| --- | --- |\n| `reported` | The provider's response states the cost in USD |\n| `reported-credits` | The provider reports credits, converted at the list price per credit |\n| `computed` | Computed from the list price in the registry |\n| `unknown` | No public price; `usd` is `null`, never 0 |\n| `none` | Nothing was billed |\n\n`estimated` is false only for an exact figure from the provider, or when nothing was sent. Provider options that change the price pick a price tier, or make a computed cost `unknown` when the registry cannot price them.\n\n## Every attempt\n\nEach entry in `attempts` has its own `cost` and `billed`: `yes` when the provider answered with success, `possible` when the request may have reached it without an answer, `no` when nothing was sent or the provider answered with an error. Retries and fallback never hide spend.\n\n```ts\nimport { search } from \"@searchsdk/sdk\";\n\nconst res = await search(\"sqlite wal mode\", { provider: \"exa\" });\nconst billed = res.attempts.filter((a) => a.billed !== \"no\");\nconst known = billed.every((a) => a.cost.usd !== null);\nconst usd = billed.reduce((sum, a) => sum + (a.cost.usd ?? 0), 0);\nconsole.log(known ? usd : \"unknown\");\n```\n\nA failed call carries the same `attempts` on its `SearchError`.\n\n## Before a call\n\n`costBound` gives the most one request can cost at the highest documented rate, such as overage or the top of a price range. Use it to hold a spend cap without guessing a margin. `listPrice` gives the computed price for a result count.\n\n```ts\nimport { costBound, listPrice, registry } from \"@searchsdk/sdk\";\n\nconst bound = costBound(registry.exa, \"search\", { maxResults: 10, depth: \"deep\" });\nconsole.log(bound.usd); // null when it cannot be bounded; see bound.unknownBecause\nconsole.log(listPrice(registry.exa, \"search\", { count: 10 }).usd);\n```\n\nA free allowance gives a bound with `requiresOverageOff: true`: it holds while paid use past the allowance stays off.\n\nPrices come from [each provider's page](https://searchsdk.dev/providers), with the date they were read."
+  },
+  {
+   "path": "/docs/benchmarks-method",
+   "title": "Benchmarks method",
+   "description": "How searchSDK benchmarks web search providers end to end, scores answer quality and ranks the leaderboard.",
+   "body": "Every provider runs the same queries through searchSDK, end to end, with settings tuned to suit it. The harness is open: anyone can rerun it with their own keys.\n\nNo results are published yet. Until the first run is, the leaderboard shows the same placeholder for every provider.\n\n## The run\n\n- About 400 queries, once a month.\n- Each query goes to every provider with the same deadline and result limit.\n- Every response, failure and timing is recorded.\n\n## Quality\n\n- **Known-answer tasks** set the rank. Each query has a checked answer. A provider scores when its top results, or the pages behind them, contain it. The harness reads those pages itself, obeying robots.txt, so no provider fetches for its rivals. A page it cannot read counts the same for everyone.\n- **Judged relevance** is a separate column. One model grades results against a published rubric. People check a sample, and the column appears only when they agree with it.\n\n## Ranking\n\n1. Providers with fewer than 95% usable responses are marked unreliable and ranked below every dependable one.\n2. The known-answer score decides the rest.\n3. Two providers are tied unless the gap is statistically clear and at least 6 points.\n\nLatency and cost are reported beside the rank. Cost never changes rank.\n\n## Funding\n\nRuns are paid for by provider credits, donations and a capped monthly budget from the maintainer. Every source is disclosed with the results."
+  },
+  {
+   "path": "/docs/guides/fallback",
+   "title": "Fallback and retries",
+   "description": "How searchSDK retries transient failures, falls back to the next provider, and records every attempt with its cost.",
+   "body": "Both are off until you set them. Retries repeat a transient failure on the same provider; fallback moves to the next provider in your list.\n\n```ts\nimport { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({\n  provider: \"exa\",\n  fallback: [\"tavily\", \"brave\"],\n  maxRetries: 2,\n  timeoutMs: 15_000,\n  attemptTimeoutMs: 5_000,\n});\n\nconst res = await client.search(\"open source vector databases\");\nif (res.warnings.some((w) => w.code === \"fallback_used\")) console.log(\"answered by\", res.provider);\nfor (const a of res.attempts) console.log(a.provider, a.outcome, a.code ?? \"-\", a.billed);\n```\n\n## What is retried\n\n`network`, `rate_limit`, `unavailable` and `attempt_timeout`, up to `maxRetries` times (at most 5), with jittered backoff from 250 ms to 5 s. A `Retry-After` is honoured up to 60 s; a longer one moves on. No retry starts if it would pass `timeoutMs`, which bounds the whole call.\n\n## What falls back\n\nThe retryable codes, plus `quota` and `unsupported`. A provider without a key is skipped with a `fallback_key_missing` warning; one that cannot honour an option is skipped before anything is sent. Each provider is tried once.\n\n`auth`, `forbidden`, `provider_error`, `invalid_response`, `spec_mismatch` and `response_too_large` stop the call: moving on would hide a bug or a billed reply. So do `timeout` and `aborted`.\n\n## Options across a chain\n\nNormalized options go to every provider; one that lacks an option is skipped. `providerOptions` are keyed by id, so each provider gets only its own.\n\n```ts\nimport { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({ provider: \"brave\", fallback: [\"exa\"] });\n// Brave has no startDate, so it is skipped and Exa answers.\nconst res = await client.search(\"rust 2027 edition\", {\n  startDate: \"2026-06-01\",\n  providerOptions: { exa: { category: \"news\" } },\n});\nconsole.log(res.provider, res.attempts.map((a) => `${a.provider}:${a.outcome}`));\n```\n\nPer-call `fallback` replaces the client's list; pass `[]` to turn it off for one call. Codes: [Error codes](https://searchsdk.dev/docs/reference/errors)."
+  },
+  {
+   "path": "/docs/guides/cost-budgets",
+   "title": "Cost and budgets",
+   "description": "Reserve the most a call can cost before sending it, then record what each attempt cost, with unknown prices kept unknown.",
+   "body": "searchSDK never guesses a price. A known cost is a number; an unknown one is `null`. A budget should treat `null` as \"cannot approve\", not as free.\n\n## Before the call\n\n`costBound` gives the most one request can cost at the highest documented rate. Reserve it for every attempt the call might make.\n\n```ts\nimport { costBound, registry, type ProviderId } from \"@searchsdk/sdk\";\n\nconst chain: ProviderId[] = [\"exa\", \"tavily\"];\nconst attemptsPerProvider = 1 + 1; // the first try plus maxRetries: 1\n\nlet reserve = 0;\nfor (const id of chain) {\n  const bound = costBound(registry[id], \"search\", { maxResults: 10 });\n  if (bound.usd === null) throw new Error(`${id} cannot be bounded: ${bound.unknownBecause}`);\n  if (bound.requiresOverageOff) console.log(`${id}: holds only while paid overage is off`);\n  reserve += bound.usd * attemptsPerProvider;\n}\nconsole.log(\"reserve\", reserve);\n```\n\n`unknownBecause` is `option` when a provider option has no public price, `count` when the billed count is unbounded, and `price` when the price is not public.\n\n## After the call\n\nSum the attempts that may have been billed. Attempts with `billed: \"no\"` cost nothing.\n\n```ts\nimport { createClient, SearchError, type Attempt } from \"@searchsdk/sdk\";\n\nfunction spent(attempts: readonly Attempt<string>[]): number | null {\n  let usd = 0;\n  for (const a of attempts.filter((x) => x.billed !== \"no\")) {\n    if (a.cost.usd === null) return null;\n    usd += a.cost.usd;\n  }\n  return usd;\n}\n\nconst client = createClient({ provider: \"exa\", fallback: [\"tavily\"], maxRetries: 1 });\ntry {\n  const res = await client.search(\"sqlite wal mode\");\n  console.log(spent(res.attempts), res.cost.source);\n} catch (e) {\n  if (e instanceof SearchError) console.log(\"failed, spent\", spent(e.attempts));\n}\n```\n\n`billed: \"possible\"` means the request may have reached the provider without an answer; count it to stay safe. A `reported` cost comes from the provider; `computed` is the registry's list price. Prices change: each [provider page](https://searchsdk.dev/providers) shows the date they were read."
+  },
+  {
+   "path": "/docs/guides/agent-tools",
+   "title": "searchSDK as an agent tool",
+   "description": "Wrap searchSDK search and contents as a tool for the Vercel AI SDK, OpenAI function calling, Anthropic tool use or MCP.",
+   "body": "One tool function serves every framework: call searchSDK, return a compact result, and return the error code instead of throwing so the model can recover.\n\n```ts\nimport { createClient, SearchError } from \"@searchsdk/sdk\";\n\nexport const client = createClient({ provider: \"exa\", fallback: [\"tavily\"], maxRetries: 1 });\n\nexport async function webSearch(query: string) {\n  try {\n    const res = await client.search(query, { maxResults: 5 });\n    return {\n      results: res.results.map((r) => ({ title: r.title, url: r.url, publishedAt: r.publishedAt, excerpt: r.excerpts[0] ?? null })),\n      provider: res.provider,\n      costUsd: res.cost.usd,\n    };\n  } catch (e) {\n    if (e instanceof SearchError) return { error: e.code };\n    throw e;\n  }\n}\n```\n\nKeep keys on the server, cap `maxResults`, and log `cost` and `attempts` for each call.\n\n## Vercel AI SDK\n\nPass the tool in `tools` to `generateText` or `streamText`.\n\n```ts\nimport { tool } from \"ai\";\nimport { z } from \"zod\";\nimport { search } from \"@searchsdk/sdk\";\n\nexport const webSearch = tool({\n  description: \"Search the web. Returns titles, URLs, dates and excerpts.\",\n  inputSchema: z.object({ query: z.string().describe(\"The search query\") }),\n  execute: async ({ query }) => {\n    const res = await search(query, { provider: \"tavily\", maxResults: 5 });\n    return res.results.map((r) => ({ title: r.title, url: r.url, excerpt: r.excerpts[0] ?? null }));\n  },\n});\n```\n\n## OpenAI function calling\n\n```ts\nimport OpenAI from \"openai\";\nimport { search } from \"@searchsdk/sdk\";\n\nconst openai = new OpenAI();\nconst model = process.env.OPENAI_MODEL ?? \"your-model-id\";\nconst tools: OpenAI.Responses.Tool[] = [\n  {\n    type: \"function\",\n    name: \"web_search\",\n    description: \"Search the web. Returns titles, URLs and excerpts.\",\n    parameters: { type: \"object\", properties: { query: { type: \"string\" } }, required: [\"query\"], additionalProperties: false },\n    strict: true,\n  },\n];\n\nconst first = await openai.responses.create({ model, tools, input: \"What changed in SQLite this year?\" });\nconst outputs: OpenAI.Responses.ResponseInputItem[] = [];\nfor (const item of first.output) {\n  if (item.type !== \"function_call\" || item.name !== \"web_search\") continue;\n  const { query } = JSON.parse(item.arguments) as { query: string };\n  const res = await search(query, { provider: \"exa\", maxResults: 5 });\n  outputs.push({ type: \"function_call_output\", call_id: item.call_id, output: JSON.stringify(res.results) });\n}\nconst answer = await openai.responses.create({ model, tools, previous_response_id: first.id, input: outputs });\nconsole.log(answer.output_text);\n```\n\n## Anthropic tool use\n\n```ts\nimport Anthropic from \"@anthropic-ai/sdk\";\nimport { search } from \"@searchsdk/sdk\";\n\nconst anthropic = new Anthropic();\nconst tools: Anthropic.Tool[] = [\n  {\n    name: \"web_search\",\n    description: \"Search the web. Returns titles, URLs and excerpts.\",\n    input_schema: { type: \"object\", properties: { query: { type: \"string\" } }, required: [\"query\"] },\n  },\n];\nconst messages: Anthropic.MessageParam[] = [{ role: \"user\", content: \"What changed in SQLite this year?\" }];\n\nfor (;;) {\n  const reply = await anthropic.messages.create({ model: \"claude-opus-5-5\", max_tokens: 16000, tools, messages });\n  messages.push({ role: \"assistant\", content: reply.content });\n  if (reply.stop_reason !== \"tool_use\") break;\n  const results: Anthropic.ToolResultBlockParam[] = [];\n  for (const block of reply.content) {\n    if (block.type !== \"tool_use\") continue;\n    const { query } = block.input as { query: string };\n    const res = await search(query, { provider: \"exa\", maxResults: 5 });\n    results.push({ type: \"tool_result\", tool_use_id: block.id, content: JSON.stringify(res.results) });\n  }\n  messages.push({ role: \"user\", content: results });\n}\n```\n\n## MCP\n\nAgents that speak MCP can use the [searchSDK MCP server](https://searchsdk.dev/docs/mcp): the local package runs `search` and `contents` with your keys, and the public endpoint serves the docs and registry."
+  },
+  {
+   "path": "/docs/guides/errors",
+   "title": "Errors and troubleshooting",
+   "description": "Handle SearchError by its code, find what failed in its attempts, and fix the common causes of each failure.",
+   "body": "Every failure is a `SearchError` with a fixed `code`; switch on it, never on the message.\n\n```ts\nimport { search, SearchError } from \"@searchsdk/sdk\";\n\ntry {\n  const res = await search(\"postgres vacuum\", { provider: \"tavily\", maxResults: 5 });\n  console.log(res.results.length);\n} catch (e) {\n  if (!(e instanceof SearchError)) throw e;\n  switch (e.code) {\n    case \"configuration\":\n    case \"invalid_request\":\n      console.error(\"fix the call:\", e.field);\n      break;\n    case \"rate_limit\":\n    case \"quota\":\n    case \"unavailable\":\n      console.error(\"provider trouble; retry later or add a fallback\", e.retryAfterMs);\n      break;\n    default:\n      console.error(e.code, e.provider, e.status, e.attempts);\n  }\n}\n```\n\n## Common causes\n\n| Symptom | Likely cause |\n| --- | --- |\n| `configuration`, `field: \"keys\"` | The key variable is unset or empty in this process |\n| `configuration`, `field: \"provider\"` | No provider given, or an unknown id |\n| `invalid_request` | An option out of range, a bad date, or an unknown option name; `field` says which |\n| `unsupported` | The provider cannot express an option; `field` says which |\n| `auth` | The provider rejected the key: wrong, revoked or for another account |\n| `spec_mismatch` | Our spec and the provider's reply disagree; `path` says where |\n| Empty `results` | A success: the provider found nothing |\n\n## Check before sending\n\n`unsupported` and `invalid_request` fail before anything is sent, so they cost nothing. The [MCP server](https://searchsdk.dev/docs/mcp) tool `validate_options` runs the same checks without a key.\n\n## Debug a provider reply\n\n`createClient({ diagnostics })` reports each sent attempt with the request (key redacted), status, headers, a bounded body and which spec paths resolved.\n\n```ts\nimport { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({\n  provider: \"exa\",\n  diagnostics: (event) => console.log(event.attempt.status, event.paths.filter((p) => p.missing > 0)),\n});\nawait client.search(\"sqlite wal mode\");\n```\n\nReport a `spec_mismatch` with its `path` as a GitHub issue. Every code: [Error codes](https://searchsdk.dev/docs/reference/errors)."
+  },
+  {
+   "path": "/docs/guides/migrate",
+   "title": "Migrate from a provider's API",
+   "description": "Replace a direct call to a search provider with searchSDK, keep provider-only options, and map the response fields.",
+   "body": "A direct call builds the provider's request, reads its own response shape and handles its own errors. With searchSDK, the request, the result shape and the error codes are the same for every provider.\n\n## Before\n\n```ts\nconst response = await fetch(\"https://api.exa.ai/search\", {\n  method: \"POST\",\n  headers: { \"content-type\": \"application/json\", \"x-api-key\": process.env.EXA_API_KEY ?? \"\" },\n  body: JSON.stringify({ query: \"sqlite wal mode\", numResults: 5, category: \"news\" }),\n});\nif (!response.ok) throw new Error(`Exa ${response.status}`);\nconst body = (await response.json()) as { results: { url: string; title: string | null }[] };\nconsole.log(body.results.map((r) => r.url));\n```\n\n## After\n\n```ts\nimport { search } from \"@searchsdk/sdk\";\n\nconst res = await search(\"sqlite wal mode\", {\n  provider: \"exa\",\n  maxResults: 5,\n  providerOptions: { exa: { category: \"news\" } },\n});\nconsole.log(res.results.map((r) => r.url), res.cost.usd);\n```\n\n## Step by step\n\n1. Install `@searchsdk/sdk` and keep the provider's key variable; searchSDK reads the same name.\n2. Map the parameters that have a common name (`maxResults`, domains, dates, `country`, `language`, `depth`). [Provider support](https://searchsdk.dev/docs/reference/provider-support) shows each provider's mapping.\n3. Move the rest under `providerOptions[id]`. They are validated before sending.\n4. Read `results`, or `pages` for contents. Fields with no common name stay in `providerFields`, and the provider's whole body stays in `raw`.\n5. Replace status checks with `SearchError` codes ([Errors](https://searchsdk.dev/docs/guides/errors)).\n6. Add a `fallback` when you want a second provider.\n\nOptions a provider cannot honour fail as `unsupported` instead of being dropped, so a migrated call never silently changes meaning."
+  },
+  {
+   "path": "/docs/mcp",
+   "title": "MCP server",
+   "description": "Connect Claude Code, Cursor, VS Code, Codex and other agents to the free searchSDK docs MCP server, or run search locally.",
+   "body": "The public server at `https://searchsdk.dev/mcp` is free and needs no key. It serves the docs and the provider registry only: it never calls a provider, holds no key, fetches no URL and runs no code. It speaks Streamable HTTP, stateless, on MCP revision 2026-07-28, and answers 2025 clients too.\n\n## Tools\n\n| Tool | What it does |\n| --- | --- |\n| `search_docs` | Full-text search over every docs section |\n| `get_doc` | One docs page as Markdown |\n| `list_providers` | Every provider, its key variable and verification status |\n| `get_provider` | Options, limits, list prices, rate limits and sources |\n| `estimate_cost` | `costBound` and `listPrice` for a call; nothing is sent |\n| `validate_options` | Whether a provider can honour your options, checked by the SDK without sending |\n| `get_example` | Typechecked TypeScript examples for a task |\n\nResources: every docs page, every provider spec, the shared policy and the [agent skill](https://searchsdk.dev/docs/agent-skill). Prompts: `integrate-searchsdk` and `choose-provider`.\n\n## Add it\n\nClaude Code:\n\n```sh\nclaude mcp add --transport http searchsdk https://searchsdk.dev/mcp\n```\n\nCursor (`.cursor/mcp.json`):\n\n```json\n{ \"mcpServers\": { \"searchsdk\": { \"url\": \"https://searchsdk.dev/mcp\" } } }\n```\n\nVS Code with Copilot and Claude Code projects (`.mcp.json` at the workspace root):\n\n```json\n{ \"mcpServers\": { \"searchsdk\": { \"type\": \"http\", \"url\": \"https://searchsdk.dev/mcp\" } } }\n```\n\nCodex (`~/.codex/config.toml`):\n\n```toml\n[mcp_servers.searchsdk]\nurl = \"https://searchsdk.dev/mcp\"\n```\n\nGemini CLI (`.gemini/settings.json`):\n\n```json\n{ \"mcpServers\": { \"searchsdk\": { \"httpUrl\": \"https://searchsdk.dev/mcp\" } } }\n```\n\n`/api/mcp` answers the same as `/mcp`.\n\n## Run search locally\n\n`@searchsdk/mcp` adds `search` and `contents` tools that run through `@searchsdk/sdk` on your machine, over stdio, with your own provider keys from its environment. Keys are never logged or returned. It is not on npm yet; build it from [the repository](https://github.com/Belweave/searchSDK/tree/v2/integration/sdk/mcp):\n\n```sh\ncd sdk/mcp && npm ci && npm pack --ignore-scripts=false\nnpm install -g ./searchsdk-mcp-0.1.0.tgz\nclaude mcp add --env EXA_API_KEY=your-key --transport stdio searchsdk-local -- searchsdk-mcp\n```\n\nOptional variables: `SEARCHSDK_PROVIDER`, `SEARCHSDK_FALLBACK`, `SEARCHSDK_MAX_RETRIES`, `SEARCHSDK_TIMEOUT_MS` and `SEARCHSDK_MAX_CHARS`. Each `search` or `contents` call may be billed by the provider."
+  },
+  {
+   "path": "/docs/agent-skill",
+   "title": "Agent skill",
+   "description": "Install the searchSDK Agent Skill so coding agents pick providers, set fallback, read cost and handle errors correctly.",
+   "body": "The skill is a folder with a `SKILL.md` and reference files, in the Agent Skills format. It teaches a coding agent to install searchSDK, choose a provider and fallback, keep keys on the server, read cost and warnings, handle errors and wrap search as a tool.\n\n## Install in Claude Code\n\nFor every project (personal skills):\n\n```sh\nmkdir -p ~/.claude/skills && cd ~/.claude/skills\ncurl -fsSLO https://searchsdk.dev/skills/searchsdk.zip && unzip -o searchsdk.zip && rm searchsdk.zip\n```\n\nFor one repository, unzip it into `.claude/skills/` and commit it. Claude Code loads it when a task touches web search or searchSDK.\n\n## Files\n\n- [`SKILL.md`](https://searchsdk.dev/skills/searchsdk/SKILL.md): the instructions, also at [`/skill.md`](https://searchsdk.dev/skill.md).\n- [`references/api.md`](https://searchsdk.dev/skills/searchsdk/references/api.md): options and response fields.\n- [`references/errors.md`](https://searchsdk.dev/skills/searchsdk/references/errors.md): error and warning codes.\n- [`references/agent-tools.md`](https://searchsdk.dev/skills/searchsdk/references/agent-tools.md): tool wrappers for agent frameworks.\n\nSource: [`skills/searchsdk`](https://github.com/Belweave/searchSDK/tree/v2/integration/skills/searchsdk). Other agents that read Agent Skills take the same folder. The [MCP server](https://searchsdk.dev/docs/mcp) serves the skill as resources too."
+  },
+  {
+   "path": "/docs/reference/options",
+   "title": "Options reference",
+   "description": "Every option of search, contents and createClient in searchSDK, with types, defaults and limits from the SDK source.",
+   "body": "Every call option and client setting, read from the SDK's types and the shared policy. Unknown option names fail as `invalid_request`; an option a provider cannot honour fails as `unsupported` before anything is sent.\n\n## search(query, options)\n\n`query` is trimmed of blank characters and must keep 1 to 2000 code points, with no control, bidirectional-control or tag characters.\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `maxResults?` | `number` | Results wanted: 1 to 100, default 10. More than a provider's limit is `unsupported` there; a provider without a count parameter is trimmed by searchSDK. |\n| `includeDomains?` | `readonly string[]` | Only results from these hosts. Lowercased and de-duplicated; must not overlap `excludeDomains`. |\n| `excludeDomains?` | `readonly string[]` | No results from these hosts. |\n| `recency?` | `Recency` | `day`, `week`, `month` or `year` (day = 1 day, week = 7 days, month = 30 days, year = 365 days). Not with `startDate` or `endDate`. |\n| `startDate?` | `string` | Inclusive `YYYY-MM-DD`, by publication date. |\n| `endDate?` | `string` | Inclusive `YYYY-MM-DD`, by publication date; not before `startDate`. |\n| `country?` | `string` | ISO 3166-1 alpha-2 code; sent upper case. |\n| `language?` | `string` | ISO 639-1 code; sent lower case. |\n| `depth?` | `Depth` | `fast`, `standard` or `deep`, mapped to the provider's own levels; it can change the price tier. |\n| `providerOptions?` | `SearchProviderOptions` | Options one provider understands, keyed by id, validated against its spec before sending. |\n\n## Call options\n\nBoth `search` and `contents` take these.\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `provider?` | `ProviderId` | Provider id. Required unless the client sets `provider`. |\n| `fallback?` | `readonly ProviderId[]` | Providers tried next, in order, after a fallback-eligible failure. Overrides the client's list. A provider is tried once. |\n| `timeoutMs?` | `number` | Deadline for the whole call, retries and fallback included: 1 to 300000 ms, default 30000. |\n| `attemptTimeoutMs?` | `number` | Deadline for each attempt: 1 to 300000 ms, default `timeoutMs`. An attempt that passes it fails as `attempt_timeout`. |\n| `maxRetries?` | `number` | Retries of a transient failure on the same provider: 0 to 5, default 0. |\n| `maxResponseBytes?` | `number` | Largest response body read: 1 KiB to 100 MiB; default 10 MiB for search, 50 MiB for contents. |\n| `signal?` | `AbortSignal` | An `AbortSignal`; aborting fails the call as `aborted`. |\n\n## contents(urls, options)\n\n`urls` is one URL or a list of 1 to 100, each at most 2048 characters, http or https. Each provider takes fewer per call; see [Provider support](https://searchsdk.dev/docs/reference/provider-support).\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `providerOptions?` | `ContentsProviderOptions` | Options one provider understands, keyed by id, validated against its spec before sending. |\n\n## createClient(config)\n\nA client checks its settings when it is created. Call options override client settings.\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `provider?` | `ProviderId` | Default provider for calls that name none. |\n| `fallback?` | `readonly ProviderId[]` | Default fallback chain. |\n| `keys?` | `Partial<Record<ProviderId, string>>` | API keys by provider id. A missing key is read from the provider's documented variables. |\n| `env?` | `Readonly<Record<string, string \\| undefined>>` | Variables to read keys from instead of `process.env`, such as Worker bindings. |\n| `timeoutMs?` | `number` | Default call deadline (see call options). |\n| `attemptTimeoutMs?` | `number` | Default attempt deadline. |\n| `maxRetries?` | `number` | Default retries. |\n| `maxResponseBytes?` | `number` | Default response size limit. |\n| `fetch?` | `typeof globalThis.fetch` | The `fetch` to use. Tests inject one; the default is the platform's. |\n| `clock?` | `Clock` | Time source (`now`, `setTimeout`, `clearTimeout`); tests inject a virtual clock. |\n| `random?` | `() => number` | Uniform source in [0, 1) for retry jitter. Backoff starts at 250 ms and is capped at 5000 ms; a `Retry-After` over 60000 ms is not waited for. |\n| `diagnostics?` | `(event: AttemptDiagnostics<ProviderId>) => void` | Opt-in hook called once per sent attempt with the redacted request, status, headers, bounded body and how the spec's paths resolved. Keys never appear; what it throws is ignored. |\n| `registry?` | `Readonly<Record<ProviderId, unknown>>` | Provider specs to use instead of the built-in registry, keyed by id. Validated and copied; their keys become the accepted ids. |"
+  },
+  {
+   "path": "/docs/reference/responses",
+   "title": "Responses reference",
+   "description": "Every field of searchSDK search and contents responses: results, pages, cost, attempts, warnings and cost bounds.",
+   "body": "Every response field, read from the SDK's types. Both responses share the common fields.\n\n## Common fields\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `provider` | `ProviderId` | The provider that answered (a fallback, when `fallback_used` is in `warnings`). |\n| `cost` | `Cost` | What the successful attempt cost (see Cost). |\n| `requestId` | `string \\| null` | The provider's request id, or `null`. |\n| `latencyMs` | `number` | Milliseconds from the start of the call to the answer. |\n| `warnings` | `Warning<ProviderId>[]` | Non-fatal notes (see Warnings). |\n| `attempts` | `Attempt<ProviderId>[]` | Every attempt, skipped ones included, in order. |\n| `raw` | `unknown` | The provider's parsed JSON body. |\n\n## SearchResponse\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `results` | `SearchResult[]` | Normalized results; `[]` is a success. |\n\n### SearchResult\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `url` | `string` | The result's address. |\n| `title` | `string \\| null` | Title, or `null`. |\n| `excerpts` | `string[]` | Text the provider matched; the kind (description, content chunks, highlights) is on each provider's page. |\n| `publishedAt` | `string \\| null` | Publication time as an ISO 8601 string, or `null`. |\n| `author` | `string \\| null` | Author, or `null`. |\n| `rank` | `number` | Position, from 1. |\n| `providerFields` | `Record<string, unknown>` | Provider-scoped values such as scores and ids. Not comparable across providers. |\n\n## ContentsResponse\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `pages` | `Page[]` | One page per requested URL, in order. |\n\n### Page\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `url` | `string` | The URL as requested. |\n| `status` | `\"ok\" \\| \"failed\"` | `ok` or `failed`. One failed page never fails the call. |\n| `finalUrl` | `string \\| null` | Address after redirects, or `null`. |\n| `title` | `string \\| null` | Title, or `null`. |\n| `content` | `string \\| null` | Page text, Markdown or plain per provider, or `null`. |\n| `publishedAt` | `string \\| null` | Publication time, or `null`. |\n| `author` | `string \\| null` | Author, or `null`. |\n| `error` | `{ code: string \\| null; message: string \\| null } \\| null` | For a failed page: the provider's code and message (`missing` when the provider returned nothing for the URL). |\n\n## Cost\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `usd` | `number \\| null` | USD, or `null` when the price is not known. Never 0 for unknown. |\n| `estimated` | `boolean` | False only for an exact provider-reported figure, or when nothing was sent. |\n| `source` | `CostSource` | `reported`, `reported-credits`, `computed`, `unknown` or `none`. |\n| `credits?` | `number` | Credits the provider reported, for credit pricing. |\n\n## Attempt\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `provider` | `ProviderId` | Provider tried. |\n| `outcome` | `\"ok\" \\| \"error\" \\| \"skipped\"` | `ok`, `error` or `skipped` (no key, or an option the provider cannot honour). |\n| `code?` | `ErrorCode` | Error code of a failed or skipped attempt. |\n| `status?` | `number` | HTTP status, when one arrived. |\n| `startMs` | `number` | Milliseconds from the start of the call. |\n| `durationMs` | `number` | How long the attempt took. |\n| `retryAfterMs?` | `number` | The provider's `Retry-After`, in milliseconds. |\n| `billed` | `Billed` | `yes` (a 2xx), `possible` (sent, no answer) or `no` (not sent, or an error status). |\n| `cost` | `Cost` | This attempt's own cost; for `possible`, what it costs if it was billed. |\n\n## Warning\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `code` | `string` | Warning code (see Warnings). |\n| `provider` | `ProviderId` | Provider it concerns. |\n| `message?` | `string` | The provider's message, when it sent one. |\n| `count?` | `number` | How many rows or pages it concerns. |\n\n## CostBound\n\nReturned by `costBound(spec, kind, input)`. `listPrice(spec, kind, { count })` returns a `Cost`.\n\n| Name | Type | Meaning |\n| --- | --- | --- |\n| `usd` | `number \\| null` | The most one request can cost at the highest documented rate, or `null` when it cannot be bounded. |\n| `unknownBecause?` | `\"option\" \\| \"count\" \\| \"price\"` | Why `usd` is null: `option` (a cost option has no price), `count` (the billed count is unbounded) or `price` (not public). |\n| `requiresOverageOff?` | `true` | Present when the bound holds only while paid use past a free allowance stays off on the account. |"
+  },
+  {
+   "path": "/docs/reference/errors",
+   "title": "Error codes reference",
+   "description": "Every searchSDK SearchError code: what it means, whether it is retried, falls back or may be billed, and what to do.",
+   "body": "Every failure throws `SearchError` with one fixed `code`. Messages are fixed per code and never include keys or response bodies. Retries need `maxRetries`; fallback needs `fallback`.\n\n## Codes\n\n| Code | HTTP status | Retried | Falls back | Meaning and what to do |\n| --- | --- | --- | --- | --- |\n| `invalid_request` | – | no | no | Fix the input: `field` names the option or `query`. Nothing was sent. |\n| `configuration` | – | no | no | Fix the client: a missing or unusable key (`field: \"keys\"`), no or an unknown provider, or a bad setting. |\n| `unsupported` | – | no | yes | The provider cannot express this request (`field` says which option). A fallback skips it; otherwise drop the option or pick another provider. |\n| `auth` | 401 | no | no | The provider rejected the key. Check the key variable. |\n| `forbidden` | 403 | no | no | The key is valid but not allowed this call (plan or permission). |\n| `quota` | 402 | no | yes | Out of credits or over a plan limit. Top up, or fall back. |\n| `rate_limit` | 429 | yes | yes | Too many requests. Set `maxRetries` to honour `Retry-After`, or fall back. |\n| `unavailable` | 408, other 500–599 | yes | yes | A 5xx or 408. Retry, or fall back. |\n| `provider_error` | other 400–499 | no | no | Any other 4xx: the provider refused the request as sent. `providerCode` and the attempt status help. |\n| `network` | – | yes | yes | No answer: the connection failed or broke off. It may have been billed. |\n| `attempt_timeout` | – | yes | yes | One attempt passed `attemptTimeoutMs`. Retried and falls back. |\n| `timeout` | – | no | no | The whole call passed `timeoutMs`. Raise it or lower retries. |\n| `aborted` | – | no | no | Your `signal` aborted the call. |\n| `invalid_response` | – | no | no | A 2xx that is not a UTF-8 JSON object, or a status searchSDK cannot map (3xx). Billed for a 2xx, never retried. |\n| `spec_mismatch` | – | no | no | A 2xx JSON object without the list the spec reads; `path` names it and `raw` keeps the body. Our spec and the provider disagree: report it. |\n| `response_too_large` | – | no | no | A 2xx over `maxResponseBytes`. Raise the limit or ask for fewer items. |\n\nAn attempt that got a 2xx is billed, so it is never retried; one that got an error status is not billed. With no status, `network`, `attempt_timeout`, `timeout` and `aborted` attempts are billed `possible`, and the rest were never sent. An empty result list is a success, never an error.\n\n## Provider status rules\n\nSome providers signal a code with their own status or body. These rules run before the shared status table.\n\n| Provider | Status | When | Code |\n| --- | --- | --- | --- |\n| Brave Search | 429 | error.code = \"QUOTA_LIMITED\" | `quota` |\n| Perplexity | 401 | error.type = \"insufficient_quota\" | `quota` |\n| Tavily | 432 | – | `quota` |\n| Tavily | 433 | – | `quota` |\n| Tavily | 434 | – | `unavailable` |\n| TinyFish | 429 | error.details.reason = \"free_allowance_exhausted\" | `quota` |\n\n## SearchError fields\n\n| Field | Type | Meaning |\n| --- | --- | --- |\n| `code` | `ErrorCode` | One of the codes above. |\n| `provider?` | `AnyProviderId` | The provider of the failing attempt. |\n| `status?` | `number` | HTTP status, when one arrived. |\n| `providerCode?` | `string` | The provider's own machine-readable code, when its spec says where to read it. |\n| `retryAfterMs?` | `number` | The provider's `Retry-After`, in milliseconds. |\n| `field?` | `string` | The option that failed validation or that the provider cannot honour. |\n| `path?` | `string` | For `spec_mismatch`: the spec path the body did not have. |\n| `attempts` | `Attempt<AnyProviderId>[]` | Every attempt made before the failure, with its cost and billing. |\n| `raw?` | `unknown` | The parsed body of a 2xx that could not be mapped. |\n\n`message` is the fixed text for the code. Guides: [Errors and troubleshooting](https://searchsdk.dev/docs/guides/errors)."
+  },
+  {
+   "path": "/docs/reference/warnings",
+   "title": "Warnings reference",
+   "description": "Every warning code searchSDK or a provider spec can add to a response, what it means and which providers send it.",
+   "body": "`warnings` holds notes that do not fail the call. Each has a `code`, the `provider`, and a `message` or `count` when there is one.\n\n## From searchSDK\n\n| Code | Meaning |\n| --- | --- |\n| `fallback_key_missing` | A fallback provider has no key and will be skipped. |\n| `fallback_used` | The answer came from a fallback, not the first provider. |\n| `invalid_rows_dropped` | Results or pages without a URL were dropped; `count` says how many. |\n| `unmatched_pages` | The provider returned pages that match no requested URL (by URL key); `count` says how many. |\n\n## From provider responses\n\nThe registry maps these from a provider's own body.\n\n| Code | Meaning | Sent by |\n| --- | --- | --- |\n| `partial_results` | The provider says its answer is partial. | Context.dev search, Context.dev contents |\n| `provider_notice` | The provider's own notice, with its `message`. | Exa search |\n| `provider_warning` | The provider's own warning, with its `message`. | Exa search, Firecrawl search, Firecrawl contents |\n\nCheck warnings after every call: `fallback_used` means another provider answered, and its prices and fields differ."
+  },
+  {
+   "path": "/docs/reference/provider-support",
+   "title": "Provider support reference",
+   "description": "Which searchSDK options, limits and provider options each search provider supports, read from the provider registry.",
+   "body": "What each provider's spec supports, from the registry. \"trimmed\" means the provider has no result count, so searchSDK trims the list; \"no\" means the option fails as `unsupported` there. No endpoint is verified against its live API yet.\n\n## Search options\n\n| Option | Brave Search | Context.dev | Exa | Firecrawl | Perplexity | Tavily | TinyFish |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| `maxResults` | yes | yes | yes | yes | yes | yes | trimmed |\n| `includeDomains` | no | yes | yes | yes | yes | yes | yes |\n| `excludeDomains` | no | yes | yes | yes | yes | yes | yes |\n| `recency` | yes | yes | yes | yes | yes | yes | yes |\n| `startDate` | yes | no | yes | yes | yes | yes | yes |\n| `endDate` | yes | no | yes | yes | yes | yes | yes |\n| `country` | yes | yes | yes | yes | yes | yes | yes |\n| `language` | yes | yes | no | no | yes | yes | yes |\n| `depth` | no | no | yes | no | yes | yes | no |\n\n## Search limits\n\n| Provider | Status | Max results | Max query length | Include domains | Exclude domains | Excerpts |\n| --- | --- | --- | --- | --- | --- | --- |\n| Brave Search | unverified | 20 | 600 | 0 | 0 | description |\n| Context.dev | unverified | 100 | 500 | 100 | 100 | description |\n| Exa | unverified | 100 | none | 1200 | 1200 | highlights |\n| Firecrawl | unverified | 100 | 500 | 100 | 100 (not with include) | description |\n| Perplexity | unverified | 20 | none | 200 | 200 | content-chunk |\n| Tavily | unverified | 20 | none | 300 | 150 | content-chunk |\n| TinyFish | unverified | 10 | none | 100 | 100 | description |\n\n## Contents\n\n| Provider | Status | URLs per call | Format |\n| --- | --- | --- | --- |\n| Context.dev | unverified | 1 | markdown |\n| Exa | unverified | 100 | markdown |\n| Firecrawl | unverified | 1 | markdown |\n| Perplexity | unverified | 10 | markdown |\n| Tavily | unverified | 20 | markdown |\n| TinyFish | unverified | 10 | markdown |\n\nBrave Search has no contents endpoint.\n\n## Provider options\n\nPassed as `providerOptions: { <id>: { ... } }` and validated against the spec before sending. Options listed under cost change the price tier or make a computed cost unknown.\n\n### Brave Search search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `safesearch` | \"off\" or \"moderate\" or \"strict\" | no |\n| `offset` | integer | no |\n| `ui_lang` | string | no |\n| `extra_snippets` | boolean | no |\n| `goggles` | string | no |\n| `units` | \"metric\" or \"imperial\" | no |\n\n### Context.dev search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `markdownOptions` | object | no |\n| `highlightsOptions` | object | yes |\n| `descriptionMaxCharacters` | integer | no |\n| `timeoutOpts` | object | no |\n| `zdr` | \"enabled\" or \"disabled\" | no |\n| `policies` | string[] | no |\n| `tags` | string[] | no |\n\n### Context.dev contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `sharedParams` | object | yes |\n| `markdownParams` | object | no |\n| `maxAgeMs` | integer | no |\n| `timeoutOpts` | object | no |\n| `zdr` | \"enabled\" or \"disabled\" | no |\n| `tags` | string[] | no |\n\n### Exa search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `type` | string | yes |\n| `category` | \"company\" or \"publication\" or \"news\" or \"personal site\" or \"financial report\" or \"people\" | no |\n| `moderation` | boolean | no |\n| `contents` | object | yes |\n| `includeText` | string[] | no |\n| `excludeText` | string[] | no |\n| `startCrawlDate` | string | no |\n| `endCrawlDate` | string | no |\n| `userIdentifier` | string | no |\n\n### Exa contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `highlights` | boolean or object | yes |\n| `summary` | boolean or object | yes |\n| `maxAgeHours` | integer | no |\n| `livecrawlTimeout` | integer | no |\n| `subpages` | integer | yes |\n| `userIdentifier` | string | no |\n\n### Firecrawl search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `categories` | \"developer\" or \"gov\" or \"research\" or \"pdf\"[] | yes |\n| `location` | string | no |\n| `safe` | boolean | no |\n| `ignoreInvalidURLs` | boolean | no |\n| `highlights` | boolean | no |\n| `scrapeOptions` | object | yes |\n| `timeout` | integer | no |\n\n### Firecrawl contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `waitFor` | integer | no |\n| `mobile` | boolean | no |\n| `maxAge` | integer | no |\n| `timeout` | integer | no |\n| `onlyMainContent` | boolean | no |\n\n### Perplexity search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `snapshot_as_of` | string | no |\n| `last_updated_after_filter` | string | no |\n| `last_updated_before_filter` | string | no |\n| `display_server_time` | boolean | no |\n\n### Perplexity contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `max_age_seconds` | integer | no |\n| `cache_only` | boolean | no |\n| `timeout_ms` | integer | no |\n| `snapshot_as_of` | string | no |\n\n### Tavily search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `topic` | \"general\" or \"news\" or \"finance\" | no |\n| `chunks_per_source` | integer | no |\n| `max_age_hours` | integer | no |\n| `include_answer` | boolean or \"basic\" or \"advanced\" | no |\n| `include_raw_content` | boolean or \"markdown\" or \"text\" | no |\n| `include_images` | boolean | no |\n| `include_image_descriptions` | boolean | no |\n| `include_favicon` | boolean | no |\n| `include_domains_mode` | \"restrict\" or \"prefer\" | no |\n| `filter_by_language` | boolean | no |\n| `filter_by_published_date` | boolean | no |\n| `exact_match` | boolean | no |\n| `safe_search` | boolean | no |\n| `auto_parameters` | boolean | yes |\n\n### Tavily contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `query` | string | no |\n| `chunks_per_source` | integer | no |\n| `extract_depth` | \"basic\" or \"advanced\" | yes |\n| `include_images` | boolean | no |\n| `include_favicon` | boolean | no |\n| `timeout` | number | no |\n\n### TinyFish search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `purpose` | string | no |\n| `domain_type` | \"web\" or \"news\" or \"research_paper\" | no |\n| `page` | integer | no |\n| `pub_year_min` | integer | no |\n| `pub_year_max` | integer | no |\n\n### TinyFish contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `purpose` | string | no |\n| `links` | boolean | no |\n| `image_links` | boolean | no |\n| `iframe_links` | boolean | no |\n| `ttl` | integer | no |\n| `per_url_timeout_ms` | integer | no |\n| `include_selectors` | string[] | no |\n| `exclude_selectors` | string[] | no |\n\nPrices, rate limits and sources are on [each provider's page](https://searchsdk.dev/providers)."
+  },
+  {
+   "path": "/docs/changelog",
+   "title": "Changelog",
+   "description": "Releases of the searchSDK TypeScript package, the MCP server and the documentation, newest first.",
+   "body": "## Unreleased\n\n- `@searchsdk/mcp` 0.1.0, a local MCP server over stdio with the docs and registry tools plus `search` and `contents` through your own keys. Not on npm yet.\n- A public docs MCP server at `https://searchsdk.dev/mcp`, on MCP revision 2026-07-28.\n- An [agent skill](https://searchsdk.dev/docs/agent-skill), guides for fallback, budgets, agent tools, errors and migration, and reference pages generated from the SDK source and the registry.\n- Docs pages can be copied as Markdown or opened in an AI assistant.\n\n## @searchsdk/sdk 0.1.0 (2026-11-25)\n\nFirst release, on npm as `@searchsdk/sdk`. No provider is verified against its live API yet: every spec is written from public docs and tested against synthetic fixtures.\n\n- `search` and `contents` over a shared, declarative provider registry: Brave Search, Context.dev, Exa, Firecrawl, Perplexity, Tavily and TinyFish. Brave has search only.\n- Per-attempt cost: reported, computed from list prices, or unknown (never $0 for unknown), and whether each attempt was billed. `costBound` and `listPrice` price a call before it is sent.\n- Retries (off by default), `Retry-After`, per-attempt and per-call deadlines, cancellation, response size limits and explicit fallback.\n- Fixed error codes on `SearchError`, including `spec_mismatch` with the failing path, and an opt-in diagnostics hook.\n\nThe Python runtime in `sdk/python` is not on PyPI yet."
+  }
+ ],
+ "providers": [
+  {
+   "formatVersion": 1,
+   "id": "brave",
+   "name": "Brave Search",
+   "specVersion": "2026-11-24",
+   "sources": [
+    {
+     "url": "https://api-dashboard.search.brave.com/api-reference/web/search/get",
+     "retrievedOn": "2026-11-24",
+     "covers": "web search parameters and enums, response model, error model"
+    },
+    {
+     "url": "https://api-dashboard.search.brave.com/app/documentation/web-search/query",
+     "retrievedOn": "2026-11-24",
+     "covers": "freshness values and custom date ranges"
+    },
+    {
+     "url": "https://api-dashboard.search.brave.com/documentation/pricing",
+     "retrievedOn": "2026-11-24",
+     "covers": "price per 1,000 requests, monthly credit, capacity"
+    },
+    {
+     "url": "https://api-dashboard.search.brave.com/documentation/guides/rate-limiting",
+     "retrievedOn": "2026-11-24",
+     "covers": "rate limit headers; only successful requests are billed"
+    },
+    {
+     "url": "https://api-dashboard.search.brave.com/documentation/services/llm-context",
+     "retrievedOn": "2026-11-25",
+     "covers": "LLM Context takes a query, not a URL; no endpoint fetches a given page"
+    }
+   ],
+   "auth": {
+    "in": "header",
+    "name": "x-subscription-token",
+    "env": [
+     "BRAVE_API_KEY"
+    ]
+   },
+   "capabilities": {
+    "search": true,
+    "contents": false,
+    "answer": true,
+    "research": false,
+    "crawl": false
+   },
+   "capabilityNotes": {
+    "contents": "No page-contents endpoint: every Brave Search API endpoint takes a query, not a URL. LLM Context (/res/v1/llm/context) returns page chunks for search results; it is not a contents call and is not mapped. Docs read 2026-11-25."
+   },
+   "index": {
+    "type": "own",
+    "note": "Brave describes its own independent index."
+   },
+   "terms": {
+    "url": "https://api-dashboard.search.brave.com/terms-of-service",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "restricted",
+    "rawResponseStorage": "restricted",
+    "note": "Terms (updated 1 Sep 2026) forbid storing results beyond transient use and using them to benchmark services. Reading from the 2026-11-24 recon; not legal advice."
+   },
+   "errorCodePath": "error.code",
+   "errors": [
+    {
+     "status": 429,
+     "bodyPath": "error.code",
+     "equals": "QUOTA_LIMITED",
+     "code": "quota"
+    }
+   ],
+   "search": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "GET",
+     "url": "https://api.search.brave.com/res/v1/web/search",
+     "encoding": "query",
+     "fixed": {
+      "result_filter": "web",
+      "text_decorations": false,
+      "spellcheck": false
+     },
+     "params": {
+      "query": {
+       "to": "q"
+      },
+      "maxResults": {
+       "to": "count"
+      },
+      "recency": {
+       "to": "freshness",
+       "steps": [
+        {
+         "step": "map-value",
+         "table": {
+          "day": "pd",
+          "week": "pw",
+          "month": "pm",
+          "year": "py"
+         }
+        }
+       ]
+      },
+      "country": {
+       "to": "country",
+       "steps": [
+        {
+         "step": "map-value",
+         "table": {
+          "AR": "AR",
+          "AU": "AU",
+          "AT": "AT",
+          "BE": "BE",
+          "BR": "BR",
+          "CA": "CA",
+          "CL": "CL",
+          "DK": "DK",
+          "FI": "FI",
+          "FR": "FR",
+          "DE": "DE",
+          "GR": "GR",
+          "HK": "HK",
+          "IN": "IN",
+          "ID": "ID",
+          "IT": "IT",
+          "JP": "JP",
+          "KR": "KR",
+          "MY": "MY",
+          "MX": "MX",
+          "NL": "NL",
+          "NZ": "NZ",
+          "NO": "NO",
+          "CN": "CN",
+          "PL": "PL",
+          "PT": "PT",
+          "PH": "PH",
+          "RU": "RU",
+          "SA": "SA",
+          "ZA": "ZA",
+          "ES": "ES",
+          "SE": "SE",
+          "CH": "CH",
+          "TW": "TW",
+          "TR": "TR",
+          "GB": "GB",
+          "US": "US"
+         }
+        }
+       ]
+      },
+      "language": {
+       "to": "search_lang",
+       "steps": [
+        {
+         "step": "map-value",
+         "table": {
+          "ar": "ar",
+          "eu": "eu",
+          "bn": "bn",
+          "bg": "bg",
+          "ca": "ca",
+          "hr": "hr",
+          "cs": "cs",
+          "da": "da",
+          "nl": "nl",
+          "en": "en",
+          "et": "et",
+          "fi": "fi",
+          "fr": "fr",
+          "gl": "gl",
+          "de": "de",
+          "el": "el",
+          "gu": "gu",
+          "he": "he",
+          "hi": "hi",
+          "hu": "hu",
+          "is": "is",
+          "it": "it",
+          "ja": "ja",
+          "kn": "kn",
+          "ko": "ko",
+          "lv": "lv",
+          "lt": "lt",
+          "ms": "ms",
+          "ml": "ml",
+          "mr": "mr",
+          "nb": "nb",
+          "pl": "pl",
+          "pa": "pa",
+          "ro": "ro",
+          "ru": "ru",
+          "sr": "sr",
+          "sk": "sk",
+          "sl": "sl",
+          "es": "es",
+          "sv": "sv",
+          "ta": "ta",
+          "te": "te",
+          "th": "th",
+          "tr": "tr",
+          "uk": "uk",
+          "vi": "vi"
+         }
+        }
+       ]
+      }
+     },
+     "compose": [
+      {
+       "to": "freshness",
+       "parts": [
+        {
+         "input": "startDate",
+         "required": true
+        },
+        {
+         "text": "to"
+        },
+        {
+         "input": "endDate",
+         "required": true
+        }
+       ]
+      }
+     ]
+    },
+    "limits": {
+     "maxResults": 20,
+     "maxQueryLength": 600,
+     "maxIncludeDomains": 0,
+     "maxExcludeDomains": 0
+    },
+    "dateBasis": "published-or-updated",
+    "response": {
+     "results": "web.results",
+     "excerptKind": "description",
+     "resultsOptional": true,
+     "fields": {
+      "url": "url",
+      "title": "title",
+      "excerpts": {
+       "path": "description",
+       "steps": [
+        {
+         "step": "to-list"
+        }
+       ]
+      },
+      "publishedAt": {
+       "path": "page_age",
+       "steps": [
+        {
+         "step": "parse-date"
+        }
+       ]
+      }
+     },
+     "providerFields": {
+      "age": "age",
+      "language": "language",
+      "siteName": "profile.name",
+      "extraSnippets": "extra_snippets"
+     }
+    },
+    "pricing": {
+     "plan": "Search (prepaid)",
+     "source": "https://api-dashboard.search.brave.com/documentation/pricing",
+     "retrievedOn": "2026-11-24",
+     "perRequestUsd": 0.005,
+     "note": "$5 per 1,000 requests, with $5 of credit included every month. Only successful requests are billed."
+    },
+    "rateLimits": [
+     {
+      "plan": "Search",
+      "limit": 50,
+      "unit": "requests",
+      "per": "second",
+      "scope": "subscription"
+     }
+    ],
+    "providerOptions": {
+     "safesearch": {
+      "enum": [
+       "off",
+       "moderate",
+       "strict"
+      ]
+     },
+     "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9
+     },
+     "ui_lang": {
+      "type": "string",
+      "pattern": "^[a-z]{2}-[A-Z]{2}$"
+     },
+     "extra_snippets": {
+      "type": "boolean"
+     },
+     "goggles": {
+      "type": "string",
+      "minLength": 1
+     },
+     "units": {
+      "enum": [
+       "metric",
+       "imperial"
+      ]
+     }
+    }
+   },
+   "unverified": [
+    {
+     "pointer": "/search/request/params/language",
+     "reason": "search_lang also takes zh-hans, zh-hant, pt-br, pt-pt, en-gb and jp, which ISO 639-1 cannot name; zh and pt are left out as ambiguous and are unsupported."
+    },
+    {
+     "pointer": "/search/request/params/recency",
+     "reason": "pm means 31 days, not policy.search.recencyDays.month (30)."
+    },
+    {
+     "pointer": "/search/request/compose/0",
+     "reason": "Docs do not say whether the custom range YYYY-MM-DDtoYYYY-MM-DD includes its end date; a range needs both dates."
+    },
+    {
+     "pointer": "/search/limits/maxQueryLength",
+     "reason": "The limit is 600 characters and 75 words; the word limit cannot be expressed and gives a provider error."
+    },
+    {
+     "pointer": "/search/response/results",
+     "reason": "web is nullable in the response model; a query with no web results may omit it."
+    },
+    {
+     "pointer": "/search/response/fields/publishedAt",
+     "reason": "page_age is the published or last modified date; its string format is not documented."
+    },
+    {
+     "pointer": "/errors/0",
+     "reason": "QUOTA_LIMITED is in the error code enum; the status that carries it is assumed to be 429."
+    },
+    {
+     "pointer": "/terms",
+     "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec."
+    }
+   ]
+  },
+  {
+   "formatVersion": 1,
+   "id": "context",
+   "name": "Context.dev",
+   "specVersion": "2026-11-24",
+   "sources": [
+    {
+     "url": "https://docs.context.dev/api-reference/web-scraping/search.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "search request, response, status codes (OpenAPI 3.1)"
+    },
+    {
+     "url": "https://docs.context.dev/api-reference/web-scraping/scrape.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "scrape request, response, metadata"
+    },
+    {
+     "url": "https://docs.context.dev/search/overview.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "numResults range, relevance, partial results"
+    },
+    {
+     "url": "https://docs.context.dev/account/credits.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "credit costs and when requests are charged"
+    },
+    {
+     "url": "https://www.context.dev/pricing",
+     "retrievedOn": "2026-11-24",
+     "covers": "plan prices per credit"
+    },
+    {
+     "url": "https://docs.context.dev/optimization/rate-limits.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "concurrency and per-minute limits, 429 headers"
+    }
+   ],
+   "auth": {
+    "in": "header",
+    "name": "authorization",
+    "prefix": "Bearer ",
+    "env": [
+     "CONTEXT_DEV_API_KEY"
+    ]
+   },
+   "capabilities": {
+    "search": true,
+    "contents": true,
+    "answer": true,
+    "research": false,
+    "crawl": true
+   },
+   "index": {
+    "type": "unknown",
+    "note": "Context.dev does not state its search index; its country parameter is described as mapping to Google's gl."
+   },
+   "terms": {
+    "url": "https://www.context.dev/terms",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "allowed",
+    "rawResponseStorage": "not-addressed",
+    "note": "Section 5 allows testing, benchmarking and publishing results. Reading from the 2026-11-24 recon; not legal advice."
+   },
+   "errorCodePath": "error_code",
+   "errors": [],
+   "search": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "POST",
+     "url": "https://api.context.dev/v1/web/search",
+     "encoding": "json",
+     "fixed": {},
+     "params": {
+      "query": {
+       "to": "query"
+      },
+      "maxResults": {
+       "to": "numResults"
+      },
+      "includeDomains": {
+       "to": "includeDomains"
+      },
+      "excludeDomains": {
+       "to": "excludeDomains"
+      },
+      "recency": {
+       "to": "freshness",
+       "steps": [
+        {
+         "step": "map-value",
+         "table": {
+          "day": "last_24_hours",
+          "week": "last_week",
+          "month": "last_month",
+          "year": "last_year"
+         }
+        }
+       ]
+      },
+      "country": {
+       "to": "country",
+       "steps": [
+        {
+         "step": "lowercase"
+        }
+       ]
+      },
+      "language": {
+       "to": "languages",
+       "steps": [
+        {
+         "step": "to-list"
+        }
+       ]
+      }
+     }
+    },
+    "limits": {
+     "maxResults": 100,
+     "maxQueryLength": 500,
+     "maxIncludeDomains": 100,
+     "maxExcludeDomains": 100
+    },
+    "dateBasis": "published",
+    "response": {
+     "results": "results",
+     "excerptKind": "description",
+     "fields": {
+      "url": "url",
+      "title": "title",
+      "excerpts": {
+       "path": "description",
+       "steps": [
+        {
+         "step": "to-list"
+        }
+       ]
+      }
+     },
+     "providerFields": {
+      "relevance": "relevance"
+     },
+     "requestId": [
+      {
+       "path": "request_id"
+      },
+      {
+       "header": "x-request-id"
+      }
+     ],
+     "warnings": [
+      {
+       "where": [
+        {
+         "path": "partial",
+         "equals": true
+        }
+       ],
+       "code": "partial_results"
+      }
+     ]
+    },
+    "cost": {
+     "reported": {
+      "path": "key_metadata.credits_consumed",
+      "unit": "credit"
+     }
+    },
+    "pricing": {
+     "plan": "Developer",
+     "source": "https://www.context.dev/pricing",
+     "retrievedOn": "2026-11-24",
+     "creditUsd": 0.002,
+     "perRequestUsd": 0,
+     "extraBlock": {
+      "items": 10,
+      "usd": 0.002
+     },
+     "ceiling": {
+      "extraBlockUsd": 0.003,
+      "note": "Developer overage is $3 per 1,000 credits, above the plan's $2 per 1,000."
+     },
+     "note": "1 credit per 10 returned results, rounded up. Developer is $20 for 10,000 credits; overage is $3 per 1,000; larger plans cost less per credit.",
+     "costOptions": {
+      "highlightsOptions": "unknown"
+     }
+    },
+    "rateLimits": [
+     {
+      "plan": "Free",
+      "limit": 2,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "organization"
+     },
+     {
+      "plan": "Free",
+      "limit": 10,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "organization"
+     },
+     {
+      "plan": "Developer",
+      "limit": 10,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "organization"
+     },
+     {
+      "plan": "Pro",
+      "limit": 100,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "organization"
+     },
+     {
+      "plan": "Growth",
+      "limit": 250,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "organization"
+     },
+     {
+      "plan": "Scale",
+      "limit": 500,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "organization"
+     }
+    ],
+    "providerOptions": {
+     "markdownOptions": {
+      "type": "object"
+     },
+     "highlightsOptions": {
+      "type": "object"
+     },
+     "descriptionMaxCharacters": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "timeoutOpts": {
+      "type": "object"
+     },
+     "zdr": {
+      "enum": [
+       "enabled",
+       "disabled"
+      ]
+     },
+     "policies": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "contents": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "POST",
+     "url": "https://api.context.dev/v1/web/scrape",
+     "encoding": "json",
+     "fixed": {
+      "formats": {
+       "markdown": true
+      }
+     },
+     "params": {
+      "urls": {
+       "to": "url",
+       "steps": [
+        {
+         "step": "single"
+        }
+       ]
+      }
+     }
+    },
+    "limits": {
+     "maxUrls": 1
+    },
+    "contentFormat": "markdown",
+    "response": {
+     "pages": [
+      {
+       "from": "$",
+       "where": [
+        {
+         "path": "markdown.success",
+         "equals": true
+        }
+       ],
+       "status": "ok",
+       "fields": {
+        "url": "url",
+        "title": "metadata.title",
+        "content": "markdown.data",
+        "publishedAt": {
+         "path": "metadata.publishedTime",
+         "steps": [
+          {
+           "step": "parse-date"
+          }
+         ]
+        },
+        "author": "metadata.author"
+       }
+      },
+      {
+       "from": "$",
+       "where": [
+        {
+         "path": "markdown.success",
+         "equals": false
+        }
+       ],
+       "status": "failed",
+       "fields": {
+        "url": "url",
+        "errorCode": "markdown.error_code",
+        "errorMessage": "markdown.message"
+       }
+      }
+     ],
+     "requestId": [
+      {
+       "path": "request_id"
+      },
+      {
+       "header": "x-request-id"
+      }
+     ],
+     "warnings": [
+      {
+       "where": [
+        {
+         "path": "isPartial",
+         "equals": true
+        }
+       ],
+       "code": "partial_results"
+      }
+     ]
+    },
+    "cost": {
+     "reported": {
+      "path": "key_metadata.credits_consumed",
+      "unit": "credit"
+     }
+    },
+    "pricing": {
+     "plan": "Developer",
+     "source": "https://www.context.dev/pricing",
+     "retrievedOn": "2026-11-24",
+     "creditUsd": 0.002,
+     "perRequestUsd": 0,
+     "extraBlock": {
+      "items": 1,
+      "usd": 0.002
+     },
+     "ceiling": {
+      "extraBlockUsd": 0.003,
+      "note": "Developer overage is $3 per 1,000 credits, above the plan's $2 per 1,000."
+     },
+     "costOptions": {
+      "sharedParams": "unknown"
+     },
+     "note": "1 credit per scrape when at least one output succeeds; a target 404 is still charged. Browser actions make it 2."
+    },
+    "rateLimits": [
+     {
+      "plan": "Free",
+      "limit": 2,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "organization"
+     },
+     {
+      "plan": "Free",
+      "limit": 10,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "organization"
+     },
+     {
+      "plan": "Developer",
+      "limit": 10,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "organization"
+     }
+    ],
+    "providerOptions": {
+     "sharedParams": {
+      "type": "object"
+     },
+     "markdownParams": {
+      "type": "object"
+     },
+     "maxAgeMs": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 31536000000
+     },
+     "timeoutOpts": {
+      "type": "object"
+     },
+     "zdr": {
+      "enum": [
+       "enabled",
+       "disabled"
+      ]
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "unverified": [
+    {
+     "pointer": "/search/dateBasis",
+     "reason": "freshness says 'published within this window'; results carry no date field to check it."
+    },
+    {
+     "pointer": "/search/limits/maxQueryLength",
+     "reason": "The 500 limit's unit (characters, code points or bytes) is not stated; runtimes count code points."
+    },
+    {
+     "pointer": "/search/request/params/language",
+     "reason": "languages accepts a fixed list of codes; codes outside it are passed through and rejected by the provider."
+    },
+    {
+     "pointer": "/search/cost/reported",
+     "reason": "key_metadata is optional in the 200 schema; when absent, cost is computed from pricing."
+    },
+    {
+     "pointer": "/contents/response/pages/0/fields/url",
+     "reason": "Live check 2026-11-25: top-level url echoed the requested URL and metadata.sourceUrl was absent. Whether url is the requested or the post-redirect URL is untested."
+    },
+    {
+     "pointer": "/contents/pricing/creditUsd",
+     "reason": "Credit price depends on plan; the Developer list price is used."
+    },
+    {
+     "pointer": "/search/pricing/costOptions/highlightsOptions",
+     "reason": "The source schema says enabled highlights cost 1 extra credit per 10 results; the pricing page does not, so setting highlightsOptions makes a computed cost unknown."
+    },
+    {
+     "pointer": "/contents/pricing/costOptions/sharedParams",
+     "reason": "Credits docs (read 2026-11-25) charge 2 credits for a scrape with browser actions; which option object carries them is not stated, so sharedParams makes the price unknown."
+    },
+    {
+     "pointer": "/contents/response/pages/1",
+     "reason": "Credits docs charge a target 404; whether it arrives as markdown.success false (mapped failed, not billable) is not stated. The reported credits_consumed still gives the real cost when present."
+    },
+    {
+     "pointer": "/terms",
+     "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec."
+    }
+   ]
+  },
+  {
+   "formatVersion": 1,
+   "id": "exa",
+   "name": "Exa",
+   "specVersion": "2026-11-24",
+   "sources": [
+    {
+     "url": "https://exa.ai/docs/reference/search.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "search request, response, errors (OpenAPI 3.1, Exa Public API 2.0.0)"
+    },
+    {
+     "url": "https://exa.ai/docs/reference/get-contents.md",
+     "retrievedOn": "2026-11-25",
+     "covers": "contents request, response, per-URL statuses"
+    },
+    {
+     "url": "https://exa.ai/docs/admin/pricing.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "pricing"
+    },
+    {
+     "url": "https://exa.ai/docs/reference/rate-limits.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "rate limits, 402 and 429 behaviour"
+    },
+    {
+     "url": "https://exa.ai/docs/admin/error-codes.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "status codes and error tags"
+    }
+   ],
+   "auth": {
+    "in": "header",
+    "name": "x-api-key",
+    "env": [
+     "EXA_API_KEY"
+    ]
+   },
+   "capabilities": {
+    "search": true,
+    "contents": true,
+    "answer": true,
+    "research": true,
+    "crawl": false
+   },
+   "index": {
+    "type": "own",
+    "note": "Exa operates its own crawled index."
+   },
+   "terms": {
+    "url": "https://exa.ai/terms",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "ask",
+    "rawResponseStorage": "restricted",
+    "note": "Terms forbid publishing information obtained from the Services without permission and include a competitive-product clause. Reading from the 2026-11-24 recon; not legal advice."
+   },
+   "errorCodePath": "tag",
+   "errors": [],
+   "search": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "POST",
+     "url": "https://api.exa.ai/search",
+     "encoding": "json",
+     "fixed": {
+      "type": "auto",
+      "contents": {
+       "highlights": true
+      }
+     },
+     "locked": [
+      "contents.highlights"
+     ],
+     "params": {
+      "query": {
+       "to": "query"
+      },
+      "maxResults": {
+       "to": "numResults"
+      },
+      "includeDomains": {
+       "to": "includeDomains"
+      },
+      "excludeDomains": {
+       "to": "excludeDomains"
+      },
+      "recency": {
+       "to": "startPublishedDate",
+       "steps": [
+        {
+         "step": "recency-to-date"
+        }
+       ]
+      },
+      "startDate": {
+       "to": "startPublishedDate",
+       "steps": [
+        {
+         "step": "date-to-datetime",
+         "edge": "start"
+        }
+       ]
+      },
+      "endDate": {
+       "to": "endPublishedDate",
+       "steps": [
+        {
+         "step": "date-to-datetime",
+         "edge": "end"
+        }
+       ]
+      },
+      "country": {
+       "to": "userLocation",
+       "steps": [
+        {
+         "step": "uppercase"
+        }
+       ]
+      },
+      "depth": {
+       "to": "type",
+       "steps": [
+        {
+         "step": "map-value",
+         "table": {
+          "fast": "lite",
+          "standard": "auto",
+          "deep": "deep"
+         }
+        }
+       ]
+      }
+     }
+    },
+    "limits": {
+     "maxResults": 100,
+     "maxQueryLength": null,
+     "maxIncludeDomains": 1200,
+     "maxExcludeDomains": 1200
+    },
+    "dateBasis": "published",
+    "response": {
+     "results": "results",
+     "excerptKind": "highlights",
+     "fields": {
+      "url": "url",
+      "title": "title",
+      "excerpts": {
+       "path": "highlights",
+       "steps": [
+        {
+         "step": "to-list"
+        }
+       ]
+      },
+      "publishedAt": {
+       "path": "publishedDate",
+       "steps": [
+        {
+         "step": "parse-date"
+        }
+       ]
+      },
+      "author": "author"
+     },
+     "providerFields": {
+      "id": "id",
+      "favicon": "favicon",
+      "image": "image"
+     },
+     "requestId": [
+      {
+       "path": "requestId"
+      },
+      {
+       "header": "x-request-id"
+      }
+     ],
+     "warnings": [
+      {
+       "listPath": "warnings",
+       "code": "provider_warning",
+       "messageField": "message"
+      },
+      {
+       "listPath": "notices",
+       "code": "provider_notice",
+       "messageField": "message"
+      }
+     ]
+    },
+    "cost": {
+     "reported": {
+      "path": "costDollars.total",
+      "unit": "usd",
+      "isEstimate": true
+     }
+    },
+    "pricing": {
+     "plan": "Developer (pay as you go)",
+     "source": "https://exa.ai/docs/admin/pricing.md",
+     "retrievedOn": "2026-11-24",
+     "perRequestUsd": {
+      "fast": 0.004,
+      "standard": 0.007,
+      "deep": 0.012
+     },
+     "includedItems": 10,
+     "extraBlock": {
+      "items": 1,
+      "usd": 0.001
+     },
+     "ceiling": {
+      "perRequestUsd": {
+       "fast": 0.004,
+       "standard": 0.007,
+       "deep": 0.015
+      },
+      "note": "Deep search is listed as $12 to $15 per 1,000; the bound uses $15."
+     },
+     "costOptions": {
+      "type": {
+       "lite": "fast",
+       "auto": "standard",
+       "deep": "deep"
+      },
+      "contents": "unknown"
+     },
+     "note": "Base price covers up to 10 results; each extra result costs $1 per 1,000. Deep search is listed as $12 to $15 per 1,000. Extra content types on search are priced per page and are not modelled."
+    },
+    "rateLimits": [
+     {
+      "plan": "Starter (free)",
+      "limit": 10,
+      "unit": "requests",
+      "per": "second",
+      "scope": "team"
+     },
+     {
+      "plan": "Developer",
+      "limit": 25,
+      "unit": "requests",
+      "per": "second",
+      "scope": "team"
+     },
+     {
+      "plan": "Growth",
+      "limit": 50,
+      "unit": "requests",
+      "per": "second",
+      "scope": "team"
+     },
+     {
+      "plan": "Starter (free)",
+      "limit": 5,
+      "unit": "requests",
+      "per": "second",
+      "scope": "team",
+      "note": "deep search types"
+     }
+    ],
+    "providerOptions": {
+     "type": {
+      "type": "string"
+     },
+     "category": {
+      "enum": [
+       "company",
+       "publication",
+       "news",
+       "personal site",
+       "financial report",
+       "people"
+      ]
+     },
+     "moderation": {
+      "type": "boolean"
+     },
+     "contents": {
+      "type": "object"
+     },
+     "includeText": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "excludeText": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "startCrawlDate": {
+      "type": "string"
+     },
+     "endCrawlDate": {
+      "type": "string"
+     },
+     "userIdentifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+     }
+    }
+   },
+   "contents": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "POST",
+     "url": "https://api.exa.ai/contents",
+     "encoding": "json",
+     "fixed": {
+      "text": true
+     },
+     "locked": [
+      "text"
+     ],
+     "params": {
+      "urls": {
+       "to": "urls"
+      }
+     }
+    },
+    "limits": {
+     "maxUrls": 100
+    },
+    "contentFormat": "markdown",
+    "response": {
+     "pages": [
+      {
+       "from": "results",
+       "status": "ok",
+       "fields": {
+        "url": "url",
+        "title": "title",
+        "content": "text",
+        "publishedAt": {
+         "path": "publishedDate",
+         "steps": [
+          {
+           "step": "parse-date"
+          }
+         ]
+        },
+        "author": "author"
+       }
+      },
+      {
+       "from": "statuses",
+       "optional": true,
+       "where": [
+        {
+         "path": "status",
+         "equals": "error"
+        }
+       ],
+       "status": "failed",
+       "fields": {
+        "url": "id",
+        "errorCode": "error.tag"
+       }
+      }
+     ],
+     "requestId": [
+      {
+       "path": "requestId"
+      },
+      {
+       "header": "x-request-id"
+      }
+     ]
+    },
+    "cost": {
+     "reported": {
+      "path": "costDollars.total",
+      "unit": "usd",
+      "isEstimate": true
+     }
+    },
+    "pricing": {
+     "plan": "Developer (pay as you go)",
+     "source": "https://exa.ai/docs/admin/pricing.md",
+     "retrievedOn": "2026-11-24",
+     "perRequestUsd": 0,
+     "extraBlock": {
+      "items": 1,
+      "usd": 0.001
+     },
+     "costOptions": {
+      "highlights": "unknown",
+      "summary": "unknown",
+      "subpages": "unknown"
+     },
+     "note": "$1 per 1,000 pages per content type; this spec requests text only."
+    },
+    "rateLimits": [
+     {
+      "plan": "all",
+      "limit": 100,
+      "unit": "requests",
+      "per": "second",
+      "scope": "team"
+     }
+    ],
+    "providerOptions": {
+     "highlights": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "object"
+       }
+      ]
+     },
+     "summary": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "object"
+       }
+      ]
+     },
+     "maxAgeHours": {
+      "type": "integer",
+      "minimum": -1,
+      "maximum": 720
+     },
+     "livecrawlTimeout": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 90000
+     },
+     "subpages": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+     },
+     "userIdentifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+     }
+    }
+   },
+   "unverified": [
+    {
+     "pointer": "/search/pricing/perRequestUsd/deep",
+     "reason": "Pricing lists deep search as $12 to $15 per 1,000; the lower bound is used."
+    },
+    {
+     "pointer": "/search/pricing/note",
+     "reason": "Docs do not say whether highlights add cost on /search; assumed included."
+    },
+    {
+     "pointer": "/search/request/params/country",
+     "reason": "userLocation accepts an ISO 3166-1 alpha-2 string; documented, but its effect on ranking is not described."
+    },
+    {
+     "pointer": "/contents/response/pages/0/fields/url",
+     "reason": "Docs do not state that results[].url echoes the requested URL; matching relies on it."
+    },
+    {
+     "pointer": "/contents/pricing/extraBlock",
+     "reason": "Docs do not say whether failed URLs are billed; ok pages are assumed billable."
+    },
+    {
+     "pointer": "/contents/contentFormat",
+     "reason": "text is described as markdown-style plain text, not strict Markdown."
+    },
+    {
+     "pointer": "/terms",
+     "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec."
+    }
+   ]
+  },
+  {
+   "formatVersion": 1,
+   "id": "firecrawl",
+   "name": "Firecrawl",
+   "specVersion": "2026-11-24",
+   "sources": [
+    {
+     "url": "https://docs.firecrawl.dev/api-reference/endpoint/search.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "search request, response, errors (OpenAPI 3.0, API v2)"
+    },
+    {
+     "url": "https://docs.firecrawl.dev/features/search.md",
+     "retrievedOn": "2026-11-25",
+     "covers": "tbs values and custom date ranges; 2 credits per 10 results; results are scraped only when scrapeOptions is sent"
+    },
+    {
+     "url": "https://docs.firecrawl.dev/api-reference/endpoint/scrape.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "scrape request, response, errors"
+    },
+    {
+     "url": "https://docs.firecrawl.dev/billing.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "credit costs; a returned document is charged even for a target 404"
+    },
+    {
+     "url": "https://www.firecrawl.dev/pricing",
+     "retrievedOn": "2026-11-24",
+     "covers": "plan prices, credits and concurrency"
+    }
+   ],
+   "auth": {
+    "in": "header",
+    "name": "authorization",
+    "prefix": "Bearer ",
+    "env": [
+     "FIRECRAWL_API_KEY"
+    ]
+   },
+   "capabilities": {
+    "search": true,
+    "contents": true,
+    "answer": false,
+    "research": true,
+    "crawl": true
+   },
+   "index": {
+    "type": "unknown",
+    "note": "Search operators and tbs values mirror a Google-style results page; the source is not stated."
+   },
+   "terms": {
+    "url": "https://www.firecrawl.dev/terms-of-service",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "not-addressed",
+    "rawResponseStorage": "not-addressed",
+    "note": "No benchmark or caching clause found. Reading from the 2026-11-24 recon; not legal advice."
+   },
+   "errorCodePath": "code",
+   "errors": [],
+   "search": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "POST",
+     "url": "https://api.firecrawl.dev/v2/search",
+     "encoding": "json",
+     "fixed": {
+      "sources": [
+       "web"
+      ]
+     },
+     "params": {
+      "query": {
+       "to": "query"
+      },
+      "maxResults": {
+       "to": "limit"
+      },
+      "includeDomains": {
+       "to": "includeDomains"
+      },
+      "excludeDomains": {
+       "to": "excludeDomains"
+      },
+      "recency": {
+       "to": "tbs",
+       "steps": [
+        {
+         "step": "map-value",
+         "table": {
+          "day": "qdr:d",
+          "week": "qdr:w",
+          "month": "qdr:m",
+          "year": "qdr:y"
+         }
+        }
+       ]
+      },
+      "country": {
+       "to": "country"
+      }
+     },
+     "compose": [
+      {
+       "to": "tbs",
+       "parts": [
+        {
+         "text": "cdr:1"
+        },
+        {
+         "input": "startDate",
+         "text": ",cd_min:",
+         "steps": [
+          {
+           "step": "format-date",
+           "format": "MM/DD/YYYY"
+          }
+         ]
+        },
+        {
+         "input": "endDate",
+         "text": ",cd_max:",
+         "steps": [
+          {
+           "step": "format-date",
+           "format": "MM/DD/YYYY"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "limits": {
+     "maxResults": 100,
+     "maxQueryLength": 500,
+     "maxIncludeDomains": 100,
+     "maxExcludeDomains": 100,
+     "includeExcludeExclusive": true
+    },
+    "dateBasis": "unknown",
+    "response": {
+     "results": "data.web",
+     "excerptKind": "description",
+     "resultsOptional": true,
+     "fields": {
+      "url": "url",
+      "title": "title",
+      "excerpts": {
+       "path": "description",
+       "steps": [
+        {
+         "step": "to-list"
+        }
+       ]
+      }
+     },
+     "requestId": [
+      {
+       "path": "id"
+      }
+     ],
+     "warnings": [
+      {
+       "where": [
+        {
+         "path": "warning",
+         "present": true
+        }
+       ],
+       "code": "provider_warning",
+       "messageField": "warning"
+      }
+     ]
+    },
+    "cost": {
+     "reported": {
+      "path": "creditsUsed",
+      "unit": "credit"
+     }
+    },
+    "pricing": {
+     "plan": "Hobby (monthly billing)",
+     "source": "https://www.firecrawl.dev/pricing",
+     "retrievedOn": "2026-11-24",
+     "creditUsd": 0.0038,
+     "perRequestUsd": 0,
+     "extraBlock": {
+      "items": 10,
+      "usd": 0.0076
+     },
+     "ceiling": {
+      "extraBlockUsd": 0.01,
+      "note": "Hobby extra credits cost $5 per 1,000 ($0.005 each), above the plan's $0.0038; 2 credits per block."
+     },
+     "costOptions": {
+      "scrapeOptions": "unknown",
+      "categories": "unknown"
+     },
+     "note": "2 credits per 10 results, rounded up. Hobby is $19 for 5,000 credits; Standard is about $0.001 per credit. Scraping results adds scrape credits; the gov category adds none."
+    },
+    "rateLimits": [
+     {
+      "plan": "Free",
+      "limit": 10,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "team"
+     },
+     {
+      "plan": "Free",
+      "limit": 2,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "team"
+     },
+     {
+      "plan": "Hobby",
+      "limit": 5,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "team"
+     },
+     {
+      "plan": "Standard",
+      "limit": 25,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "team"
+     },
+     {
+      "plan": "Growth",
+      "limit": 50,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "team"
+     },
+     {
+      "plan": "Scale",
+      "limit": 100,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "team"
+     }
+    ],
+    "providerOptions": {
+     "categories": {
+      "type": "array",
+      "items": {
+       "enum": [
+        "developer",
+        "gov",
+        "research",
+        "pdf"
+       ]
+      }
+     },
+     "location": {
+      "type": "string",
+      "minLength": 1
+     },
+     "safe": {
+      "type": "boolean"
+     },
+     "ignoreInvalidURLs": {
+      "type": "boolean"
+     },
+     "highlights": {
+      "type": "boolean"
+     },
+     "scrapeOptions": {
+      "type": "object"
+     },
+     "timeout": {
+      "type": "integer",
+      "minimum": 1
+     }
+    }
+   },
+   "contents": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "POST",
+     "url": "https://api.firecrawl.dev/v2/scrape",
+     "encoding": "json",
+     "fixed": {
+      "formats": [
+       "markdown"
+      ],
+      "onlyMainContent": true
+     },
+     "params": {
+      "urls": {
+       "to": "url",
+       "steps": [
+        {
+         "step": "single"
+        }
+       ]
+      }
+     }
+    },
+    "limits": {
+     "maxUrls": 1
+    },
+    "contentFormat": "markdown",
+    "response": {
+     "pages": [
+      {
+       "from": "$",
+       "where": [
+        {
+         "path": "success",
+         "equals": true
+        },
+        {
+         "path": "data.metadata.statusCode",
+         "range": [
+          200,
+          399
+         ]
+        }
+       ],
+       "status": "ok",
+       "fields": {
+        "url": "data.metadata.sourceURL",
+        "finalUrl": "data.metadata.url",
+        "title": {
+         "path": "data.metadata.title",
+         "steps": [
+          {
+           "step": "join",
+           "separator": " "
+          }
+         ]
+        },
+        "content": "data.markdown"
+       }
+      },
+      {
+       "from": "$",
+       "where": [
+        {
+         "path": "success",
+         "equals": true
+        },
+        {
+         "path": "data.metadata.statusCode",
+         "range": [
+          200,
+          399
+         ],
+         "not": true
+        }
+       ],
+       "status": "failed",
+       "billable": true,
+       "fields": {
+        "url": "data.metadata.sourceURL",
+        "finalUrl": "data.metadata.url",
+        "errorMessage": "data.metadata.error"
+       }
+      }
+     ],
+     "warnings": [
+      {
+       "where": [
+        {
+         "path": "data.warning",
+         "present": true
+        }
+       ],
+       "code": "provider_warning",
+       "messageField": "data.warning"
+      }
+     ]
+    },
+    "pricing": {
+     "plan": "Hobby (monthly billing)",
+     "source": "https://docs.firecrawl.dev/billing.md",
+     "retrievedOn": "2026-11-24",
+     "creditUsd": 0.0038,
+     "perRequestUsd": 0,
+     "extraBlock": {
+      "items": 1,
+      "usd": 0.0038
+     },
+     "ceiling": {
+      "extraBlockUsd": 0.005,
+      "note": "Hobby extra credits cost $5 per 1,000 ($0.005 each), above the plan's $0.0038."
+     },
+     "note": "1 credit per returned document, including target 403 and 404 pages; a scrape that returns no document is free."
+    },
+    "rateLimits": [
+     {
+      "plan": "Free",
+      "limit": 10,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "team"
+     },
+     {
+      "plan": "Hobby",
+      "limit": 5,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "team"
+     }
+    ],
+    "providerOptions": {
+     "waitFor": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 60000
+     },
+     "mobile": {
+      "type": "boolean"
+     },
+     "maxAge": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "timeout": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 300000
+     },
+     "onlyMainContent": {
+      "type": "boolean"
+     }
+    }
+   },
+   "unverified": [
+    {
+     "pointer": "/search/request/compose/0",
+     "reason": "Docs show unpadded dates (12/1/2024) in cd_min and cd_max; zero-padded dates are sent. Whether the range is inclusive is not stated."
+    },
+    {
+     "pointer": "/search/request/params/country",
+     "reason": "Docs say ISO country code; some examples use names in location instead."
+    },
+    {
+     "pointer": "/search/limits/maxIncludeDomains",
+     "reason": "No domain-list limit is documented; 100 is SDK policy."
+    },
+    {
+     "pointer": "/search/limits/maxExcludeDomains",
+     "reason": "No domain-list limit is documented; 100 is SDK policy."
+    },
+    {
+     "pointer": "/search/response/resultsOptional",
+     "reason": "The arrays in data depend on the sources requested; whether web is present when it is empty is not stated."
+    },
+    {
+     "pointer": "/search/pricing/extraBlock",
+     "reason": "Docs give 2 credits for 1 to 10 results; whether a search with no results is charged is not stated."
+    },
+    {
+     "pointer": "/search/pricing/creditUsd",
+     "reason": "The credit price depends on the plan, by up to about 4x; the Hobby list price is used."
+    },
+    {
+     "pointer": "/contents/response/pages/1",
+     "reason": "A target 403 or 404 comes back as a document with metadata.statusCode and is charged; it is reported failed and billable. A document without statusCode is treated the same way."
+    },
+    {
+     "pointer": "/contents/pricing/creditUsd",
+     "reason": "The credit price depends on the plan; the Hobby list price is used."
+    },
+    {
+     "pointer": "/terms",
+     "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec."
+    }
+   ]
+  },
+  {
+   "formatVersion": 1,
+   "id": "perplexity",
+   "name": "Perplexity",
+   "specVersion": "2026-11-24",
+   "sources": [
+    {
+     "url": "https://docs.perplexity.ai/api-reference/search-post.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "search request, response, errors (OpenAPI 3.1)"
+    },
+    {
+     "url": "https://docs.perplexity.ai/docs/search/filters/date-time-filters.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "MM/DD/YYYY date filters; an after date includes that day"
+    },
+    {
+     "url": "https://docs.perplexity.ai/docs/search/filters/domain-filter.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "one list mixes include and '-' exclude entries, 200 entries in total"
+    },
+    {
+     "url": "https://docs.perplexity.ai/docs/getting-started/pricing.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "Search $5 and Fast $1 per 1,000 requests; Context $1 per 1,000 ok URLs; billing units"
+    },
+    {
+     "url": "https://docs.perplexity.ai/api-reference/context-post.md",
+     "retrievedOn": "2026-11-25",
+     "covers": "context request, response in request order, per-URL status types, errors"
+    },
+    {
+     "url": "https://docs.perplexity.ai/docs/admin/rate-limits-usage-tiers.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "search query units per second; context requests per second and URLs per request by tier"
+    }
+   ],
+   "auth": {
+    "in": "header",
+    "name": "authorization",
+    "prefix": "Bearer ",
+    "env": [
+     "PERPLEXITY_API_KEY"
+    ]
+   },
+   "capabilities": {
+    "search": true,
+    "contents": true,
+    "answer": true,
+    "research": true,
+    "crawl": false
+   },
+   "index": {
+    "type": "unknown",
+    "note": "Docs call the Search API first-party; they do not say where its index comes from."
+   },
+   "terms": {
+    "url": "https://www.perplexity.ai/hub/legal/perplexity-api-terms-of-service",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "not-addressed",
+    "rawResponseStorage": "not-addressed",
+    "note": "API terms (updated 23 Jan 2026): the customer owns Output; no benchmark or caching clause found. Reading from the 2026-11-24 recon; not legal advice."
+   },
+   "errorCodePath": "error.type",
+   "errors": [
+    {
+     "status": 401,
+     "bodyPath": "error.type",
+     "equals": "insufficient_quota",
+     "code": "quota"
+    }
+   ],
+   "search": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "POST",
+     "url": "https://api.perplexity.ai/search",
+     "encoding": "json",
+     "params": {
+      "query": {
+       "to": "query"
+      },
+      "maxResults": {
+       "to": "max_results"
+      },
+      "includeDomains": {
+       "to": "search_domain_filter",
+       "append": true
+      },
+      "excludeDomains": {
+       "to": "search_domain_filter",
+       "append": true,
+       "steps": [
+        {
+         "step": "prefix",
+         "prefix": "-"
+        }
+       ]
+      },
+      "recency": {
+       "to": "search_recency_filter"
+      },
+      "startDate": {
+       "to": "search_after_date_filter",
+       "steps": [
+        {
+         "step": "format-date",
+         "format": "MM/DD/YYYY"
+        }
+       ]
+      },
+      "endDate": {
+       "to": "search_before_date_filter",
+       "steps": [
+        {
+         "step": "format-date",
+         "format": "MM/DD/YYYY"
+        }
+       ]
+      },
+      "country": {
+       "to": "country"
+      },
+      "language": {
+       "to": "search_language_filter",
+       "steps": [
+        {
+         "step": "to-list"
+        }
+       ]
+      },
+      "depth": {
+       "to": "search_type",
+       "steps": [
+        {
+         "step": "map-value",
+         "table": {
+          "fast": "fast",
+          "standard": "web"
+         }
+        }
+       ]
+      }
+     }
+    },
+    "limits": {
+     "maxResults": 20,
+     "maxQueryLength": null,
+     "maxIncludeDomains": 200,
+     "maxExcludeDomains": 200,
+     "maxTotalDomains": 200
+    },
+    "dateBasis": "published",
+    "response": {
+     "results": "results",
+     "excerptKind": "content-chunk",
+     "fields": {
+      "url": "url",
+      "title": "title",
+      "excerpts": {
+       "path": "snippet",
+       "steps": [
+        {
+         "step": "to-list"
+        }
+       ]
+      },
+      "publishedAt": {
+       "path": "date",
+       "steps": [
+        {
+         "step": "parse-date"
+        }
+       ]
+      }
+     },
+     "providerFields": {
+      "lastUpdated": "last_updated"
+     },
+     "requestId": [
+      {
+       "path": "id"
+      }
+     ]
+    },
+    "pricing": {
+     "plan": "Pay as you go",
+     "source": "https://docs.perplexity.ai/docs/getting-started/pricing.md",
+     "retrievedOn": "2026-11-24",
+     "perRequestUsd": {
+      "fast": 0.001,
+      "standard": 0.005
+     },
+     "note": "Billed per successful request, also when it returns no results. Invalid, rate-limited and upstream-failed requests are not billed."
+    },
+    "rateLimits": [
+     {
+      "plan": "all tiers",
+      "limit": 50,
+      "unit": "query-units",
+      "per": "second",
+      "note": "leaky bucket; bursts of up to 50 units; one unit per query"
+     }
+    ],
+    "providerOptions": {
+     "snapshot_as_of": {
+      "type": "string",
+      "minLength": 1
+     },
+     "last_updated_after_filter": {
+      "type": "string",
+      "pattern": "^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$"
+     },
+     "last_updated_before_filter": {
+      "type": "string",
+      "pattern": "^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$"
+     },
+     "display_server_time": {
+      "type": "boolean"
+     }
+    }
+   },
+   "contents": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "POST",
+     "url": "https://api.perplexity.ai/v1/context",
+     "encoding": "json",
+     "fixed": {
+      "formats": [
+       "markdown"
+      ]
+     },
+     "params": {
+      "urls": {
+       "to": "urls"
+      }
+     }
+    },
+    "limits": {
+     "maxUrls": 10
+    },
+    "contentFormat": "markdown",
+    "response": {
+     "pages": [
+      {
+       "from": "results",
+       "where": [
+        {
+         "path": "status.type",
+         "equals": "ok"
+        }
+       ],
+       "status": "ok",
+       "fields": {
+        "url": "url",
+        "finalUrl": "metadata.source_url",
+        "title": "metadata.title",
+        "content": "markdown",
+        "publishedAt": {
+         "path": "metadata.published_date",
+         "steps": [
+          {
+           "step": "parse-date"
+          }
+         ]
+        },
+        "author": "metadata.author"
+       }
+      },
+      {
+       "from": "results",
+       "where": [
+        {
+         "path": "status.type",
+         "in": [
+          "ok",
+          "not_modified"
+         ],
+         "not": true
+        }
+       ],
+       "status": "failed",
+       "fields": {
+        "url": "url",
+        "errorCode": "status.type",
+        "errorMessage": "status.message"
+       }
+      }
+     ],
+     "requestId": [
+      {
+       "path": "request_id"
+      },
+      {
+       "header": "x-request-id"
+      }
+     ]
+    },
+    "cost": {
+     "reported": {
+      "path": "usage.cost.total_cost",
+      "unit": "usd",
+      "isEstimate": true
+     }
+    },
+    "pricing": {
+     "plan": "Pay as you go",
+     "source": "https://docs.perplexity.ai/docs/getting-started/pricing.md",
+     "retrievedOn": "2026-11-24",
+     "perRequestUsd": 0,
+     "extraBlock": {
+      "items": 1,
+      "usd": 0.001
+     },
+     "note": "$1 per 1,000 URLs whose status is ok or not_modified; failed URLs are free. usage.cost is at list price."
+    },
+    "rateLimits": [
+     {
+      "plan": "Tier 0",
+      "limit": 1,
+      "unit": "requests",
+      "per": "second",
+      "scope": "organization"
+     },
+     {
+      "plan": "Tiers 1-3",
+      "limit": 3,
+      "unit": "requests",
+      "per": "second",
+      "scope": "organization"
+     },
+     {
+      "plan": "Tiers 4-5",
+      "limit": 5,
+      "unit": "requests",
+      "per": "second",
+      "scope": "organization"
+     }
+    ],
+    "providerOptions": {
+     "max_age_seconds": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 63072000
+     },
+     "cache_only": {
+      "type": "boolean"
+     },
+     "timeout_ms": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 110000
+     },
+     "snapshot_as_of": {
+      "type": "string",
+      "minLength": 1
+     }
+    }
+   },
+   "unverified": [
+    {
+     "pointer": "/search/request/params/endDate",
+     "reason": "Docs say an after date includes its day; they do not say whether a before date does."
+    },
+    {
+     "pointer": "/search/request/params/country",
+     "reason": "Codes the provider does not accept give a 400 (invalid_country_code), which is a provider_error, not unsupported."
+    },
+    {
+     "pointer": "/search/request/params/language",
+     "reason": "Codes the provider does not accept give a 400 (invalid_language_code), which is a provider_error, not unsupported."
+    },
+    {
+     "pointer": "/search/request/params/depth",
+     "reason": "No deeper search type exists for web results, so depth deep is unsupported."
+    },
+    {
+     "pointer": "/contents/limits/maxUrls",
+     "reason": "Tier 0 allows 10 URLs per request, tiers 1-3 allow 15, tiers 4-5 allow 25, and no request may carry more than 50. The lowest tier's limit is used."
+    },
+    {
+     "pointer": "/contents/response/pages/0",
+     "reason": "status.status_code is the site's own status on ok results; whether ok can carry a site error page is not stated."
+    },
+    {
+     "pointer": "/contents/response/pages/1/where",
+     "reason": "not_modified needs if_modified_since, which this spec never sends; such a result would be reported missing."
+    },
+    {
+     "pointer": "/index",
+     "reason": "The index source is not documented."
+    },
+    {
+     "pointer": "/terms",
+     "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec."
+    }
+   ]
+  },
+  {
+   "formatVersion": 1,
+   "id": "tavily",
+   "name": "Tavily",
+   "specVersion": "2026-11-24",
+   "sources": [
+    {
+     "url": "https://docs.tavily.com/documentation/api-reference/endpoint/search.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "search request, response, status codes (OpenAPI 3.0.3)"
+    },
+    {
+     "url": "https://docs.tavily.com/documentation/api-reference/endpoint/extract.md",
+     "retrievedOn": "2026-11-25",
+     "covers": "extract request, response, status codes"
+    },
+    {
+     "url": "https://docs.tavily.com/documentation/api-credits.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "credit costs and credit prices"
+    },
+    {
+     "url": "https://docs.tavily.com/documentation/rate-limits.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "rate limits, 429 and 434 behaviour"
+    }
+   ],
+   "auth": {
+    "in": "header",
+    "name": "authorization",
+    "prefix": "Bearer ",
+    "env": [
+     "TAVILY_API_KEY"
+    ]
+   },
+   "capabilities": {
+    "search": true,
+    "contents": true,
+    "answer": true,
+    "research": true,
+    "crawl": true
+   },
+   "index": {
+    "type": "unknown",
+    "note": "Tavily does not state its index source. It serves cached copies and fetches live as needed."
+   },
+   "terms": {
+    "url": "https://www.tavily.com/terms",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "not-addressed",
+    "rawResponseStorage": "not-addressed",
+    "note": "No benchmark or caching clause found. Tavily may retain and train on inputs and outputs. Reading from the 2026-11-24 recon; not legal advice."
+   },
+   "errors": [
+    {
+     "status": 432,
+     "code": "quota"
+    },
+    {
+     "status": 433,
+     "code": "quota"
+    },
+    {
+     "status": 434,
+     "code": "unavailable"
+    }
+   ],
+   "search": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "POST",
+     "url": "https://api.tavily.com/search",
+     "encoding": "json",
+     "fixed": {
+      "search_depth": "basic",
+      "include_usage": true,
+      "include_published_date": true,
+      "include_answer": false,
+      "include_raw_content": false,
+      "auto_parameters": false
+     },
+     "params": {
+      "query": {
+       "to": "query"
+      },
+      "maxResults": {
+       "to": "max_results"
+      },
+      "includeDomains": {
+       "to": "include_domains"
+      },
+      "excludeDomains": {
+       "to": "exclude_domains"
+      },
+      "recency": {
+       "to": "time_range"
+      },
+      "startDate": {
+       "to": "start_date"
+      },
+      "endDate": {
+       "to": "end_date"
+      },
+      "country": {
+       "to": "country",
+       "steps": [
+        {
+         "step": "map-value",
+         "table": {
+          "AF": "afghanistan",
+          "AL": "albania",
+          "DZ": "algeria",
+          "AD": "andorra",
+          "AO": "angola",
+          "AR": "argentina",
+          "AM": "armenia",
+          "AU": "australia",
+          "AT": "austria",
+          "AZ": "azerbaijan",
+          "BS": "bahamas",
+          "BH": "bahrain",
+          "BD": "bangladesh",
+          "BB": "barbados",
+          "BY": "belarus",
+          "BE": "belgium",
+          "BZ": "belize",
+          "BJ": "benin",
+          "BT": "bhutan",
+          "BO": "bolivia",
+          "BA": "bosnia and herzegovina",
+          "BW": "botswana",
+          "BR": "brazil",
+          "BN": "brunei",
+          "BG": "bulgaria",
+          "BF": "burkina faso",
+          "BI": "burundi",
+          "KH": "cambodia",
+          "CM": "cameroon",
+          "CA": "canada",
+          "CV": "cape verde",
+          "CF": "central african republic",
+          "TD": "chad",
+          "CL": "chile",
+          "CN": "china",
+          "CO": "colombia",
+          "KM": "comoros",
+          "CG": "congo",
+          "CR": "costa rica",
+          "HR": "croatia",
+          "CU": "cuba",
+          "CY": "cyprus",
+          "CZ": "czech republic",
+          "DK": "denmark",
+          "DJ": "djibouti",
+          "DO": "dominican republic",
+          "EC": "ecuador",
+          "EG": "egypt",
+          "SV": "el salvador",
+          "GQ": "equatorial guinea",
+          "ER": "eritrea",
+          "EE": "estonia",
+          "ET": "ethiopia",
+          "FJ": "fiji",
+          "FI": "finland",
+          "FR": "france",
+          "GA": "gabon",
+          "GM": "gambia",
+          "GE": "georgia",
+          "DE": "germany",
+          "GH": "ghana",
+          "GR": "greece",
+          "GT": "guatemala",
+          "GN": "guinea",
+          "HT": "haiti",
+          "HN": "honduras",
+          "HU": "hungary",
+          "IS": "iceland",
+          "IN": "india",
+          "ID": "indonesia",
+          "IR": "iran",
+          "IQ": "iraq",
+          "IE": "ireland",
+          "IL": "israel",
+          "IT": "italy",
+          "JM": "jamaica",
+          "JP": "japan",
+          "JO": "jordan",
+          "KZ": "kazakhstan",
+          "KE": "kenya",
+          "KW": "kuwait",
+          "KG": "kyrgyzstan",
+          "LV": "latvia",
+          "LB": "lebanon",
+          "LS": "lesotho",
+          "LR": "liberia",
+          "LY": "libya",
+          "LI": "liechtenstein",
+          "LT": "lithuania",
+          "LU": "luxembourg",
+          "MG": "madagascar",
+          "MW": "malawi",
+          "MY": "malaysia",
+          "MV": "maldives",
+          "ML": "mali",
+          "MT": "malta",
+          "MR": "mauritania",
+          "MU": "mauritius",
+          "MX": "mexico",
+          "MD": "moldova",
+          "MC": "monaco",
+          "MN": "mongolia",
+          "ME": "montenegro",
+          "MA": "morocco",
+          "MZ": "mozambique",
+          "MM": "myanmar",
+          "NA": "namibia",
+          "NP": "nepal",
+          "NL": "netherlands",
+          "NZ": "new zealand",
+          "NI": "nicaragua",
+          "NE": "niger",
+          "NG": "nigeria",
+          "KP": "north korea",
+          "MK": "north macedonia",
+          "NO": "norway",
+          "OM": "oman",
+          "PK": "pakistan",
+          "PA": "panama",
+          "PG": "papua new guinea",
+          "PY": "paraguay",
+          "PE": "peru",
+          "PH": "philippines",
+          "PL": "poland",
+          "PT": "portugal",
+          "QA": "qatar",
+          "RO": "romania",
+          "RU": "russia",
+          "RW": "rwanda",
+          "SA": "saudi arabia",
+          "SN": "senegal",
+          "RS": "serbia",
+          "SG": "singapore",
+          "SK": "slovakia",
+          "SI": "slovenia",
+          "SO": "somalia",
+          "ZA": "south africa",
+          "KR": "south korea",
+          "SS": "south sudan",
+          "ES": "spain",
+          "LK": "sri lanka",
+          "SD": "sudan",
+          "SE": "sweden",
+          "CH": "switzerland",
+          "SY": "syria",
+          "TW": "taiwan",
+          "TJ": "tajikistan",
+          "TZ": "tanzania",
+          "TH": "thailand",
+          "TG": "togo",
+          "TT": "trinidad and tobago",
+          "TN": "tunisia",
+          "TR": "turkey",
+          "TM": "turkmenistan",
+          "UG": "uganda",
+          "UA": "ukraine",
+          "AE": "united arab emirates",
+          "GB": "united kingdom",
+          "US": "united states",
+          "UY": "uruguay",
+          "UZ": "uzbekistan",
+          "VE": "venezuela",
+          "VN": "vietnam",
+          "YE": "yemen",
+          "ZM": "zambia",
+          "ZW": "zimbabwe"
+         }
+        }
+       ]
+      },
+      "language": {
+       "to": "language"
+      },
+      "depth": {
+       "to": "search_depth",
+       "steps": [
+        {
+         "step": "map-value",
+         "table": {
+          "fast": "fast",
+          "standard": "basic",
+          "deep": "advanced"
+         }
+        }
+       ]
+      }
+     }
+    },
+    "limits": {
+     "maxResults": 20,
+     "maxQueryLength": null,
+     "maxIncludeDomains": 300,
+     "maxExcludeDomains": 150
+    },
+    "dateBasis": "published-or-updated",
+    "response": {
+     "results": "results",
+     "excerptKind": "content-chunk",
+     "fields": {
+      "url": "url",
+      "title": "title",
+      "excerpts": {
+       "path": "content",
+       "steps": [
+        {
+         "step": "to-list"
+        }
+       ]
+      },
+      "publishedAt": {
+       "path": "published_date",
+       "steps": [
+        {
+         "step": "parse-date"
+        }
+       ]
+      }
+     },
+     "providerFields": {
+      "score": "score",
+      "favicon": "favicon"
+     },
+     "requestId": [
+      {
+       "path": "request_id"
+      }
+     ]
+    },
+    "cost": {
+     "reported": {
+      "path": "usage.credits",
+      "unit": "credit"
+     }
+    },
+    "pricing": {
+     "plan": "Pay as you go",
+     "source": "https://docs.tavily.com/documentation/api-credits.md",
+     "retrievedOn": "2026-11-24",
+     "creditUsd": 0.008,
+     "perRequestUsd": {
+      "fast": 0.008,
+      "standard": 0.008,
+      "deep": 0.016
+     },
+     "costOptions": {
+      "auto_parameters": "unknown"
+     },
+     "note": "basic, fast and ultra-fast cost 1 credit; advanced costs 2. auto_parameters may choose advanced. Monthly plans price a credit at $0.005 to $0.0075."
+    },
+    "rateLimits": [
+     {
+      "plan": "Researcher (free)",
+      "limit": 100,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "organization"
+     },
+     {
+      "plan": "Pay as you go, Project, Bootstrap, Startup",
+      "limit": 1000,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "organization"
+     },
+     {
+      "plan": "Growth, Scale",
+      "limit": 1500,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "organization"
+     }
+    ],
+    "providerOptions": {
+     "topic": {
+      "enum": [
+       "general",
+       "news",
+       "finance"
+      ]
+     },
+     "chunks_per_source": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3
+     },
+     "max_age_hours": {
+      "type": "integer",
+      "minimum": -1,
+      "maximum": 720
+     },
+     "include_answer": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "enum": [
+         "basic",
+         "advanced"
+        ]
+       }
+      ]
+     },
+     "include_raw_content": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "enum": [
+         "markdown",
+         "text"
+        ]
+       }
+      ]
+     },
+     "include_images": {
+      "type": "boolean"
+     },
+     "include_image_descriptions": {
+      "type": "boolean"
+     },
+     "include_favicon": {
+      "type": "boolean"
+     },
+     "include_domains_mode": {
+      "enum": [
+       "restrict",
+       "prefer"
+      ]
+     },
+     "filter_by_language": {
+      "type": "boolean"
+     },
+     "filter_by_published_date": {
+      "type": "boolean"
+     },
+     "exact_match": {
+      "type": "boolean"
+     },
+     "safe_search": {
+      "type": "boolean"
+     },
+     "auto_parameters": {
+      "type": "boolean"
+     }
+    }
+   },
+   "contents": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "POST",
+     "url": "https://api.tavily.com/extract",
+     "encoding": "json",
+     "fixed": {
+      "format": "markdown",
+      "include_usage": true,
+      "include_published_date": true
+     },
+     "params": {
+      "urls": {
+       "to": "urls"
+      }
+     }
+    },
+    "limits": {
+     "maxUrls": 20
+    },
+    "contentFormat": "markdown",
+    "response": {
+     "pages": [
+      {
+       "from": "results",
+       "status": "ok",
+       "fields": {
+        "url": "url",
+        "content": "raw_content",
+        "publishedAt": {
+         "path": "published_date",
+         "steps": [
+          {
+           "step": "parse-date"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "from": "failed_results",
+       "optional": true,
+       "status": "failed",
+       "fields": {
+        "url": "url",
+        "errorMessage": "error"
+       }
+      }
+     ],
+     "requestId": [
+      {
+       "path": "request_id"
+      }
+     ]
+    },
+    "cost": {
+     "reported": {
+      "path": "usage.credits",
+      "unit": "credit"
+     }
+    },
+    "pricing": {
+     "plan": "Pay as you go",
+     "source": "https://docs.tavily.com/documentation/api-credits.md",
+     "retrievedOn": "2026-11-24",
+     "creditUsd": 0.008,
+     "perRequestUsd": 0,
+     "extraBlock": {
+      "items": 5,
+      "usd": 0.008
+     },
+     "costOptions": {
+      "extract_depth": {
+       "basic": "standard"
+      }
+     },
+     "note": "Basic extract costs 1 credit per 5 successful URLs; advanced costs 2. Failed URLs are not charged."
+    },
+    "rateLimits": [
+     {
+      "plan": "Researcher (free)",
+      "limit": 100,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "organization"
+     },
+     {
+      "plan": "Pay as you go, Project, Bootstrap, Startup",
+      "limit": 1000,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "organization"
+     },
+     {
+      "plan": "Growth, Scale",
+      "limit": 1500,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "organization"
+     }
+    ],
+    "providerOptions": {
+     "query": {
+      "type": "string",
+      "minLength": 1
+     },
+     "chunks_per_source": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+     },
+     "extract_depth": {
+      "enum": [
+       "basic",
+       "advanced"
+      ]
+     },
+     "include_images": {
+      "type": "boolean"
+     },
+     "include_favicon": {
+      "type": "boolean"
+     },
+     "timeout": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 60
+     }
+    }
+   },
+   "unverified": [
+    {
+     "pointer": "/contents/cost/reported",
+     "reason": "Extract docs (read 2026-11-25) say usage.credits may be 0 until five successful extractions accumulate, so a reported per-request cost can understate what the request adds to the bill."
+    },
+    {
+     "pointer": "/search/response/fields/publishedAt",
+     "reason": "published_date is a beta field: Tavily's estimate of publish or update time, in RFC 1123 form in examples."
+    },
+    {
+     "pointer": "/search/request/fixed/include_published_date",
+     "reason": "Docs do not say whether include_published_date affects cost or latency."
+    },
+    {
+     "pointer": "/search/request/params/country",
+     "reason": "country takes lowercase English names; the ISO code table is ours. 'congo' is assumed to mean CG, not CD."
+    },
+    {
+     "pointer": "/search/request/params/language",
+     "reason": "Docs say ISO 639-1 codes or English names are accepted; behaviour for unknown codes is not documented."
+    },
+    {
+     "pointer": "/search/limits/maxQueryLength",
+     "reason": "No query length limit is documented."
+    },
+    {
+     "pointer": "/contents/response/pages/0/fields/url",
+     "reason": "Docs do not state that results[].url echoes the requested URL; matching relies on it."
+    },
+    {
+     "pointer": "/terms",
+     "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec."
+    }
+   ]
+  },
+  {
+   "formatVersion": 1,
+   "id": "tinyfish",
+   "name": "TinyFish",
+   "specVersion": "2026-11-24",
+   "sources": [
+    {
+     "url": "https://docs.tinyfish.ai/tinysearch/reference.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "search parameters, response, status codes, rate limits, billing"
+    },
+    {
+     "url": "https://docs.tinyfish.ai/search-api.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "search overview, date filter rules, daily allowance"
+    },
+    {
+     "url": "https://docs.tinyfish.ai/tinyfetch/reference.md",
+     "retrievedOn": "2026-11-25",
+     "covers": "fetch request, response, per-URL errors, billing"
+    },
+    {
+     "url": "https://docs.tinyfish.ai/error-codes.md",
+     "retrievedOn": "2026-11-24",
+     "covers": "error envelope"
+    },
+    {
+     "url": "https://www.tinyfish.ai/pricing",
+     "retrievedOn": "2026-11-24",
+     "covers": "prices and free limits"
+    }
+   ],
+   "auth": {
+    "in": "header",
+    "name": "x-api-key",
+    "env": [
+     "TINYFISH_API_KEY"
+    ]
+   },
+   "capabilities": {
+    "search": true,
+    "contents": true,
+    "answer": false,
+    "research": true,
+    "crawl": false
+   },
+   "index": {
+    "type": "unknown",
+    "note": "TinyFish does not state its index source; results are SERP-shaped (position, site_name)."
+   },
+   "terms": {
+    "url": "https://www.tinyfish.ai/terms",
+    "readOn": "2026-11-24",
+    "benchmarkPublication": "not-addressed",
+    "rawResponseStorage": "ask",
+    "note": "Site Content may not be stored or compiled; whether that covers API output is unclear. Reading from the 2026-11-24 recon; not legal advice."
+   },
+   "errorCodePath": "error.code",
+   "errors": [
+    {
+     "status": 429,
+     "bodyPath": "error.details.reason",
+     "equals": "free_allowance_exhausted",
+     "code": "quota"
+    }
+   ],
+   "search": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "GET",
+     "url": "https://api.search.tinyfish.ai",
+     "encoding": "query",
+     "fixed": {},
+     "params": {
+      "query": {
+       "to": "query"
+      },
+      "includeDomains": {
+       "to": "include_domains",
+       "steps": [
+        {
+         "step": "join",
+         "separator": ","
+        }
+       ]
+      },
+      "excludeDomains": {
+       "to": "exclude_domains",
+       "steps": [
+        {
+         "step": "join",
+         "separator": ","
+        }
+       ]
+      },
+      "recency": {
+       "to": "recency_minutes",
+       "steps": [
+        {
+         "step": "map-value",
+         "table": {
+          "day": 1440,
+          "week": 10080,
+          "month": 43200,
+          "year": 525600
+         }
+        }
+       ]
+      },
+      "startDate": {
+       "to": "after_date"
+      },
+      "endDate": {
+       "to": "before_date"
+      },
+      "country": {
+       "to": "location",
+       "steps": [
+        {
+         "step": "uppercase"
+        }
+       ]
+      },
+      "language": {
+       "to": "language"
+      }
+     }
+    },
+    "limits": {
+     "maxResults": 10,
+     "maxQueryLength": null,
+     "maxIncludeDomains": 100,
+     "maxExcludeDomains": 100
+    },
+    "dateBasis": "unknown",
+    "response": {
+     "results": "results",
+     "excerptKind": "description",
+     "fields": {
+      "url": "url",
+      "title": "title",
+      "excerpts": {
+       "path": "snippet",
+       "steps": [
+        {
+         "step": "to-list"
+        }
+       ]
+      },
+      "publishedAt": {
+       "path": "date",
+       "steps": [
+        {
+         "step": "parse-date"
+        }
+       ]
+      },
+      "author": {
+       "path": "authors",
+       "steps": [
+        {
+         "step": "join",
+         "separator": ", "
+        }
+       ]
+      }
+     },
+     "providerFields": {
+      "position": "position",
+      "siteName": "site_name",
+      "publisher": "publisher"
+     },
+     "requestId": [
+      {
+       "header": "x-request-id"
+      }
+     ]
+    },
+    "pricing": {
+     "plan": "Free daily allowance",
+     "source": "https://www.tinyfish.ai/pricing",
+     "retrievedOn": "2026-11-24",
+     "perRequestUsd": 0,
+     "allowance": {
+      "limit": 12000,
+      "unit": "requests",
+      "per": "day",
+      "resetsAtUtc": "00:00",
+      "source": "https://docs.tinyfish.ai/tinysearch/reference.md",
+      "beyond": {
+       "billing": "opt-in",
+       "perRequestUsd": null,
+       "refusal": "HTTP 429 RATE_LIMIT_EXCEEDED with details.reason free_allowance_exhausted"
+      }
+     },
+     "note": "The pricing page lists Search at $0.00 per request. The API reference makes 12,000 requests a day free; past that, requests are refused unless wallet spending is enabled on the account, at a wallet price the docs do not state."
+    },
+    "rateLimits": [
+     {
+      "plan": "Personal",
+      "limit": 30,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "person or organization",
+      "source": "https://docs.tinyfish.ai/tinysearch/reference.md"
+     },
+     {
+      "plan": "Personal",
+      "limit": 500,
+      "unit": "requests",
+      "per": "hour",
+      "scope": "person or organization",
+      "source": "https://www.tinyfish.ai/pricing",
+      "note": "on the pricing page only; the API reference gives no hourly limit"
+     }
+    ],
+    "providerOptions": {
+     "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+     },
+     "domain_type": {
+      "enum": [
+       "web",
+       "news",
+       "research_paper"
+      ]
+     },
+     "page": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10
+     },
+     "pub_year_min": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9999
+     },
+     "pub_year_max": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9999
+     }
+    }
+   },
+   "contents": {
+    "verification": {
+     "status": "unverified"
+    },
+    "request": {
+     "method": "POST",
+     "url": "https://api.fetch.tinyfish.ai",
+     "encoding": "json",
+     "fixed": {
+      "format": "markdown"
+     },
+     "params": {
+      "urls": {
+       "to": "urls"
+      }
+     }
+    },
+    "limits": {
+     "maxUrls": 10
+    },
+    "contentFormat": "markdown",
+    "response": {
+     "pages": [
+      {
+       "from": "results",
+       "status": "ok",
+       "fields": {
+        "url": "url",
+        "finalUrl": "final_url",
+        "title": "title",
+        "content": "text",
+        "publishedAt": {
+         "path": "published_date",
+         "steps": [
+          {
+           "step": "parse-date"
+          }
+         ]
+        },
+        "author": "author"
+       }
+      },
+      {
+       "from": "errors",
+       "optional": true,
+       "status": "failed",
+       "fields": {
+        "url": "url",
+        "errorCode": "error"
+       }
+      }
+     ],
+     "requestId": [
+      {
+       "header": "x-request-id"
+      }
+     ]
+    },
+    "pricing": {
+     "plan": "Free daily allowance",
+     "source": "https://www.tinyfish.ai/pricing",
+     "retrievedOn": "2026-11-24",
+     "perRequestUsd": 0,
+     "allowance": {
+      "limit": 1000,
+      "unit": "urls",
+      "per": "day",
+      "resetsAtUtc": "00:00",
+      "source": "https://docs.tinyfish.ai/tinyfetch/reference.md",
+      "beyond": {
+       "billing": "opt-in",
+       "perRequestUsd": null,
+       "refusal": "HTTP 429 RATE_LIMIT_EXCEEDED with details.reason free_allowance_exhausted"
+      },
+      "note": "Counted per successfully fetched URL."
+     },
+     "note": "The pricing page lists Fetch at $0.00 per URL. The API reference makes 1,000 fetched URLs a day free; past that, requests are refused unless wallet spending is enabled, at a wallet price the docs do not state."
+    },
+    "rateLimits": [
+     {
+      "plan": "Personal",
+      "limit": 150,
+      "unit": "urls",
+      "per": "minute",
+      "scope": "person or organization",
+      "source": "https://docs.tinyfish.ai/tinyfetch/reference.md"
+     }
+    ],
+    "providerOptions": {
+     "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+     },
+     "links": {
+      "type": "boolean"
+     },
+     "image_links": {
+      "type": "boolean"
+     },
+     "iframe_links": {
+      "type": "boolean"
+     },
+     "ttl": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "per_url_timeout_ms": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 110000
+     },
+     "include_selectors": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 1000
+      }
+     },
+     "exclude_selectors": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 1000
+      }
+     }
+    }
+   },
+   "unverified": [
+    {
+     "pointer": "/search/limits/maxResults",
+     "reason": "No result-count parameter is documented; examples return 10 per page. The runtime truncates."
+    },
+    {
+     "pointer": "/search/limits/maxIncludeDomains",
+     "reason": "No domain-list limit is documented; 100 is SDK policy."
+    },
+    {
+     "pointer": "/search/limits/maxExcludeDomains",
+     "reason": "No domain-list limit is documented; 100 is SDK policy."
+    },
+    {
+     "pointer": "/search/response/fields/publishedAt",
+     "reason": "date is 'present for news results and some web results'; its format is not documented."
+    },
+    {
+     "pointer": "/search/dateBasis",
+     "reason": "Docs do not say whether date filters use publish or crawl dates."
+    },
+    {
+     "pointer": "/search/rateLimits/1",
+     "reason": "The pricing page lists 500 requests per hour; the API reference lists only 30 per minute and the 12,000-a-day free allowance. Both are recorded; the strictest applies."
+    },
+    {
+     "pointer": "/search/pricing/perRequestUsd",
+     "reason": "$0.00 per the pricing page and free within the daily allowance per the API reference; no live bill has been checked."
+    },
+    {
+     "pointer": "/search/pricing/allowance/beyond/perRequestUsd",
+     "reason": "The wallet price past the allowance is not documented."
+    },
+    {
+     "pointer": "/contents/pricing/perRequestUsd",
+     "reason": "$0.00 per the pricing page and free within the daily allowance per the API reference; no live bill has been checked."
+    },
+    {
+     "pointer": "/contents/pricing/allowance/beyond/perRequestUsd",
+     "reason": "The wallet price past the allowance is not documented."
+    },
+    {
+     "pointer": "/terms",
+     "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec."
+    }
+   ]
+  }
+ ],
+ "policy": {
+  "formatVersion": 1,
+  "query": {
+   "maxCodePoints": 2000,
+   "blank": [
+    [
+     "0009",
+     "000D"
+    ],
+    [
+     "0020",
+     "0020"
+    ],
+    [
+     "0085",
+     "0085"
+    ],
+    [
+     "00A0",
+     "00A0"
+    ],
+    [
+     "00AD",
+     "00AD"
+    ],
+    [
+     "034F",
+     "034F"
+    ],
+    [
+     "061C",
+     "061C"
+    ],
+    [
+     "115F",
+     "1160"
+    ],
+    [
+     "1680",
+     "1680"
+    ],
+    [
+     "180E",
+     "180E"
+    ],
+    [
+     "2000",
+     "200F"
+    ],
+    [
+     "2028",
+     "2029"
+    ],
+    [
+     "202F",
+     "202F"
+    ],
+    [
+     "205F",
+     "2060"
+    ],
+    [
+     "2800",
+     "2800"
+    ],
+    [
+     "3000",
+     "3000"
+    ],
+    [
+     "3164",
+     "3164"
+    ],
+    [
+     "FEFF",
+     "FEFF"
+    ],
+    [
+     "FFA0",
+     "FFA0"
+    ]
+   ],
+   "forbidden": [
+    [
+     "0000",
+     "0008"
+    ],
+    [
+     "000E",
+     "001F"
+    ],
+    [
+     "007F",
+     "0084"
+    ],
+    [
+     "0086",
+     "009F"
+    ],
+    [
+     "202A",
+     "202E"
+    ],
+    [
+     "2066",
+     "2069"
+    ],
+    [
+     "E0000",
+     "E007F"
+    ]
+   ]
+  },
+  "search": {
+   "maxResults": {
+    "default": 10,
+    "min": 1,
+    "max": 100
+   },
+   "recencyDays": {
+    "day": 1,
+    "week": 7,
+    "month": 30,
+    "year": 365
+   }
+  },
+  "contents": {
+   "maxUrls": 100,
+   "maxUrlLength": 2048
+  },
+  "domains": {
+   "maxLength": 253,
+   "minLabels": 2,
+   "labelPattern": "^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$"
+  },
+  "timeouts": {
+   "defaultMs": 30000,
+   "minMs": 1,
+   "maxMs": 300000
+  },
+  "responseBytes": {
+   "search": 10485760,
+   "contents": 52428800,
+   "min": 1024,
+   "max": 104857600
+  },
+  "retry": {
+   "defaultMaxRetries": 0,
+   "maxRetries": 5,
+   "baseDelayMs": 250,
+   "maxDelayMs": 5000,
+   "maxRetryAfterMs": 60000
+  },
+  "transient": [
+   "network",
+   "rate_limit",
+   "unavailable",
+   "attempt_timeout"
+  ],
+  "billing": {
+   "$comment": "How each attempt's billed field is set. Rules: registry/policy.md, Billing.",
+   "notSent": "no",
+   "success": "yes",
+   "errorStatus": "no",
+   "possible": [
+    "network",
+    "attempt_timeout",
+    "timeout",
+    "aborted"
+   ]
+  },
+  "fallbackOn": [
+   "network",
+   "rate_limit",
+   "unavailable",
+   "attempt_timeout",
+   "quota",
+   "unsupported"
+  ],
+  "status": [
+   {
+    "status": 401,
+    "code": "auth"
+   },
+   {
+    "status": 402,
+    "code": "quota"
+   },
+   {
+    "status": 403,
+    "code": "forbidden"
+   },
+   {
+    "status": 408,
+    "code": "unavailable"
+   },
+   {
+    "status": 429,
+    "code": "rate_limit"
+   },
+   {
+    "range": [
+     400,
+     499
+    ],
+    "code": "provider_error"
+   },
+   {
+    "range": [
+     500,
+     599
+    ],
+    "code": "unavailable"
+   }
+  ],
+  "statusDefault": "invalid_response",
+  "errors": {
+   "invalid_request": "The request is invalid.",
+   "configuration": "The client configuration is invalid.",
+   "unsupported": "The provider does not support this request.",
+   "auth": "The provider rejected the API key.",
+   "forbidden": "The provider refused this request.",
+   "quota": "The provider account is out of credits or over its limit.",
+   "rate_limit": "The provider rate limit was exceeded.",
+   "unavailable": "The provider is temporarily unavailable.",
+   "provider_error": "The provider rejected the request.",
+   "network": "The provider could not be reached.",
+   "attempt_timeout": "The attempt exceeded its deadline.",
+   "timeout": "The call exceeded its deadline.",
+   "aborted": "The call was cancelled.",
+   "invalid_response": "The provider returned an unusable response.",
+   "spec_mismatch": "The provider response does not have the shape its registry spec reads.",
+   "response_too_large": "The provider response exceeded the size limit."
+  },
+  "diagnostics": {
+   "$comment": "The opt-in per-attempt diagnostics hook. Rules: registry/policy.md, Diagnostics.",
+   "maxBodyBytes": 65536,
+   "redacted": "[redacted]"
+  }
+ },
+ "examples": [
+  {
+   "id": "quickstart-1",
+   "page": "/docs",
+   "title": "Quickstart: Search",
+   "code": "import { search } from \"@searchsdk/sdk\";\n\nconst { results, cost } = await search(\"vector database indexing\", { provider: \"exa\", maxResults: 5 });\nfor (const r of results) console.log(r.title, r.url);\nconsole.log(cost.usd, cost.source);"
+  },
+  {
+   "id": "quickstart-2",
+   "page": "/docs",
+   "title": "Quickstart: Fall back",
+   "code": "import { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({ provider: \"exa\", fallback: [\"tavily\"], maxRetries: 1 });\nconst res = await client.search(\"vector database indexing\");\nconsole.log(res.provider, res.attempts.length);"
+  },
+  {
+   "id": "search-1",
+   "page": "/docs/search",
+   "title": "Search: Search",
+   "code": "import { search } from \"@searchsdk/sdk\";\n\nconst controller = new AbortController();\nconst res = await search(\"postgres full text search\", {\n  provider: \"tavily\",\n  maxResults: 5,\n  recency: \"month\",\n  country: \"DE\",\n  timeoutMs: 10_000,\n  signal: controller.signal,\n});"
+  },
+  {
+   "id": "search-2",
+   "page": "/docs/search",
+   "title": "Search: Errors",
+   "code": "import { search, SearchError } from \"@searchsdk/sdk\";\n\ntry {\n  await search(\"postgres full text search\", { provider: \"brave\", includeDomains: [\"postgresql.org\"] });\n} catch (e) {\n  if (e instanceof SearchError) console.log(e.code, e.field, e.attempts);\n}"
+  },
+  {
+   "id": "contents-1",
+   "page": "/docs/contents",
+   "title": "Contents: Contents",
+   "code": "import { contents } from \"@searchsdk/sdk\";\n\nconst { pages, cost } = await contents([\"https://example.com/a\", \"https://example.com/b\"], { provider: \"exa\" });\nfor (const page of pages) {\n  if (page.status === \"ok\") console.log(page.title, page.content?.length);\n  else console.log(page.url, page.error?.code);\n}\nconsole.log(cost.usd);"
+  },
+  {
+   "id": "providers-1",
+   "page": "/docs/providers",
+   "title": "Providers: Ids and keys",
+   "code": "import { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({\n  provider: \"brave\",\n  fallback: [\"firecrawl\"],\n  keys: { brave: \"your-brave-key\", firecrawl: \"your-firecrawl-key\" },\n});"
+  },
+  {
+   "id": "providers-2",
+   "page": "/docs/providers",
+   "title": "Providers: Provider options",
+   "code": "import { search } from \"@searchsdk/sdk\";\n\nconst res = await search(\"rust async runtimes\", {\n  provider: \"exa\",\n  providerOptions: { exa: { category: \"news\" } },\n});"
+  },
+  {
+   "id": "providers-3",
+   "page": "/docs/providers",
+   "title": "Providers: Raw responses",
+   "code": "import { search } from \"@searchsdk/sdk\";\n\nconst res = await search(\"rust async runtimes\", { provider: \"tavily\" });\nconsole.log(res.raw, res.results[0]?.providerFields);"
+  },
+  {
+   "id": "cost-1",
+   "page": "/docs/cost",
+   "title": "Cost: Every attempt",
+   "code": "import { search } from \"@searchsdk/sdk\";\n\nconst res = await search(\"sqlite wal mode\", { provider: \"exa\" });\nconst billed = res.attempts.filter((a) => a.billed !== \"no\");\nconst known = billed.every((a) => a.cost.usd !== null);\nconst usd = billed.reduce((sum, a) => sum + (a.cost.usd ?? 0), 0);\nconsole.log(known ? usd : \"unknown\");"
+  },
+  {
+   "id": "cost-2",
+   "page": "/docs/cost",
+   "title": "Cost: Before a call",
+   "code": "import { costBound, listPrice, registry } from \"@searchsdk/sdk\";\n\nconst bound = costBound(registry.exa, \"search\", { maxResults: 10, depth: \"deep\" });\nconsole.log(bound.usd); // null when it cannot be bounded; see bound.unknownBecause\nconsole.log(listPrice(registry.exa, \"search\", { count: 10 }).usd);"
+  },
+  {
+   "id": "guides-fallback-1",
+   "page": "/docs/guides/fallback",
+   "title": "Fallback and retries: Fallback and retries",
+   "code": "import { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({\n  provider: \"exa\",\n  fallback: [\"tavily\", \"brave\"],\n  maxRetries: 2,\n  timeoutMs: 15_000,\n  attemptTimeoutMs: 5_000,\n});\n\nconst res = await client.search(\"open source vector databases\");\nif (res.warnings.some((w) => w.code === \"fallback_used\")) console.log(\"answered by\", res.provider);\nfor (const a of res.attempts) console.log(a.provider, a.outcome, a.code ?? \"-\", a.billed);"
+  },
+  {
+   "id": "guides-fallback-2",
+   "page": "/docs/guides/fallback",
+   "title": "Fallback and retries: Options across a chain",
+   "code": "import { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({ provider: \"brave\", fallback: [\"exa\"] });\n// Brave has no startDate, so it is skipped and Exa answers.\nconst res = await client.search(\"rust 2027 edition\", {\n  startDate: \"2026-06-01\",\n  providerOptions: { exa: { category: \"news\" } },\n});\nconsole.log(res.provider, res.attempts.map((a) => `${a.provider}:${a.outcome}`));"
+  },
+  {
+   "id": "guides-cost-budgets-1",
+   "page": "/docs/guides/cost-budgets",
+   "title": "Cost and budgets: Before the call",
+   "code": "import { costBound, registry, type ProviderId } from \"@searchsdk/sdk\";\n\nconst chain: ProviderId[] = [\"exa\", \"tavily\"];\nconst attemptsPerProvider = 1 + 1; // the first try plus maxRetries: 1\n\nlet reserve = 0;\nfor (const id of chain) {\n  const bound = costBound(registry[id], \"search\", { maxResults: 10 });\n  if (bound.usd === null) throw new Error(`${id} cannot be bounded: ${bound.unknownBecause}`);\n  if (bound.requiresOverageOff) console.log(`${id}: holds only while paid overage is off`);\n  reserve += bound.usd * attemptsPerProvider;\n}\nconsole.log(\"reserve\", reserve);"
+  },
+  {
+   "id": "guides-cost-budgets-2",
+   "page": "/docs/guides/cost-budgets",
+   "title": "Cost and budgets: After the call",
+   "code": "import { createClient, SearchError, type Attempt } from \"@searchsdk/sdk\";\n\nfunction spent(attempts: readonly Attempt<string>[]): number | null {\n  let usd = 0;\n  for (const a of attempts.filter((x) => x.billed !== \"no\")) {\n    if (a.cost.usd === null) return null;\n    usd += a.cost.usd;\n  }\n  return usd;\n}\n\nconst client = createClient({ provider: \"exa\", fallback: [\"tavily\"], maxRetries: 1 });\ntry {\n  const res = await client.search(\"sqlite wal mode\");\n  console.log(spent(res.attempts), res.cost.source);\n} catch (e) {\n  if (e instanceof SearchError) console.log(\"failed, spent\", spent(e.attempts));\n}"
+  },
+  {
+   "id": "guides-agent-tools-1",
+   "page": "/docs/guides/agent-tools",
+   "title": "searchSDK as an agent tool: searchSDK as an agent tool",
+   "code": "import { createClient, SearchError } from \"@searchsdk/sdk\";\n\nexport const client = createClient({ provider: \"exa\", fallback: [\"tavily\"], maxRetries: 1 });\n\nexport async function webSearch(query: string) {\n  try {\n    const res = await client.search(query, { maxResults: 5 });\n    return {\n      results: res.results.map((r) => ({ title: r.title, url: r.url, publishedAt: r.publishedAt, excerpt: r.excerpts[0] ?? null })),\n      provider: res.provider,\n      costUsd: res.cost.usd,\n    };\n  } catch (e) {\n    if (e instanceof SearchError) return { error: e.code };\n    throw e;\n  }\n}"
+  },
+  {
+   "id": "guides-agent-tools-2",
+   "page": "/docs/guides/agent-tools",
+   "title": "searchSDK as an agent tool: Vercel AI SDK",
+   "code": "import { tool } from \"ai\";\nimport { z } from \"zod\";\nimport { search } from \"@searchsdk/sdk\";\n\nexport const webSearch = tool({\n  description: \"Search the web. Returns titles, URLs, dates and excerpts.\",\n  inputSchema: z.object({ query: z.string().describe(\"The search query\") }),\n  execute: async ({ query }) => {\n    const res = await search(query, { provider: \"tavily\", maxResults: 5 });\n    return res.results.map((r) => ({ title: r.title, url: r.url, excerpt: r.excerpts[0] ?? null }));\n  },\n});"
+  },
+  {
+   "id": "guides-agent-tools-3",
+   "page": "/docs/guides/agent-tools",
+   "title": "searchSDK as an agent tool: OpenAI function calling",
+   "code": "import OpenAI from \"openai\";\nimport { search } from \"@searchsdk/sdk\";\n\nconst openai = new OpenAI();\nconst model = process.env.OPENAI_MODEL ?? \"your-model-id\";\nconst tools: OpenAI.Responses.Tool[] = [\n  {\n    type: \"function\",\n    name: \"web_search\",\n    description: \"Search the web. Returns titles, URLs and excerpts.\",\n    parameters: { type: \"object\", properties: { query: { type: \"string\" } }, required: [\"query\"], additionalProperties: false },\n    strict: true,\n  },\n];\n\nconst first = await openai.responses.create({ model, tools, input: \"What changed in SQLite this year?\" });\nconst outputs: OpenAI.Responses.ResponseInputItem[] = [];\nfor (const item of first.output) {\n  if (item.type !== \"function_call\" || item.name !== \"web_search\") continue;\n  const { query } = JSON.parse(item.arguments) as { query: string };\n  const res = await search(query, { provider: \"exa\", maxResults: 5 });\n  outputs.push({ type: \"function_call_output\", call_id: item.call_id, output: JSON.stringify(res.results) });\n}\nconst answer = await openai.responses.create({ model, tools, previous_response_id: first.id, input: outputs });\nconsole.log(answer.output_text);"
+  },
+  {
+   "id": "guides-agent-tools-4",
+   "page": "/docs/guides/agent-tools",
+   "title": "searchSDK as an agent tool: Anthropic tool use",
+   "code": "import Anthropic from \"@anthropic-ai/sdk\";\nimport { search } from \"@searchsdk/sdk\";\n\nconst anthropic = new Anthropic();\nconst tools: Anthropic.Tool[] = [\n  {\n    name: \"web_search\",\n    description: \"Search the web. Returns titles, URLs and excerpts.\",\n    input_schema: { type: \"object\", properties: { query: { type: \"string\" } }, required: [\"query\"] },\n  },\n];\nconst messages: Anthropic.MessageParam[] = [{ role: \"user\", content: \"What changed in SQLite this year?\" }];\n\nfor (;;) {\n  const reply = await anthropic.messages.create({ model: \"claude-opus-5-5\", max_tokens: 16000, tools, messages });\n  messages.push({ role: \"assistant\", content: reply.content });\n  if (reply.stop_reason !== \"tool_use\") break;\n  const results: Anthropic.ToolResultBlockParam[] = [];\n  for (const block of reply.content) {\n    if (block.type !== \"tool_use\") continue;\n    const { query } = block.input as { query: string };\n    const res = await search(query, { provider: \"exa\", maxResults: 5 });\n    results.push({ type: \"tool_result\", tool_use_id: block.id, content: JSON.stringify(res.results) });\n  }\n  messages.push({ role: \"user\", content: results });\n}"
+  },
+  {
+   "id": "guides-errors-1",
+   "page": "/docs/guides/errors",
+   "title": "Errors and troubleshooting: Errors and troubleshooting",
+   "code": "import { search, SearchError } from \"@searchsdk/sdk\";\n\ntry {\n  const res = await search(\"postgres vacuum\", { provider: \"tavily\", maxResults: 5 });\n  console.log(res.results.length);\n} catch (e) {\n  if (!(e instanceof SearchError)) throw e;\n  switch (e.code) {\n    case \"configuration\":\n    case \"invalid_request\":\n      console.error(\"fix the call:\", e.field);\n      break;\n    case \"rate_limit\":\n    case \"quota\":\n    case \"unavailable\":\n      console.error(\"provider trouble; retry later or add a fallback\", e.retryAfterMs);\n      break;\n    default:\n      console.error(e.code, e.provider, e.status, e.attempts);\n  }\n}"
+  },
+  {
+   "id": "guides-errors-2",
+   "page": "/docs/guides/errors",
+   "title": "Errors and troubleshooting: Debug a provider reply",
+   "code": "import { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({\n  provider: \"exa\",\n  diagnostics: (event) => console.log(event.attempt.status, event.paths.filter((p) => p.missing > 0)),\n});\nawait client.search(\"sqlite wal mode\");"
+  },
+  {
+   "id": "guides-migrate-1",
+   "page": "/docs/guides/migrate",
+   "title": "Migrate from a provider's API: Before",
+   "code": "const response = await fetch(\"https://api.exa.ai/search\", {\n  method: \"POST\",\n  headers: { \"content-type\": \"application/json\", \"x-api-key\": process.env.EXA_API_KEY ?? \"\" },\n  body: JSON.stringify({ query: \"sqlite wal mode\", numResults: 5, category: \"news\" }),\n});\nif (!response.ok) throw new Error(`Exa ${response.status}`);\nconst body = (await response.json()) as { results: { url: string; title: string | null }[] };\nconsole.log(body.results.map((r) => r.url));"
+  },
+  {
+   "id": "guides-migrate-2",
+   "page": "/docs/guides/migrate",
+   "title": "Migrate from a provider's API: After",
+   "code": "import { search } from \"@searchsdk/sdk\";\n\nconst res = await search(\"sqlite wal mode\", {\n  provider: \"exa\",\n  maxResults: 5,\n  providerOptions: { exa: { category: \"news\" } },\n});\nconsole.log(res.results.map((r) => r.url), res.cost.usd);"
+  }
+ ],
+ "skill": {
+  "references/agent-tools.md": "# searchSDK as an agent tool\n\nFull guide: https://searchsdk.dev/docs/guides/agent-tools. Each example typechecks against `@searchsdk/sdk`.\n\n## Vercel AI SDK\n\n```ts\nimport { tool } from \"ai\";\nimport { z } from \"zod\";\nimport { createClient, SearchError } from \"@searchsdk/sdk\";\n\nconst client = createClient({ provider: \"exa\", fallback: [\"tavily\"], maxRetries: 1 });\n\nexport const webSearch = tool({\n  description: \"Search the web. Returns titles, URLs, dates and excerpts.\",\n  inputSchema: z.object({ query: z.string() }),\n  execute: async ({ query }) => {\n    try {\n      const res = await client.search(query, { maxResults: 5 });\n      return { results: res.results.map((r) => ({ title: r.title, url: r.url, publishedAt: r.publishedAt, excerpt: r.excerpts[0] ?? null })) };\n    } catch (e) {\n      if (e instanceof SearchError) return { error: e.code };\n      throw e;\n    }\n  },\n});\n```\n\n## OpenAI Responses function calling\n\n```ts\nimport OpenAI from \"openai\";\nimport { search } from \"@searchsdk/sdk\";\n\nexport const tools: OpenAI.Responses.Tool[] = [\n  {\n    type: \"function\",\n    name: \"web_search\",\n    description: \"Search the web. Returns titles, URLs and excerpts.\",\n    parameters: { type: \"object\", properties: { query: { type: \"string\" } }, required: [\"query\"], additionalProperties: false },\n    strict: true,\n  },\n];\n\nexport async function runTool(call: OpenAI.Responses.ResponseFunctionToolCall): Promise<OpenAI.Responses.ResponseInputItem> {\n  const { query } = JSON.parse(call.arguments) as { query: string };\n  const res = await search(query, { provider: \"exa\", maxResults: 5 });\n  return { type: \"function_call_output\", call_id: call.call_id, output: JSON.stringify(res.results) };\n}\n```\n\n## Anthropic tool use\n\n```ts\nimport Anthropic from \"@anthropic-ai/sdk\";\nimport { search } from \"@searchsdk/sdk\";\n\nexport const tools: Anthropic.Tool[] = [\n  {\n    name: \"web_search\",\n    description: \"Search the web. Returns titles, URLs and excerpts.\",\n    input_schema: { type: \"object\", properties: { query: { type: \"string\" } }, required: [\"query\"] },\n  },\n];\n\nexport async function runTool(block: Anthropic.ToolUseBlock): Promise<Anthropic.ToolResultBlockParam> {\n  const { query } = block.input as { query: string };\n  const res = await search(query, { provider: \"exa\", maxResults: 5 });\n  return { type: \"tool_result\", tool_use_id: block.id, content: JSON.stringify(res.results) };\n}\n```\n\nLoop: call `messages.create` with `tools`, append the assistant `content`, run every `tool_use` block, send all `tool_result` blocks in one user message, repeat until `stop_reason` is not `tool_use`.\n\n## MCP\n\n`claude mcp add --transport http searchsdk https://searchsdk.dev/mcp` gives an agent the docs and registry tools. The local `@searchsdk/mcp` package (stdio, built from `sdk/mcp`) adds `search` and `contents` with your keys.\n",
+  "references/api.md": "# searchSDK API reference (condensed)\n\nGenerated pages with every field: https://searchsdk.dev/docs/reference/options and https://searchsdk.dev/docs/reference/responses.\n\n## Exports\n\n`search`, `contents`, `createClient`, `costBound`, `listPrice`, `registry`, `policy`, `urlKey`, `SearchError`, and the types (`ProviderId`, `SearchOptions`, `SearchResponse`, `ContentsResponse`, `Attempt`, `Cost`, ...).\n\n## search options\n\n| Option | Notes |\n| --- | --- |\n| `provider` | Required unless the client sets one |\n| `fallback` | Providers tried next, in order; `[]` turns the client's list off for one call |\n| `maxResults` | 1 to 100, default 10; above a provider's limit is `unsupported` there |\n| `includeDomains`, `excludeDomains` | Hostnames; must not overlap |\n| `recency` | `day`, `week`, `month`, `year`; not with dates |\n| `startDate`, `endDate` | Inclusive `YYYY-MM-DD`, by publication date |\n| `country`, `language` | ISO 3166-1 alpha-2, ISO 639-1 |\n| `depth` | `fast`, `standard`, `deep`; may change the price tier |\n| `providerOptions` | `{ <id>: { ... } }`, validated per provider |\n| `timeoutMs` | Whole call, default 30000, max 300000 |\n| `attemptTimeoutMs` | Each attempt, default `timeoutMs` |\n| `maxRetries` | 0 to 5, default 0 |\n| `maxResponseBytes` | Default 10 MiB for search, 50 MiB for contents |\n| `signal` | `AbortSignal` |\n\n`contents(urls, options)` takes the call options (`provider`, `fallback`, `providerOptions`, timeouts, `maxRetries`, `maxResponseBytes`, `signal`) and 1 to 100 http(s) URLs; each provider allows fewer per call.\n\n## Client settings\n\n`createClient({ provider, fallback, keys, env, timeoutMs, attemptTimeoutMs, maxRetries, maxResponseBytes, fetch, diagnostics, registry })`. Settings are checked when the client is created.\n\n## Responses\n\nCommon: `provider`, `cost`, `requestId`, `latencyMs`, `warnings`, `attempts`, `raw`. Search adds `results`; contents adds `pages`.\n\n- Result: `url`, `title | null`, `excerpts: string[]`, `publishedAt | null`, `author | null`, `rank` (from 1), `providerFields`.\n- Page: `url`, `status`, `finalUrl`, `title`, `content`, `publishedAt`, `author`, `error: { code, message } | null` (`missing` when the provider returned nothing for the URL).\n- Cost: `usd | null`, `estimated`, `source` (`reported`, `reported-credits`, `computed`, `unknown`, `none`), `credits?`.\n- Attempt: `provider`, `outcome` (`ok`, `error`, `skipped`), `code?`, `status?`, `startMs`, `durationMs`, `retryAfterMs?`, `billed`, `cost`.\n\n## Budget sketch\n\n```ts\nimport { costBound, registry, type ProviderId } from \"@searchsdk/sdk\";\n\nconst chain: ProviderId[] = [\"exa\", \"tavily\"];\nlet reserve = 0;\nfor (const id of chain) {\n  const bound = costBound(registry[id], \"search\", { maxResults: 10 });\n  if (bound.usd === null) throw new Error(`${id}: ${bound.unknownBecause}`);\n  reserve += bound.usd;\n}\nconsole.log(reserve);\n```\n",
+  "references/errors.md": "# searchSDK errors and warnings\n\nEvery failure throws `SearchError` (`code`, `provider`, `status`, `providerCode`, `retryAfterMs`, `field`, `path`, `attempts`, `raw`). Full generated table: https://searchsdk.dev/docs/reference/errors.\n\n| Code | Sent? | Retried | Falls back | Do |\n| --- | --- | --- | --- | --- |\n| `invalid_request` | no | no | no | Fix the option named by `field` |\n| `configuration` | no | no | no | Set the key variable or a valid provider |\n| `unsupported` | no | no | yes | Drop the option or use another provider |\n| `auth` (401) | yes | no | no | Check the key |\n| `forbidden` (403) | yes | no | no | Plan or permission |\n| `quota` (402 or provider signal) | yes | no | yes | Top up or fall back |\n| `rate_limit` (429) | yes | yes | yes | `maxRetries` honours `Retry-After` |\n| `unavailable` (5xx, 408) | yes | yes | yes | Retry or fall back |\n| `provider_error` (other 4xx) | yes | no | no | Inspect `providerCode` |\n| `network` | yes | yes | yes | May have been billed |\n| `attempt_timeout` | yes | yes | yes | Raise `attemptTimeoutMs` |\n| `timeout` | yes | no | no | Raise `timeoutMs` |\n| `aborted` | if under way | no | no | Your signal fired |\n| `invalid_response` | yes | no | no | Not a JSON object; billed for a 2xx |\n| `spec_mismatch` | yes | no | no | Registry and provider disagree at `path`; report it |\n| `response_too_large` | yes | no | no | Raise `maxResponseBytes` |\n\nWarnings (on success): `fallback_used`, `fallback_key_missing`, `invalid_rows_dropped`, `unmatched_pages`, and from providers `partial_results`, `provider_warning`, `provider_notice`.\n\n```ts\nimport { createClient, SearchError } from \"@searchsdk/sdk\";\n\nconst client = createClient({ provider: \"tavily\", fallback: [\"exa\"] });\ntry {\n  const res = await client.search(\"eu ai act\");\n  if (res.warnings.some((w) => w.code === \"fallback_used\")) console.log(\"served by\", res.provider);\n} catch (e) {\n  if (!(e instanceof SearchError)) throw e;\n  const billed = e.attempts.filter((a) => a.billed !== \"no\").length;\n  console.log(e.code, e.field ?? \"\", `billed attempts: ${billed}`);\n}\n```\n",
+  "SKILL.md": "---\nname: searchsdk\ndescription: Add web search and page-text fetching to TypeScript apps and AI agents with searchSDK (npm @searchsdk/sdk), one interface to Exa, Tavily, Brave Search, Perplexity, Firecrawl, Context.dev and TinyFish. Use when writing or reviewing code that calls search(), contents() or createClient() from @searchsdk/sdk, choosing a search provider or fallback chain, handling SearchError codes, reading cost, attempts or warnings, wrapping web search as an agent tool (Vercel AI SDK, OpenAI, Anthropic, MCP), or connecting the searchSDK MCP server.\nlicense: MIT\n---\n\n# searchSDK\n\nsearchSDK (always written exactly so) is an MIT-licensed TypeScript SDK by Belweave. Two calls, `search` and `contents`, one result shape for every provider. Zero runtime dependencies; needs standard `fetch`; tested on Node 24. Docs: https://searchsdk.dev/docs (every page has a `.md` copy, and https://searchsdk.dev/llms-full.txt has them all).\n\nNo provider is verified against its live API yet: specs are mapped from public docs and tested on synthetic fixtures. Benchmark results are pending. Do not claim one provider is faster, cheaper in practice or better.\n\n## Install\n\n```sh\nnpm install @searchsdk/sdk\n```\n\nThe Python runtime (`sdk/python` in the repository) is not on PyPI.\n\n## Keys\n\nEach provider reads its documented variable: `EXA_API_KEY`, `TAVILY_API_KEY`, `BRAVE_API_KEY`, `PERPLEXITY_API_KEY`, `FIRECRAWL_API_KEY`, `CONTEXT_DEV_API_KEY`, `TINYFISH_API_KEY`. Or pass `createClient({ keys: { exa: \"...\" } })`, or `env` for Worker bindings.\n\n- Server only. Never put a key in browser, mobile or edge-client code; app code calls your own backend.\n- A missing primary key throws `configuration` (`field: \"keys\"`) before anything is sent; a fallback without a key is skipped with a `fallback_key_missing` warning.\n\n## search vs contents\n\n- `search(query, options)`: ranked results (`url`, `title`, `excerpts`, `publishedAt`, `author`, `rank`, `providerFields`).\n- `contents(urls, options)`: page text, one `page` per requested URL in order, `status: \"ok\" | \"failed\"`. A failed page does not fail the call.\n- Brave Search has no contents endpoint. URLs per contents call differ by provider (Context.dev and Firecrawl take 1).\n\n```ts\nimport { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({ provider: \"exa\", fallback: [\"tavily\"], maxRetries: 1 });\nconst res = await client.search(\"sqlite wal mode\", { maxResults: 5, recency: \"year\" });\nconst pages = await client.contents(res.results.slice(0, 3).map((r) => r.url));\nfor (const p of pages.pages) console.log(p.status, p.url, p.content?.length ?? p.error?.code);\n```\n\n## Choosing a provider and fallback\n\n- `provider` is required on a call unless the client sets one. Ids: `brave`, `context`, `exa`, `firecrawl`, `perplexity`, `tavily`, `tinyfish`.\n- Check support before writing options: an option a provider cannot honour fails as `unsupported` before sending (for example `startDate` on Brave, `maxResults` above a provider's limit). The MCP tool `validate_options` or https://searchsdk.dev/docs/reference/provider-support shows the matrix.\n- Retries and fallback are off by default. Set `maxRetries` (0 to 5) and `fallback: [...]`.\n- Retried: `network`, `rate_limit`, `unavailable`, `attempt_timeout`. Falls back on those plus `quota` and `unsupported`. `auth`, `forbidden`, `provider_error`, `invalid_response`, `spec_mismatch`, `response_too_large`, `timeout` and `aborted` stop the call.\n- Provider-only options go under `providerOptions: { <id>: {...} }`; each provider in a chain gets only its own.\n\n## Cost, attempts and warnings\n\nRead these on every response; they are the point of the SDK.\n\n- `res.cost`: `{ usd, estimated, source }`. `usd` is `null` when the price is unknown. Never treat `null` as 0.\n- `res.attempts`: every attempt, including skipped ones, each with `billed` (`yes`, `possible`, `no`) and its own `cost`. Sum attempts with `billed !== \"no\"` for spend; a `SearchError` carries `attempts` too.\n- `res.warnings`: `fallback_used` (another provider answered: check `res.provider`), `invalid_rows_dropped`, `unmatched_pages`, `partial_results`, `provider_warning`, `provider_notice`.\n- Before a call, `costBound(registry.exa, \"search\", { maxResults: 10 })` gives the most it can cost; `null` with `unknownBecause` when it cannot be bounded.\n\n## Errors\n\nEvery failure is a `SearchError` with a fixed `code`; switch on `code`, never on `message`. `field` names the bad option, `status` the HTTP status, `retryAfterMs` the provider's `Retry-After`. An empty `results` array is a success, not an error. Full table: [references/errors.md](references/errors.md).\n\n```ts\nimport { search, SearchError } from \"@searchsdk/sdk\";\n\ntry {\n  await search(\"postgres vacuum\", { provider: \"brave\", startDate: \"2026-01-01\" });\n} catch (e) {\n  if (e instanceof SearchError && e.code === \"unsupported\") console.log(\"Brave cannot filter by\", e.field);\n}\n```\n\n## As an agent tool\n\nReturn compact results (title, url, date, first excerpt) and return `{ error: e.code }` instead of throwing so the model can recover. Cap `maxResults`. Framework wrappers (Vercel AI SDK `tool()`, OpenAI Responses function calling, Anthropic tool use): [references/agent-tools.md](references/agent-tools.md).\n\n## MCP server\n\n- Public, free, keyless, docs and registry only: `claude mcp add --transport http searchsdk https://searchsdk.dev/mcp`. Tools: `search_docs`, `get_doc`, `list_providers`, `get_provider`, `estimate_cost`, `validate_options`, `get_example`. Use them to confirm an option or price before writing code.\n- Local `@searchsdk/mcp` (stdio) adds real `search` and `contents` with the user's keys. It is not on npm yet; it builds from `sdk/mcp` in the repository.\n\n## Pitfalls\n\n- The npm name is `@searchsdk/sdk`, not `searchsdk` or `search-sdk`.\n- Unknown option names throw `invalid_request`; do not pass provider-native names (`numResults`, `max_results`) at the top level.\n- `recency` cannot be combined with `startDate` or `endDate`; dates are inclusive `YYYY-MM-DD`.\n- `providerFields` (scores and ids) are not comparable across providers.\n- `raw` is the provider's whole body; do not send it to a model unfiltered.\n- The exported `registry` is frozen. Pass edited copies to `createClient({ registry })`.\n\nMore: [references/api.md](references/api.md) for every option and response field.\n"
+ }
+}

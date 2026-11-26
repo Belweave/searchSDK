@@ -1,0 +1,27 @@
+---
+title: Agent skill
+metaTitle: "searchSDK agent skill for Claude Code"
+description: Install the searchSDK Agent Skill so coding agents pick providers, set fallback, read cost and handle errors correctly.
+---
+
+The skill is a folder with a `SKILL.md` and reference files, in the Agent Skills format. It teaches a coding agent to install searchSDK, choose a provider and fallback, keep keys on the server, read cost and warnings, handle errors and wrap search as a tool.
+
+## Install in Claude Code
+
+For every project (personal skills):
+
+```sh
+mkdir -p ~/.claude/skills && cd ~/.claude/skills
+curl -fsSLO https://searchsdk.dev/skills/searchsdk.zip && unzip -o searchsdk.zip && rm searchsdk.zip
+```
+
+For one repository, unzip it into `.claude/skills/` and commit it. Claude Code loads it when a task touches web search or searchSDK.
+
+## Files
+
+- [`SKILL.md`](/skills/searchsdk/SKILL.md): the instructions, also at [`/skill.md`](/skill.md).
+- [`references/api.md`](/skills/searchsdk/references/api.md): options and response fields.
+- [`references/errors.md`](/skills/searchsdk/references/errors.md): error and warning codes.
+- [`references/agent-tools.md`](/skills/searchsdk/references/agent-tools.md): tool wrappers for agent frameworks.
+
+Source: [`skills/searchsdk`](https://github.com/Belweave/searchSDK/tree/v2/integration/skills/searchsdk). Other agents that read Agent Skills take the same folder. The [MCP server](/docs/mcp) serves the skill as resources too.

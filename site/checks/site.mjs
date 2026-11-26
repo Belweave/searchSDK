@@ -33,8 +33,11 @@ import {
   REQUIRED_ON_EVERY_PAGE,
   SAMPLE_LABEL,
   STUBS,
+  MCP_ENDPOINTS,
+  MCP_TOOLS,
   TITLE_RANGE,
 } from "./config.mjs";
+import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { attr, byTag, contentRoot, countWords, findAll, findFirst, hasAttr, parseHtml, textNodes, textParts, walk } from "./html.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -381,6 +384,36 @@ export async function checkSite(base, { log = console.log } = {}) {
     const res = await get(stub.path, { method: stub.method });
     if (res.status !== 501) fail(`${stub.method} ${stub.path}`, `stub returned ${res.status}; expected 501`);
   }
+  // The docs MCP endpoint: the official client pinned to 2026-07-28 and a raw 2025-era request both
+  // work, the tools are exactly the read-only set, and a CORS preflight is answered.
+  for (const endpoint of MCP_ENDPOINTS) {
+    const where = `MCP ${endpoint}`;
+    try {
+      const client = new Client({ name: "searchsdk-check", version: "0.0.0" });
+      client.setVersionNegotiation({ mode: { pin: "2026-07-28" } });
+      await client.connect(new StreamableHTTPClientTransport(new URL(endpoint, origin)));
+      if (client.getNegotiatedProtocolVersion() !== "2026-07-28") fail(where, `negotiated ${client.getNegotiatedProtocolVersion()}, not 2026-07-28`);
+      const tools = (await client.listTools()).tools.map((t) => t.name).sort();
+      if (tools.join() !== [...MCP_TOOLS].sort().join()) fail(where, `tools are ${tools.join(", ")}; expected ${MCP_TOOLS.join(", ")}`);
+      const doc = await client.callTool({ name: "get_doc", arguments: { path: "/docs/mcp" } });
+      if (!/^# MCP server/.test(doc.content?.[0]?.text ?? "")) fail(where, "get_doc /docs/mcp did not return the page");
+      const resources = (await client.listResources()).resources;
+      if (!resources.some((r) => r.uri === "searchsdk://providers/exa")) fail(where, "no provider resources");
+      await client.close();
+    } catch (error) {
+      fail(where, `client failed: ${error.message}`);
+    }
+    const legacy = await get(endpoint, {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json, text/event-stream" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-11-25", capabilities: {}, clientInfo: { name: "check", version: "0" } } }),
+    });
+    if (legacy.status !== 200 || !legacy.body.includes('"protocolVersion":"2025-11-25"')) fail(where, `2025-11-25 initialize returned ${legacy.status}`);
+    if (legacy.headers.get("access-control-allow-origin") !== "*") fail(where, "no CORS header on POST");
+    const preflight = await get(endpoint, { method: "OPTIONS", headers: { origin: "https://example.com", "access-control-request-method": "POST", "access-control-request-headers": "content-type, mcp-protocol-version" } });
+    if (preflight.status !== 204 || !/mcp-protocol-version/.test(preflight.headers.get("access-control-allow-headers") ?? "")) fail(where, `CORS preflight returned ${preflight.status}`);
+  }
+
   const missing = await get("/this-page-does-not-exist");
   if (missing.status !== 404) fail("/this-page-does-not-exist", `returned ${missing.status}; expected 404`);
 

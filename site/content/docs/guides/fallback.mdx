@@ -1,0 +1,51 @@
+---
+title: Fallback and retries
+metaTitle: "Fallback and retries across search providers"
+description: How searchSDK retries transient failures, falls back to the next provider, and records every attempt with its cost.
+---
+
+Both are off until you set them. Retries repeat a transient failure on the same provider; fallback moves to the next provider in your list.
+
+```ts
+import { createClient } from "@searchsdk/sdk";
+
+const client = createClient({
+  provider: "exa",
+  fallback: ["tavily", "brave"],
+  maxRetries: 2,
+  timeoutMs: 15_000,
+  attemptTimeoutMs: 5_000,
+});
+
+const res = await client.search("open source vector databases");
+if (res.warnings.some((w) => w.code === "fallback_used")) console.log("answered by", res.provider);
+for (const a of res.attempts) console.log(a.provider, a.outcome, a.code ?? "-", a.billed);
+```
+
+## What is retried
+
+`network`, `rate_limit`, `unavailable` and `attempt_timeout`, up to `maxRetries` times (at most 5), with jittered backoff from 250 ms to 5 s. A `Retry-After` is honoured up to 60 s; a longer one moves on. No retry starts if it would pass `timeoutMs`, which bounds the whole call.
+
+## What falls back
+
+The retryable codes, plus `quota` and `unsupported`. A provider without a key is skipped with a `fallback_key_missing` warning; one that cannot honour an option is skipped before anything is sent. Each provider is tried once.
+
+`auth`, `forbidden`, `provider_error`, `invalid_response`, `spec_mismatch` and `response_too_large` stop the call: moving on would hide a bug or a billed reply. So do `timeout` and `aborted`.
+
+## Options across a chain
+
+Normalized options go to every provider; one that lacks an option is skipped. `providerOptions` are keyed by id, so each provider gets only its own.
+
+```ts
+import { createClient } from "@searchsdk/sdk";
+
+const client = createClient({ provider: "brave", fallback: ["exa"] });
+// Brave has no startDate, so it is skipped and Exa answers.
+const res = await client.search("rust 2027 edition", {
+  startDate: "2026-06-01",
+  providerOptions: { exa: { category: "news" } },
+});
+console.log(res.provider, res.attempts.map((a) => `${a.provider}:${a.outcome}`));
+```
+
+Per-call `fallback` replaces the client's list; pass `[]` to turn it off for one call. Codes: [Error codes](/docs/reference/errors).

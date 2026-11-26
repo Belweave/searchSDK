@@ -49,7 +49,8 @@ function hidden(n) {
 /**
  * Visible text under `root`, split into copy and data.
  * Copy: prose, headings, labels. Data: text inside [data-words="data"] (tables, the race), reported
- * separately and not counted against the cap. Code, navigation and chrome are excluded.
+ * separately and not counted against the cap. Code, navigation and chrome (including
+ * [data-words="chrome"], such as the docs page actions) are excluded.
  */
 export function textParts(root) {
   const copy = [];
@@ -57,6 +58,8 @@ export function textParts(root) {
   walk(root, (n, ancestors) => {
     if (n.tagName) {
       if (NEVER_TEXT.has(n.tagName) || NOT_COPY.has(n.tagName) || hidden(n)) return false;
+      // Controls the site adds to every page of a kind (the docs page actions) are chrome too.
+      if (attr(n, "data-words") === "chrome") return false;
       return true;
     }
     if (n.nodeName === "#text") {

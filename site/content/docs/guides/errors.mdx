@@ -1,0 +1,63 @@
+---
+title: Errors and troubleshooting
+metaTitle: "Troubleshooting searchSDK errors"
+description: Handle SearchError by its code, find what failed in its attempts, and fix the common causes of each failure.
+---
+
+Every failure is a `SearchError` with a fixed `code`; switch on it, never on the message.
+
+```ts
+import { search, SearchError } from "@searchsdk/sdk";
+
+try {
+  const res = await search("postgres vacuum", { provider: "tavily", maxResults: 5 });
+  console.log(res.results.length);
+} catch (e) {
+  if (!(e instanceof SearchError)) throw e;
+  switch (e.code) {
+    case "configuration":
+    case "invalid_request":
+      console.error("fix the call:", e.field);
+      break;
+    case "rate_limit":
+    case "quota":
+    case "unavailable":
+      console.error("provider trouble; retry later or add a fallback", e.retryAfterMs);
+      break;
+    default:
+      console.error(e.code, e.provider, e.status, e.attempts);
+  }
+}
+```
+
+## Common causes
+
+| Symptom | Likely cause |
+| --- | --- |
+| `configuration`, `field: "keys"` | The key variable is unset or empty in this process |
+| `configuration`, `field: "provider"` | No provider given, or an unknown id |
+| `invalid_request` | An option out of range, a bad date, or an unknown option name; `field` says which |
+| `unsupported` | The provider cannot express an option; `field` says which |
+| `auth` | The provider rejected the key: wrong, revoked or for another account |
+| `spec_mismatch` | Our spec and the provider's reply disagree; `path` says where |
+| Empty `results` | A success: the provider found nothing |
+
+## Check before sending
+
+`unsupported` and `invalid_request` fail before anything is sent, so they cost nothing. The [MCP server](/docs/mcp) tool `validate_options` runs the same checks without a key.
+
+## Debug a provider reply
+
+`createClient({ diagnostics })` reports each sent attempt with the request (key redacted), status, headers, a bounded body and which spec paths resolved.
+
+```ts
+import { createClient } from "@searchsdk/sdk";
+
+const client = createClient({
+  provider: "exa",
+  diagnostics: (event) => console.log(event.attempt.status, event.paths.filter((p) => p.missing > 0)),
+});
+await client.search("sqlite wal mode");
+```
+
+Report a `spec_mismatch` with its `path` as a GitHub issue. Every code: [Error codes](/docs/reference/errors).

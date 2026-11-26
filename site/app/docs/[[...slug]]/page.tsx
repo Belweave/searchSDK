@@ -3,11 +3,14 @@ import { createRelativeLink } from "fumadocs-ui/mdx";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { PageActions } from "@/components/docs/page-actions";
 import { ProviderTable } from "@/components/docs/provider-table";
 import { faqEntries, providerNames } from "@/lib/markdown";
+import { openInTargets } from "@/lib/page-actions";
 import { docsLastModified } from "@/lib/routes";
 import { pageMetadata } from "@/lib/seo";
 import { source } from "@/lib/source";
+import { absoluteUrl, markdownPath } from "@/lib/site";
 import { breadcrumbs, faqPage, JsonLd, techArticle } from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug?: string[] }> };
@@ -40,6 +43,7 @@ export default async function Page({ params }: Props) {
       />
       <DocsTitle>{page.data.title}</DocsTitle>
       {description ? <DocsDescription className="mb-0">{description}</DocsDescription> : null}
+      <PageActions markdownUrl={markdownPath(page.url)!} targets={openInTargets(absoluteUrl(markdownPath(page.url)!))} />
       <DocsBody>
         <MDX components={{ ...defaultMdxComponents, a: createRelativeLink(source, page), ProviderTable, ProviderNames }} />
       </DocsBody>

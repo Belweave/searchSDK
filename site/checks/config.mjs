@@ -3,10 +3,15 @@
 /** Visible-word caps per page, outside code, navigation, header, footer and [data-words="data"]. */
 export const PAGE_CAPS = [
   { match: (path) => path === "/", cap: 150, name: "home" },
+  // Reference pages are generated tables (checks/reference.mjs): one row per option, field, code or
+  // provider, so their length follows the SDK and the registry, not the prose. The cap still
+  // catches a table that grows by accident; prose pages keep the 300 below.
+  { match: (path) => path.startsWith("/docs/reference/"), cap: 2000, name: "docs reference page" },
   { match: (path) => path === "/docs" || path.startsWith("/docs/"), cap: 300, name: "docs page" },
   { match: () => true, cap: 300, name: "page" },
 ];
 // Regions can carry their own cap: <section data-cap="30" data-cap-name="hero">.
+// Controls repeated on every page of a kind (the docs page actions) carry data-words="chrome" and are not counted.
 
 /** <title> and meta description lengths (lib/seo.ts guards the same ranges at build time). */
 export const TITLE_RANGE = [10, 60];
@@ -74,14 +79,14 @@ export const BANNED_PATTERNS = [
 ];
 
 /** Routes that are stubs until they are ported: they must answer 501 and nothing else. */
-export const STUBS = [
-  { path: "/api/mcp", method: "GET" },
-  { path: "/api/mcp", method: "POST" },
-  { path: "/api/playground/search", method: "POST" },
-];
+export const STUBS = [{ path: "/api/playground/search", method: "POST" }];
+
+/** The public docs MCP endpoint and its alias: each must initialize, list tools and answer a call. */
+export const MCP_ENDPOINTS = ["/mcp", "/api/mcp"];
+export const MCP_TOOLS = ["estimate_cost", "get_doc", "get_example", "get_provider", "list_providers", "search_docs", "validate_options"];
 
 /** Non-HTML documents that must exist. */
-export const REQUIRED_FILES = ["/robots.txt", "/sitemap.xml", "/llms.txt", "/llms-full.txt"];
+export const REQUIRED_FILES = ["/robots.txt", "/sitemap.xml", "/llms.txt", "/llms-full.txt", "/skill.md", "/skills/searchsdk.zip"];
 
 /** Pages that carry a Markdown copy, linked from <head> as rel="alternate" type="text/markdown". */
 export const MARKDOWN_PAGES = (path) => path === "/docs" || path.startsWith("/docs/") || /^\/providers\/[a-z0-9-]+$/.test(path);
