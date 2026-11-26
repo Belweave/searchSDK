@@ -9,7 +9,7 @@
   "scripts": {
     "setup": "npm --prefix brand ci && npm --prefix sdk/typescript ci && npm --prefix bench ci && npm --prefix site ci",
     "check:public": "node scripts/verify-public-tree.mjs",
-    "check:registry": "node sdk/typescript/scripts/sync-registry.mjs --check && python3 sdk/python/scripts/sync_registry.py --check",
+    "check:registry": "node sdk/typescript/scripts/sync-registry.mjs --check && python3 sdk/python/scripts/sync_registry.py --check && node scripts/readme-providers.mjs --check",
     "check:brand": "npm --prefix brand run check",
     "check:typescript": "npm --prefix sdk/typescript test",
     "check:python": "cd sdk/python && python3 scripts/check.py",

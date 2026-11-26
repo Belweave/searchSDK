@@ -38,7 +38,7 @@ jobs:
         run: node scripts/verify-public-tree.mjs
 
   registry:
-    name: Registry embedded in both runtimes
+    name: Registry embedded in both runtimes and the README
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -60,6 +60,8 @@ jobs:
         run: node sdk/typescript/scripts/sync-registry.mjs --check
       - name: Python embedded registry is current
         run: python sdk/python/scripts/sync_registry.py --check
+      - name: README provider table matches the registry
+        run: node scripts/readme-providers.mjs --check
 
   brand:
     name: Brand exports and rules
