@@ -18,6 +18,10 @@ export function SiteFooter() {
             FAQ
           </Link>
           .{" "}
+          <Link href="/docs/privacy" className="prose-link">
+            Privacy
+          </Link>
+          .{" "}
           <Link href="/llms.txt" className="prose-link">
             llms.txt
           </Link>

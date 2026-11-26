@@ -9,6 +9,7 @@ export function AgentKey({ prompt }: { prompt: string }) {
     <button
       type="button"
       className="key"
+      data-track="agent_prompt_copied"
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(prompt);

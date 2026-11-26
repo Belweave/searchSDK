@@ -4,7 +4,8 @@ import { absoluteUrl } from "@/lib/site";
 /**
  * Search engines, answer engines and AI crawlers named in their operators' documentation. Every one
  * is allowed, the same as `*`; naming them keeps the intent explicit. A named group replaces `*`
- * for that crawler, so each repeats the one rule: route handlers under /api/ are not pages.
+ * for that crawler, so each repeats the one rule: route handlers under /api/ are not pages, and
+ * /ingest/ is the first-party analytics proxy (lib/analytics/client.ts), not content.
  * Brave Search and Tavily crawl without a user agent of their own and follow the Googlebot rules.
  */
 const CRAWLERS = [
@@ -33,11 +34,13 @@ const CRAWLERS = [
   "DuckAssistBot",
 ];
 
+const DISALLOW = ["/api/", "/ingest/"];
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      { userAgent: CRAWLERS, allow: "/", disallow: "/api/" },
-      { userAgent: "*", allow: "/", disallow: "/api/" },
+      { userAgent: CRAWLERS, allow: "/", disallow: DISALLOW },
+      { userAgent: "*", allow: "/", disallow: DISALLOW },
     ],
     sitemap: absoluteUrl("/sitemap.xml"),
   };

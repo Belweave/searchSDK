@@ -3,7 +3,9 @@
 // Fails (exit 1) on: broken internal links, missing or out-of-range titles and descriptions,
 // pages or regions over their word cap, sample data without its label or outside a labelled
 // region, pending placeholder data that differs between providers, banned words, misspelt
-// product name, repeated disclaimers, missing trademark line, third-party resources,
+// product name, repeated disclaimers, missing trademark line, third-party resources, analytics
+// that is not first party (a PostHog host in a page, a CSP that allows another origin, robots.txt
+// not disallowing /ingest/),
 // credential-like strings, provider logos without a reserved box, alt text, SVG type or a
 // recorded source, and stubs that answer anything but 501. Brand rules
 // (brand/GUIDELINES.md): the name spelt searchSDK everywhere a reader or a crawler sees it; every
@@ -15,6 +17,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   BASE_JSON_LD,
+  ANALYTICS,
   BANNED_PATTERNS,
   BANNED_WORDS,
   DESCRIPTION_RANGE,
@@ -66,11 +69,25 @@ export async function checkSite(base, { log = console.log } = {}) {
   if (!/^https:\/\/[^/]+$/.test(canonicalOrigin) || /\/\/www\./.test(canonicalOrigin)) fail("/sitemap.xml", `canonical origin ${canonicalOrigin} is not https without www`);
   const robots = await get("/robots.txt");
   if (!robots.body.includes(`Sitemap: ${canonicalOrigin}/sitemap.xml`)) fail("/robots.txt", "does not point at the canonical sitemap");
+  // Each group that disallows /api/ also disallows the analytics proxy.
+  const count = (re) => (robots.body.match(re) ?? []).length;
+  const ingestRules = count(new RegExp(`^Disallow: ${ANALYTICS.proxyPath}$`, "gim"));
+  if (!ingestRules || ingestRules !== count(/^Disallow: \/api\/$/gim)) fail("/robots.txt", `does not disallow ${ANALYTICS.proxyPath} in every group`);
+
+  // Content Security Policy: scripts and connections stay on this origin (analytics included).
+  const home = await get("/");
+  const csp = home.headers.get("content-security-policy") ?? "";
+  for (const directive of ANALYTICS.cspSelfOnly) {
+    const value = csp.split(";").map((d) => d.trim()).find((d) => d.startsWith(`${directive} `));
+    if (!value) fail("/", `CSP has no ${directive}`);
+    else if (/https?:|\*/.test(value)) fail("/", `CSP ${directive} allows another origin: ${value}`);
+  }
 
   const toLocal = (href, from) => {
     if (!href || href.startsWith("#") || /^(mailto|tel|javascript):/i.test(href)) return null;
     const u = new URL(href, new URL(from, origin));
     if (!siteOrigins.has(u.origin)) return null;
+    if (u.pathname.startsWith(ANALYTICS.proxyPath)) return null; // the analytics proxy reaches PostHog
     return u.pathname;
   };
 
