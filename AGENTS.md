@@ -1,56 +1,72 @@
 # Working on searchSDK
 
-searchSDK is a family of server and application search SDKs with a statically
-rendered documentation site, a bounded server-side playground endpoint, and a
-public read-only documentation MCP endpoint. Keep SDKs independent of the website.
-The TypeScript SDK must remain free of runtime dependencies; other packages must
-document their runtime and transport dependencies.
+searchSDK gives AI apps and agents one interface to many web search APIs:
+two calls, `search` and `contents`, with explicit fallback, honest
+per-attempt cost and a fixed error taxonomy. Provider behaviour is data in
+`registry/`; the runtimes are thin and contain no provider-specific code.
+
+## Layout
+
+- `registry/`: provider specs, named steps (`steps.json`, `steps.md`), shared
+  policy (`policy.json`, `policy.md`), the spec schema and conformance vectors.
+- `sdk/typescript/`: `@searchsdk/sdk` on npm. Zero runtime dependencies.
+- `sdk/python/`: `searchsdk`, standard library only. Not on PyPI yet.
+- `bench/`: searchSDK Benchmarks, method in `bench/METHOD.md`.
+- `site/`: searchsdk.dev (Next.js and Fumadocs). Read `site/AGENTS.md` and
+  `site/README.md` before changing it.
+- `brand/`: brand sources and exports. `brand/GUIDELINES.md` binds the site.
+- `scripts/`: repository checks. `docs/`: an index and the release guide.
+
+v1 is archived at tag `v1-final` and branch `v1`. Do not restore v1 paths.
 
 ## Development
 
-- Use the Node version in `.nvmrc` and `npm ci`.
-- `npm run dev` serves the site on port 5173.
-- `npm run check` validates TypeScript/mobile JavaScript, the website, docs and npm consumers.
-- Follow each `packages/*/README.md` for its native builds and consumer checks.
-  `.github/workflows/sdk-variants.yml` defines the separate language/platform matrix.
-- `npm run build:vercel` produces the checked site and both server functions.
-- `npm run release:prepare` checks and packs the SDK locally; it does not publish.
-- Prefer bounded local builds. Coordinate shared output when working in parallel;
-  use isolated output directories for independent tests.
+- Use the Node version in `.nvmrc`. Each of `brand/`, `sdk/typescript/`,
+  `bench/` and `site/` is a standalone npm package with its own lockfile;
+  run `npm ci` inside it. `npm run setup` at the root installs all four.
+- `npm run check` at the root runs every check CI runs: the public-tree guard,
+  registry drift (both runtimes and the README table), brand, TypeScript,
+  Python (needs `sdk/python/requirements-dev.txt`), benchmark fixtures and the
+  site build and crawl. `.github/workflows/ci.yml` runs the same jobs.
+- After changing `registry/`, run `npm run sync` in `sdk/typescript`,
+  `python scripts/sync_registry.py` in `sdk/python` and
+  `node scripts/readme-providers.mjs` at the root, and commit the results.
+- Change the brand in `brand/`, never the site's copies.
+- Prefer bounded local builds. Coordinate shared output when working in
+  parallel; use isolated output directories for independent tests.
+- Releasing and deploying are manual: see `docs/releasing.md`.
 
 ## Product contracts
 
-- Server SDKs call providers directly. App SDKs call an application-owned,
-  authenticated HTTPS gateway; never ship provider credentials to an app.
-- Publish explicit per-language capabilities, runtime limits and source-alpha
-  installation instructions. A local package identity does not prove registry availability.
-- Regenerate `sdk-contract/` through `scripts/generate-sdk-contract.mjs`; preserve
-  shared fixtures without implying identical policy APIs in every language.
-
-- Keep provider capabilities explicit. Normalized search adapters and native
-  endpoint clients are different surfaces; document the supported subset.
-- Native clients are generated from retained source tables and public schemas in
-  `scripts/providers-a` and `scripts/providers-b`. Preserve reproducibility and
-  source attribution.
-- Keep provider calls server-side. The live playground accepts request-scoped
-  visitor keys; never persist or log them. The separate key-free demo and
-  automated tests use deterministic fixtures. Do not describe fixture coverage
-  as live provider verification.
-- Preserve cancellation, deadlines, response limits, provenance and explicit
-  fallback. Do not promise exactly-once remote side effects.
-- Benchmarks require an explicit live opt-in. Tests and CI must never incur
-  provider charges or create remote infrastructure.
-- The public MCP server serves generated documentation only. Keep keys, provider
-  execution, arbitrary URLs, and code execution outside that endpoint.
+- Describe providers in the registry, never in a runtime. Leave out options a
+  provider cannot honour so runtimes report `unsupported`. Record each source
+  URL and retrieval date, and list anything unclear under `unverified`.
+- Every endpoint is `unverified` until its vectors pass against the live API.
+  Do not describe fixture coverage as live provider verification.
+- Keep cost honest: `null` when a price is unknown, never `0`. Record whether
+  each attempt was billed. Retries and fallback stay opt-in and explicit.
+- Preserve cancellation, deadlines, response limits and explicit fallback. Do
+  not promise exactly-once remote side effects.
+- Keys go in headers, are read from documented variables or passed by the
+  caller, and never appear in errors, logs, diagnostics or fixtures.
+- Benchmarks require an explicit live opt-in (`--live`, `BENCH_ALLOW_LIVE=1`
+  and `--confirm-spend`). Tests and CI must never incur provider charges or
+  create remote infrastructure. Do not publish benchmark figures before a
+  reviewed run; the site labels sample data "Results pending".
+- The public MCP server serves documentation and registry data only. Keep
+  keys, provider execution, arbitrary URLs and code execution outside it.
 
 ## Public repository hygiene
 
 - Commit product source, public documentation, synthetic fixtures and required
-  notices. Keep local reports and scratch work in `.local/`.
-- Never commit credentials, personal data, private infrastructure configuration
-  or internal planning. Check staged changes before committing.
-- Preserve third-party copyright notices, font licenses and provider trademarks.
-- The website and repository are independently deployed. A Git push does not
-  deploy the site or publish the npm package.
+  notices. Keep local reports, keys, raw benchmark output and scratch work in
+  `.local/`.
+- Never commit credentials, personal data, private infrastructure
+  configuration or internal planning. Check staged changes before committing;
+  `node scripts/verify-public-tree.mjs` is a narrow guard, not a review.
+- Preserve third-party copyright notices, font licenses and provider
+  trademarks (`THIRD_PARTY_NOTICES.md`, `site/public/providers/SOURCES.md`).
+- The website, the npm package and the repository are released separately. A
+  Git push does not deploy the site or publish a package.
 - Synchronize reviewed work through deliberate commits and pushes. Never
   force-push, delete remote history or change visibility during routine work.

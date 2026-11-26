@@ -10,21 +10,21 @@ body:
     id: version
     attributes:
       label: SDK version or commit
-      description: Include the commit for a source checkout or the version for a tarball.
+      description: The package and version (for example @searchsdk/sdk@0.1.0), or the commit for a source checkout.
     validations:
       required: true
   - type: input
     id: runtime
     attributes:
       label: Runtime and environment
-      description: Node version, operating system, and relevant provider or subpath.
+      description: Node or Python version, operating system, and the provider involved.
     validations:
       required: true
   - type: textarea
     id: reproduction
     attributes:
       label: Minimal reproduction
-      description: Prefer a mock or injected transport that reproduces the issue without credentials.
+      description: Prefer an injected fetch or transport with a synthetic body that reproduces the issue without credentials.
       render: typescript
     validations:
       required: true

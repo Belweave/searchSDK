@@ -3,36 +3,45 @@
 ## Report a vulnerability privately
 
 Use GitHub's [private vulnerability reporting form](https://github.com/Belweave/searchSDK/security/advisories/new)
-when available. Include the affected SDK version or commit, impact, reproduction
-steps, and a minimal synthetic example. Do not include API keys, account data,
-private queries, or production checkpoint files.
+when available. Include the affected package and version (for example
+`@searchsdk/sdk@0.1.0`) or commit, the impact, reproduction steps, and a
+minimal synthetic example. Do not include API keys, account data, private
+queries or raw provider responses.
 
 If private reporting is unavailable, open a public issue asking for a private
-security contact **without vulnerability details or sensitive data**. Wait for a
-private channel before sharing the report. Do not publish an exploit in an issue
-or pull request while a report is being coordinated.
+security contact **without vulnerability details or sensitive data**. Wait for
+a private channel before sharing the report. Do not publish an exploit in an
+issue or pull request while a report is being coordinated.
 
-The SDK is in alpha. Security fixes target the current development version;
-older alpha snapshots do not have a separate maintenance commitment. There is no
-guaranteed response time or bug-bounty program.
+## Supported versions
+
+Security fixes target the latest `@searchsdk/sdk` release on npm and the
+current `main` branch, which also carries the Python runtime (`sdk/python`,
+not yet on PyPI). v1 (tag `v1-final`, branch `v1`) is archived and receives no
+fixes. There is no guaranteed response time or bug-bounty program.
 
 ## Integrate with clear trust boundaries
 
-- Run credentialed provider clients on your server. Keep secrets out of browser
-  bundles, public environment variables, URLs, fixtures, and logs.
-- Treat search text, native responses, and streamed events as untrusted input.
-  Render text safely and independently authorize any actions driven by results.
-- Result URL validation permits links; it is not an SSRF defense for fetching
-  those links. Apply a separate network policy before server-side fetching.
-- Custom providers and injected transports are trusted application code. Apply
-  the same review and credential controls you use for other server integrations.
-- Store durable checkpoints in a private directory with appropriate access
-  controls. Reconcile ambiguous submissions explicitly; restarting or cancelling
-  a local call does not prove a remote job stopped or was never created.
-- Use the Node version in [.nvmrc](.nvmrc) and keep dependencies patched. Review
-  lockfile and workflow changes before running contributed code locally.
+- Call providers from your server. Keep keys out of browser bundles, public
+  environment variables, URLs, fixtures and logs. The runtimes read keys from
+  each provider's documented variable or from the client, send them in
+  headers, and keep them out of errors and diagnostics.
+- Treat search results, page contents and the provider's `raw` body as
+  untrusted input. Render text safely and authorize separately any action an
+  agent takes because of a result.
+- `contents` asks the provider to fetch the URLs you pass. Validate URLs
+  before passing them on; result URLs are not an SSRF defence for fetching
+  those links yourself.
+- A custom `fetch`, transport, environment or registry passed to a client is
+  trusted application code. Edited registry specs are validated for shape,
+  not for intent: review them like code.
+- Cancelling a call or a timeout does not prove the provider did not receive
+  or bill the request; check each attempt's `billed` value.
+- Use the Node version in [.nvmrc](.nvmrc) and keep dependencies patched.
+  Review lockfile and workflow changes before running contributed code.
 
-The built-in transports provide deadlines, response-size bounds, redirect
-rejection, and sanitized SDK errors. Native JSON declarations describe compile-time
-contracts; they do not validate every provider field at runtime. Fixture checks
-do not establish live-provider security or account behavior.
+The runtimes enforce deadlines, cancellation, response-size limits and fixed,
+sanitized error messages, and never follow redirects. Specs and fixtures do
+not establish live provider behaviour or security. The public documentation
+site and its MCP endpoint serve documentation and registry data only; they
+hold no provider keys and do not execute provider calls.

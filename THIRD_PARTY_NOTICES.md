@@ -1,69 +1,58 @@
 # Third-party notices
 
 The MIT license in `LICENSE` applies to searchSDK's original source and
-documentation. Third-party code, fonts, API reference material and trademarks
-retain their respective ownership and terms.
+documentation. Third-party fonts, logos, reference material, data and
+trademarks keep their own ownership and terms.
 
-## Paper Mono
+## Fonts
 
-The website bundles Paper Mono under the SIL Open Font License 1.1. The complete
-copyright and license notice is retained at
-[`apps/web/public/fonts/paper-mono/OFL.txt`](apps/web/public/fonts/paper-mono/OFL.txt).
-Font provenance is recorded alongside it. See [Paper Mono](https://paper.design/mono).
+The brand and the website use two typefaces, unmodified, under the SIL Open
+Font License 1.1. Neither declares a Reserved Font Name.
 
-## dithercn
+| Family | Copyright | Files | Licence text |
+| --- | --- | --- | --- |
+| Instrument Sans | © 2022 The Instrument Sans Project Authors | `brand/fonts/InstrumentSans-*`, `site/assets/fonts/InstrumentSans-latin.woff2` | [`brand/fonts/InstrumentSans-OFL.txt`](brand/fonts/InstrumentSans-OFL.txt), [`site/assets/fonts/InstrumentSans-OFL.txt`](site/assets/fonts/InstrumentSans-OFL.txt) |
+| Martian Mono | © 2021 The Martian Mono Project Authors | `brand/fonts/MartianMono-*`, `site/assets/fonts/MartianMono-latin.woff2` | [`brand/fonts/MartianMono-OFL.txt`](brand/fonts/MartianMono-OFL.txt), [`site/assets/fonts/MartianMono-OFL.txt`](site/assets/fonts/MartianMono-OFL.txt) |
 
-The website includes the dithercn engine in `apps/web/src/lib/dither/`, obtained
-from the [official registry](https://dithercn.dev/r/dither-core.json). The
-[publisher](https://dithercn.dev/) identifies the project as MIT licensed and
-attributes it to [Leo](https://github.com/leoisadev1). The registry files were
-supplied without individual copyright headers. Local compatibility changes
-replace sorting of newly created arrays with ES2022-compatible equivalents.
-The site extends the shader with an optional spatial color field, keeping its
-original scalar palette path as the default. The search aurora adapts the
-[official Aurora field](https://dithercn.dev/r/aurora.json); the site components
-in `apps/web/src/components/DitherKit.tsx` adapt the ordered-fill techniques
-from the official DitherFade, Divider, Card, Empty, Loader, ProgressBar and
-Number examples. The search lens geometry, documentation diagrams, and
-request-duration compositions are original site work.
-Upstream ownership is retained; the project's copyright notice does not claim
-ownership of this component.
+Sources for each file are recorded in [`brand/fonts/README.md`](brand/fonts/README.md).
+The site's copies are byte-identical to the brand's and are kept current by
+`site/checks/brand.mjs`.
 
-The MIT permission and warranty terms apply to that component:
+## Provider names and logos
 
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in all
-> copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> SOFTWARE.
+Provider names and logos identify the providers searchSDK supports. They are
+trademarks of their owners, are not licensed under MIT, and their use does not
+imply sponsorship, endorsement or affiliation. searchSDK is not affiliated with
+any provider.
 
-## Provider names, artwork and API references
+The logo files in `site/public/providers/<id>/` are each provider's own
+files, downloaded from the provider's website and stored unmodified. Their
+sources, retrieval date, hashes and each provider's usage rules are recorded
+in [`site/public/providers/SOURCES.md`](site/public/providers/SOURCES.md).
 
-Provider names and logos identify supported integrations. Their trademarks and
-artwork remain with their owners and are not relicensed under MIT. Their use does
-not imply sponsorship or endorsement. Original artwork sources and usage notes
-are recorded in [`docs/brand-assets.md`](docs/brand-assets.md).
+## Provider API references
 
-Public API schemas and source snapshots under `scripts/providers-a` and
-`scripts/providers-b` retain their publishers' ownership and any embedded
-notices. Provenance manifests identify the official sources. searchSDK's license
-does not grant additional rights to those reference materials or to data
-returned by a provider. Provider account terms continue to apply when calling
-their services.
+The specs in `registry/providers/` describe each provider's public API in
+searchSDK's own format and record the source URL and retrieval date of each
+fact. The providers' documentation, APIs and the data they return remain
+theirs; searchSDK's license grants no rights to them, and each provider's
+terms apply when you call its service.
+
+## Benchmark datasets
+
+Items in `bench/datasets/` are built from open sources. Each item records its
+source and licence; [`bench/METHOD.md`](bench/METHOD.md) lists them:
+
+- Wikidata, CC0-1.0.
+- CISA Known Exploited Vulnerabilities catalog, CC0-1.0.
+- arXiv metadata, CC0-1.0.
+- Python Enhancement Proposals (peps.python.org), public domain or CC0-1.0.
+- endoflife.date, MIT. Its copyright and license notice are in the
+  `LICENSE` file of the [endoflife.date repository](https://github.com/endoflife-date/endoflife.date).
 
 ## Dependencies
 
-The SDK has no runtime dependencies. Website and development dependencies retain
-their own licenses, recorded in the lockfile and installed package notices.
+`@searchsdk/sdk` and the Python `searchsdk` package have no runtime
+dependencies. The development dependencies of `brand/`, `sdk/typescript/`,
+`bench/` and `site/` keep their own licenses, recorded in each package's
+lockfile and in the installed packages' notices.

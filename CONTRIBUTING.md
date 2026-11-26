@@ -1,89 +1,77 @@
 # Contributing to searchSDK
 
-Thanks for helping make search integrations easier to inspect and test. Start
-with an issue describing a bug, a provider contract change, or the outcome you
-want. For security issues, follow [SECURITY.md](SECURITY.md) instead.
+Thanks for helping. Start with an issue describing a bug, a provider change,
+or the outcome you want. For security issues, follow [SECURITY.md](SECURITY.md)
+instead.
 
-## Set up the workspace
+## Set up
 
-Use the Node version pinned in [.nvmrc](.nvmrc) and npm's committed lockfile:
+Use the Node version pinned in [.nvmrc](.nvmrc) and Python 3.10 or newer.
+Each package has its own lockfile and installs on its own:
 
-```sh
-nvm use
-npm ci
-npm run build:sdk
-```
+| Path | What | Install | Check |
+| --- | --- | --- | --- |
+| `sdk/typescript/` | `@searchsdk/sdk` | `npm ci` | `npm test` |
+| `sdk/python/` | `searchsdk` | `python -m pip install -r requirements-dev.txt` (mypy) | `python scripts/check.py` |
+| `bench/` | benchmark harness | `npm ci` | `npm run check` |
+| `site/` | searchsdk.dev | `npm ci` | `npm run check` (build and crawl) |
+| `brand/` | brand sources and exports | `npm ci` | `npm run check` |
 
-`packages/sdk` contains the TypeScript ESM SDK and Node tests. The other
-`packages/*` directories contain the eleven additional language/platform SDKs;
-start with [the package index](packages/README.md) and each package README.
-`sdk-contract` holds shared generated contracts and synthetic fixtures.
-`apps/web` contains the static docs and server-backed playground. `npm run dev` starts the site; use the URL printed by
-Vite. Provider credentials are unnecessary for the standard development flow.
+From the repository root, `npm run setup` installs the four npm packages and
+`npm run check` runs every check CI runs, including the public-tree guard and
+the registry drift checks. Run checks one package at a time to keep builds
+bounded. None of them needs a provider key or calls a provider.
 
-## Check your change
+## Change a provider
 
-For TypeScript SDK work, rebuild before running tests, since tests import compiled output:
+Provider behaviour lives in [`registry/`](registry/README.md), not in the
+runtimes. To add or change a provider:
 
-```sh
-npm run build:sdk
-npm test -w @belweave/search-sdk
-```
+- Edit `registry/providers/<id>.json` and its vectors in
+  `registry/conformance/providers/<id>.json`. Follow the rules in
+  [`registry/README.md`](registry/README.md); exact semantics are in
+  `registry/steps.md` and `registry/policy.md`.
+- Link the official API documentation behind every fact and record its
+  retrieval date. List anything unclear under `unverified`. Leave options the
+  provider cannot honour out of the spec.
+- Write `null` for a price that is not public; never `0`.
+- Use synthetic response bodies only. Never commit real account responses,
+  credentials or private queries.
+- Re-embed the registry and regenerate the README table, then commit them:
 
-For documentation and site work:
+  ```sh
+  (cd sdk/typescript && npm run sync)
+  (cd sdk/python && python scripts/sync_registry.py)
+  node scripts/readme-providers.mjs
+  ```
 
-```sh
-npm run typecheck
-npm run test:docs
-```
+- Keep the endpoint at `"verification": { "status": "unverified" }`. Passing
+  fixtures is not live verification.
 
-Before submitting a pull request, run:
+Logic that no named step or format feature offers needs a general addition
+to every runtime, with conformance vectors, not provider-specific code.
 
-```sh
-npm run check
-```
+## Live calls and benchmarks
 
-This checks TypeScript and mobile JavaScript tests, the static site, docs, and npm packages
-in an isolated consumer. Run the commands sequentially to keep builds bounded.
-Use `npm run build:vercel` only when you need checked static deployment output;
-it includes the checks above. None of these commands requires provider keys or
-runs a comparative provider benchmark.
-
-For other languages, run the package README’s bounded local build, tests, and
-packaged-consumer checks. The separate `sdk-variants.yml` workflow covers the
-language and platform matrix. Passing `npm run check` alone does not establish
-Swift, Android, Python, JVM, Rust, Go, .NET, C or C++ validation.
-
-## Change provider contracts carefully
-
-- Link to official API documentation or a retained official schema supporting
-  the change. Distinguish a documented surface from authenticated verification.
-- Keep normalized search semantics explicit: native ordering and scores,
-  truthful capabilities, result ceilings, provenance, and unknown usage as `null`.
-- Add focused tests with injected transports and synthetic fixtures. Cover
-  relevant error, cancellation, deadline, filter, and malformed-response behavior.
-  Never commit real account responses, credentials, or private queries.
-- Regenerate shared contracts with `node scripts/generate-sdk-contract.mjs` and
-  verify with `npm run check:contracts`. Keep per-language mappings and fixtures
-  aligned; document implementation differences rather than asserting parity.
-- Preserve generator reproducibility. Native clients and their retained sources
-  live in `scripts/providers-a` and `scripts/providers-b`; follow the applicable
-  directory's instructions rather than editing generated output alone.
-- Update public examples and reference material when an API changes. Do not
-  describe native endpoint inventories or passing fixtures as live availability.
-- Leave live calls and benchmarks out of ordinary tests. Any separately agreed
-  live validation must state its scope and account for possible provider charges.
+Ordinary tests, checks and CI never call providers, never need keys, and
+never incur charges. Tests install a guard that fails on network use beyond
+loopback. A live benchmark or smoke run needs `--live`, `BENCH_ALLOW_LIVE=1`
+and `--confirm-spend`, refuses to run under CI, and must state its scope and
+its cost. Keep keys and raw outputs in `.local/`, never in the repository.
+See [`bench/README.md`](bench/README.md).
 
 ## Submit a focused pull request
 
-Explain the problem, the resulting behavior, and the checks you ran. Include a
-small reproduction or screenshot when it helps review. Note relevant limitations
-and any public API changes. Keep unrelated refactors separate, and do not include
-generated build output, local reports, secrets, or personal environment details.
+Explain the problem, the resulting behaviour and the checks you ran. Note
+public API changes and limitations, and link official provider references for
+changed specs. Keep unrelated refactors separate. Do not include build output,
+local reports, secrets or personal environment details.
 
-CI uses read-only repository permissions and no provider secrets. Changes to CI
-must keep official actions pinned to full commit SHAs and must not add automatic
-publication, deployment, or privileged execution of fork contributions.
+CI uses read-only repository permissions and no provider secrets. Changes to
+CI must keep actions pinned to full commit SHAs and must not add automatic
+publication, deployment or privileged execution of fork contributions.
+Releases are manual; see [docs/releasing.md](docs/releasing.md).
 
 Contributions are licensed under the repository's [MIT license](LICENSE). Be
-respectful of other contributors; see the [community guidelines](.github/CODE_OF_CONDUCT.md).
+respectful of other contributors; see the
+[community guidelines](.github/CODE_OF_CONDUCT.md).
