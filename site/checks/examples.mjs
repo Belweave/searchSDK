@@ -2,7 +2,7 @@
 // cannot drift from the API.
 //   node checks/examples.mjs
 // Sources: ```ts blocks in content/docs/**/*.mdx (each block is a complete module) and
-// content/examples/*.ts (shown on the home page). "searchsdk" resolves to
+// content/examples/*.ts (shown on the home page). "@searchsdk/sdk" resolves to
 // ../sdk/typescript/src/index.ts under the SDK's own compiler options.
 import { spawn } from "node:child_process";
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
@@ -52,7 +52,7 @@ async function collect() {
   const tsconfig = {
     extends: path.relative(OUT, path.join(SDK, "tsconfig.json")),
     compilerOptions: {
-      paths: { searchsdk: [path.relative(OUT, path.join(SDK, "src", "index.ts"))] },
+      paths: { "@searchsdk/sdk": [path.relative(OUT, path.join(SDK, "src", "index.ts"))] },
       // Examples run in an ES module with top-level await.
       module: "nodenext",
       moduleResolution: "nodenext",

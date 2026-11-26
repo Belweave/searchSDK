@@ -1,20 +1,15 @@
 ---
 title: Quickstart
 metaTitle: "Quickstart: web search in TypeScript"
-description: Build searchSDK from source, set a provider key and run your first web search from TypeScript.
+description: Install searchSDK from npm, set a provider key and run your first web search from TypeScript.
 ---
 
-searchSDK gives AI apps and agents one interface to many web search APIs. This page builds it from source and runs a first search.
+searchSDK gives AI apps and agents one interface to many web search APIs. This page installs it and runs a first search.
 
 ## Install
 
-`searchsdk` is not on npm yet, so `npm install searchsdk` does not work. Pack version 0.1.0 from the repository and install the tarball into an app beside the clone:
-
 ```sh
-git clone -b v2/integration https://github.com/Belweave/searchSDK
-(cd searchSDK/sdk/typescript && npm ci && npm pack --ignore-scripts=false)
-cd your-app
-npm install ../searchSDK/sdk/typescript/searchsdk-0.1.0.tgz
+npm install @searchsdk/sdk
 ```
 
 It has no runtime dependencies and needs a standard `fetch`. Tested on Node 24.
@@ -30,7 +25,7 @@ export EXA_API_KEY="your-key"
 ## Search
 
 ```ts
-import { search } from "searchsdk";
+import { search } from "@searchsdk/sdk";
 
 const { results, cost } = await search("vector database indexing", { provider: "exa", maxResults: 5 });
 for (const r of results) console.log(r.title, r.url);
@@ -42,7 +37,7 @@ console.log(cost.usd, cost.source);
 A client can try other providers, in order, when one is unavailable, rate limited, out of quota or cannot honour an option. Fallback and retries are off unless you set them.
 
 ```ts
-import { createClient } from "searchsdk";
+import { createClient } from "@searchsdk/sdk";
 
 const client = createClient({ provider: "exa", fallback: ["tavily"], maxRetries: 1 });
 const res = await client.search("vector database indexing");

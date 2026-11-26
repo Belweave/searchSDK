@@ -7,7 +7,7 @@ description: Fetch the readable text of web pages through a provider, one result
 `contents(urls, options)` returns one page per requested URL, in order.
 
 ```ts
-import { contents } from "searchsdk";
+import { contents } from "@searchsdk/sdk";
 
 const { pages, cost } = await contents(["https://example.com/a", "https://example.com/b"], { provider: "exa" });
 for (const page of pages) {

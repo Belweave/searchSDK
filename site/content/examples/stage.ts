@@ -1,4 +1,4 @@
-import { contents, search } from "searchsdk";
+import { contents, search } from "@searchsdk/sdk";
 
 const providers = ["brave", "context", "exa", "firecrawl", "perplexity", "tavily", "tinyfish"] as const;
 

@@ -13,7 +13,7 @@ A provider is a search API that searchSDK calls from your server. [Each provider
 Ids are lowercase and typed as `ProviderId`. Keys come from each provider's documented variable, or from `keys`:
 
 ```ts
-import { createClient } from "searchsdk";
+import { createClient } from "@searchsdk/sdk";
 
 const client = createClient({
   provider: "brave",
@@ -29,7 +29,7 @@ Pass `env` instead to read variables from elsewhere, such as Worker bindings. A 
 Options only one provider understands go under its id, typed per provider and checked before sending.
 
 ```ts
-import { search } from "searchsdk";
+import { search } from "@searchsdk/sdk";
 
 const res = await search("rust async runtimes", {
   provider: "exa",
@@ -42,7 +42,7 @@ const res = await search("rust async runtimes", {
 `raw` is the provider's own parsed body, and `providerFields` keeps fields with no common name.
 
 ```ts
-import { search } from "searchsdk";
+import { search } from "@searchsdk/sdk";
 
 const res = await search("rust async runtimes", { provider: "tavily" });
 console.log(res.raw, res.results[0]?.providerFields);

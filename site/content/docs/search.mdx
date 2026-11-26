@@ -7,7 +7,7 @@ description: Search the web through one provider or a fallback chain, with filte
 `search(query, options)` uses keys from the environment. `createClient(config).search(query, options)` takes keys and defaults once.
 
 ```ts
-import { search } from "searchsdk";
+import { search } from "@searchsdk/sdk";
 
 const controller = new AbortController();
 const res = await search("postgres full text search", {
@@ -58,7 +58,7 @@ The response also carries `provider`, `cost`, `requestId`, `latencyMs`, `warning
 Failures throw `SearchError` with a fixed `code` and the `attempts` made.
 
 ```ts
-import { search, SearchError } from "searchsdk";
+import { search, SearchError } from "@searchsdk/sdk";
 
 try {
   await search("postgres full text search", { provider: "brave", includeDomains: ["postgresql.org"] });

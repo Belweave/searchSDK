@@ -154,13 +154,13 @@ export function HomeSections() {
               Build it today
             </h2>
             <p className="home-line">
-              <code className="figures">searchsdk</code> is not on npm yet. Pack it from the repository:
+              Install it from npm:
             </p>
           </Reveal>
           <Reveal className="home-instrument" index={1}>
             <pre className="home-shell">
               <code>
-                {["git clone -b v2/integration https://github.com/Belweave/searchSDK", "(cd searchSDK/sdk/typescript && npm ci && npm pack --ignore-scripts=false)", "cd your-app && npm install ../searchSDK/sdk/typescript/searchsdk-0.1.0.tgz"].map((l) => (
+                {["npm install @searchsdk/sdk"].map((l) => (
                   <span key={l} className="code-line">
                     <span className="home-prompt" aria-hidden="true">
                       ${" "}

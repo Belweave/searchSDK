@@ -21,7 +21,7 @@ Every response has a `cost`: `usd`, `estimated`, `source` and, for credit pricin
 Each entry in `attempts` has its own `cost` and `billed`: `yes` when the provider answered with success, `possible` when the request may have reached it without an answer, `no` when nothing was sent or the provider answered with an error. Retries and fallback never hide spend.
 
 ```ts
-import { search } from "searchsdk";
+import { search } from "@searchsdk/sdk";
 
 const res = await search("sqlite wal mode", { provider: "exa" });
 const billed = res.attempts.filter((a) => a.billed !== "no");
@@ -37,7 +37,7 @@ A failed call carries the same `attempts` on its `SearchError`.
 `costBound` gives the most one request can cost at the highest documented rate, such as overage or the top of a price range. Use it to hold a spend cap without guessing a margin. `listPrice` gives the computed price for a result count.
 
 ```ts
-import { costBound, listPrice, registry } from "searchsdk";
+import { costBound, listPrice, registry } from "@searchsdk/sdk";
 
 const bound = costBound(registry.exa, "search", { maxResults: 10, depth: "deep" });
 console.log(bound.usd); // null when it cannot be bounded; see bound.unknownBecause

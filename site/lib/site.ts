@@ -7,8 +7,8 @@ export const site = {
   definition:
     "searchSDK is an open-source, MIT-licensed SDK by Belweave that gives AI apps and agents one interface to many web search APIs, with explicit fallback, per-attempt cost and open benchmarks.",
   repo: "https://github.com/Belweave/searchSDK",
-  /** The npm package. Not published yet: the docs install it from source. */
-  packageName: "searchsdk",
+  /** The npm package (the unscoped name is blocked by npm as too close to search-sdk). */
+  packageName: "@searchsdk/sdk",
   /** The languages with a runtime in the repository (sdk/typescript, sdk/python). */
   languages: ["TypeScript", "Python"],
   license: "https://opensource.org/license/mit",
