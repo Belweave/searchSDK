@@ -1,0 +1,30 @@
+---
+title: Privacy
+metaTitle: "searchSDK privacy: site analytics and the SDK"
+description: "How the searchSDK website counts visits without cookies, and why the SDK itself sends nothing."
+---
+
+## The SDK
+
+The SDK has no analytics and no telemetry. A call goes from your server to the provider you name, with your key, and nowhere else. Nothing reaches Belweave or this site.
+
+## This website
+
+The site counts visits with PostHog in cookieless mode: no cookies, no local or session storage, no consent banner. PostHog derives a visitor hash on its servers that changes every day, so a visit cannot be linked to the next day's.
+
+It measures:
+
+- pages viewed and left, and page load timings (Core Web Vitals);
+- clicks on links and buttons, the destination host of links to other sites, and which code blocks are copied;
+- the length of a docs search, never its text;
+- fetches of `llms.txt`, the Markdown copies, the sitemap and `robots.txt`: the path, the kind of client (a named crawler or agent, a browser or a tool), the referring host and the country.
+
+It never records what you type, session replays, names or accounts, or a URL's query string. PostHog is set to discard IP addresses.
+
+A browser that sends Do Not Track or Global Privacy Control loads no analytics.
+
+Events go to `/ingest` on this site, which forwards them to PostHog's US cloud.
+
+## Package statistics
+
+Once a day the site records public figures: npm download counts, and the GitHub repository's stars, forks, watchers and release downloads.
