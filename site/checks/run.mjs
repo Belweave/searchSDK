@@ -1,4 +1,4 @@
-// npm run check: brand copies current → typecheck → examples against the SDK → token and brand-rule scan → production
+// npm run check: brand copies current → analytics unit tests → typecheck → examples against the SDK → token and brand-rule scan → production
 // build → serve on a free port → crawl and check every page → stop. Exit 1 on any failure. Makes no network request
 // beyond localhost.
 //   node checks/run.mjs [--no-build]
@@ -63,6 +63,9 @@ try {
   }
   console.log(`brand current (${brand.files} files match brand/)`);
   results.push(`brand ok (${brand.files} tokens, fonts, marks and icons match brand/)`);
+
+  await run(process.execPath, ["--test", "checks/analytics.test.mjs"], "analytics unit tests");
+  results.push("analytics unit tests ok");
 
   await run(NEXT, ["typegen"], "typegen");
   await run(TSC, ["--noEmit"], "typecheck");

@@ -55,9 +55,18 @@ export const ONCE_ONLY = [{ phrase: /provisional/i, pages: 1 }];
 /** Every HTML page carries the provider trademark line. */
 export const REQUIRED_ON_EVERY_PAGE = [/not affiliated/i, /trademarks of their respective owners/i];
 
-/** Never in any served body: trackers, third-party fonts, credentials, email addresses. */
+/**
+ * Analytics is first party: posthog-js is bundled and talks only to /ingest on this origin, which
+ * next.config.ts rewrites to PostHog (lib/analytics). No page names a PostHog host directly, the
+ * CSP keeps scripts and connections to 'self', robots.txt disallows the proxy path, and the crawl
+ * never requests it (that would reach PostHog).
+ */
+export const ANALYTICS = { proxyPath: "/ingest/", cspSelfOnly: ["script-src", "connect-src"] };
+
+/** Never in any served body: third-party trackers and analytics hosts, third-party fonts, credentials, email addresses. */
 export const BANNED_PATTERNS = [
   { name: "tracker", re: /google-analytics|googletagmanager|plausible\.io|segment\.(com|io)|hotjar|mixpanel|fbq\(/i },
+  { name: "analytics host outside the first-party proxy", re: /\b[a-z]{2}(-assets)?\.i\.posthog\.com|\bapp\.posthog\.com/i },
   { name: "third-party font", re: /fonts\.googleapis|fonts\.gstatic|use\.typekit/i },
   { name: "key-like token", re: /\b(sk|pk|tvly|fc|pplx|exa|bsa)[-_][A-Za-z0-9]{20,}/ },
   { name: "bearer credential", re: /Bearer\s+[A-Za-z0-9._-]{20,}/ },

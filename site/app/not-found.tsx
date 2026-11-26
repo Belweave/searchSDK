@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { TrackNotFound } from "@/components/analytics/track-not-found";
 import { Backdrop } from "@/components/site/backdrop";
 import { SiteFooter } from "@/components/site/footer";
 import { SiteHeader } from "@/components/site/header";
@@ -33,6 +34,7 @@ export default function NotFound() {
         </nav>
       </main>
       <SiteFooter />
+      <TrackNotFound />
     </>
   );
 }
