@@ -22,9 +22,6 @@
     "paths": {
       "@/*": [
         "./*"
-      ],
-      "@searchsdk/sdk": [
-        "../sdk/typescript/src/index.ts"
       ]
     },
     "plugins": [
