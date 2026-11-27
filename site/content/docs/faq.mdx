@@ -23,7 +23,7 @@ Every response and attempt carries a cost and its source: reported by the provid
 
 ## How does the benchmark work?
 
-The same queries go to every provider. Known-answer tasks set the rank among dependable providers; latency and cost never change it. Results are pending. [Method](/docs/benchmarks-method).
+Every provider gets the same queries. Known-answer tasks rank dependable providers; latency and cost never change rank. The 404-query run is on [Benchmarks](/benchmarks); judged scores wait for 100 human labels. [Method](/docs/benchmarks-method).
 
 ## How is it different from calling a provider directly?
 
@@ -31,7 +31,7 @@ One result shape, one id to change, explicit fallback and per-attempt cost. A di
 
 ## Is it on npm or PyPI?
 
-TypeScript is on npm as [`@searchsdk/sdk`](https://www.npmjs.com/package/@searchsdk/sdk). Python is not on PyPI yet; build it from source with [its README](https://github.com/Belweave/searchSDK/tree/main/sdk/python). No provider is verified against its live API yet.
+TypeScript is on npm as [`@searchsdk/sdk`](https://www.npmjs.com/package/@searchsdk/sdk). Python installs from source ([README](https://github.com/Belweave/searchSDK/tree/main/sdk/python)). Firecrawl is conformance-verified live; four providers are live-tested.
 
 ## What license is it under?
 

@@ -8,7 +8,7 @@ license: MIT
 
 searchSDK (always written exactly so) is an MIT-licensed TypeScript SDK by Belweave. Two calls, `search` and `contents`, one result shape for every provider. Zero runtime dependencies; needs standard `fetch`; tested on Node 24. Docs: https://searchsdk.dev/docs (every page has a `.md` copy, and https://searchsdk.dev/llms-full.txt has them all).
 
-No provider is verified against its live API yet: specs are mapped from public docs and tested on synthetic fixtures. Benchmark results are pending. Do not claim one provider is faster, cheaper in practice or better.
+Firecrawl (`search` and `contents`) is conformance-verified against its live API in TypeScript and Python; Exa, Context.dev, TinyFish and Firecrawl have been tested live across smoke, tuning and 4,848 benchmark search calls. Brave Search, Perplexity and Tavily remain fixture-tested. Published 404-query known-answer benchmark results are at https://searchsdk.dev/benchmarks (judged relevance withheld pending 100 human labels); do not make unmeasured claims about unrun providers.
 
 ## Install
 

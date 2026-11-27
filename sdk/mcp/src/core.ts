@@ -346,7 +346,7 @@ export function serverInstructions(corpus: Corpus, extra?: string): string {
   return [
     `searchSDK (${corpus.siteUrl}) is an MIT-licensed SDK that gives AI apps and agents one interface to many web search APIs (npm: @searchsdk/sdk ${corpus.sdkVersion}).`,
     "Use search_docs and get_doc for how-to questions, list_providers and get_provider for provider capabilities, prices and limits, estimate_cost and validate_options before writing a call, and get_example for code that typechecks against the SDK.",
-    "No provider is verified against its live API yet; specs are mapped from public docs and tested on synthetic fixtures.",
+    "Firecrawl is conformance-verified against its live API; Exa, Context.dev and TinyFish are live-tested in searchSDK Benchmarks; Brave Search, Perplexity and Tavily remain fixture-tested. Check list_providers for each provider's verification status.",
     ...(extra ? [extra] : []),
   ].join(" ");
 }

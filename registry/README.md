@@ -3,8 +3,9 @@
 Each search provider is described once, as data, for every runtime, the
 benchmark, the docs and the router. No runtime gets provider code.
 
-**Nothing here is live-verified yet.** Specs come from public documentation
-read on the dates they record. Response fixtures are synthetic.
+**Only what an endpoint's `verification` says is live-verified.** Specs come
+from public documentation read on the dates they record. Response fixtures
+are synthetic.
 
 - `providers/<id>.json`: one spec per provider.
 - `schema/provider.schema.json`: the spec format (version 1).
@@ -64,5 +65,36 @@ syntax characters; `(...)`, `(?:...)` and `|`; quantifiers `* + ? {n}
 `formatVersion` changes only when the format breaks. `specVersion` is when a
 spec's facts were last checked. An endpoint is verified only once its vectors
 pass against the live API; its `verification` then records the date and the
-runtimes that passed. Every endpoint is `unverified` today. The site and
-benchmark read this field; nobody keeps a separate list.
+runtimes that passed. Firecrawl's search and contents are verified (2026-11-25);
+every other endpoint is `unverified`. The site and benchmark read this field;
+nobody keeps a separate list.
+
+## Live conformance
+
+`bench verify --provider <id>` (from `bench/`) prints which vectors would be
+replayed and what that may cost; with `--live` it replays them. Every vector
+falls in one class:
+
+- **local**: it expects nothing to be sent. The runtimes' offline suites run it.
+- **scripted failure**: it scripts a non-2xx status, a network failure, a
+  delay, a cancellation or retries, which cannot be produced on demand. It
+  stays offline and the report lists it.
+- **replay**: it scripts a 2xx reply. The same call goes to the live API
+  through each runtime, one call at a time, at most half the strictest
+  documented rate and no faster than one call each 30 seconds. Each call
+  reserves its cost bound in the benchmark's spend ledger first.
+
+A replay passes when the runtime sent exactly the request the vector expects
+(key redacted), the provider answered 2xx, the call had the vector's outcome
+(success, the same page statuses and page error codes), the cost came from
+the same source when the synthetic body carries the reported-cost path, the
+cost stayed within the SDK's bound, and a request id came back when the vector
+expects one. Over all of an endpoint's replays, every spec path a synthetic
+body resolves must resolve in at least one live body. Whether a replay
+returned any rows is recorded but is not a failure: it depends on the live
+index, not on the spec. An endpoint is verified when every replay passes in
+every runtime. A vector whose placeholder input behaves differently live
+(`example.com/page` is a 404) is replayed with an override from
+`conformance/live/overrides.json`, which states why and is applied to the
+expected request too. The public summary (`conformance/live/<id>-<date>.json`)
+holds checks, statuses and credits only; responses stay in the local store.

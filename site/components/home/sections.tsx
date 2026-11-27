@@ -121,8 +121,8 @@ export function HomeSections() {
         title="Quality first, then reliability"
         line={
           <>
-            Results pending. The first benchmark run is in progress; every provider shows the same placeholder until it is published.
-            Then scores within {board.data.method.tieBand} points share a rank; latency and cost are shown, never scored.{" "}
+            Measured on {board.data.run.queries} queries across three passes. Scores within {board.data.method.tieBand} points share a rank;
+            latency and cost are shown, never scored.{" "}
             <Link href="/docs/benchmarks-method" className="prose-link">
               Method
             </Link>
@@ -142,7 +142,7 @@ export function HomeSections() {
         id="registry"
         layout="wide"
         title="One file per provider"
-        line="A registry spec drives the TypeScript and Python runtimes, their shared tests, the benchmark and these pages. Both runtimes pass the same vectors. Neither is published or verified against live APIs yet."
+        line="A registry spec drives the TypeScript and Python runtimes, shared tests, the benchmark and these pages. Firecrawl is conformance-verified live; four providers are tested against live APIs."
       >
         <SpecFeed providers={feed} />
       </Section>

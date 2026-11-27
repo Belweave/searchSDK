@@ -6,8 +6,11 @@ per-attempt cost and open benchmarks. This is the TypeScript runtime: two
 calls, `search` and `contents`, and zero runtime dependencies. Written for
 any runtime with standard `fetch`; tested on Node 24 only.
 
-**Not live-verified.** Providers are mapped from their public docs and tested
-against synthetic fixtures only.
+**Live production testing.** Exa, TinyFish, Context.dev and Firecrawl have
+been tested end to end against their live production APIs across smoke checks,
+tuning and 4,848 benchmark search calls. Firecrawl (`search` and `contents`)
+has passed formal live conformance replay in both TypeScript and Python; Brave
+Search, Perplexity and Tavily remain fixture-tested only.
 
 ## Install
 
@@ -26,9 +29,11 @@ Brave Search (`brave`, search only), Context.dev (`context`), Exa (`exa`),
 Firecrawl (`firecrawl`), Perplexity (`perplexity`), Tavily (`tavily`) and
 TinyFish (`tinyfish`). Each is described in
 [`registry/`](https://github.com/Belweave/searchSDK/tree/main/registry) and
-embedded in this package; every endpoint is unverified against its live API
-today. Provider names are trademarks of their owners; searchSDK is not
-affiliated with any provider.
+embedded in this package. Firecrawl (`search` and `contents`) is
+conformance-verified live; Exa, Context.dev and TinyFish are live-tested in
+searchSDK Benchmarks; Brave Search, Perplexity and Tavily remain unverified
+against their live APIs. Provider names are trademarks of their owners;
+searchSDK is not affiliated with any provider.
 
 ## Use
 

@@ -1,0 +1,20 @@
+{
+  "description": "Changes to a vector's input for live replay (bench verify), each with its reason. Applied to the expected request as well, so the request check stays exact. Read by bench/src/verify/verify.ts; the offline suites never read this file.",
+  "providers": {
+    "firecrawl": {
+      "scraping results makes an unreported cost unknown": {
+        "options": {
+          "maxResults": 1
+        },
+        "worstCredits": 4,
+        "reason": "scrapeOptions scrapes every result at an unpublished cost; one result bounds a live replay at 2 search credits plus 1 scrape credit (and 1 per PDF page). The vector checks only the scrapeOptions it sends, not the result count."
+      },
+      "scrape maps one URL; a title array is joined; reported credits and the scrape id are read": {
+        "urls": [
+          "https://example.com/"
+        ],
+        "reason": "The vector's https://example.com/page is a 404 live (checked 2026-11-25); https://example.com/ serves 200, which the vector scripts."
+      }
+    }
+  }
+}

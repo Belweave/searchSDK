@@ -1,6 +1,6 @@
 {
   "description": "Firecrawl search and scrape: normalized request to HTTP request, and synthetic response to normalized response.",
-  "synthetic": "Response bodies are synthetic, shaped after the public API reference read 2026-11-24. They were not recorded from the live API.",
+  "synthetic": "Response bodies are synthetic, shaped after the public API reference read 2026-11-24; the scrape's metadata.creditsUsed and metadata.scrapeId follow live responses seen 2026-11-25. They were not recorded from the live API.",
   "cases": [
     {
       "name": "search maps every supported option; a date range becomes one tbs value; credits are reported",
@@ -273,7 +273,7 @@
       }
     },
     {
-      "name": "scrape maps one URL; a title array is joined; one credit is computed",
+      "name": "scrape maps one URL; a title array is joined; reported credits and the scrape id are read",
       "call": "contents",
       "urls": [
         "https://example.com/page"
@@ -296,7 +296,9 @@
                 "sourceURL": "https://example.com/page",
                 "url": "https://www.example.com/page",
                 "statusCode": 200,
-                "contentType": "text/html"
+                "contentType": "text/html",
+                "scrapeId": "synthetic-fc-scrape-1",
+                "creditsUsed": 1
               }
             }
           }
@@ -338,9 +340,10 @@
           "cost": {
             "usd": 0.0038,
             "estimated": true,
-            "source": "computed"
+            "source": "reported-credits",
+            "credits": 1
           },
-          "requestId": null,
+          "requestId": "synthetic-fc-scrape-1",
           "latencyMs": 0,
           "warnings": [],
           "attempts": [
@@ -354,7 +357,8 @@
               "cost": {
                 "usd": 0.0038,
                 "estimated": true,
-                "source": "computed"
+                "source": "reported-credits",
+                "credits": 1
               }
             }
           ]
@@ -362,7 +366,7 @@
       }
     },
     {
-      "name": "a target 404 is a failed page that is still billed",
+      "name": "a target 404 is a failed page that is still billed; without creditsUsed one credit is computed",
       "call": "contents",
       "urls": [
         "https://example.com/gone"
@@ -509,7 +513,9 @@
             "method": "POST",
             "url": "https://api.firecrawl.dev/v2/search",
             "body": {
-              "sources": ["web"],
+              "sources": [
+                "web"
+              ],
               "query": "q",
               "limit": 10
             }

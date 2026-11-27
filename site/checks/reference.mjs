@@ -436,11 +436,16 @@ Check warnings after every call: \`fallback_used\` means another provider answer
   const search = providers.filter((p) => p.search);
   const contents = providers.filter((p) => p.contents);
 
+  const verifiedEndpoints = providers.flatMap((p) => ["search", "contents"].filter((k) => p[k]?.verification?.status === "verified").map((k) => `${p.name} \`${k}\``));
+  const verificationSummary = verifiedEndpoints.length
+    ? `Live conformance-verified endpoints: ${verifiedEndpoints.join(", ")}. All other endpoints are marked \`unverified\` until their vectors pass live.`
+    : "No endpoint is verified against its live API yet.";
+
   pages["provider-support.mdx"] = page(
     "Provider support reference",
     "Which searchSDK options, limits and provider options each search provider supports, read from the provider registry.",
     `
-What each provider's spec supports, from the registry. "trimmed" means the provider has no result count, so searchSDK trims the list; "no" means the option fails as \`unsupported\` there. No endpoint is verified against its live API yet.
+What each provider's spec supports, from the registry. "trimmed" means the provider has no result count, so searchSDK trims the list; "no" means the option fails as \`unsupported\` there. ${verificationSummary}
 
 ## Search options
 

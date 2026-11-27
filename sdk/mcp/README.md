@@ -9,8 +9,10 @@ provider keys. Runs over stdio, on MCP revision 2026-07-28, and answers
 
 Run it with `npx -y @searchsdk/mcp` (Node 24 or newer).
 
-**Not live-verified.** No provider is verified against its live API yet; the
-SDK maps each one from its public docs and is tested on synthetic fixtures.
+**Live verification.** Firecrawl (`search` and `contents`) is
+conformance-verified against its live API; Exa, Context.dev and TinyFish are
+live-tested in searchSDK Benchmarks; Brave Search, Perplexity and Tavily remain
+fixture-tested. Check `list_providers` for each provider's verification status.
 
 Want the docs tools only, with no install and no keys? Use the public server at
 `https://searchsdk.dev/mcp` ([setup](https://searchsdk.dev/docs/mcp)).
