@@ -82,6 +82,15 @@ test("publication refuses output that contains stored response text", async () =
   assert.equal(leakCheck(leaked, sensitive).length > 0, true);
 });
 
+test("publication allows public result URLs that share a word with an unrelated private answer", async () => {
+  const s = await fullRun({ judgeItems: 0 });
+  const scores = scoreRun(s.dir, { config: s.config, method: s.method, items: s.items, judgeItemIds: [] });
+  const priv = { ...s.items[0]!, id: "priv-overlap-1", split: "private" as const, query: "private question about unrelated topic", answers: ["example"], nonce: "priv-nonce-xyz" };
+  const ctx = { dir: s.dir, mode: "fixture" as const, runId: s.runId, config: s.config, method: s.method, items: [...s.items, priv], registry: s.registry, judge: null, scores, startedAt: s.createdAt, finishedAt: new Date().toISOString() };
+  const { files } = writeOutputs(ctx, join(s.dir, "publish-overlap"));
+  assert.equal(files.length, 4);
+});
+
 test("the spend cap stops the run before it is exceeded", async () => {
   tempStore();
   const calls: string[] = [];

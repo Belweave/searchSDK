@@ -7,7 +7,7 @@
    "path": "/docs/what-is-searchsdk",
    "title": "What is searchSDK?",
    "description": "searchSDK is an open-source SDK that gives AI apps and agents one interface to many web search APIs.",
-   "body": "searchSDK is an open-source, MIT-licensed SDK by Belweave. Your server makes one call; searchSDK sends it to the web search provider you name.\n\n## What is a web search API for AI agents?\n\nA web search API takes a query and returns results as data: URLs, titles, dates and excerpts. Agents use it to ground answers in current pages. Each provider has its own index, options, result fields, prices and limits.\n\n## What does searchSDK do?\n\n- Two calls, `search` and `contents`, with one result shape for every provider.\n- Switch providers by changing one id.\n- Fall back to other providers, in your order, only when you turn it on.\n- Report a cost on every response and attempt, and where it came from.\n\n## Which providers does it support?\n\nBrave Search, Context.dev, Exa, Firecrawl, Perplexity, Tavily and TinyFish. Each is mapped from its public docs; none is verified against its live API yet. [Each provider's page](https://searchsdk.dev/providers) lists what it supports.\n\n## Which languages does it support?\n\nTypeScript on Node 24 and Python 3.10 or newer, neither with runtime dependencies. TypeScript installs from npm as `@searchsdk/sdk` ([the quickstart](https://searchsdk.dev/docs)); Python is not on PyPI yet.\n\n## Where do calls go?\n\nFrom your server to the provider, with your key. No searchSDK service sits in between.\n\n## How are providers compared?\n\nAn [open benchmark](https://searchsdk.dev/docs/benchmarks-method) ranks quality first, then reliability. Results are pending; the first run is in progress."
+   "body": "searchSDK is an open-source, MIT-licensed SDK by Belweave. Your server makes one call; searchSDK sends it to the web search provider you name.\n\n## What is a web search API for AI agents?\n\nA web search API takes a query and returns results as data: URLs, titles, dates and excerpts. Agents use it to ground answers in current pages. Each provider has its own index, options, result fields, prices and limits.\n\n## What does searchSDK do?\n\n- Two calls, `search` and `contents`, with one result shape for every provider.\n- Switch providers by changing one id.\n- Fall back to other providers, in your order, only when you turn it on.\n- Report a cost on every response and attempt, and where it came from.\n\n## Which providers does it support?\n\nBrave Search, Context.dev, Exa, Firecrawl, Perplexity, Tavily and TinyFish. Firecrawl is conformance-verified live in TypeScript and Python; Exa, Context.dev and TinyFish are live-tested in the 404-query benchmark; Brave Search, Perplexity and Tavily remain fixture-tested. [Each provider's page](https://searchsdk.dev/providers) lists what it supports.\n\n## Which languages does it support?\n\nTypeScript on Node 24 and Python 3.10 or newer, neither with runtime dependencies. TypeScript installs from npm as `@searchsdk/sdk` ([the quickstart](https://searchsdk.dev/docs)); Python is not on PyPI yet.\n\n## Where do calls go?\n\nFrom your server to the provider, with your key. No searchSDK service sits in between.\n\n## How are providers compared?\n\nAn [open benchmark](https://searchsdk.dev/docs/benchmarks-method) ranks quality first, then reliability. The first live results (404 queries across three passes) are on [the benchmarks page](https://searchsdk.dev/benchmarks)."
   },
   {
    "path": "/docs/vs-provider-apis",
@@ -25,7 +25,7 @@
    "path": "/docs/faq",
    "title": "FAQ",
    "description": "Short answers on searchSDK: providers, fallback, cost, benchmarks, status and license.",
-   "body": "## What is searchSDK?\n\nAn open-source SDK by Belweave that gives AI apps and agents one interface to many web search APIs. Your server calls `search` or `contents`; searchSDK calls the provider you name.\n\n## Which providers does it support?\n\nBrave Search, Context.dev, Exa, Firecrawl, Perplexity, Tavily and TinyFish. [Their pages](https://searchsdk.dev/providers) list options, prices and limits.\n\n## How does fallback work?\n\nOff unless you set it. A call whose provider times out, is down, rate limited, out of quota or cannot honour an option then tries the next provider in your list. Every attempt is recorded.\n\n## How is cost reported?\n\nEvery response and attempt carries a cost and its source: reported by the provider, computed from the list price, or unknown. An unknown price is `null`, never 0.\n\n## How does the benchmark work?\n\nThe same queries go to every provider. Known-answer tasks set the rank among dependable providers; latency and cost never change it. Results are pending. [Method](https://searchsdk.dev/docs/benchmarks-method).\n\n## How is it different from calling a provider directly?\n\nOne result shape, one id to change, explicit fallback and per-attempt cost. A direct call gets every provider feature first. [The comparison](https://searchsdk.dev/docs/vs-provider-apis).\n\n## Is it on npm or PyPI?\n\nTypeScript is on npm as [`@searchsdk/sdk`](https://www.npmjs.com/package/@searchsdk/sdk). Python is not on PyPI yet; build it from source with [its README](https://github.com/Belweave/searchSDK/tree/main/sdk/python). No provider is verified against its live API yet.\n\n## What license is it under?\n\nMIT. [Source on GitHub](https://github.com/Belweave/searchSDK)."
+   "body": "## What is searchSDK?\n\nAn open-source SDK by Belweave that gives AI apps and agents one interface to many web search APIs. Your server calls `search` or `contents`; searchSDK calls the provider you name.\n\n## Which providers does it support?\n\nBrave Search, Context.dev, Exa, Firecrawl, Perplexity, Tavily and TinyFish. [Their pages](https://searchsdk.dev/providers) list options, prices and limits.\n\n## How does fallback work?\n\nOff unless you set it. A call whose provider times out, is down, rate limited, out of quota or cannot honour an option then tries the next provider in your list. Every attempt is recorded.\n\n## How is cost reported?\n\nEvery response and attempt carries a cost and its source: reported by the provider, computed from the list price, or unknown. An unknown price is `null`, never 0.\n\n## How does the benchmark work?\n\nEvery provider gets the same queries. Known-answer tasks rank dependable providers; latency and cost never change rank. The 404-query run is on [Benchmarks](https://searchsdk.dev/benchmarks); judged scores wait for 100 human labels. [Method](https://searchsdk.dev/docs/benchmarks-method).\n\n## How is it different from calling a provider directly?\n\nOne result shape, one id to change, explicit fallback and per-attempt cost. A direct call gets every provider feature first. [The comparison](https://searchsdk.dev/docs/vs-provider-apis).\n\n## Is it on npm or PyPI?\n\nTypeScript is on npm as [`@searchsdk/sdk`](https://www.npmjs.com/package/@searchsdk/sdk). Python installs from source ([README](https://github.com/Belweave/searchSDK/tree/main/sdk/python)). Firecrawl is conformance-verified live; four providers are live-tested.\n\n## What license is it under?\n\nMIT. [Source on GitHub](https://github.com/Belweave/searchSDK)."
   },
   {
    "path": "/docs/privacy",
@@ -67,7 +67,7 @@
    "path": "/docs/benchmarks-method",
    "title": "Benchmarks method",
    "description": "How searchSDK benchmarks web search providers end to end, scores answer quality and ranks the leaderboard.",
-   "body": "Every provider runs the same queries through searchSDK, end to end, with settings tuned to suit it. The harness is open: anyone can rerun it with their own keys.\n\nNo results are published yet. Until the first run is, the leaderboard shows the same placeholder for every provider.\n\n## The run\n\n- About 400 queries, once a month.\n- Each query goes to every provider with the same deadline and result limit.\n- Every response, failure and timing is recorded.\n\n## Quality\n\n- **Known-answer tasks** set the rank. Each query has a checked answer. A provider scores when its top results, or the pages behind them, contain it. The harness reads those pages itself, obeying robots.txt, so no provider fetches for its rivals. A page it cannot read counts the same for everyone.\n- **Judged relevance** is a separate column. One model grades results against a published rubric. People check a sample, and the column appears only when they agree with it.\n\n## Ranking\n\n1. Providers with fewer than 95% usable responses are marked unreliable and ranked below every dependable one.\n2. The known-answer score decides the rest.\n3. Two providers are tied unless the gap is statistically clear and at least 6 points.\n\nLatency and cost are reported beside the rank. Cost never changes rank.\n\n## Funding\n\nRuns are paid for by provider credits, donations and a capped monthly budget from the maintainer. Every source is disclosed with the results."
+   "body": "Every provider runs the same queries through searchSDK, end to end, with settings tuned to suit it. The harness is open: anyone can rerun it with their own keys.\n\nFirst live results (404 queries, three passes) are on [Benchmarks](https://searchsdk.dev/benchmarks); judged scores wait for 100 human labels.\n\n## The run\n\n- About 400 queries, once a month.\n- Each query goes to every provider with the same deadline and result limit.\n- Every response, failure and timing is recorded.\n\n## Quality\n\n- **Known-answer tasks** set the rank. Each query has a checked answer. A provider scores when its top results, or the pages behind them, contain it. The harness reads those pages itself, obeying robots.txt, so no provider fetches for its rivals. A page it cannot read counts the same for everyone.\n- **Judged relevance** is a separate column. One model grades results against a published rubric. People check a sample, and the column appears only when they agree with it.\n\n## Ranking\n\n1. Providers with fewer than 95% usable responses are marked unreliable and ranked below every dependable one.\n2. The known-answer score decides the rest.\n3. Two providers are tied unless the gap is statistically clear and at least 6 points.\n\nLatency and cost are reported beside the rank. Cost never changes rank.\n\n## Funding\n\nRuns are paid for by provider credits, donations and a capped monthly budget from the maintainer. Every source is disclosed with the results."
   },
   {
    "path": "/docs/guides/fallback",
@@ -139,7 +139,7 @@
    "path": "/docs/reference/provider-support",
    "title": "Provider support reference",
    "description": "Which searchSDK options, limits and provider options each search provider supports, read from the provider registry.",
-   "body": "What each provider's spec supports, from the registry. \"trimmed\" means the provider has no result count, so searchSDK trims the list; \"no\" means the option fails as `unsupported` there. No endpoint is verified against its live API yet.\n\n## Search options\n\n| Option | Brave Search | Context.dev | Exa | Firecrawl | Perplexity | Tavily | TinyFish |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| `maxResults` | yes | yes | yes | yes | yes | yes | trimmed |\n| `includeDomains` | no | yes | yes | yes | yes | yes | yes |\n| `excludeDomains` | no | yes | yes | yes | yes | yes | yes |\n| `recency` | yes | yes | yes | yes | yes | yes | yes |\n| `startDate` | yes | no | yes | yes | yes | yes | yes |\n| `endDate` | yes | no | yes | yes | yes | yes | yes |\n| `country` | yes | yes | yes | yes | yes | yes | yes |\n| `language` | yes | yes | no | no | yes | yes | yes |\n| `depth` | no | no | yes | no | yes | yes | no |\n\n## Search limits\n\n| Provider | Status | Max results | Max query length | Include domains | Exclude domains | Excerpts |\n| --- | --- | --- | --- | --- | --- | --- |\n| Brave Search | unverified | 20 | 600 | 0 | 0 | description |\n| Context.dev | unverified | 100 | 500 | 100 | 100 | description |\n| Exa | unverified | 100 | none | 1200 | 1200 | highlights |\n| Firecrawl | unverified | 100 | 500 | 100 | 100 (not with include) | description |\n| Perplexity | unverified | 20 | none | 200 | 200 | content-chunk |\n| Tavily | unverified | 20 | none | 300 | 150 | content-chunk |\n| TinyFish | unverified | 10 | none | 100 | 100 | description |\n\n## Contents\n\n| Provider | Status | URLs per call | Format |\n| --- | --- | --- | --- |\n| Context.dev | unverified | 1 | markdown |\n| Exa | unverified | 100 | markdown |\n| Firecrawl | unverified | 1 | markdown |\n| Perplexity | unverified | 10 | markdown |\n| Tavily | unverified | 20 | markdown |\n| TinyFish | unverified | 10 | markdown |\n\nBrave Search has no contents endpoint.\n\n## Provider options\n\nPassed as `providerOptions: { <id>: { ... } }` and validated against the spec before sending. Options listed under cost change the price tier or make a computed cost unknown.\n\n### Brave Search search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `safesearch` | \"off\" or \"moderate\" or \"strict\" | no |\n| `offset` | integer | no |\n| `ui_lang` | string | no |\n| `extra_snippets` | boolean | no |\n| `goggles` | string | no |\n| `units` | \"metric\" or \"imperial\" | no |\n\n### Context.dev search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `markdownOptions` | object | no |\n| `highlightsOptions` | object | yes |\n| `descriptionMaxCharacters` | integer | no |\n| `timeoutOpts` | object | no |\n| `zdr` | \"enabled\" or \"disabled\" | no |\n| `policies` | string[] | no |\n| `tags` | string[] | no |\n\n### Context.dev contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `sharedParams` | object | yes |\n| `markdownParams` | object | no |\n| `maxAgeMs` | integer | no |\n| `timeoutOpts` | object | no |\n| `zdr` | \"enabled\" or \"disabled\" | no |\n| `tags` | string[] | no |\n\n### Exa search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `type` | string | yes |\n| `category` | \"company\" or \"publication\" or \"news\" or \"personal site\" or \"financial report\" or \"people\" | no |\n| `moderation` | boolean | no |\n| `contents` | object | yes |\n| `includeText` | string[] | no |\n| `excludeText` | string[] | no |\n| `startCrawlDate` | string | no |\n| `endCrawlDate` | string | no |\n| `userIdentifier` | string | no |\n\n### Exa contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `highlights` | boolean or object | yes |\n| `summary` | boolean or object | yes |\n| `maxAgeHours` | integer | no |\n| `livecrawlTimeout` | integer | no |\n| `subpages` | integer | yes |\n| `userIdentifier` | string | no |\n\n### Firecrawl search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `categories` | \"developer\" or \"gov\" or \"research\" or \"pdf\"[] | yes |\n| `location` | string | no |\n| `safe` | boolean | no |\n| `ignoreInvalidURLs` | boolean | no |\n| `highlights` | boolean | no |\n| `scrapeOptions` | object | yes |\n| `timeout` | integer | no |\n\n### Firecrawl contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `waitFor` | integer | no |\n| `mobile` | boolean | no |\n| `maxAge` | integer | no |\n| `timeout` | integer | no |\n| `onlyMainContent` | boolean | no |\n\n### Perplexity search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `snapshot_as_of` | string | no |\n| `last_updated_after_filter` | string | no |\n| `last_updated_before_filter` | string | no |\n| `display_server_time` | boolean | no |\n\n### Perplexity contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `max_age_seconds` | integer | no |\n| `cache_only` | boolean | no |\n| `timeout_ms` | integer | no |\n| `snapshot_as_of` | string | no |\n\n### Tavily search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `topic` | \"general\" or \"news\" or \"finance\" | no |\n| `chunks_per_source` | integer | no |\n| `max_age_hours` | integer | no |\n| `include_answer` | boolean or \"basic\" or \"advanced\" | no |\n| `include_raw_content` | boolean or \"markdown\" or \"text\" | no |\n| `include_images` | boolean | no |\n| `include_image_descriptions` | boolean | no |\n| `include_favicon` | boolean | no |\n| `include_domains_mode` | \"restrict\" or \"prefer\" | no |\n| `filter_by_language` | boolean | no |\n| `filter_by_published_date` | boolean | no |\n| `exact_match` | boolean | no |\n| `safe_search` | boolean | no |\n| `auto_parameters` | boolean | yes |\n\n### Tavily contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `query` | string | no |\n| `chunks_per_source` | integer | no |\n| `extract_depth` | \"basic\" or \"advanced\" | yes |\n| `include_images` | boolean | no |\n| `include_favicon` | boolean | no |\n| `timeout` | number | no |\n\n### TinyFish search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `purpose` | string | no |\n| `domain_type` | \"web\" or \"news\" or \"research_paper\" | no |\n| `page` | integer | no |\n| `pub_year_min` | integer | no |\n| `pub_year_max` | integer | no |\n\n### TinyFish contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `purpose` | string | no |\n| `links` | boolean | no |\n| `image_links` | boolean | no |\n| `iframe_links` | boolean | no |\n| `ttl` | integer | no |\n| `per_url_timeout_ms` | integer | no |\n| `include_selectors` | string[] | no |\n| `exclude_selectors` | string[] | no |\n\nPrices, rate limits and sources are on [each provider's page](https://searchsdk.dev/providers)."
+   "body": "What each provider's spec supports, from the registry. \"trimmed\" means the provider has no result count, so searchSDK trims the list; \"no\" means the option fails as `unsupported` there. Live conformance-verified endpoints: Firecrawl `search`, Firecrawl `contents`. All other endpoints are marked `unverified` until their vectors pass live.\n\n## Search options\n\n| Option | Brave Search | Context.dev | Exa | Firecrawl | Perplexity | Tavily | TinyFish |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| `maxResults` | yes | yes | yes | yes | yes | yes | trimmed |\n| `includeDomains` | no | yes | yes | yes | yes | yes | yes |\n| `excludeDomains` | no | yes | yes | yes | yes | yes | yes |\n| `recency` | yes | yes | yes | yes | yes | yes | yes |\n| `startDate` | yes | no | yes | yes | yes | yes | yes |\n| `endDate` | yes | no | yes | yes | yes | yes | yes |\n| `country` | yes | yes | yes | yes | yes | yes | yes |\n| `language` | yes | yes | no | no | yes | yes | yes |\n| `depth` | no | no | yes | no | yes | yes | no |\n\n## Search limits\n\n| Provider | Status | Max results | Max query length | Include domains | Exclude domains | Excerpts |\n| --- | --- | --- | --- | --- | --- | --- |\n| Brave Search | unverified | 20 | 600 | 0 | 0 | description |\n| Context.dev | unverified | 100 | 500 | 100 | 100 | description |\n| Exa | unverified | 100 | none | 1200 | 1200 | highlights |\n| Firecrawl | verified 2026-11-25 | 100 | 500 | 100 | 100 (not with include) | description |\n| Perplexity | unverified | 20 | none | 200 | 200 | content-chunk |\n| Tavily | unverified | 20 | none | 300 | 150 | content-chunk |\n| TinyFish | unverified | 10 | none | 100 | 100 | description |\n\n## Contents\n\n| Provider | Status | URLs per call | Format |\n| --- | --- | --- | --- |\n| Context.dev | unverified | 1 | markdown |\n| Exa | unverified | 100 | markdown |\n| Firecrawl | verified 2026-11-25 | 1 | markdown |\n| Perplexity | unverified | 10 | markdown |\n| Tavily | unverified | 20 | markdown |\n| TinyFish | unverified | 10 | markdown |\n\nBrave Search has no contents endpoint.\n\n## Provider options\n\nPassed as `providerOptions: { <id>: { ... } }` and validated against the spec before sending. Options listed under cost change the price tier or make a computed cost unknown.\n\n### Brave Search search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `safesearch` | \"off\" or \"moderate\" or \"strict\" | no |\n| `offset` | integer | no |\n| `ui_lang` | string | no |\n| `extra_snippets` | boolean | no |\n| `goggles` | string | no |\n| `units` | \"metric\" or \"imperial\" | no |\n\n### Context.dev search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `markdownOptions` | object | no |\n| `highlightsOptions` | object | yes |\n| `descriptionMaxCharacters` | integer | no |\n| `timeoutOpts` | object | no |\n| `zdr` | \"enabled\" or \"disabled\" | no |\n| `policies` | string[] | no |\n| `tags` | string[] | no |\n\n### Context.dev contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `sharedParams` | object | yes |\n| `markdownParams` | object | no |\n| `maxAgeMs` | integer | no |\n| `timeoutOpts` | object | no |\n| `zdr` | \"enabled\" or \"disabled\" | no |\n| `tags` | string[] | no |\n\n### Exa search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `type` | string | yes |\n| `category` | \"company\" or \"publication\" or \"news\" or \"personal site\" or \"financial report\" or \"people\" | no |\n| `moderation` | boolean | no |\n| `contents` | object | yes |\n| `includeText` | string[] | no |\n| `excludeText` | string[] | no |\n| `startCrawlDate` | string | no |\n| `endCrawlDate` | string | no |\n| `userIdentifier` | string | no |\n\n### Exa contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `highlights` | boolean or object | yes |\n| `summary` | boolean or object | yes |\n| `maxAgeHours` | integer | no |\n| `livecrawlTimeout` | integer | no |\n| `subpages` | integer | yes |\n| `userIdentifier` | string | no |\n\n### Firecrawl search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `categories` | \"developer\" or \"gov\" or \"research\" or \"pdf\"[] | yes |\n| `location` | string | no |\n| `safe` | boolean | no |\n| `ignoreInvalidURLs` | boolean | no |\n| `highlights` | boolean | no |\n| `scrapeOptions` | object | yes |\n| `timeout` | integer | no |\n\n### Firecrawl contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `waitFor` | integer | no |\n| `mobile` | boolean | no |\n| `maxAge` | integer | no |\n| `timeout` | integer | no |\n| `onlyMainContent` | boolean | no |\n\n### Perplexity search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `snapshot_as_of` | string | no |\n| `last_updated_after_filter` | string | no |\n| `last_updated_before_filter` | string | no |\n| `display_server_time` | boolean | no |\n\n### Perplexity contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `max_age_seconds` | integer | no |\n| `cache_only` | boolean | no |\n| `timeout_ms` | integer | no |\n| `snapshot_as_of` | string | no |\n\n### Tavily search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `topic` | \"general\" or \"news\" or \"finance\" | no |\n| `chunks_per_source` | integer | no |\n| `max_age_hours` | integer | no |\n| `include_answer` | boolean or \"basic\" or \"advanced\" | no |\n| `include_raw_content` | boolean or \"markdown\" or \"text\" | no |\n| `include_images` | boolean | no |\n| `include_image_descriptions` | boolean | no |\n| `include_favicon` | boolean | no |\n| `include_domains_mode` | \"restrict\" or \"prefer\" | no |\n| `filter_by_language` | boolean | no |\n| `filter_by_published_date` | boolean | no |\n| `exact_match` | boolean | no |\n| `safe_search` | boolean | no |\n| `auto_parameters` | boolean | yes |\n\n### Tavily contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `query` | string | no |\n| `chunks_per_source` | integer | no |\n| `extract_depth` | \"basic\" or \"advanced\" | yes |\n| `include_images` | boolean | no |\n| `include_favicon` | boolean | no |\n| `timeout` | number | no |\n\n### TinyFish search\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `purpose` | string | no |\n| `domain_type` | \"web\" or \"news\" or \"research_paper\" | no |\n| `page` | integer | no |\n| `pub_year_min` | integer | no |\n| `pub_year_max` | integer | no |\n\n### TinyFish contents\n\n| Option | Type | Affects cost |\n| --- | --- | --- |\n| `purpose` | string | no |\n| `links` | boolean | no |\n| `image_links` | boolean | no |\n| `iframe_links` | boolean | no |\n| `ttl` | integer | no |\n| `per_url_timeout_ms` | integer | no |\n| `include_selectors` | string[] | no |\n| `exclude_selectors` | string[] | no |\n\nPrices, rate limits and sources are on [each provider's page](https://searchsdk.dev/providers)."
   },
   {
    "path": "/docs/changelog",
@@ -1460,7 +1460,7 @@
    "formatVersion": 1,
    "id": "firecrawl",
    "name": "Firecrawl",
-   "specVersion": "2026-11-24",
+   "specVersion": "2026-11-25",
    "sources": [
     {
      "url": "https://docs.firecrawl.dev/api-reference/endpoint/search.md",
@@ -1486,6 +1486,21 @@
      "url": "https://www.firecrawl.dev/pricing",
      "retrievedOn": "2026-11-24",
      "covers": "plan prices, credits and concurrency"
+    },
+    {
+     "url": "https://docs.firecrawl.dev/rate-limits.md",
+     "retrievedOn": "2026-11-25",
+     "covers": "requests per minute and concurrent browsers per plan, the same for /scrape and /search; no rate-limit response headers are documented"
+    },
+    {
+     "url": "https://docs.firecrawl.dev/api-reference/endpoint/queue-status.md",
+     "retrievedOn": "2026-11-25",
+     "covers": "GET /v2/team/queue-status: maxConcurrency for the team's plan"
+    },
+    {
+     "url": "https://docs.firecrawl.dev/api-reference/endpoint/credit-usage.md",
+     "retrievedOn": "2026-11-25",
+     "covers": "GET /v2/team/credit-usage: planCredits exclude coupon and pay-as-you-go credits"
     }
    ],
    "auth": {
@@ -1518,7 +1533,13 @@
    "errors": [],
    "search": {
     "verification": {
-     "status": "unverified"
+     "status": "verified",
+     "on": "2026-11-25",
+     "runtimes": [
+      "typescript",
+      "python"
+     ],
+     "note": "Every replayable vector passed live in both runtimes (registry/conformance/live/firecrawl-2026-11-25.json); the 402 and 500 vectors cannot be produced on demand and stay offline. Seen live: a search with no rows returns data.web as [] and reports creditsUsed 0; with scrapeOptions creditsUsed is still reported (3 for one result); zero-padded cd_min and cd_max dates are accepted. No rate-limit headers are sent."
     },
     "request": {
      "method": "POST",
@@ -1657,7 +1678,7 @@
       "scrapeOptions": "unknown",
       "categories": "unknown"
      },
-     "note": "2 credits per 10 results, rounded up. Hobby is $19 for 5,000 credits; Standard is about $0.001 per credit. Scraping results adds scrape credits; the gov category adds none."
+     "note": "2 credits per 10 results, rounded up; a search with no results reported 0 credits live (2026-11-25). Hobby is $19 for 5,000 credits; Standard is about $0.001 per credit. Scraping results adds scrape credits; the gov category adds none."
     },
     "rateLimits": [
      {
@@ -1676,9 +1697,23 @@
      },
      {
       "plan": "Hobby",
+      "limit": 100,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "team"
+     },
+     {
+      "plan": "Hobby",
       "limit": 5,
       "unit": "requests",
       "per": "concurrent",
+      "scope": "team"
+     },
+     {
+      "plan": "Standard",
+      "limit": 500,
+      "unit": "requests",
+      "per": "minute",
       "scope": "team"
      },
      {
@@ -1690,9 +1725,23 @@
      },
      {
       "plan": "Growth",
+      "limit": 5000,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "team"
+     },
+     {
+      "plan": "Growth",
       "limit": 50,
       "unit": "requests",
       "per": "concurrent",
+      "scope": "team"
+     },
+     {
+      "plan": "Scale",
+      "limit": 10000,
+      "unit": "requests",
+      "per": "minute",
       "scope": "team"
      },
      {
@@ -1739,7 +1788,13 @@
    },
    "contents": {
     "verification": {
-     "status": "unverified"
+     "status": "verified",
+     "on": "2026-11-25",
+     "runtimes": [
+      "typescript",
+      "python"
+     ],
+     "note": "Every replayable vector passed live in both runtimes (registry/conformance/live/firecrawl-2026-11-25.json); the 402 and 500 vectors stay offline. Seen live: data.metadata.creditsUsed and data.metadata.scrapeId on every scrape, a target 404 as statusCode 404 charged 1 credit."
     },
     "request": {
      "method": "POST",
@@ -1824,6 +1879,11 @@
        }
       }
      ],
+     "requestId": [
+      {
+       "path": "data.metadata.scrapeId"
+      }
+     ],
      "warnings": [
       {
        "where": [
@@ -1836,6 +1896,12 @@
        "messageField": "data.warning"
       }
      ]
+    },
+    "cost": {
+     "reported": {
+      "path": "data.metadata.creditsUsed",
+      "unit": "credit"
+     }
     },
     "pricing": {
      "plan": "Hobby (monthly billing)",
@@ -1851,7 +1917,7 @@
       "extraBlockUsd": 0.005,
       "note": "Hobby extra credits cost $5 per 1,000 ($0.005 each), above the plan's $0.0038."
      },
-     "note": "1 credit per returned document, including target 403 and 404 pages; a scrape that returns no document is free."
+     "note": "1 credit per returned document, including target 403 and 404 pages; a scrape that returns no document is free. PDF parsing, on by default, adds 1 credit per PDF page; the bound covers one credit per URL."
     },
     "rateLimits": [
      {
@@ -1862,8 +1928,64 @@
       "scope": "team"
      },
      {
+      "plan": "Free",
+      "limit": 2,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "team"
+     },
+     {
+      "plan": "Hobby",
+      "limit": 100,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "team"
+     },
+     {
       "plan": "Hobby",
       "limit": 5,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "team"
+     },
+     {
+      "plan": "Standard",
+      "limit": 500,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "team"
+     },
+     {
+      "plan": "Standard",
+      "limit": 25,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "team"
+     },
+     {
+      "plan": "Growth",
+      "limit": 5000,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "team"
+     },
+     {
+      "plan": "Growth",
+      "limit": 50,
+      "unit": "requests",
+      "per": "concurrent",
+      "scope": "team"
+     },
+     {
+      "plan": "Scale",
+      "limit": 10000,
+      "unit": "requests",
+      "per": "minute",
+      "scope": "team"
+     },
+     {
+      "plan": "Scale",
+      "limit": 100,
       "unit": "requests",
       "per": "concurrent",
       "scope": "team"
@@ -1895,7 +2017,7 @@
    "unverified": [
     {
      "pointer": "/search/request/compose/0",
-     "reason": "Docs show unpadded dates (12/1/2024) in cd_min and cd_max; zero-padded dates are sent. Whether the range is inclusive is not stated."
+     "reason": "Docs show unpadded dates (12/1/2024) in cd_min and cd_max; zero-padded dates are sent. Live 2026-11-25: accepted (HTTP 200), but the replay returned no rows, so whether the range is applied and inclusive is still untested."
     },
     {
      "pointer": "/search/request/params/country",
@@ -1910,12 +2032,8 @@
      "reason": "No domain-list limit is documented; 100 is SDK policy."
     },
     {
-     "pointer": "/search/response/resultsOptional",
-     "reason": "The arrays in data depend on the sources requested; whether web is present when it is empty is not stated."
-    },
-    {
-     "pointer": "/search/pricing/extraBlock",
-     "reason": "Docs give 2 credits for 1 to 10 results; whether a search with no results is charged is not stated."
+     "pointer": "/search/rateLimits",
+     "reason": "Kept 2026-11-25. The account's credit-usage shows planCredits 1000 (the Free plan's monthly credits; coupon credits are excluded) and queue-status shows maxConcurrency 250, a team-specific concurrency above every plan's. Responses carry no rate-limit headers and the per-minute limit is not exposed, so it was not probed. Consumers obey the strictest documented limit (Free: 10 a minute, 2 concurrent)."
     },
     {
      "pointer": "/search/pricing/creditUsd",
@@ -1923,7 +2041,15 @@
     },
     {
      "pointer": "/contents/response/pages/1",
-     "reason": "A target 403 or 404 comes back as a document with metadata.statusCode and is charged; it is reported failed and billable. A document without statusCode is treated the same way."
+     "reason": "A target 403 or 404 comes back as a document with metadata.statusCode and is charged; it is reported failed and billable (a 404 charged 1 credit live on 2026-11-25). A document without statusCode is treated the same way."
+    },
+    {
+     "pointer": "/contents/cost/reported",
+     "reason": "Resolved 2026-11-25: the scrape reference documents no credit count or request id, but every live scrape carried data.metadata.creditsUsed and data.metadata.scrapeId (smoke check and live conformance). Both are read; they stay listed here because they are undocumented."
+    },
+    {
+     "pointer": "/contents/pricing/extraBlock",
+     "reason": "Billing docs (read 2026-11-25): PDF parsing, on by default, adds 1 credit per PDF page. The bound counts one credit per URL, so a PDF's reported credits can exceed it; callers that reserve spend must scale for documents."
     },
     {
      "pointer": "/contents/pricing/creditUsd",
@@ -3772,6 +3898,6 @@
   "references/agent-tools.md": "# searchSDK as an agent tool\n\nFull guide: https://searchsdk.dev/docs/guides/agent-tools. Each example typechecks against `@searchsdk/sdk`.\n\n## Vercel AI SDK\n\n```ts\nimport { tool } from \"ai\";\nimport { z } from \"zod\";\nimport { createClient, SearchError } from \"@searchsdk/sdk\";\n\nconst client = createClient({ provider: \"exa\", fallback: [\"tavily\"], maxRetries: 1 });\n\nexport const webSearch = tool({\n  description: \"Search the web. Returns titles, URLs, dates and excerpts.\",\n  inputSchema: z.object({ query: z.string() }),\n  execute: async ({ query }) => {\n    try {\n      const res = await client.search(query, { maxResults: 5 });\n      return { results: res.results.map((r) => ({ title: r.title, url: r.url, publishedAt: r.publishedAt, excerpt: r.excerpts[0] ?? null })) };\n    } catch (e) {\n      if (e instanceof SearchError) return { error: e.code };\n      throw e;\n    }\n  },\n});\n```\n\n## OpenAI Responses function calling\n\n```ts\nimport OpenAI from \"openai\";\nimport { search } from \"@searchsdk/sdk\";\n\nexport const tools: OpenAI.Responses.Tool[] = [\n  {\n    type: \"function\",\n    name: \"web_search\",\n    description: \"Search the web. Returns titles, URLs and excerpts.\",\n    parameters: { type: \"object\", properties: { query: { type: \"string\" } }, required: [\"query\"], additionalProperties: false },\n    strict: true,\n  },\n];\n\nexport async function runTool(call: OpenAI.Responses.ResponseFunctionToolCall): Promise<OpenAI.Responses.ResponseInputItem> {\n  const { query } = JSON.parse(call.arguments) as { query: string };\n  const res = await search(query, { provider: \"exa\", maxResults: 5 });\n  return { type: \"function_call_output\", call_id: call.call_id, output: JSON.stringify(res.results) };\n}\n```\n\n## Anthropic tool use\n\n```ts\nimport Anthropic from \"@anthropic-ai/sdk\";\nimport { search } from \"@searchsdk/sdk\";\n\nexport const tools: Anthropic.Tool[] = [\n  {\n    name: \"web_search\",\n    description: \"Search the web. Returns titles, URLs and excerpts.\",\n    input_schema: { type: \"object\", properties: { query: { type: \"string\" } }, required: [\"query\"] },\n  },\n];\n\nexport async function runTool(block: Anthropic.ToolUseBlock): Promise<Anthropic.ToolResultBlockParam> {\n  const { query } = block.input as { query: string };\n  const res = await search(query, { provider: \"exa\", maxResults: 5 });\n  return { type: \"tool_result\", tool_use_id: block.id, content: JSON.stringify(res.results) };\n}\n```\n\nLoop: call `messages.create` with `tools`, append the assistant `content`, run every `tool_use` block, send all `tool_result` blocks in one user message, repeat until `stop_reason` is not `tool_use`.\n\n## MCP\n\n`claude mcp add --transport http searchsdk https://searchsdk.dev/mcp` gives an agent the docs and registry tools. The local `@searchsdk/mcp` package (stdio, built from `sdk/mcp`) adds `search` and `contents` with your keys.\n",
   "references/api.md": "# searchSDK API reference (condensed)\n\nGenerated pages with every field: https://searchsdk.dev/docs/reference/options and https://searchsdk.dev/docs/reference/responses.\n\n## Exports\n\n`search`, `contents`, `createClient`, `costBound`, `listPrice`, `registry`, `policy`, `urlKey`, `SearchError`, and the types (`ProviderId`, `SearchOptions`, `SearchResponse`, `ContentsResponse`, `Attempt`, `Cost`, ...).\n\n## search options\n\n| Option | Notes |\n| --- | --- |\n| `provider` | Required unless the client sets one |\n| `fallback` | Providers tried next, in order; `[]` turns the client's list off for one call |\n| `maxResults` | 1 to 100, default 10; above a provider's limit is `unsupported` there |\n| `includeDomains`, `excludeDomains` | Hostnames; must not overlap |\n| `recency` | `day`, `week`, `month`, `year`; not with dates |\n| `startDate`, `endDate` | Inclusive `YYYY-MM-DD`, by publication date |\n| `country`, `language` | ISO 3166-1 alpha-2, ISO 639-1 |\n| `depth` | `fast`, `standard`, `deep`; may change the price tier |\n| `providerOptions` | `{ <id>: { ... } }`, validated per provider |\n| `timeoutMs` | Whole call, default 30000, max 300000 |\n| `attemptTimeoutMs` | Each attempt, default `timeoutMs` |\n| `maxRetries` | 0 to 5, default 0 |\n| `maxResponseBytes` | Default 10 MiB for search, 50 MiB for contents |\n| `signal` | `AbortSignal` |\n\n`contents(urls, options)` takes the call options (`provider`, `fallback`, `providerOptions`, timeouts, `maxRetries`, `maxResponseBytes`, `signal`) and 1 to 100 http(s) URLs; each provider allows fewer per call.\n\n## Client settings\n\n`createClient({ provider, fallback, keys, env, timeoutMs, attemptTimeoutMs, maxRetries, maxResponseBytes, fetch, diagnostics, registry })`. Settings are checked when the client is created.\n\n## Responses\n\nCommon: `provider`, `cost`, `requestId`, `latencyMs`, `warnings`, `attempts`, `raw`. Search adds `results`; contents adds `pages`.\n\n- Result: `url`, `title | null`, `excerpts: string[]`, `publishedAt | null`, `author | null`, `rank` (from 1), `providerFields`.\n- Page: `url`, `status`, `finalUrl`, `title`, `content`, `publishedAt`, `author`, `error: { code, message } | null` (`missing` when the provider returned nothing for the URL).\n- Cost: `usd | null`, `estimated`, `source` (`reported`, `reported-credits`, `computed`, `unknown`, `none`), `credits?`.\n- Attempt: `provider`, `outcome` (`ok`, `error`, `skipped`), `code?`, `status?`, `startMs`, `durationMs`, `retryAfterMs?`, `billed`, `cost`.\n\n## Budget sketch\n\n```ts\nimport { costBound, registry, type ProviderId } from \"@searchsdk/sdk\";\n\nconst chain: ProviderId[] = [\"exa\", \"tavily\"];\nlet reserve = 0;\nfor (const id of chain) {\n  const bound = costBound(registry[id], \"search\", { maxResults: 10 });\n  if (bound.usd === null) throw new Error(`${id}: ${bound.unknownBecause}`);\n  reserve += bound.usd;\n}\nconsole.log(reserve);\n```\n",
   "references/errors.md": "# searchSDK errors and warnings\n\nEvery failure throws `SearchError` (`code`, `provider`, `status`, `providerCode`, `retryAfterMs`, `field`, `path`, `attempts`, `raw`). Full generated table: https://searchsdk.dev/docs/reference/errors.\n\n| Code | Sent? | Retried | Falls back | Do |\n| --- | --- | --- | --- | --- |\n| `invalid_request` | no | no | no | Fix the option named by `field` |\n| `configuration` | no | no | no | Set the key variable or a valid provider |\n| `unsupported` | no | no | yes | Drop the option or use another provider |\n| `auth` (401) | yes | no | no | Check the key |\n| `forbidden` (403) | yes | no | no | Plan or permission |\n| `quota` (402 or provider signal) | yes | no | yes | Top up or fall back |\n| `rate_limit` (429) | yes | yes | yes | `maxRetries` honours `Retry-After` |\n| `unavailable` (5xx, 408) | yes | yes | yes | Retry or fall back |\n| `provider_error` (other 4xx) | yes | no | no | Inspect `providerCode` |\n| `network` | yes | yes | yes | May have been billed |\n| `attempt_timeout` | yes | yes | yes | Raise `attemptTimeoutMs` |\n| `timeout` | yes | no | no | Raise `timeoutMs` |\n| `aborted` | if under way | no | no | Your signal fired |\n| `invalid_response` | yes | no | no | Not a JSON object; billed for a 2xx |\n| `spec_mismatch` | yes | no | no | Registry and provider disagree at `path`; report it |\n| `response_too_large` | yes | no | no | Raise `maxResponseBytes` |\n\nWarnings (on success): `fallback_used`, `fallback_key_missing`, `invalid_rows_dropped`, `unmatched_pages`, and from providers `partial_results`, `provider_warning`, `provider_notice`.\n\n```ts\nimport { createClient, SearchError } from \"@searchsdk/sdk\";\n\nconst client = createClient({ provider: \"tavily\", fallback: [\"exa\"] });\ntry {\n  const res = await client.search(\"eu ai act\");\n  if (res.warnings.some((w) => w.code === \"fallback_used\")) console.log(\"served by\", res.provider);\n} catch (e) {\n  if (!(e instanceof SearchError)) throw e;\n  const billed = e.attempts.filter((a) => a.billed !== \"no\").length;\n  console.log(e.code, e.field ?? \"\", `billed attempts: ${billed}`);\n}\n```\n",
-  "SKILL.md": "---\nname: searchsdk\ndescription: Add web search and page-text fetching to TypeScript apps and AI agents with searchSDK (npm @searchsdk/sdk), one interface to Exa, Tavily, Brave Search, Perplexity, Firecrawl, Context.dev and TinyFish. Use when writing or reviewing code that calls search(), contents() or createClient() from @searchsdk/sdk, choosing a search provider or fallback chain, handling SearchError codes, reading cost, attempts or warnings, wrapping web search as an agent tool (Vercel AI SDK, OpenAI, Anthropic, MCP), or connecting the searchSDK MCP server.\nlicense: MIT\n---\n\n# searchSDK\n\nsearchSDK (always written exactly so) is an MIT-licensed TypeScript SDK by Belweave. Two calls, `search` and `contents`, one result shape for every provider. Zero runtime dependencies; needs standard `fetch`; tested on Node 24. Docs: https://searchsdk.dev/docs (every page has a `.md` copy, and https://searchsdk.dev/llms-full.txt has them all).\n\nNo provider is verified against its live API yet: specs are mapped from public docs and tested on synthetic fixtures. Benchmark results are pending. Do not claim one provider is faster, cheaper in practice or better.\n\n## Install\n\n```sh\nnpm install @searchsdk/sdk\n```\n\nThe Python runtime (`sdk/python` in the repository) is not on PyPI.\n\n## Keys\n\nEach provider reads its documented variable: `EXA_API_KEY`, `TAVILY_API_KEY`, `BRAVE_API_KEY`, `PERPLEXITY_API_KEY`, `FIRECRAWL_API_KEY`, `CONTEXT_DEV_API_KEY`, `TINYFISH_API_KEY`. Or pass `createClient({ keys: { exa: \"...\" } })`, or `env` for Worker bindings.\n\n- Server only. Never put a key in browser, mobile or edge-client code; app code calls your own backend.\n- A missing primary key throws `configuration` (`field: \"keys\"`) before anything is sent; a fallback without a key is skipped with a `fallback_key_missing` warning.\n\n## search vs contents\n\n- `search(query, options)`: ranked results (`url`, `title`, `excerpts`, `publishedAt`, `author`, `rank`, `providerFields`).\n- `contents(urls, options)`: page text, one `page` per requested URL in order, `status: \"ok\" | \"failed\"`. A failed page does not fail the call.\n- Brave Search has no contents endpoint. URLs per contents call differ by provider (Context.dev and Firecrawl take 1).\n\n```ts\nimport { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({ provider: \"exa\", fallback: [\"tavily\"], maxRetries: 1 });\nconst res = await client.search(\"sqlite wal mode\", { maxResults: 5, recency: \"year\" });\nconst pages = await client.contents(res.results.slice(0, 3).map((r) => r.url));\nfor (const p of pages.pages) console.log(p.status, p.url, p.content?.length ?? p.error?.code);\n```\n\n## Choosing a provider and fallback\n\n- `provider` is required on a call unless the client sets one. Ids: `brave`, `context`, `exa`, `firecrawl`, `perplexity`, `tavily`, `tinyfish`.\n- Check support before writing options: an option a provider cannot honour fails as `unsupported` before sending (for example `startDate` on Brave, `maxResults` above a provider's limit). The MCP tool `validate_options` or https://searchsdk.dev/docs/reference/provider-support shows the matrix.\n- Retries and fallback are off by default. Set `maxRetries` (0 to 5) and `fallback: [...]`.\n- Retried: `network`, `rate_limit`, `unavailable`, `attempt_timeout`. Falls back on those plus `quota` and `unsupported`. `auth`, `forbidden`, `provider_error`, `invalid_response`, `spec_mismatch`, `response_too_large`, `timeout` and `aborted` stop the call.\n- Provider-only options go under `providerOptions: { <id>: {...} }`; each provider in a chain gets only its own.\n\n## Cost, attempts and warnings\n\nRead these on every response; they are the point of the SDK.\n\n- `res.cost`: `{ usd, estimated, source }`. `usd` is `null` when the price is unknown. Never treat `null` as 0.\n- `res.attempts`: every attempt, including skipped ones, each with `billed` (`yes`, `possible`, `no`) and its own `cost`. Sum attempts with `billed !== \"no\"` for spend; a `SearchError` carries `attempts` too.\n- `res.warnings`: `fallback_used` (another provider answered: check `res.provider`), `invalid_rows_dropped`, `unmatched_pages`, `partial_results`, `provider_warning`, `provider_notice`.\n- Before a call, `costBound(registry.exa, \"search\", { maxResults: 10 })` gives the most it can cost; `null` with `unknownBecause` when it cannot be bounded.\n\n## Errors\n\nEvery failure is a `SearchError` with a fixed `code`; switch on `code`, never on `message`. `field` names the bad option, `status` the HTTP status, `retryAfterMs` the provider's `Retry-After`. An empty `results` array is a success, not an error. Full table: [references/errors.md](references/errors.md).\n\n```ts\nimport { search, SearchError } from \"@searchsdk/sdk\";\n\ntry {\n  await search(\"postgres vacuum\", { provider: \"brave\", startDate: \"2026-01-01\" });\n} catch (e) {\n  if (e instanceof SearchError && e.code === \"unsupported\") console.log(\"Brave cannot filter by\", e.field);\n}\n```\n\n## As an agent tool\n\nReturn compact results (title, url, date, first excerpt) and return `{ error: e.code }` instead of throwing so the model can recover. Cap `maxResults`. Framework wrappers (Vercel AI SDK `tool()`, OpenAI Responses function calling, Anthropic tool use): [references/agent-tools.md](references/agent-tools.md).\n\n## MCP server\n\n- Public, free, keyless, docs and registry only: `claude mcp add --transport http searchsdk https://searchsdk.dev/mcp`. Tools: `search_docs`, `get_doc`, `list_providers`, `get_provider`, `estimate_cost`, `validate_options`, `get_example`. Use them to confirm an option or price before writing code.\n- Local `@searchsdk/mcp` (stdio) adds real `search` and `contents` with the user's keys. Run it with `npx -y @searchsdk/mcp`.\n\n## Pitfalls\n\n- The npm name is `@searchsdk/sdk`, not `searchsdk` or `search-sdk`.\n- Unknown option names throw `invalid_request`; do not pass provider-native names (`numResults`, `max_results`) at the top level.\n- `recency` cannot be combined with `startDate` or `endDate`; dates are inclusive `YYYY-MM-DD`.\n- `providerFields` (scores and ids) are not comparable across providers.\n- `raw` is the provider's whole body; do not send it to a model unfiltered.\n- The exported `registry` is frozen. Pass edited copies to `createClient({ registry })`.\n\nMore: [references/api.md](references/api.md) for every option and response field.\n"
+  "SKILL.md": "---\nname: searchsdk\ndescription: Add web search and page-text fetching to TypeScript apps and AI agents with searchSDK (npm @searchsdk/sdk), one interface to Exa, Tavily, Brave Search, Perplexity, Firecrawl, Context.dev and TinyFish. Use when writing or reviewing code that calls search(), contents() or createClient() from @searchsdk/sdk, choosing a search provider or fallback chain, handling SearchError codes, reading cost, attempts or warnings, wrapping web search as an agent tool (Vercel AI SDK, OpenAI, Anthropic, MCP), or connecting the searchSDK MCP server.\nlicense: MIT\n---\n\n# searchSDK\n\nsearchSDK (always written exactly so) is an MIT-licensed TypeScript SDK by Belweave. Two calls, `search` and `contents`, one result shape for every provider. Zero runtime dependencies; needs standard `fetch`; tested on Node 24. Docs: https://searchsdk.dev/docs (every page has a `.md` copy, and https://searchsdk.dev/llms-full.txt has them all).\n\nFirecrawl (`search` and `contents`) is conformance-verified against its live API in TypeScript and Python; Exa, Context.dev, TinyFish and Firecrawl have been tested live across smoke, tuning and 4,848 benchmark search calls. Brave Search, Perplexity and Tavily remain fixture-tested. Published 404-query known-answer benchmark results are at https://searchsdk.dev/benchmarks (judged relevance withheld pending 100 human labels); do not make unmeasured claims about unrun providers.\n\n## Install\n\n```sh\nnpm install @searchsdk/sdk\n```\n\nThe Python runtime (`sdk/python` in the repository) is not on PyPI.\n\n## Keys\n\nEach provider reads its documented variable: `EXA_API_KEY`, `TAVILY_API_KEY`, `BRAVE_API_KEY`, `PERPLEXITY_API_KEY`, `FIRECRAWL_API_KEY`, `CONTEXT_DEV_API_KEY`, `TINYFISH_API_KEY`. Or pass `createClient({ keys: { exa: \"...\" } })`, or `env` for Worker bindings.\n\n- Server only. Never put a key in browser, mobile or edge-client code; app code calls your own backend.\n- A missing primary key throws `configuration` (`field: \"keys\"`) before anything is sent; a fallback without a key is skipped with a `fallback_key_missing` warning.\n\n## search vs contents\n\n- `search(query, options)`: ranked results (`url`, `title`, `excerpts`, `publishedAt`, `author`, `rank`, `providerFields`).\n- `contents(urls, options)`: page text, one `page` per requested URL in order, `status: \"ok\" | \"failed\"`. A failed page does not fail the call.\n- Brave Search has no contents endpoint. URLs per contents call differ by provider (Context.dev and Firecrawl take 1).\n\n```ts\nimport { createClient } from \"@searchsdk/sdk\";\n\nconst client = createClient({ provider: \"exa\", fallback: [\"tavily\"], maxRetries: 1 });\nconst res = await client.search(\"sqlite wal mode\", { maxResults: 5, recency: \"year\" });\nconst pages = await client.contents(res.results.slice(0, 3).map((r) => r.url));\nfor (const p of pages.pages) console.log(p.status, p.url, p.content?.length ?? p.error?.code);\n```\n\n## Choosing a provider and fallback\n\n- `provider` is required on a call unless the client sets one. Ids: `brave`, `context`, `exa`, `firecrawl`, `perplexity`, `tavily`, `tinyfish`.\n- Check support before writing options: an option a provider cannot honour fails as `unsupported` before sending (for example `startDate` on Brave, `maxResults` above a provider's limit). The MCP tool `validate_options` or https://searchsdk.dev/docs/reference/provider-support shows the matrix.\n- Retries and fallback are off by default. Set `maxRetries` (0 to 5) and `fallback: [...]`.\n- Retried: `network`, `rate_limit`, `unavailable`, `attempt_timeout`. Falls back on those plus `quota` and `unsupported`. `auth`, `forbidden`, `provider_error`, `invalid_response`, `spec_mismatch`, `response_too_large`, `timeout` and `aborted` stop the call.\n- Provider-only options go under `providerOptions: { <id>: {...} }`; each provider in a chain gets only its own.\n\n## Cost, attempts and warnings\n\nRead these on every response; they are the point of the SDK.\n\n- `res.cost`: `{ usd, estimated, source }`. `usd` is `null` when the price is unknown. Never treat `null` as 0.\n- `res.attempts`: every attempt, including skipped ones, each with `billed` (`yes`, `possible`, `no`) and its own `cost`. Sum attempts with `billed !== \"no\"` for spend; a `SearchError` carries `attempts` too.\n- `res.warnings`: `fallback_used` (another provider answered: check `res.provider`), `invalid_rows_dropped`, `unmatched_pages`, `partial_results`, `provider_warning`, `provider_notice`.\n- Before a call, `costBound(registry.exa, \"search\", { maxResults: 10 })` gives the most it can cost; `null` with `unknownBecause` when it cannot be bounded.\n\n## Errors\n\nEvery failure is a `SearchError` with a fixed `code`; switch on `code`, never on `message`. `field` names the bad option, `status` the HTTP status, `retryAfterMs` the provider's `Retry-After`. An empty `results` array is a success, not an error. Full table: [references/errors.md](references/errors.md).\n\n```ts\nimport { search, SearchError } from \"@searchsdk/sdk\";\n\ntry {\n  await search(\"postgres vacuum\", { provider: \"brave\", startDate: \"2026-01-01\" });\n} catch (e) {\n  if (e instanceof SearchError && e.code === \"unsupported\") console.log(\"Brave cannot filter by\", e.field);\n}\n```\n\n## As an agent tool\n\nReturn compact results (title, url, date, first excerpt) and return `{ error: e.code }` instead of throwing so the model can recover. Cap `maxResults`. Framework wrappers (Vercel AI SDK `tool()`, OpenAI Responses function calling, Anthropic tool use): [references/agent-tools.md](references/agent-tools.md).\n\n## MCP server\n\n- Public, free, keyless, docs and registry only: `claude mcp add --transport http searchsdk https://searchsdk.dev/mcp`. Tools: `search_docs`, `get_doc`, `list_providers`, `get_provider`, `estimate_cost`, `validate_options`, `get_example`. Use them to confirm an option or price before writing code.\n- Local `@searchsdk/mcp` (stdio) adds real `search` and `contents` with the user's keys. Run it with `npx -y @searchsdk/mcp`.\n\n## Pitfalls\n\n- The npm name is `@searchsdk/sdk`, not `searchsdk` or `search-sdk`.\n- Unknown option names throw `invalid_request`; do not pass provider-native names (`numResults`, `max_results`) at the top level.\n- `recency` cannot be combined with `startDate` or `endDate`; dates are inclusive `YYYY-MM-DD`.\n- `providerFields` (scores and ids) are not comparable across providers.\n- `raw` is the provider's whole body; do not send it to a model unfiltered.\n- The exported `registry` is frozen. Pass edited copies to `createClient({ registry })`.\n\nMore: [references/api.md](references/api.md) for every option and response field.\n"
  }
 }

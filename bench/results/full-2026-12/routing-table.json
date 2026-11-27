@@ -1,0 +1,1575 @@
+{
+  "schema": "routing-table/1",
+  "snapshot": "full-2026-12-2026-11-27",
+  "mode": "live",
+  "liveVerified": true,
+  "method": "0.4.0",
+  "generatedAt": "2026-11-27T14:27:40.709Z",
+  "validUntil": "2027-01-11",
+  "priceBasis": "registry list prices; cost per query counts every billed attempt",
+  "classes": [
+    "fact.head",
+    "fact.tail",
+    "fresh",
+    "multihop",
+    "nav",
+    "nonen",
+    "tech"
+  ],
+  "cells": [
+    {
+      "provider": "exa",
+      "profile": "default",
+      "settings": {},
+      "class": "fact.head",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9944,
+          "ci95": [
+            0.9831,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1565,
+        "p90": 3300,
+        "p95": 3720
+      },
+      "reliability": {
+        "usableRate": 0.9944,
+        "ci": [
+          0.9687,
+          0.999
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.007,
+        "perCorrectUsd": 0.00704,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "context",
+      "profile": "default",
+      "settings": {},
+      "class": "fact.head",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9661,
+          "ci95": [
+            0.9266,
+            0.9944
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1393,
+        "p90": 2489,
+        "p95": 2893
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.9788,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.002,
+        "perCorrectUsd": 0.00207,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "default",
+      "settings": {},
+      "class": "fact.head",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1493,
+        "p90": 2435,
+        "p95": 3031
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.9788,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "exa",
+      "profile": "default",
+      "settings": {},
+      "class": "fact.tail",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9605,
+          "ci95": [
+            0.9096,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1846,
+        "p90": 3492,
+        "p95": 4888
+      },
+      "reliability": {
+        "usableRate": 0.9944,
+        "ci": [
+          0.9687,
+          0.999
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.00696,
+        "perCorrectUsd": 0.007247,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "context",
+      "profile": "default",
+      "settings": {},
+      "class": "fact.tail",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8644,
+          "ci95": [
+            0.7853,
+            0.9322
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1320,
+        "p90": 2427,
+        "p95": 3898
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.9788,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.002,
+        "perCorrectUsd": 0.002314,
+        "known": true
+      },
+      "tierGroup": 2,
+      "flags": []
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "default",
+      "settings": {},
+      "class": "fact.tail",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1462,
+        "p90": 2430,
+        "p95": 3060
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.9788,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "exa",
+      "profile": "default",
+      "settings": {},
+      "class": "fresh",
+      "n": 50,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 462,
+        "p90": 2673,
+        "p95": 3530
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.975,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.007,
+        "perCorrectUsd": 0.007,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "context",
+      "profile": "default",
+      "settings": {},
+      "class": "fresh",
+      "n": 50,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8933,
+          "ci95": [
+            0.8133,
+            0.96
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1245,
+        "p90": 2096,
+        "p95": 2730
+      },
+      "reliability": {
+        "usableRate": 0.9933,
+        "ci": [
+          0.9632,
+          0.9988
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.001987,
+        "perCorrectUsd": 0.002224,
+        "known": true
+      },
+      "tierGroup": 2,
+      "flags": []
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "default",
+      "settings": {},
+      "class": "fresh",
+      "n": 50,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9733,
+          "ci95": [
+            0.94,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1305,
+        "p90": 2557,
+        "p95": 3052
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.975,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "exa",
+      "profile": "default",
+      "settings": {},
+      "class": "multihop",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8814,
+          "ci95": [
+            0.8023,
+            0.9548
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1616,
+        "p90": 3100,
+        "p95": 3799
+      },
+      "reliability": {
+        "usableRate": 0.9887,
+        "ci": [
+          0.9597,
+          0.9969
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.006921,
+        "perCorrectUsd": 0.007853,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "context",
+      "profile": "default",
+      "settings": {},
+      "class": "multihop",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.6384,
+          "ci95": [
+            0.5424,
+            0.7288
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1431,
+        "p90": 2497,
+        "p95": 3886
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.9788,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.002,
+        "perCorrectUsd": 0.003133,
+        "known": true
+      },
+      "tierGroup": 2,
+      "flags": []
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "default",
+      "settings": {},
+      "class": "multihop",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.774,
+          "ci95": [
+            0.6667,
+            0.8644
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1449,
+        "p90": 2320,
+        "p95": 3304
+      },
+      "reliability": {
+        "usableRate": 0.9887,
+        "ci": [
+          0.9597,
+          0.9969
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "exa",
+      "profile": "default",
+      "settings": {},
+      "class": "nav",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8983,
+          "ci95": [
+            0.8192,
+            0.9605
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1641,
+        "p90": 2939,
+        "p95": 3669
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.9788,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.007,
+        "perCorrectUsd": 0.007792,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "context",
+      "profile": "default",
+      "settings": {},
+      "class": "nav",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8192,
+          "ci95": [
+            0.7345,
+            0.8927
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1198,
+        "p90": 2254,
+        "p95": 2825
+      },
+      "reliability": {
+        "usableRate": 0.9944,
+        "ci": [
+          0.9687,
+          0.999
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.002,
+        "perCorrectUsd": 0.002441,
+        "known": true
+      },
+      "tierGroup": 2,
+      "flags": []
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "default",
+      "settings": {},
+      "class": "nav",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8192,
+          "ci95": [
+            0.7288,
+            0.8983
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1310,
+        "p90": 2401,
+        "p95": 2596
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.9788,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": 2,
+      "flags": []
+    },
+    {
+      "provider": "exa",
+      "profile": "default",
+      "settings": {},
+      "class": "nonen",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9774,
+          "ci95": [
+            0.9379,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1090,
+        "p90": 2711,
+        "p95": 2981
+      },
+      "reliability": {
+        "usableRate": 0.9944,
+        "ci": [
+          0.9687,
+          0.999
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.00696,
+        "perCorrectUsd": 0.007121,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "context",
+      "profile": "default",
+      "settings": {},
+      "class": "nonen",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9209,
+          "ci95": [
+            0.8701,
+            0.9605
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1389,
+        "p90": 2292,
+        "p95": 3106
+      },
+      "reliability": {
+        "usableRate": 0.9944,
+        "ci": [
+          0.9687,
+          0.999
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.001989,
+        "perCorrectUsd": 0.00216,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "default",
+      "settings": {},
+      "class": "nonen",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9774,
+          "ci95": [
+            0.9379,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1543,
+        "p90": 2561,
+        "p95": 3368
+      },
+      "reliability": {
+        "usableRate": 0.9944,
+        "ci": [
+          0.9687,
+          0.999
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "exa",
+      "profile": "default",
+      "settings": {},
+      "class": "tech",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9944,
+          "ci95": [
+            0.9831,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1725,
+        "p90": 3640,
+        "p95": 4267
+      },
+      "reliability": {
+        "usableRate": 0.9944,
+        "ci": [
+          0.9687,
+          0.999
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.007,
+        "perCorrectUsd": 0.00704,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "context",
+      "profile": "default",
+      "settings": {},
+      "class": "tech",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9379,
+          "ci95": [
+            0.8814,
+            0.9774
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1311,
+        "p90": 2718,
+        "p95": 3406
+      },
+      "reliability": {
+        "usableRate": 0.9887,
+        "ci": [
+          0.9597,
+          0.9969
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.001977,
+        "perCorrectUsd": 0.002108,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "default",
+      "settings": {},
+      "class": "tech",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9774,
+          "ci95": [
+            0.9379,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1353,
+        "p90": 2603,
+        "p95": 3589
+      },
+      "reliability": {
+        "usableRate": 0.9944,
+        "ci": [
+          0.9687,
+          0.999
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "exa",
+      "profile": "tuned",
+      "settings": {},
+      "class": "fact.head",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1282,
+        "p90": 2773,
+        "p95": 3172
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.007,
+        "perCorrectUsd": 0.007,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "context",
+      "profile": "tuned",
+      "settings": {},
+      "class": "fact.head",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8,
+          "ci95": [
+            0.4,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1033,
+        "p90": 1385,
+        "p95": 1414
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.002,
+        "perCorrectUsd": 0.0025,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "tuned",
+      "settings": {},
+      "class": "fact.head",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1660,
+        "p90": 3318,
+        "p95": 3798
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "exa",
+      "profile": "tuned",
+      "settings": {},
+      "class": "fact.tail",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1835,
+        "p90": 4147,
+        "p95": 4202
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.007,
+        "perCorrectUsd": 0.007,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "context",
+      "profile": "tuned",
+      "settings": {},
+      "class": "fact.tail",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8,
+          "ci95": [
+            0.4,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1511,
+        "p90": 3276,
+        "p95": 3760
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.002,
+        "perCorrectUsd": 0.0025,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "tuned",
+      "settings": {},
+      "class": "fact.tail",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1533,
+        "p90": 1835,
+        "p95": 1849
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "exa",
+      "profile": "tuned",
+      "settings": {},
+      "class": "fresh",
+      "n": 4,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1884,
+        "p90": 3207,
+        "p95": 3440
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5101,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.007,
+        "perCorrectUsd": 0.007,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "context",
+      "profile": "tuned",
+      "settings": {},
+      "class": "fresh",
+      "n": 4,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1104,
+        "p90": 1556,
+        "p95": 1646
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5101,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.002,
+        "perCorrectUsd": 0.002,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "tuned",
+      "settings": {},
+      "class": "fresh",
+      "n": 4,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1449,
+        "p90": 1751,
+        "p95": 1791
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5101,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "exa",
+      "profile": "tuned",
+      "settings": {},
+      "class": "multihop",
+      "n": 4,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1531,
+        "p90": 2617,
+        "p95": 2847
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5101,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.007,
+        "perCorrectUsd": 0.007,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "context",
+      "profile": "tuned",
+      "settings": {},
+      "class": "multihop",
+      "n": 4,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.5,
+          "ci95": [
+            0,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1589,
+        "p90": 1988,
+        "p95": 2039
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5101,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.002,
+        "perCorrectUsd": 0.004,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "tuned",
+      "settings": {},
+      "class": "multihop",
+      "n": 4,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.75,
+          "ci95": [
+            0.25,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1422,
+        "p90": 1512,
+        "p95": 1519
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5101,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "exa",
+      "profile": "tuned",
+      "settings": {},
+      "class": "nav",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8,
+          "ci95": [
+            0.4,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1505,
+        "p90": 2904,
+        "p95": 3300
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.007,
+        "perCorrectUsd": 0.00875,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "context",
+      "profile": "tuned",
+      "settings": {},
+      "class": "nav",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8,
+          "ci95": [
+            0.4,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1126,
+        "p90": 3583,
+        "p95": 3631
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.002,
+        "perCorrectUsd": 0.0025,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "tuned",
+      "settings": {},
+      "class": "nav",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.6,
+          "ci95": [
+            0.2,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1323,
+        "p90": 1596,
+        "p95": 1620
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "exa",
+      "profile": "tuned",
+      "settings": {},
+      "class": "nonen",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 437,
+        "p90": 2033,
+        "p95": 2562
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.007,
+        "perCorrectUsd": 0.007,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "context",
+      "profile": "tuned",
+      "settings": {},
+      "class": "nonen",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1315,
+        "p90": 1868,
+        "p95": 2028
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.002,
+        "perCorrectUsd": 0.002,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "tuned",
+      "settings": {},
+      "class": "nonen",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1913,
+        "p90": 2310,
+        "p95": 2412
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "exa",
+      "profile": "tuned",
+      "settings": {},
+      "class": "tech",
+      "n": 4,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 2360,
+        "p90": 3253,
+        "p95": 3398
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5101,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.007,
+        "perCorrectUsd": 0.007,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "context",
+      "profile": "tuned",
+      "settings": {},
+      "class": "tech",
+      "n": 4,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1169,
+        "p90": 1846,
+        "p95": 1971
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5101,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.002,
+        "perCorrectUsd": 0.002,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "tinyfish",
+      "profile": "tuned",
+      "settings": {},
+      "class": "tech",
+      "n": 4,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 1530,
+        "p90": 3302,
+        "p95": 3644
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5101,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0,
+        "perCorrectUsd": 0,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    }
+  ]
+}

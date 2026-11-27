@@ -5,7 +5,8 @@
     >>> print(response.results[0].title, response.cost.usd)
 
 Provider behaviour lives in the shared registry (``searchsdk.registry``), not
-in this package. Nothing here is live-verified.
+in this package. Check each endpoint's ``verification`` field for its live
+conformance status.
 """
 
 from __future__ import annotations

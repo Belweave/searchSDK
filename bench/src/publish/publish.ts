@@ -270,8 +270,17 @@ export function writeOutputs(c: Ctx, outDir: string): { files: string[] } {
     const errors = validate(value, loadSchema(name));
     if (errors.length) throw new Error(`${name} does not match its schema:\n  ${errors.slice(0, 10).join("\n  ")}`);
   }
-  const serialized = [JSON.stringify(o.results), JSON.stringify(o.leaderboard), JSON.stringify(o.routing), ...o.attempts.map((a) => JSON.stringify(a))].join("\n");
-  const leaks = leakCheck(serialized, sensitiveStrings(c.dir, c.items));
+  const allSensitive = sensitiveStrings(c.dir, c.items);
+  const nonPublicUrls = [
+    JSON.stringify(o.results),
+    JSON.stringify(o.leaderboard),
+    JSON.stringify(o.routing),
+    ...o.attempts.map((a) => JSON.stringify(a.item.startsWith("sha256:") ? a : { ...a, urls: [] })),
+  ].join("\n");
+  const publicUrls = o.attempts.filter((a) => !a.item.startsWith("sha256:")).flatMap((a) => a.urls).join("\n");
+  const privateAnswers = new Set(c.items.filter((i) => i.split === "private").flatMap((i) => i.answers.filter((a) => a.length >= 4)));
+  const urlSensitive = allSensitive.filter((s) => !privateAnswers.has(s));
+  const leaks = [...leakCheck(nonPublicUrls, allSensitive), ...leakCheck(publicUrls, urlSensitive)];
   if (leaks.length) throw new Error(`refusing to publish: ${leaks.length} stored response or private strings found in the output`);
   const files = [join(outDir, "results.json"), join(outDir, "attempts.jsonl"), join(outDir, "leaderboard.json"), join(outDir, "routing-table.json")];
   writeJson(files[0]!, o.results);

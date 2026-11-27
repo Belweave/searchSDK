@@ -1,0 +1,2551 @@
+{
+  "schema": "bench-results/1",
+  "snapshot": "full-2026-12-firecrawl-2026-11-27",
+  "mode": "live",
+  "liveVerified": true,
+  "method": "0.4.0",
+  "generatedAt": "2026-11-27T14:29:36.955Z",
+  "run": {
+    "id": "full-2026-12-firecrawl-20261125-233123",
+    "startedAt": "2026-11-25T23:31:23.912Z",
+    "finishedAt": "2026-11-27T14:29:36.955Z",
+    "harnessGit": "500d8fc18f17ec9c4c926fa4168f4d007b36f35c",
+    "region": null,
+    "host": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "node": "v24.22.1"
+    }
+  },
+  "datasets": [
+    {
+      "name": "fresh",
+      "version": "2026-12",
+      "sha256": "10eff9f541c8306a2c88a7e550b1d94479e5a59e9a419d156364be79e84cd8f1",
+      "count": 50
+    },
+    {
+      "name": "public",
+      "version": "1.0.0",
+      "sha256": "96361379f72435be9932fef7d06c9f1e73ee9336b29c8c8a440ead72d1e8b447",
+      "count": 252
+    }
+  ],
+  "privateSet": {
+    "version": "private-1.0.0",
+    "count": 102
+  },
+  "registry": [
+    {
+      "provider": "firecrawl",
+      "specVersion": "2026-11-25"
+    }
+  ],
+  "judging": "judged",
+  "judge": {
+    "id": "morph-kimi-k3.1-pro",
+    "model": "morph-kimik31",
+    "rubric": "rubric/relevance-1.0.0.md",
+    "rubricSha256": "cfee3286e522152efa41292967e8094338a037e0cfe8dc103881f2ea2177ab36",
+    "promptSha256": "d3475d7a6601e6e688fde221965b0ca63bcfcfdaf2d392406b451fdd1b6aba28",
+    "params": {
+      "model": "morph-kimik31",
+      "reasoning_effort": "low",
+      "max_tokens": 600,
+      "response_format": {
+        "type": "json_schema",
+        "json_schema": {
+          "name": "relevance_grade",
+          "strict": true,
+          "schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "rationale",
+              "grade"
+            ],
+            "properties": {
+              "rationale": {
+                "type": "string"
+              },
+              "grade": {
+                "type": "integer",
+                "enum": [
+                  0,
+                  1,
+                  2,
+                  3
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "checkJudge": {
+    "id": "morph-deepseek-v4.1-flash",
+    "model": "morph-dsv41flash",
+    "rubric": "rubric/relevance-1.0.0.md",
+    "rubricSha256": "cfee3286e522152efa41292967e8094338a037e0cfe8dc103881f2ea2177ab36",
+    "promptSha256": "8925653f20a4fe90c7cd3c3aae46302ba6aa12b8a32ffacbdf3f50bae9ca7fcf",
+    "params": {
+      "model": "morph-dsv41flash",
+      "max_tokens": 600,
+      "response_format": {
+        "type": "json_schema",
+        "json_schema": {
+          "name": "relevance_grade",
+          "strict": true,
+          "schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "rationale",
+              "grade"
+            ],
+            "properties": {
+              "rationale": {
+                "type": "string"
+              },
+              "grade": {
+                "type": "integer",
+                "enum": [
+                  0,
+                  1,
+                  2,
+                  3
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "conditions": {
+    "maxResults": 10,
+    "timeoutMs": 10000,
+    "retries": 0,
+    "fallback": "none",
+    "pageFetcher": "plain-1",
+    "pageUserAgent": "BenchPageFetcher/1.0 (compatible; reads public pages for a web search benchmark; obeys robots.txt)",
+    "pageTopK": 3,
+    "snippetTopK": 10,
+    "navTopK": 3,
+    "judgeTopK": 3,
+    "passes": 3,
+    "seed": 20261125
+  },
+  "agreement": {
+    "pairs": 1209,
+    "judged": 1015,
+    "unresolved": 194,
+    "selfKappa": {
+      "n": 121,
+      "mean": 0.9852,
+      "ci95": [
+        0.9672,
+        0.9969
+      ]
+    },
+    "crossKappa": {
+      "judge": "morph-deepseek-v4.1-flash",
+      "n": 1013,
+      "mean": 0.9362,
+      "ci95": [
+        0.9199,
+        0.9494
+      ]
+    },
+    "humanKappa": null,
+    "humanExact": null,
+    "judgedPublished": false,
+    "gate": "0 human labels, need 100; judge-human weighted kappa n/a below 0.6"
+  },
+  "ranking": {
+    "rule": "Quality first, then reliability. Providers whose usable-response rate is confidently below the floor rank below all others. Within each band, a provider ties with the group leader unless the 95% paired-bootstrap interval of their known-answer difference excludes zero and the difference is at least the minimum separation. Cost and latency never affect rank.",
+    "floor": 0.95,
+    "minSeparation": 0.06,
+    "pairedItems": {
+      "default": 404,
+      "tuned": 32
+    },
+    "droppedItems": {
+      "default": 0,
+      "tuned": 0
+    }
+  },
+  "pages": {
+    "urls": 1204,
+    "read": 817,
+    "unreadable": 387,
+    "unreadableRate": 0.3214,
+    "reasons": {
+      "status": 124,
+      "robots": 205,
+      "content-type": 16,
+      "empty": 21,
+      "network": 21
+    }
+  },
+  "providers": [
+    {
+      "provider": "firecrawl",
+      "name": "Firecrawl",
+      "profile": "default",
+      "settings": {},
+      "status": "scored",
+      "n": 404,
+      "knownAnswer": {
+        "mean": 0.8688,
+        "ci95": [
+          0.8375,
+          0.9002
+        ]
+      },
+      "components": {
+        "snippet": 0.8425,
+        "page": 0.8048,
+        "nav": 0.887
+      },
+      "judged": null,
+      "judgedCheck": null,
+      "reliability": {
+        "usableRate": 0.9868,
+        "ci95": [
+          0.9787,
+          0.9919
+        ],
+        "attempts": 1212,
+        "rates": {
+          "ok_nonempty": 0.9868,
+          "ok_empty": 0.0025,
+          "rate_limited": 0,
+          "timeout": 0.0107,
+          "server_error": 0,
+          "network_error": 0,
+          "invalid_response": 0
+        }
+      },
+      "latencyMs": {
+        "n": 1212,
+        "p50": 425,
+        "p90": 4572,
+        "p95": 5331,
+        "censoredAtMs": 10000,
+        "timeouts": 13
+      },
+      "cost": {
+        "attempts": 1212,
+        "totalUsd": 9.1884,
+        "perQueryUsd": 0.007581,
+        "perCorrectUsd": 0.008726,
+        "known": true,
+        "unknownAttempts": 0,
+        "sources": {
+          "reported-credits": 1199,
+          "computed": 13
+        },
+        "billed": {
+          "yes": 1201,
+          "possible": 11
+        }
+      },
+      "excerptKind": "description",
+      "pageUnreadableRate": 0.3201,
+      "stale": {
+        "n": 5,
+        "rate": 0.4
+      },
+      "retest": {
+        "n": 404,
+        "agreement": 1,
+        "flipped": 0,
+        "meanDelta": 0,
+        "urlJaccard": 1
+      },
+      "rank": {
+        "group": 1,
+        "tied": false,
+        "reliable": true,
+        "position": 1
+      }
+    },
+    {
+      "provider": "firecrawl",
+      "name": "Firecrawl",
+      "profile": "tuned",
+      "settings": {},
+      "status": "scored",
+      "n": 32,
+      "knownAnswer": {
+        "mean": 0.8438,
+        "ci95": [
+          0.6875,
+          0.9688
+        ]
+      },
+      "components": {
+        "snippet": 0.8519,
+        "page": 0.8519,
+        "nav": 0.8
+      },
+      "judged": null,
+      "judgedCheck": null,
+      "reliability": {
+        "usableRate": 1,
+        "ci95": [
+          0.8928,
+          1
+        ],
+        "attempts": 32,
+        "rates": {
+          "ok_nonempty": 1,
+          "ok_empty": 0,
+          "rate_limited": 0,
+          "timeout": 0,
+          "server_error": 0,
+          "network_error": 0,
+          "invalid_response": 0
+        }
+      },
+      "latencyMs": {
+        "n": 32,
+        "p50": 3206,
+        "p90": 4670,
+        "p95": 5482,
+        "censoredAtMs": 10000,
+        "timeouts": 0
+      },
+      "cost": {
+        "attempts": 32,
+        "totalUsd": 0.2432,
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.009007,
+        "known": true,
+        "unknownAttempts": 0,
+        "sources": {
+          "reported-credits": 32
+        },
+        "billed": {
+          "yes": 32
+        }
+      },
+      "excerptKind": "description",
+      "pageUnreadableRate": 0.3854,
+      "stale": null,
+      "retest": null,
+      "rank": null
+    }
+  ],
+  "tuning": {
+    "status": "selected",
+    "selection": {
+      "runId": "tuning-20261125-232114",
+      "mode": "live",
+      "createdAt": "2026-11-25T23:31:15.007Z",
+      "sha256": "a4da147beb037ed8820585b932611f3c98e4e4c028704f27d8c1771c15312247",
+      "tuningConfigSha256": "3427b81d1fe04688ef95164616521fbd0fc76d5f92eb7e35f8e22c5d97aa10e5"
+    },
+    "rule": {
+      "splitItems": 16,
+      "passes": 1,
+      "maxCandidates": 2,
+      "maxCostPerCallUsd": 0.02,
+      "minGain": 0.06,
+      "requireSeparation": true,
+      "judged": false,
+      "conditionItems": 32,
+      "conditionPasses": [
+        1
+      ]
+    },
+    "split": {
+      "files": [
+        "datasets/public/tuning-0.1.0.jsonl"
+      ],
+      "seed": 20261202,
+      "n": 16,
+      "itemsSha256": "60a5521f8904ce97985419b8d08b691c44dd2483c3c94a55c8461752e2fe82cc",
+      "disjointFromScored": true
+    },
+    "condition": {
+      "items": [
+        "fresh-2612-arxiv-first-author-003",
+        "fresh-2612-arxiv-first-author-009",
+        "fresh-2612-eol-release-006",
+        "fresh-2612-kev-recent-008",
+        "sha256:7f5557aef66251e8f281603030424e2456f51e4abc85cf342f5ed34e2ec03d83",
+        "sha256:67891dd629fc9cfeeebeb3c49f94b3233f3db7fa95d8f61447132400aee146ab",
+        "sha256:138c09ca752caa12f3dc09b87cd36d698d0d997d9609615a4afbe0cb109dbe0b",
+        "sha256:8561690bbd31bc9d6c4f066491d444d7481972c4ca9d9110a6ec3b16584251f4",
+        "pub-best-picture-director-003",
+        "pub-best-picture-director-birthplace-003",
+        "pub-language-designer-005",
+        "pub-nobel-work-author-004",
+        "pub-nobel-work-author-005",
+        "pub-p1-agency-website-003",
+        "pub-p1-best-picture-director-002",
+        "pub-p1-best-picture-director-birthplace-003",
+        "pub-p1-building-architect-birthplace-001",
+        "pub-p1-capital-en-head-004",
+        "pub-p1-film-director-it-003",
+        "pub-p1-nobel-work-author-birthplace-005",
+        "pub-p1-pep-author-004",
+        "pub-p1-small-industry-film-director-003",
+        "pub-p1-small-language-work-author-001",
+        "pub-p1-software-website-009",
+        "pub-p1-software-website-010",
+        "pub-p1-work-author-fr-002",
+        "pub-p1-work-author-ru-001",
+        "pub-p1-work-author-ru-002",
+        "pub-small-industry-film-director-003",
+        "pub-software-developer-001",
+        "pub-software-developer-003",
+        "pub-university-website-009"
+      ],
+      "passes": [
+        1
+      ]
+    },
+    "providers": [
+      {
+        "provider": "firecrawl",
+        "chosen": "default",
+        "settings": {},
+        "reason": "kept the default: no candidate is clearly better (gain of at least 0.06 with a 95% interval above zero)",
+        "costBoundUsd": 0.01,
+        "capUsd": 0.02,
+        "default": {
+          "mean": 0.8688,
+          "ci95": [
+            0.8375,
+            0.9002
+          ],
+          "n": 404
+        },
+        "tuned": {
+          "mean": 0.8438,
+          "ci95": [
+            0.6875,
+            0.9688
+          ],
+          "n": 32
+        },
+        "sameItemsDefault": {
+          "mean": 0.8438,
+          "ci95": [
+            0.718,
+            0.9375
+          ],
+          "n": 32
+        },
+        "gain": {
+          "mean": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "evidence": [
+          {
+            "profile": "default",
+            "settings": {},
+            "costBoundUsd": 0.01,
+            "n": 16,
+            "knownAnswer": {
+              "mean": 0.8125,
+              "ci95": [
+                0.625,
+                1
+              ]
+            },
+            "gain": null,
+            "usableRate": 1,
+            "eligible": true,
+            "reason": "the default"
+          },
+          {
+            "profile": "t1",
+            "settings": {
+              "providerOptions": {
+                "highlights": false
+              }
+            },
+            "costBoundUsd": 0.01,
+            "n": 16,
+            "knownAnswer": {
+              "mean": 0.8125,
+              "ci95": [
+                0.625,
+                1
+              ]
+            },
+            "gain": {
+              "mean": 0,
+              "ci95": [
+                0,
+                0
+              ]
+            },
+            "usableRate": 1,
+            "eligible": false,
+            "reason": "gain 0 [0, 0]: not clearly better"
+          },
+          {
+            "profile": "t2",
+            "settings": {
+              "country": "US",
+              "providerOptions": {
+                "location": "United States"
+              }
+            },
+            "costBoundUsd": 0.01,
+            "n": 16,
+            "knownAnswer": {
+              "mean": 0.8125,
+              "ci95": [
+                0.625,
+                1
+              ]
+            },
+            "gain": {
+              "mean": 0,
+              "ci95": [
+                0,
+                0
+              ]
+            },
+            "usableRate": 1,
+            "eligible": false,
+            "reason": "gain 0 [0, 0]: not clearly better"
+          }
+        ],
+        "rejected": []
+      }
+    ]
+  },
+  "items": [
+    {
+      "ref": "pub-capital-en-head-001",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-en-head-003",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-en-head-004",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-en-head-005",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-en-head-006",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-en-head-007",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-nobel-work-author-001",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-nobel-work-author-002",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-nobel-work-author-003",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-nobel-work-author-004",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-nobel-work-author-005",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-best-picture-director-001",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-best-picture-director-002",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-best-picture-director-003",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-best-picture-director-004",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-language-work-author-001",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-language-work-author-002",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-language-work-author-003",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-language-work-author-004",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-language-work-author-005",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-language-work-author-007",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-language-work-author-008",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-language-work-author-009",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-industry-film-director-001",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-industry-film-director-002",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-industry-film-director-003",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-industry-film-director-004",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-industry-film-director-005",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-industry-film-director-006",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-industry-film-director-007",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-small-industry-film-director-008",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-best-picture-director-birthplace-001",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-best-picture-director-birthplace-002",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-best-picture-director-birthplace-003",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-best-picture-director-birthplace-004",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-best-picture-director-birthplace-005",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-best-picture-director-birthplace-007",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-best-picture-director-birthplace-008",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-nobel-work-author-birthplace-001",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-nobel-work-author-birthplace-002",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-nobel-work-author-birthplace-003",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-nobel-work-author-birthplace-004",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-nobel-work-author-birthplace-006",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-nobel-work-author-birthplace-007",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-nobel-work-author-birthplace-008",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-language-designer-001",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-language-designer-002",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-language-designer-003",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-language-designer-004",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-language-designer-005",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-language-designer-006",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-language-designer-007",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-language-designer-008",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-software-developer-001",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-software-developer-002",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-software-developer-003",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-software-developer-004",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-software-developer-005",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-university-website-001",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-university-website-002",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-university-website-003",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-university-website-004",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-university-website-005",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-university-website-006",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-university-website-007",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-university-website-008",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-university-website-009",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-university-website-011",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-university-website-012",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-university-website-013",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-fr-001",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-fr-002",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-fr-003",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-fr-004",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-de-001",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-de-003",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-de-004",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-de-005",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-es-001",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-es-002",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-es-003",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-es-004",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-ja-001",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-ja-003",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-ja-004",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-capital-ja-005",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-capital-en-head-001",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-capital-en-head-002",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-capital-en-head-003",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-capital-en-head-004",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-nobel-work-author-001",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-nobel-work-author-002",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-nobel-work-author-003",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-nobel-work-author-004",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-nobel-work-author-005",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-best-picture-director-001",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-best-picture-director-002",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-best-picture-director-003",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-best-picture-director-004",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-head-001",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-head-002",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-head-003",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-head-004",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-head-005",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-head-006",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-head-007",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-company-headquarters-001",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-company-headquarters-002",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-company-headquarters-003",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-company-headquarters-004",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-company-headquarters-005",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-company-headquarters-006",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-company-headquarters-007",
+      "class": "fact.head",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-language-work-author-001",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-language-work-author-002",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-language-work-author-003",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-language-work-author-004",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-language-work-author-005",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-language-work-author-006",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-industry-film-director-001",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-industry-film-director-002",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-industry-film-director-003",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-industry-film-director-004",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-industry-film-director-005",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-industry-film-director-006",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-tail-001",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-tail-002",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-tail-004",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-tail-005",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-tail-006",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-tail-007",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-tail-008",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-tail-001",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-tail-002",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-tail-003",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-tail-004",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-tail-005",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-tail-006",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-tail-007",
+      "class": "fact.tail",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-best-picture-director-birthplace-001",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-best-picture-director-birthplace-002",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-best-picture-director-birthplace-003",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-best-picture-director-birthplace-004",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-nobel-work-author-birthplace-001",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-nobel-work-author-birthplace-002",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-nobel-work-author-birthplace-003",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-nobel-work-author-birthplace-005",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-nobel-work-author-birthplace-006",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-birthplace-001",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-birthplace-002",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-birthplace-004",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-birthplace-005",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-birthplace-006",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-birthplace-007",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-birthplace-008",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-film-director-birthplace-001",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-film-director-birthplace-002",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-film-director-birthplace-004",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-film-director-birthplace-005",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-film-director-birthplace-006",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-small-film-director-birthplace-007",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-birthplace-001",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-birthplace-002",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-birthplace-003",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-birthplace-004",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-birthplace-005",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-building-architect-birthplace-006",
+      "class": "multihop",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-language-designer-001",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-language-designer-002",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-language-designer-003",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-language-designer-004",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-developer-001",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-developer-002",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-developer-003",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-developer-005",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-file-format-developer-001",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-file-format-developer-002",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-file-format-developer-003",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-file-format-developer-004",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-file-format-developer-005",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-file-format-developer-006",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-pep-author-001",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-pep-author-002",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-pep-author-003",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-pep-author-004",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-pep-author-005",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-pep-author-006",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-pep-author-007",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-pep-author-008",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-kev-product-001",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-kev-product-002",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-kev-product-003",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-kev-product-004",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-kev-product-005",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-kev-product-006",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-kev-product-007",
+      "class": "tech",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-university-website-001",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-university-website-002",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-website-001",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-website-002",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-website-003",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-website-004",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-website-005",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-website-007",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-website-008",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-website-009",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-website-010",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-software-website-011",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-agency-website-001",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-agency-website-002",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-agency-website-003",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-agency-website-004",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-agency-website-005",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-agency-website-006",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-agency-website-007",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-agency-website-008",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-agency-website-009",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-agency-website-010",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-intl-org-website-001",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-intl-org-website-002",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-intl-org-website-003",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-intl-org-website-004",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-museum-website-001",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-museum-website-003",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-museum-website-004",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-museum-website-005",
+      "class": "nav",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-work-author-fr-001",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-work-author-fr-002",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-work-author-fr-003",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-work-author-fr-005",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-work-author-ru-001",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-work-author-ru-002",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-work-author-ru-003",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-work-author-ru-004",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-it-001",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-it-002",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-it-003",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-it-004",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-pt-001",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-pt-002",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-pt-003",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-pt-004",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-zh-001",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-zh-003",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-zh-004",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-zh-005",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-film-director-zh-006",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-de-001",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-de-002",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-de-003",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-de-004",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "pub-p1-painting-artist-de-005",
+      "class": "nonen",
+      "split": "public"
+    },
+    {
+      "ref": "fresh-2612-eol-release-001",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-002",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-003",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-004",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-005",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-006",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-007",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-008",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-009",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-010",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-011",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-012",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-013",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-014",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-eol-release-015",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-kev-recent-001",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-kev-recent-002",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-kev-recent-003",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-kev-recent-004",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-kev-recent-005",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-kev-recent-006",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-kev-recent-007",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-kev-recent-008",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-kev-recent-009",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-kev-recent-010",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-kev-recent-011",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-arxiv-first-author-001",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-arxiv-first-author-002",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-arxiv-first-author-003",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-arxiv-first-author-004",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-arxiv-first-author-005",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-arxiv-first-author-006",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-arxiv-first-author-007",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-arxiv-first-author-008",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-arxiv-first-author-009",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-arxiv-first-author-010",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-arxiv-first-author-011",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-arxiv-first-author-012",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-software-version-asof-001",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-software-version-asof-002",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-software-version-asof-003",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-software-version-asof-004",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-software-version-asof-005",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-software-version-asof-006",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-software-version-asof-007",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-software-version-asof-008",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-software-version-asof-009",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-software-version-asof-010",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-software-version-asof-011",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "fresh-2612-software-version-asof-012",
+      "class": "fresh",
+      "split": "fresh"
+    },
+    {
+      "ref": "sha256:2d2e84155558338029e8b6d609a40ebec7018404739b27662adbabb1745ec5d4",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:e50f3f7b6ca7e59e567fdc4a84097099ee1a26c8d2be4c50ff00606079f597c4",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:f0b3dbde774c68eaec2c77d16cfd4467a0d99d79f8fd5b47fec713494971f825",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:9c9b3f6b46b4594053a44d3f3260e6b06a18665e82906c71eba279c66fc159f3",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:6e96796ae6d325da2f2ee29433131d03a9d5afb0e5e2f8cc9508aaef1adc2e6c",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:9203faf06153af545b5f9c5b793adb4897af357aa5abb197c243c4db9f261020",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:6ac6ea6a7cdd030842dbe8f7a481255c0d43b94affe50089008cbbd66bd83d9b",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:d4f1270f21d0c1caf3678da2b65b9d15454451872ab901df1bf70fdf06badb00",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:dc0317b22375f2edd3e5a41131e9e3821a3fcfb00a6505b111f5c7c417eb86a9",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:44f842b8ef5d91aec64de32b9b06f16740566a5bdc8af788a3187a790cde6f4f",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:ca05a46dde10ed6e90165960a919159ef6e320285c24409248ee368e4e01a7b6",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:122ada4000c3e09e3f04f70f0dfb5d2fce9d35e49e1c429441fe047b433c0249",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:a42fbeaf69e6af143925f15f57d4b95ef1461b18a25ac909d98431a57f81adb5",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:ee88ab3c7788c05cf007d279234bbe14c1ab5e34da66c8afae432ee668fd4125",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:c0cf3ce1a610bb9fb8c2a4a1902ac9169d1a2e106382f074b78c6a23972fbac1",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:96875792e9d68417e4e6f68cd0cfa9f0c66751619b9aaf288342599d6bb0a111",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:9aeeee3211d12d1baf4d7334b3c45a238f389fa13d5bb32930b989e4c498660d",
+      "class": "fact.head",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:81a0ca4dcdfc984cb065c7db3367672a700a77933d98588bcd1f9ce10d99fbfe",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:ef6d7e5f7acaccaa3001fcee116a4ed5d92e35df682d3a9a93ed5593eae6ab2f",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:ae9fad41aeeb4d2c428d8a03f2fbb60a9cfeef4763093c1d2ce25c083b9685a3",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:466e86ddb6b314807954f845ee7b185dd9211b3f3353db838e1b5ef014fdf81b",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:5f27fb9f78607ea53d2a6e5244124a4037843b3d9c30587ff885b4ae8064de32",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:f5943611186e800a020374247cc43c9ceae6710c8d80de59caba9b54b3876819",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:e8474ef5b9a92ea8c822ee2a5a887031d67ed36005b2753bbbbf447985a4fc5f",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:8561690bbd31bc9d6c4f066491d444d7481972c4ca9d9110a6ec3b16584251f4",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:da91a4ca74d789829c225c91dea465b19354d34633a871b289af066f679aef85",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:a0fdf643e58521fdf3ed3423bc3ee0aceedf38fc2364c2c8e8b45d230bf9b2cd",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:138c09ca752caa12f3dc09b87cd36d698d0d997d9609615a4afbe0cb109dbe0b",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:91a4c1320d1ba47d612bd84c8779c2c90fc2d39cc7ca73d3647bb300892b516b",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:1763f2f0c1949ce6d1f5da9ff22b9b3bc4a210309a08dd0b76cff2d6518bb4c1",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:7dfd1d936157afc78cb79be5042c61215888aaa203c2c4a754b7e6a1899f30d8",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:2ce3eb84a77574879c094cb942223e4acbf4ec893cbc0108b6ffb57f677c7416",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:4db4f1142e9f08b6ce518ffb683e5b313d74125f4b1821d09fdaaebe35a16bd7",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:c8acca03c5cad0622132aea923e6eb04045f98becf88beba6ae2554240194a47",
+      "class": "fact.tail",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:cf70c35d9fbbaf82584cdc8cdf57547d0cf5fab24f7433e46d823b226efc09dc",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:142c64cf48b6225f612b002130524961889d96fff2f92e44ac39cff1a12f38b6",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:45fc95d126e6fd6e171ba6c9b1e39bdf3a0d1e849ffae4574c16aed7764d758f",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:583fcda5f8debb19ebd9a5ba4ade9ddeea7502512433c5ed46b58065a50e331e",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:04fe69b269b9c225c308f9f1497a7c040b0cc3ab97562c4a540ee38cb09feeaa",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:ff33c1b0650238ba726c88c886fffdf8ea3d5b40818c911a2fa1fdd9d82417d3",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:98b72e967505dfeb986fe04f9c4e9386a3702dcb44adad4bf05984849afbbaa1",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:20351389d05b4a62c4828549c9be0aed3ddb0aea26780f99338c43e1f43ec5cf",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:87243a0151b57d8ed058e0ac4eabf7ece4b1e94e76de660ee091cd6d56ba59eb",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:32025f62236219c595e9e3f95c721474e97677dd2c6aedfc6d64761627c4614c",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:005cd71612d85590180afdb0e47ed3e7235cae25d6691ad1ec8e3b338fbe3a77",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:5d992db6fc066a36850fb88984e396b41a9e9569872460eb3e4cae958b77658c",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:22d626f584feb53febd8342d55422243a1cceac88932c3d47d189a51419f3208",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:06a6123a85ee13f36e6e89b5bfbd7c3bb905e403e2d6fde9a350bdf59826f482",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:125b4cd8c2333afd32544dcf0d046230ae84b572e242b3267331abca5eab9942",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:0b4d8824edf8f9c901789482e872f3965a0a4b65b22d1a72beeaf01623097f0c",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:30d416d9af05879977fc34a431dea5eb02f4a75cac3f1bacfed44cae72415b35",
+      "class": "multihop",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:fc7ae82021b39fa9f80f148cbdea34eda8405f5c376f5dd7fcd7ccd3a0a5f41c",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:51372213e0d7e0165afb84884961030799cba9207e189225e74e8a4d4ae75844",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:d9b91d09cbaa97d0d4385dbbfac636ad71a738e8e8d42c7adaaa52aaede7bbbf",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:53f4d830833a748f29f77c2f197bcb5642af1ebb96c31e676b56f3a1a096ff9b",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:c87c8b3d71956445e5a31aca6e667e9c2663fa38f0c2194a6dafd200fc20d0c9",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:bf2d3e8cbbb4ad1876977949893682b1e07e184907cea984825fa14b0e73f67d",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:d24a6401b82a87372f0eba221f162e4b209133338133e7af60c743e5072a8bfb",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:42391f054be3956d316b0474b469f75a237b9ac5b5a4c0b489634be38da71577",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:a4b2b63098d2c54c1d7c4bac4eb9a4ad9ed9b710819f57402ac258b88303e2a2",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:7795f97e5d54d3078315763aaeeb27297aa3fcf566d1e16ee477f6ebb7134256",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:e31de834aaacc38448fe0479620d3eb2ef531c240c9e50bfd93e59ea959e6100",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:ce9c075802a08b3320e223576c153b1356d63baa078355100fb8be1a3a9ad064",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:d00bbf51e46bff1971e7048d8036ad6d161c8a758bea5f44ed8bac8bd99f48bd",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:0e3b2dde6eda1356cad86a205ddf8156a19740e10542a4266119a5a62f21a5e5",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:6ad5d6f9fe34c85d29fb6c98220612d1bf6e1073d86140be8e4b21cf221ee3d3",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:4690d7df1b9f5ee36fe2c2c20926c93b6b5157721a7d1c61476cea5564ca595d",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:86034b25a3db93da848cd8914d5800bd39016ac87a478cb3ce3a20854860141d",
+      "class": "tech",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:a6ad6ee8c8e5230df8a80ebf6136fd9bd05d38b6e275ead3a054c70726428c39",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:fed4109f3324e8c3582924ee426dc0b12bcf9cde8f32e44327c8d17c69660406",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:fb4ae4fd8491d400be67e713866f62c9ce8e3e4a6d43f80456c9f409f05c96c7",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:2468315eb2d6ef87d1724f0a2570fd5393a8b076d5b2785ac2b0ce17e5d9d388",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:f8486246519f3f2ef451c5e6f85bc49f4c72e710af11c59aebe2414e29fbe115",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:3024ea0729e33ef4fdef41571be70e12da96d31ed9bd0106ca68e247b6b042a3",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:769004c82e29e745b5ed18d71aa45cc29eb30c7e0b69b9e12788e69a4e508b4d",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:2e09f57f16fb0f19ce5d64b5167c67d97927c9ce4eb78129f69cdab4343d4788",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:94b9b055733cec227cf6bf53f5079f12e0a14cccf0d6753fe26e75b11716cc62",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:6d66d451e34216bb316bd6fc2278c7114063e71a8cd1e8469e7ff67da3c24403",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:a03552a9150149344845f8f046ad1e94becbcdb617f9aaa48fb5af928d07e7bd",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:18cb763246998778c975bf51f68c8f9497e90cf7a40d8944350d10dc1ef3a510",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:e12b90999cca23fc18cc44d7b6aa1cf722216a59e1cf5fd8f334a09200c851fb",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:7f5557aef66251e8f281603030424e2456f51e4abc85cf342f5ed34e2ec03d83",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:6365debb865d08b6b4da405c64d2af39147e86bebc3171ff61e04c3f26634953",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:0a1049d301f2e1993d449cac32503a1ce20b081d62bd0f024c8c8ae79f210636",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:d91ce01def544f806bb438d7a1883ba4f3cfe008ab885e065811fda1aedb2ff3",
+      "class": "nav",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:bd194da6a325878a29b285055c939aa624cfc83f98d6ea3e05f207496fe83832",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:cf58622a872cfa0ac0cea483ea65f709956e5dd82459de4c5503a47f21eebfc7",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:da06955a1b54eca4e8e6f0ace934c3a34c6751f4866d644af4be793f3acbe9b7",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:c341823c5d7060289884bbe4fbb82b8b77fc13d865bdb5795f6dedb42979dff9",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:ed8910d430e0a73e8157f537605c279bd9deadaac7f06b830621deea5315fd03",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:03a3550991943fde015d38719a45ffba63b99e17c66c17c6123d148af555d16a",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:98aea351d8d1ca9f552d0da85b844109d83f81f0fe678801d07b512c573b5a18",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:67891dd629fc9cfeeebeb3c49f94b3233f3db7fa95d8f61447132400aee146ab",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:e948c3801e2c4e9dd9dc5a55ed1903ab69e2e68618fcf4291e47bf8619d8b991",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:d8032afe9f38f54a2731fbb5e77e7715c799c6f4453d1e3447843e8b9d3ec2a9",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:f3dbf58ef5df989d1068ebc212cc8af0f19b41d331875e16cbccefedbc2e24a0",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:265c6073a03023320b6501e9d86d8d9ac701af7012405bec42e6d19c6c0eca2e",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:5a1d12dbf40e9ab73b76a80320530d009275987f8f740e31323a3484dd3a0cca",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:4dd1db9bd0d81f05d9106d21c194b5ae1dcefc57e8a1be8e91a8aeaf592f9a22",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:60b5352ed5c6c509761b14f58f373711742fb5307f8e52b4637c54b83c3640d5",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:8e024edafee34e8a4f04933d292ad83e0fd409795124939d02e2cd8c076e0711",
+      "class": "nonen",
+      "split": "private"
+    },
+    {
+      "ref": "sha256:76313b3b30d09419c71180e7b9d7636262a54a1665f5dfe4fc91905a4cdeb3a8",
+      "class": "nonen",
+      "split": "private"
+    }
+  ]
+}

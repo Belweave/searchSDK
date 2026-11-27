@@ -33,8 +33,8 @@ export function siteRoutes(): SiteRoute[] {
     {
       path: "/benchmarks",
       title: "Benchmarks",
-      description: "The open benchmark: quality first, then reliability. Results pending; the first run is in progress.",
-      lastModified: lastModified(["app/(site)/benchmarks/page.tsx", "data/benchmarks.sample.json"]),
+      description: "Live open benchmark of web search APIs on 404 queries: quality first, then reliability, with latency and cost.",
+      lastModified: lastModified(["app/(site)/benchmarks/page.tsx", "data/benchmarks.json"]),
     },
   ];
   const providers = getRegistry().providers.map((p) => ({

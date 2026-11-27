@@ -1,0 +1,42 @@
+{
+  "sample": false,
+  "pending": false,
+  "label": null,
+  "run": {
+    "id": "full-2026-12",
+    "date": "2026-11-27",
+    "queries": 404
+  },
+  "method": {
+    "tieBand": 6,
+    "minReliability": 0.95,
+    "qualityScale": "0–100",
+    "note": "Live measurements on 404 queries x 3 passes under method 0.4.0 (known-answer scores; judged relevance withheld pending 100 human labels). Exa, TinyFish and Context.dev ran together in full-2026-12-20261125-193454 ($11.12 cash). Firecrawl ran separately on the same 404 items in full-2026-12-firecrawl-20261125-233123 (credit grant; Pass 1 cold p50 3,403 ms, Passes 2-3 cached 300-315 ms with 100% URL overlap). TinyFish cost is $0.00 within its free daily allowance with paid overage off."
+  },
+  "rows": {
+    "exa": {
+      "quality": 95.7,
+      "reliability": 0.995,
+      "latencyP50Ms": 1559,
+      "costUsdPer1k": 6.98
+    },
+    "tinyfish": {
+      "quality": 93.1,
+      "reliability": 0.9967,
+      "latencyP50Ms": 1417,
+      "costUsdPer1k": 0
+    },
+    "firecrawl": {
+      "quality": 86.9,
+      "reliability": 0.9868,
+      "latencyP50Ms": 425,
+      "costUsdPer1k": 7.58
+    },
+    "context": {
+      "quality": 86.2,
+      "reliability": 0.9959,
+      "latencyP50Ms": 1329,
+      "costUsdPer1k": 1.99
+    }
+  }
+}

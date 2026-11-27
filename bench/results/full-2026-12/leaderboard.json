@@ -1,0 +1,131 @@
+{
+  "schema": "bench-leaderboard/1",
+  "snapshot": "full-2026-12-2026-11-27",
+  "mode": "live",
+  "liveVerified": true,
+  "method": "0.4.0",
+  "generatedAt": "2026-11-27T14:27:40.709Z",
+  "items": 404,
+  "judgedPublished": false,
+  "rule": "Quality first, then reliability; tied when not statistically separable. Cost and latency are shown, never ranked.",
+  "providers": [
+    {
+      "id": "exa",
+      "name": "Exa",
+      "group": 1,
+      "tied": true,
+      "reliable": true,
+      "knownAnswer": {
+        "mean": 0.9571,
+        "ci95": [
+          0.9381,
+          0.9736
+        ]
+      },
+      "judged": null,
+      "usableRate": 0.995,
+      "latencyP50Ms": 1559,
+      "costPerQueryUsd": 0.006977,
+      "costKnown": true,
+      "tuned": {
+        "knownAnswer": {
+          "mean": 0.9688,
+          "ci95": [
+            0.9063,
+            1
+          ]
+        },
+        "n": 32,
+        "settings": {},
+        "sameItemsDefault": {
+          "mean": 0.9688,
+          "ci95": [
+            0.9063,
+            1
+          ],
+          "n": 32
+        },
+        "costBoundUsd": 0.007
+      }
+    },
+    {
+      "id": "tinyfish",
+      "name": "TinyFish",
+      "group": 1,
+      "tied": true,
+      "reliable": true,
+      "knownAnswer": {
+        "mean": 0.9307,
+        "ci95": [
+          0.9068,
+          0.953
+        ]
+      },
+      "judged": null,
+      "usableRate": 0.9967,
+      "latencyP50Ms": 1417,
+      "costPerQueryUsd": 0,
+      "costKnown": true,
+      "tuned": {
+        "knownAnswer": {
+          "mean": 0.9063,
+          "ci95": [
+            0.7813,
+            1
+          ]
+        },
+        "n": 32,
+        "settings": {},
+        "sameItemsDefault": {
+          "mean": 0.9063,
+          "ci95": [
+            0.7813,
+            1
+          ],
+          "n": 32
+        },
+        "costBoundUsd": 0
+      }
+    },
+    {
+      "id": "context",
+      "name": "Context.dev",
+      "group": 2,
+      "tied": false,
+      "reliable": true,
+      "knownAnswer": {
+        "mean": 0.8622,
+        "ci95": [
+          0.835,
+          0.8886
+        ]
+      },
+      "judged": null,
+      "usableRate": 0.9959,
+      "latencyP50Ms": 1329,
+      "costPerQueryUsd": 0.001993,
+      "costKnown": true,
+      "tuned": {
+        "knownAnswer": {
+          "mean": 0.8438,
+          "ci95": [
+            0.7188,
+            0.9688
+          ]
+        },
+        "n": 32,
+        "settings": {},
+        "sameItemsDefault": {
+          "mean": 0.8438,
+          "ci95": [
+            0.7188,
+            0.9688
+          ],
+          "n": 32
+        },
+        "costBoundUsd": 0.003
+      }
+    }
+  ],
+  "notRanked": []
+}

@@ -27,8 +27,14 @@ There are two calls: `search` and `contents`. Each provider is described
 once, as data, in [`registry/`](registry). The TypeScript and Python runtimes
 read that registry; neither contains provider-specific code.
 
-**Not live-verified yet.** Every provider spec is written from the provider's
-public documentation and tested against synthetic fixtures only.
+**Tested against live production APIs.** Exa, TinyFish, Context.dev and
+Firecrawl have been tested end to end against their production APIs through
+`@searchsdk/sdk` across smoke checks, tuning and 4,848 live benchmark search
+calls. Firecrawl (`search` and `contents`) has also passed formal per-vector
+live conformance replay in both TypeScript and Python
+([`registry/conformance/live/firecrawl-2026-11-25.json`](registry/conformance/live/firecrawl-2026-11-25.json)).
+Brave Search, Perplexity and Tavily remain mapped from public documentation and
+tested against synthetic fixtures only.
 
 ## Install
 
@@ -92,15 +98,18 @@ See the [Python README](sdk/python/README.md).
 | [Brave Search](https://searchsdk.dev/providers/brave) | `brave` | ✓ | — | unverified |
 | [Context.dev](https://searchsdk.dev/providers/context) | `context` | ✓ | ✓ | unverified |
 | [Exa](https://searchsdk.dev/providers/exa) | `exa` | ✓ | ✓ | unverified |
-| [Firecrawl](https://searchsdk.dev/providers/firecrawl) | `firecrawl` | ✓ | ✓ | unverified |
+| [Firecrawl](https://searchsdk.dev/providers/firecrawl) | `firecrawl` | ✓ | ✓ | verified |
 | [Perplexity](https://searchsdk.dev/providers/perplexity) | `perplexity` | ✓ | ✓ | unverified |
 | [Tavily](https://searchsdk.dev/providers/tavily) | `tavily` | ✓ | ✓ | unverified |
 | [TinyFish](https://searchsdk.dev/providers/tinyfish) | `tinyfish` | ✓ | ✓ | unverified |
 <!-- readme-providers:end -->
 
 Keys come from each provider's documented environment variable (for example
-`EXA_API_KEY`) or are passed to the client. "Unverified" means no
-endpoint has passed its conformance vectors against the live API yet.
+`EXA_API_KEY`) or are passed to the client. In the table above, `verified`
+means every replayable conformance vector has passed against the live API in
+both TypeScript and Python (`bench verify`); `unverified` means formal
+per-vector live conformance has not run yet (Exa, Context.dev and TinyFish have
+still been exercised live across smoke, tuning and 1,212+ benchmark calls each).
 Provider names and logos are trademarks of their owners; searchSDK is not
 affiliated with or endorsed by any provider.
 
@@ -108,9 +117,39 @@ affiliated with or endorsed by any provider.
 
 searchSDK Benchmarks measures providers through the TypeScript runtime,
 exactly as users call them. The method is version 0.4.0
-([bench/METHOD.md](bench/METHOD.md)). The first full run is in progress;
-**no results are published yet**, and the site shows "Results pending" until
-they are. CI runs the harness on synthetic fixtures only.
+([bench/METHOD.md](bench/METHOD.md)), and the live leaderboard is published at
+[searchsdk.dev/benchmarks](https://searchsdk.dev/benchmarks).
+
+First full live run (404 queries × 3 passes = 1,212 measured calls per
+provider, default settings; 0 items dropped):
+
+| Group | Provider | Known-answer [95% CI] | Usable | Latency p50 / p95 | Cost / query | Retest agree / URL overlap |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| `1=` | **Exa** | **95.7%** [93.8, 97.4] | 99.5% | 1,559 / 3,837 ms | $0.0070 | 98.3% / 0.78 |
+| `1=` | **TinyFish** | **93.1%** [90.7, 95.3] | 99.7% | 1,417 / 3,066 ms | $0.0000\* | 97.8% / 0.65 |
+| `2` | **Context.dev** | **86.2%** [83.5, 88.9] | 99.6% | 1,329 / 3,124 ms | $0.0020 | 91.6% / 0.43 |
+| sep.\*\* | **Firecrawl** | **86.9%** [83.7, 90.0] | 98.7% | 425 / 5,331 ms\*\* | $0.0076 | 100.0% / 1.00 |
+
+- **Paired main run** ([`bench/results/full-2026-12/`](bench/results/full-2026-12)):
+  Exa, TinyFish and Context.dev ran together on the same 404 items ($11.12 cash).
+  Scores within 6 points with overlapping paired bootstrap CIs share a rank
+  group (`1=`). All providers kept default settings after tuning.
+- **\*TinyFish cost:** $0.0000 inside its free daily allowance with paid
+  overage disabled on the account.
+- **\*\*Firecrawl separate run and caching**
+  ([`bench/results/full-2026-12-firecrawl/`](bench/results/full-2026-12-firecrawl)):
+  run on the same 404 items ~4 hours later on a Firecrawl credit grant. Pass 1
+  cold latency p50 was **3,403 ms** (p95 6,084 ms), while Passes 2 and 3 dropped
+  to **300–315 ms** with 100% URL overlap across passes, indicating server-side
+  caching of repeated queries.
+- **Judged relevance:** automated judge agreement was high (Kimi K3.1 Pro
+  self-consistency κ = 0.94 main / 0.99 Firecrawl; cross-judge κ with DeepSeek
+  V4.1 Flash = 0.91 / 0.94), but judged scores are **withheld** under
+  `METHOD.md §6` until 100 blind human labels (`bench label`) verify
+  judge–human agreement. Known-answer scores, reliability, latency and cost
+  publish either way.
+- Brave Search, Perplexity and Tavily have not been run yet. CI runs the
+  harness on synthetic fixtures only.
 
 ## Repository
 

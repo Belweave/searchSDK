@@ -5,8 +5,11 @@ and agents one interface to many web search APIs, with explicit fallback,
 per-attempt cost and open benchmarks. This is the Python runtime: two calls,
 `search` and `contents`. Python 3.10 or newer, no dependencies.
 
-**Nothing here is live-verified.** Providers are mapped from their public
-docs and tested against synthetic fixtures only.
+**Live verification.** Firecrawl (`search` and `contents`) has passed formal
+live conformance replay in both Python and TypeScript; Exa, Context.dev and
+TinyFish have been tested live through the TypeScript benchmark harness; Brave
+Search, Perplexity and Tavily remain mapped from public docs and tested against
+synthetic fixtures only.
 
 ## Install from source
 
@@ -27,7 +30,9 @@ runtime is on npm as
 Brave Search (`brave`, search only), Context.dev (`context`), Exa (`exa`),
 Firecrawl (`firecrawl`), Perplexity (`perplexity`), Tavily (`tavily`) and
 TinyFish (`tinyfish`). Each is described in `../../registry` and embedded in
-this package; every endpoint is unverified against its live API today.
+this package. Firecrawl (`search` and `contents`) is conformance-verified live
+in both Python and TypeScript; other endpoints remain marked `unverified` in
+the registry until their vectors pass live replay.
 Provider names are trademarks of their owners; searchSDK is not affiliated
 with any provider.
 

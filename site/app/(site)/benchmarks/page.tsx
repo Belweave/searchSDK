@@ -13,7 +13,7 @@ import "@/components/site/pages.css";
 export const metadata: Metadata = pageMetadata({
   path: "/benchmarks",
   title: "Open benchmark of web search APIs",
-  description: "searchSDK's open benchmark of web search providers: quality first, then reliability, with latency and cost. Results pending; the first run is in progress.",
+  description: "Live searchSDK benchmark of web search providers on 404 queries: known-answer quality, reliability, latency and cost.",
 });
 
 export default function BenchmarksPage() {
@@ -25,9 +25,9 @@ export default function BenchmarksPage() {
       <div className="page-head">
         <h1 className="type-h2">Benchmarks</h1>
         <p className="page-line">
-          Results pending. The first benchmark run is in progress; every provider shows the same placeholder until it is published.
-          Then rank is quality first, then reliability: scores within {leaderboard.data.method.tieBand} points tie, and latency and
-          cost never change rank.{" "}
+          Measured on {leaderboard.data.run.queries} queries across three passes (method 0.4.0, known-answer scores; judged relevance withheld
+          pending 100 human labels). Rank is quality first, then reliability: scores within {leaderboard.data.method.tieBand} points tie, and
+          latency and cost never change rank.{" "}
           <Link href="/docs/benchmarks-method" className="prose-link">
             Method
           </Link>
@@ -90,6 +90,11 @@ export default function BenchmarksPage() {
                   ))}
                 </tbody>
               </table>
+              <p className="page-line" style={{ marginTop: "1rem" }}>
+                Run notes ({leaderboard.data.run.date}): Exa, TinyFish and Context.dev ran paired ($11.12 cash). Firecrawl ran separately on
+                the same 404 items four hours later on a Firecrawl credit grant; Pass 1 cold latency p50 was 3,403 ms while Passes 2 and 3
+                cached at 300–315 ms with 100% URL overlap. TinyFish cost is $0.00 inside its free daily allowance with paid overage off.
+              </p>
             </div>
           </>
         )}

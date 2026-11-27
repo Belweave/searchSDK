@@ -1,0 +1,539 @@
+{
+  "schema": "routing-table/1",
+  "snapshot": "full-2026-12-firecrawl-2026-11-27",
+  "mode": "live",
+  "liveVerified": true,
+  "method": "0.4.0",
+  "generatedAt": "2026-11-27T14:29:36.955Z",
+  "validUntil": "2027-01-11",
+  "priceBasis": "registry list prices; cost per query counts every billed attempt",
+  "classes": [
+    "fact.head",
+    "fact.tail",
+    "fresh",
+    "multihop",
+    "nav",
+    "nonen",
+    "tech"
+  ],
+  "cells": [
+    {
+      "provider": "firecrawl",
+      "profile": "default",
+      "settings": {},
+      "class": "fact.head",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9661,
+          "ci95": [
+            0.9266,
+            0.9944
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 462,
+        "p90": 4601,
+        "p95": 5675
+      },
+      "reliability": {
+        "usableRate": 0.9831,
+        "ci": [
+          0.9514,
+          0.9942
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.007867,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "default",
+      "settings": {},
+      "class": "fact.tail",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8531,
+          "ci95": [
+            0.7627,
+            0.9267
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 300,
+        "p90": 4452,
+        "p95": 5042
+      },
+      "reliability": {
+        "usableRate": 0.9887,
+        "ci": [
+          0.9597,
+          0.9969
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.008909,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "default",
+      "settings": {},
+      "class": "fresh",
+      "n": 50,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8933,
+          "ci95": [
+            0.8,
+            0.9733
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 384,
+        "p90": 4167,
+        "p95": 4873
+      },
+      "reliability": {
+        "usableRate": 0.9867,
+        "ci": [
+          0.9527,
+          0.9963
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.008507,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "default",
+      "settings": {},
+      "class": "multihop",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.5989,
+          "ci95": [
+            0.4689,
+            0.7175
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 433,
+        "p90": 4845,
+        "p95": 6558
+      },
+      "reliability": {
+        "usableRate": 0.9887,
+        "ci": [
+          0.9597,
+          0.9969
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.012691,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "default",
+      "settings": {},
+      "class": "nav",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.887,
+          "ci95": [
+            0.8023,
+            0.9549
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 463,
+        "p90": 4698,
+        "p95": 5274
+      },
+      "reliability": {
+        "usableRate": 0.9887,
+        "ci": [
+          0.9597,
+          0.9969
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.008568,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "default",
+      "settings": {},
+      "class": "nonen",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9605,
+          "ci95": [
+            0.9096,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 350,
+        "p90": 4377,
+        "p95": 5338
+      },
+      "reliability": {
+        "usableRate": 0.9944,
+        "ci": [
+          0.9687,
+          0.999
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.007913,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "default",
+      "settings": {},
+      "class": "tech",
+      "n": 59,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.9266,
+          "ci95": [
+            0.8531,
+            0.9831
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 474,
+        "p90": 4078,
+        "p95": 5127
+      },
+      "reliability": {
+        "usableRate": 0.9774,
+        "ci": [
+          0.9433,
+          0.9912
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.007471,
+        "perCorrectUsd": 0.008063,
+        "known": true
+      },
+      "tierGroup": 1,
+      "flags": []
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "tuned",
+      "settings": {},
+      "class": "fact.head",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8,
+          "ci95": [
+            0.4,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 2799,
+        "p90": 3950,
+        "p95": 4286
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.0095,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "tuned",
+      "settings": {},
+      "class": "fact.tail",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8,
+          "ci95": [
+            0.4,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 2966,
+        "p90": 3307,
+        "p95": 3376
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.0095,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "tuned",
+      "settings": {},
+      "class": "fresh",
+      "n": 4,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 2681,
+        "p90": 6350,
+        "p95": 6956
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5101,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.0076,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "tuned",
+      "settings": {},
+      "class": "multihop",
+      "n": 4,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.5,
+          "ci95": [
+            0,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 3658,
+        "p90": 4442,
+        "p95": 4558
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5101,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.0152,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "tuned",
+      "settings": {},
+      "class": "nav",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 0.8,
+          "ci95": [
+            0.4,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 3782,
+        "p90": 4775,
+        "p95": 4991
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.0095,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "tuned",
+      "settings": {},
+      "class": "nonen",
+      "n": 5,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 4085,
+        "p90": 5221,
+        "p95": 5520
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5655,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.0076,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    },
+    {
+      "provider": "firecrawl",
+      "profile": "tuned",
+      "settings": {},
+      "class": "tech",
+      "n": 4,
+      "quality": {
+        "knownAnswer": {
+          "mean": 1,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "judged": null
+      },
+      "latencyMs": {
+        "p50": 2865,
+        "p90": 3493,
+        "p95": 3604
+      },
+      "reliability": {
+        "usableRate": 1,
+        "ci": [
+          0.5101,
+          1
+        ]
+      },
+      "cost": {
+        "perQueryUsd": 0.0076,
+        "perCorrectUsd": 0.0076,
+        "known": true
+      },
+      "tierGroup": null,
+      "flags": [
+        "insufficient-n"
+      ]
+    }
+  ]
+}
