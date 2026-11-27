@@ -48,7 +48,7 @@ const LOCAL_RETRY_SWEEPS = 3;
 export type StopReason = "done" | "budget" | "overrun" | "aborted";
 
 // Exhaustive over the SDK's codes: a new SDK code fails typecheck here instead of becoming harness_error.
-const OUTCOME_BY_CODE: Record<ErrorCode, Outcome> = {
+export const OUTCOME_BY_CODE: Record<ErrorCode, Outcome> = {
   rate_limit: "rate_limited", quota: "rate_limited",
   timeout: "timeout", attempt_timeout: "timeout",
   unavailable: "server_error", provider_error: "server_error",
@@ -75,7 +75,7 @@ function event(dir: string, e: Omit<EventRecord, "at">) {
   appendJsonl(runPaths(dir).events, { at: new Date().toISOString(), ...e });
 }
 
-async function pool<T>(items: readonly T[], width: number, stop: () => boolean, work: (t: T) => Promise<void>): Promise<void> {
+export async function pool<T>(items: readonly T[], width: number, stop: () => boolean, work: (t: T) => Promise<void>): Promise<void> {
   let next = 0;
   await Promise.all(Array.from({ length: Math.max(1, width) }, async () => {
     while (next < items.length && !stop()) await work(items[next++]!);

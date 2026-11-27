@@ -3,13 +3,16 @@
   "formatVersion": 1,
   "id": "firecrawl",
   "name": "Firecrawl",
-  "specVersion": "2026-11-24",
+  "specVersion": "2026-11-25",
   "sources": [
     { "url": "https://docs.firecrawl.dev/api-reference/endpoint/search.md", "retrievedOn": "2026-11-24", "covers": "search request, response, errors (OpenAPI 3.0, API v2)" },
     { "url": "https://docs.firecrawl.dev/features/search.md", "retrievedOn": "2026-11-25", "covers": "tbs values and custom date ranges; 2 credits per 10 results; results are scraped only when scrapeOptions is sent" },
     { "url": "https://docs.firecrawl.dev/api-reference/endpoint/scrape.md", "retrievedOn": "2026-11-24", "covers": "scrape request, response, errors" },
     { "url": "https://docs.firecrawl.dev/billing.md", "retrievedOn": "2026-11-24", "covers": "credit costs; a returned document is charged even for a target 404" },
-    { "url": "https://www.firecrawl.dev/pricing", "retrievedOn": "2026-11-24", "covers": "plan prices, credits and concurrency" }
+    { "url": "https://www.firecrawl.dev/pricing", "retrievedOn": "2026-11-24", "covers": "plan prices, credits and concurrency" },
+    { "url": "https://docs.firecrawl.dev/rate-limits.md", "retrievedOn": "2026-11-25", "covers": "requests per minute and concurrent browsers per plan, the same for /scrape and /search; no rate-limit response headers are documented" },
+    { "url": "https://docs.firecrawl.dev/api-reference/endpoint/queue-status.md", "retrievedOn": "2026-11-25", "covers": "GET /v2/team/queue-status: maxConcurrency for the team's plan" },
+    { "url": "https://docs.firecrawl.dev/api-reference/endpoint/credit-usage.md", "retrievedOn": "2026-11-25", "covers": "GET /v2/team/credit-usage: planCredits exclude coupon and pay-as-you-go credits" }
   ],
   "auth": { "in": "header", "name": "authorization", "prefix": "Bearer ", "env": ["FIRECRAWL_API_KEY"] },
   "capabilities": { "search": true, "contents": true, "answer": false, "research": true, "crawl": true },
@@ -24,7 +27,7 @@
   "errorCodePath": "code",
   "errors": [],
   "search": {
-    "verification": { "status": "unverified" },
+    "verification": { "status": "verified", "on": "2026-11-25", "runtimes": ["typescript", "python"], "note": "Every replayable vector passed live in both runtimes (registry/conformance/live/firecrawl-2026-11-25.json); the 402 and 500 vectors cannot be produced on demand and stay offline. Seen live: a search with no rows returns data.web as [] and reports creditsUsed 0; with scrapeOptions creditsUsed is still reported (3 for one result); zero-padded cd_min and cd_max dates are accepted. No rate-limit headers are sent." },
     "request": {
       "method": "POST",
       "url": "https://api.firecrawl.dev/v2/search",
@@ -73,14 +76,18 @@
       "extraBlock": { "items": 10, "usd": 0.0076 },
       "ceiling": { "extraBlockUsd": 0.01, "note": "Hobby extra credits cost $5 per 1,000 ($0.005 each), above the plan's $0.0038; 2 credits per block." },
       "costOptions": { "scrapeOptions": "unknown", "categories": "unknown" },
-      "note": "2 credits per 10 results, rounded up. Hobby is $19 for 5,000 credits; Standard is about $0.001 per credit. Scraping results adds scrape credits; the gov category adds none."
+      "note": "2 credits per 10 results, rounded up; a search with no results reported 0 credits live (2026-11-25). Hobby is $19 for 5,000 credits; Standard is about $0.001 per credit. Scraping results adds scrape credits; the gov category adds none."
     },
     "rateLimits": [
       { "plan": "Free", "limit": 10, "unit": "requests", "per": "minute", "scope": "team" },
       { "plan": "Free", "limit": 2, "unit": "requests", "per": "concurrent", "scope": "team" },
+      { "plan": "Hobby", "limit": 100, "unit": "requests", "per": "minute", "scope": "team" },
       { "plan": "Hobby", "limit": 5, "unit": "requests", "per": "concurrent", "scope": "team" },
+      { "plan": "Standard", "limit": 500, "unit": "requests", "per": "minute", "scope": "team" },
       { "plan": "Standard", "limit": 25, "unit": "requests", "per": "concurrent", "scope": "team" },
+      { "plan": "Growth", "limit": 5000, "unit": "requests", "per": "minute", "scope": "team" },
       { "plan": "Growth", "limit": 50, "unit": "requests", "per": "concurrent", "scope": "team" },
+      { "plan": "Scale", "limit": 10000, "unit": "requests", "per": "minute", "scope": "team" },
       { "plan": "Scale", "limit": 100, "unit": "requests", "per": "concurrent", "scope": "team" }
     ],
     "providerOptions": {
@@ -94,7 +101,7 @@
     }
   },
   "contents": {
-    "verification": { "status": "unverified" },
+    "verification": { "status": "verified", "on": "2026-11-25", "runtimes": ["typescript", "python"], "note": "Every replayable vector passed live in both runtimes (registry/conformance/live/firecrawl-2026-11-25.json); the 402 and 500 vectors stay offline. Seen live: data.metadata.creditsUsed and data.metadata.scrapeId on every scrape, a target 404 as statusCode 404 charged 1 credit." },
     "request": {
       "method": "POST",
       "url": "https://api.firecrawl.dev/v2/scrape",
@@ -129,8 +136,10 @@
           }
         }
       ],
+      "requestId": [{ "path": "data.metadata.scrapeId" }],
       "warnings": [{ "where": [{ "path": "data.warning", "present": true }], "code": "provider_warning", "messageField": "data.warning" }]
     },
+    "cost": { "reported": { "path": "data.metadata.creditsUsed", "unit": "credit" } },
     "pricing": {
       "plan": "Hobby (monthly billing)",
       "source": "https://docs.firecrawl.dev/billing.md",
@@ -139,11 +148,19 @@
       "perRequestUsd": 0,
       "extraBlock": { "items": 1, "usd": 0.0038 },
       "ceiling": { "extraBlockUsd": 0.005, "note": "Hobby extra credits cost $5 per 1,000 ($0.005 each), above the plan's $0.0038." },
-      "note": "1 credit per returned document, including target 403 and 404 pages; a scrape that returns no document is free."
+      "note": "1 credit per returned document, including target 403 and 404 pages; a scrape that returns no document is free. PDF parsing, on by default, adds 1 credit per PDF page; the bound covers one credit per URL."
     },
     "rateLimits": [
       { "plan": "Free", "limit": 10, "unit": "requests", "per": "minute", "scope": "team" },
-      { "plan": "Hobby", "limit": 5, "unit": "requests", "per": "concurrent", "scope": "team" }
+      { "plan": "Free", "limit": 2, "unit": "requests", "per": "concurrent", "scope": "team" },
+      { "plan": "Hobby", "limit": 100, "unit": "requests", "per": "minute", "scope": "team" },
+      { "plan": "Hobby", "limit": 5, "unit": "requests", "per": "concurrent", "scope": "team" },
+      { "plan": "Standard", "limit": 500, "unit": "requests", "per": "minute", "scope": "team" },
+      { "plan": "Standard", "limit": 25, "unit": "requests", "per": "concurrent", "scope": "team" },
+      { "plan": "Growth", "limit": 5000, "unit": "requests", "per": "minute", "scope": "team" },
+      { "plan": "Growth", "limit": 50, "unit": "requests", "per": "concurrent", "scope": "team" },
+      { "plan": "Scale", "limit": 10000, "unit": "requests", "per": "minute", "scope": "team" },
+      { "plan": "Scale", "limit": 100, "unit": "requests", "per": "concurrent", "scope": "team" }
     ],
     "providerOptions": {
       "waitFor": { "type": "integer", "minimum": 0, "maximum": 60000 },
@@ -154,14 +171,15 @@
     }
   },
   "unverified": [
-    { "pointer": "/search/request/compose/0", "reason": "Docs show unpadded dates (12/1/2024) in cd_min and cd_max; zero-padded dates are sent. Whether the range is inclusive is not stated." },
+    { "pointer": "/search/request/compose/0", "reason": "Docs show unpadded dates (12/1/2024) in cd_min and cd_max; zero-padded dates are sent. Live 2026-11-25: accepted (HTTP 200), but the replay returned no rows, so whether the range is applied and inclusive is still untested." },
     { "pointer": "/search/request/params/country", "reason": "Docs say ISO country code; some examples use names in location instead." },
     { "pointer": "/search/limits/maxIncludeDomains", "reason": "No domain-list limit is documented; 100 is SDK policy." },
     { "pointer": "/search/limits/maxExcludeDomains", "reason": "No domain-list limit is documented; 100 is SDK policy." },
-    { "pointer": "/search/response/resultsOptional", "reason": "The arrays in data depend on the sources requested; whether web is present when it is empty is not stated." },
-    { "pointer": "/search/pricing/extraBlock", "reason": "Docs give 2 credits for 1 to 10 results; whether a search with no results is charged is not stated." },
+    { "pointer": "/search/rateLimits", "reason": "Kept 2026-11-25. The account's credit-usage shows planCredits 1000 (the Free plan's monthly credits; coupon credits are excluded) and queue-status shows maxConcurrency 250, a team-specific concurrency above every plan's. Responses carry no rate-limit headers and the per-minute limit is not exposed, so it was not probed. Consumers obey the strictest documented limit (Free: 10 a minute, 2 concurrent)." },
     { "pointer": "/search/pricing/creditUsd", "reason": "The credit price depends on the plan, by up to about 4x; the Hobby list price is used." },
-    { "pointer": "/contents/response/pages/1", "reason": "A target 403 or 404 comes back as a document with metadata.statusCode and is charged; it is reported failed and billable. A document without statusCode is treated the same way." },
+    { "pointer": "/contents/response/pages/1", "reason": "A target 403 or 404 comes back as a document with metadata.statusCode and is charged; it is reported failed and billable (a 404 charged 1 credit live on 2026-11-25). A document without statusCode is treated the same way." },
+    { "pointer": "/contents/cost/reported", "reason": "Resolved 2026-11-25: the scrape reference documents no credit count or request id, but every live scrape carried data.metadata.creditsUsed and data.metadata.scrapeId (smoke check and live conformance). Both are read; they stay listed here because they are undocumented." },
+    { "pointer": "/contents/pricing/extraBlock", "reason": "Billing docs (read 2026-11-25): PDF parsing, on by default, adds 1 credit per PDF page. The bound counts one credit per URL, so a PDF's reported credits can exceed it; callers that reserve spend must scale for documents." },
     { "pointer": "/contents/pricing/creditUsd", "reason": "The credit price depends on the plan; the Hobby list price is used." },
     { "pointer": "/terms", "reason": "Terms reading taken from the 2026-11-24 recon, not re-read for this spec." }
   ]

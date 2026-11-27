@@ -46,7 +46,7 @@ export const SHAPES: FixtureShapes = {
   }),
   "api.firecrawl.dev/v2/scrape": ({ body }) => {
     const url = (body as { url?: string }).url!;
-    return { status: 200, body: { success: true, data: { markdown: "# Synthetic page", metadata: { title: "Synthetic page", sourceURL: url, url, statusCode: 200 } } } };
+    return { status: 200, body: { success: true, data: { markdown: "# Synthetic page", metadata: { title: "Synthetic page", sourceURL: url, url, statusCode: 200, scrapeId: "synthetic-scrape-1", creditsUsed: 1 } } } };
   },
   "api.search.tinyfish.ai/": ({ url }) => ({
     status: 200,

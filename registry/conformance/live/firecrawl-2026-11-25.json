@@ -1,0 +1,1335 @@
+{
+  "schema": "live-conformance/1",
+  "provider": "firecrawl",
+  "verifiedOn": "2026-11-25",
+  "description": "Live conformance for Firecrawl (bench verify): every vector replayed against the live API through the TypeScript and Python runtimes. Statuses, checks, credits and rate-limit headers only; no response text.",
+  "note": "Run 1 verified contents. Its search replay of the date-range vector returned no rows (and was charged 0 credits); the check 'results returned' then counted as a failure. A row count depends on the live index, not on the spec, so that check became informational (registry/README.md, Live conformance) and search was replayed in run 2, where every check passed. The endpoint path check still needs rows from the other replays.",
+  "credits": 40,
+  "runs": [
+    {
+      "schema": "live-conformance/1",
+      "provider": "firecrawl",
+      "at": "2026-11-25T23:38:30.139Z",
+      "mode": "live",
+      "runtimes": [
+        "typescript",
+        "python"
+      ],
+      "credits": 22,
+      "endpoints": [
+        {
+          "kind": "search",
+          "verified": false,
+          "passed": {
+            "typescript": false,
+            "python": false
+          },
+          "stopped": null,
+          "cases": [
+            {
+              "name": "search maps every supported option; a date range becomes one tbs value; credits are reported",
+              "class": "replay",
+              "runs": [
+                {
+                  "runtime": "typescript",
+                  "ok": false,
+                  "status": 200,
+                  "credits": 0,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request method",
+                      "ok": true
+                    },
+                    {
+                      "name": "request url",
+                      "ok": true
+                    },
+                    {
+                      "name": "request headers",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    },
+                    {
+                      "name": "results returned",
+                      "ok": false
+                    },
+                    {
+                      "name": "cost source",
+                      "ok": true
+                    },
+                    {
+                      "name": "request id",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true
+                    }
+                  ]
+                },
+                {
+                  "runtime": "python",
+                  "ok": false,
+                  "status": 200,
+                  "credits": 0,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request method",
+                      "ok": true
+                    },
+                    {
+                      "name": "request url",
+                      "ok": true
+                    },
+                    {
+                      "name": "request headers",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    },
+                    {
+                      "name": "results returned",
+                      "ok": false
+                    },
+                    {
+                      "name": "cost source",
+                      "ok": true
+                    },
+                    {
+                      "name": "request id",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "recency is a tbs range",
+              "class": "replay",
+              "runs": [
+                {
+                  "runtime": "typescript",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 2,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body.tbs",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true
+                    }
+                  ]
+                },
+                {
+                  "runtime": "python",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 2,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body.tbs",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "include and exclude together are unsupported and nothing is sent",
+              "class": "local",
+              "reason": "nothing is sent; the offline suites run it",
+              "runs": []
+            },
+            {
+              "name": "a response without data.web is an empty success",
+              "class": "replay",
+              "runs": [
+                {
+                  "runtime": "typescript",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 2,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost source",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true
+                    }
+                  ]
+                },
+                {
+                  "runtime": "python",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 2,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost source",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "scraping results makes an unreported cost unknown",
+              "class": "replay",
+              "override": {
+                "options": {
+                  "maxResults": 1
+                },
+                "worstCredits": 4,
+                "reason": "scrapeOptions scrapes every result at an unpublished cost; one result bounds a live replay at 2 search credits plus 1 scrape credit (and 1 per PDF page). The vector checks only the scrapeOptions it sends, not the result count."
+              },
+              "runs": [
+                {
+                  "runtime": "typescript",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 3,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body.scrapeOptions",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    }
+                  ]
+                },
+                {
+                  "runtime": "python",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 3,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body.scrapeOptions",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "a query over 500 code points is unsupported",
+              "class": "local",
+              "reason": "nothing is sent; the offline suites run it",
+              "runs": []
+            },
+            {
+              "name": "a plain search never asks for per-result scraping, which would cost scrape credits",
+              "class": "replay",
+              "runs": [
+                {
+                  "runtime": "typescript",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 2,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request method",
+                      "ok": true
+                    },
+                    {
+                      "name": "request url",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true
+                    }
+                  ]
+                },
+                {
+                  "runtime": "python",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 2,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request method",
+                      "ok": true
+                    },
+                    {
+                      "name": "request url",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "paths": {
+            "typescript": [
+              {
+                "name": "search path cost",
+                "ok": true,
+                "detail": "5/5"
+              },
+              {
+                "name": "search path excerpts",
+                "ok": true,
+                "detail": "31/31"
+              },
+              {
+                "name": "search path requestId",
+                "ok": true,
+                "detail": "5/5"
+              },
+              {
+                "name": "search path results",
+                "ok": true,
+                "detail": "5/5"
+              },
+              {
+                "name": "search path title",
+                "ok": true,
+                "detail": "31/31"
+              },
+              {
+                "name": "search path url",
+                "ok": true,
+                "detail": "31/31"
+              }
+            ],
+            "python": [
+              {
+                "name": "search path cost",
+                "ok": true,
+                "detail": "5/5"
+              },
+              {
+                "name": "search path excerpts",
+                "ok": true,
+                "detail": "31/31"
+              },
+              {
+                "name": "search path requestId",
+                "ok": true,
+                "detail": "5/5"
+              },
+              {
+                "name": "search path results",
+                "ok": true,
+                "detail": "5/5"
+              },
+              {
+                "name": "search path title",
+                "ok": true,
+                "detail": "31/31"
+              },
+              {
+                "name": "search path url",
+                "ok": true,
+                "detail": "31/31"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "contents",
+          "verified": true,
+          "passed": {
+            "typescript": true,
+            "python": true
+          },
+          "stopped": null,
+          "cases": [
+            {
+              "name": "scrape maps one URL; a title array is joined; reported credits and the scrape id are read",
+              "class": "replay",
+              "override": {
+                "urls": [
+                  "https://example.com/"
+                ],
+                "reason": "The vector's https://example.com/page is a 404 live (checked 2026-11-25); https://example.com/ serves 200, which the vector scripts."
+              },
+              "runs": [
+                {
+                  "runtime": "typescript",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 1,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request method",
+                      "ok": true
+                    },
+                    {
+                      "name": "request url",
+                      "ok": true
+                    },
+                    {
+                      "name": "request headers",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    },
+                    {
+                      "name": "page statuses",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost source",
+                      "ok": true
+                    },
+                    {
+                      "name": "request id",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true
+                    }
+                  ]
+                },
+                {
+                  "runtime": "python",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 1,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request method",
+                      "ok": true
+                    },
+                    {
+                      "name": "request url",
+                      "ok": true
+                    },
+                    {
+                      "name": "request headers",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    },
+                    {
+                      "name": "page statuses",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost source",
+                      "ok": true
+                    },
+                    {
+                      "name": "request id",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "a target 404 is a failed page that is still billed; without creditsUsed one credit is computed",
+              "class": "replay",
+              "runs": [
+                {
+                  "runtime": "typescript",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 1,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    },
+                    {
+                      "name": "page statuses",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true
+                    }
+                  ]
+                },
+                {
+                  "runtime": "python",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 1,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    },
+                    {
+                      "name": "page statuses",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "two URLs exceed the one-URL scrape and nothing is sent",
+              "class": "local",
+              "reason": "nothing is sent; the offline suites run it",
+              "runs": []
+            },
+            {
+              "name": "402 is quota",
+              "class": "scripted-failure",
+              "reason": "scripts HTTP 402, which cannot be produced on demand",
+              "runs": []
+            },
+            {
+              "name": "500 keeps the provider code",
+              "class": "scripted-failure",
+              "reason": "scripts HTTP 500, which cannot be produced on demand",
+              "runs": []
+            }
+          ],
+          "paths": {
+            "typescript": [
+              {
+                "name": "contents path cost",
+                "ok": true,
+                "detail": "2/2"
+              },
+              {
+                "name": "contents path pages.0",
+                "ok": true,
+                "detail": "2/2"
+              },
+              {
+                "name": "contents path pages.0.content",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.0.finalUrl",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.0.title",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.0.url",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.0.where",
+                "ok": true,
+                "detail": "1/2"
+              },
+              {
+                "name": "contents path pages.1",
+                "ok": true,
+                "detail": "2/2"
+              },
+              {
+                "name": "contents path pages.1.errorMessage",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.1.finalUrl",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.1.url",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.1.where",
+                "ok": true,
+                "detail": "1/2"
+              },
+              {
+                "name": "contents path requestId",
+                "ok": true,
+                "detail": "2/2"
+              }
+            ],
+            "python": [
+              {
+                "name": "contents path cost",
+                "ok": true,
+                "detail": "2/2"
+              },
+              {
+                "name": "contents path pages.0",
+                "ok": true,
+                "detail": "2/2"
+              },
+              {
+                "name": "contents path pages.0.content",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.0.finalUrl",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.0.title",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.0.url",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.0.where",
+                "ok": true,
+                "detail": "1/2"
+              },
+              {
+                "name": "contents path pages.1",
+                "ok": true,
+                "detail": "2/2"
+              },
+              {
+                "name": "contents path pages.1.errorMessage",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.1.finalUrl",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.1.url",
+                "ok": true,
+                "detail": "1/1"
+              },
+              {
+                "name": "contents path pages.1.where",
+                "ok": true,
+                "detail": "1/2"
+              },
+              {
+                "name": "contents path requestId",
+                "ok": true,
+                "detail": "2/2"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "schema": "live-conformance/1",
+      "provider": "firecrawl",
+      "at": "2026-11-25T23:44:01.146Z",
+      "mode": "live",
+      "runtimes": [
+        "typescript",
+        "python"
+      ],
+      "credits": 18,
+      "endpoints": [
+        {
+          "kind": "search",
+          "verified": true,
+          "passed": {
+            "typescript": true,
+            "python": true
+          },
+          "stopped": null,
+          "cases": [
+            {
+              "name": "search maps every supported option; a date range becomes one tbs value; credits are reported",
+              "class": "replay",
+              "runs": [
+                {
+                  "runtime": "typescript",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 0,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request method",
+                      "ok": true
+                    },
+                    {
+                      "name": "request url",
+                      "ok": true
+                    },
+                    {
+                      "name": "request headers",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    },
+                    {
+                      "name": "results returned",
+                      "ok": false,
+                      "soft": true,
+                      "detail": "0"
+                    },
+                    {
+                      "name": "cost source",
+                      "ok": true,
+                      "detail": "reported-credits"
+                    },
+                    {
+                      "name": "request id",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true,
+                      "detail": "$0.000000 of $0.010000"
+                    }
+                  ]
+                },
+                {
+                  "runtime": "python",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 0,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request method",
+                      "ok": true
+                    },
+                    {
+                      "name": "request url",
+                      "ok": true
+                    },
+                    {
+                      "name": "request headers",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    },
+                    {
+                      "name": "results returned",
+                      "ok": false,
+                      "soft": true,
+                      "detail": "0"
+                    },
+                    {
+                      "name": "cost source",
+                      "ok": true,
+                      "detail": "reported-credits"
+                    },
+                    {
+                      "name": "request id",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true,
+                      "detail": "$0.000000 of $0.010000"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "recency is a tbs range",
+              "class": "replay",
+              "runs": [
+                {
+                  "runtime": "typescript",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 2,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body.tbs",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true,
+                      "detail": "$0.007600 of $0.010000"
+                    }
+                  ]
+                },
+                {
+                  "runtime": "python",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 2,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body.tbs",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true,
+                      "detail": "$0.007600 of $0.010000"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "include and exclude together are unsupported and nothing is sent",
+              "class": "local",
+              "reason": "nothing is sent; the offline suites run it",
+              "runs": []
+            },
+            {
+              "name": "a response without data.web is an empty success",
+              "class": "replay",
+              "runs": [
+                {
+                  "runtime": "typescript",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 2,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost source",
+                      "ok": true,
+                      "detail": "reported-credits"
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true,
+                      "detail": "$0.007600 of $0.010000"
+                    }
+                  ]
+                },
+                {
+                  "runtime": "python",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 2,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost source",
+                      "ok": true,
+                      "detail": "reported-credits"
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true,
+                      "detail": "$0.007600 of $0.010000"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "scraping results makes an unreported cost unknown",
+              "class": "replay",
+              "override": {
+                "options": {
+                  "maxResults": 1
+                },
+                "worstCredits": 4,
+                "reason": "scrapeOptions scrapes every result at an unpublished cost; one result bounds a live replay at 2 search credits plus 1 scrape credit (and 1 per PDF page). The vector checks only the scrapeOptions it sends, not the result count."
+              },
+              "runs": [
+                {
+                  "runtime": "typescript",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 3,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body.scrapeOptions",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    }
+                  ]
+                },
+                {
+                  "runtime": "python",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 3,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body.scrapeOptions",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "call succeeded",
+                      "ok": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "a query over 500 code points is unsupported",
+              "class": "local",
+              "reason": "nothing is sent; the offline suites run it",
+              "runs": []
+            },
+            {
+              "name": "a plain search never asks for per-result scraping, which would cost scrape credits",
+              "class": "replay",
+              "runs": [
+                {
+                  "runtime": "typescript",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 2,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request method",
+                      "ok": true
+                    },
+                    {
+                      "name": "request url",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true,
+                      "detail": "$0.007600 of $0.010000"
+                    }
+                  ]
+                },
+                {
+                  "runtime": "python",
+                  "ok": true,
+                  "status": 200,
+                  "credits": 2,
+                  "requestId": true,
+                  "rateLimitHeaders": {},
+                  "checks": [
+                    {
+                      "name": "one request sent",
+                      "ok": true
+                    },
+                    {
+                      "name": "request method",
+                      "ok": true
+                    },
+                    {
+                      "name": "request url",
+                      "ok": true
+                    },
+                    {
+                      "name": "request body",
+                      "ok": true
+                    },
+                    {
+                      "name": "provider answered 2xx",
+                      "ok": true
+                    },
+                    {
+                      "name": "cost within the SDK's bound",
+                      "ok": true,
+                      "detail": "$0.007600 of $0.010000"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "paths": {
+            "typescript": [
+              {
+                "name": "search path cost",
+                "ok": true,
+                "detail": "5/5"
+              },
+              {
+                "name": "search path excerpts",
+                "ok": true,
+                "detail": "31/31"
+              },
+              {
+                "name": "search path requestId",
+                "ok": true,
+                "detail": "5/5"
+              },
+              {
+                "name": "search path results",
+                "ok": true,
+                "detail": "5/5"
+              },
+              {
+                "name": "search path title",
+                "ok": true,
+                "detail": "31/31"
+              },
+              {
+                "name": "search path url",
+                "ok": true,
+                "detail": "31/31"
+              }
+            ],
+            "python": [
+              {
+                "name": "search path cost",
+                "ok": true,
+                "detail": "5/5"
+              },
+              {
+                "name": "search path excerpts",
+                "ok": true,
+                "detail": "31/31"
+              },
+              {
+                "name": "search path requestId",
+                "ok": true,
+                "detail": "5/5"
+              },
+              {
+                "name": "search path results",
+                "ok": true,
+                "detail": "5/5"
+              },
+              {
+                "name": "search path title",
+                "ok": true,
+                "detail": "31/31"
+              },
+              {
+                "name": "search path url",
+                "ok": true,
+                "detail": "31/31"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "name": "contents-urls",
+  "version": "0.1.0",
+  "seed": 20261126,
+  "datasets": [
+    "datasets/public/public-1.0.0.jsonl",
+    "datasets/fresh/fresh-2026-12.jsonl"
+  ],
+  "runs": [
+    "full-2026-12-20261125-193454",
+    "full-2026-12-firecrawl-20261125-233123"
+  ],
+  "quotas": {
+    "reference": 60,
+    "pooled": 60,
+    "long": 60,
+    "js": 60,
+    "pdf": 60
+  },
+  "pooledProviders": [
+    "exa",
+    "context",
+    "firecrawl",
+    "tinyfish"
+  ],
+  "longMinChars": 30000,
+  "pdfMaxPages": 10,
+  "maxSiteShare": 0.5,
+  "extra": {
+    "kev": 50,
+    "orcid": 60,
+    "arxiv": {
+      "count": 600,
+      "windowDays": [
+        60,
+        95
+      ]
+    }
+  }
+}
